@@ -17,23 +17,6 @@
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 
-	<!-- Accessibility: lets keyboard users skip straight to content -->
-	<a class="skip-link" href="#main">Skip to content</a>
-
-	<!-- ============================================================
-	     FULLSCREEN BACKGROUND VIDEO
-	     Drop your file at assets/videos/background.mp4 (and a poster
-	     image at assets/images/poster.jpg) or swap the paths below.
-	     ============================================================ -->
-	<video
-		class="fullscreen-video"
-		autoplay loop muted playsinline
-		poster="<?php echo esc_url( get_theme_file_uri( 'assets/images/poster.jpg' ) ); ?>">
-		<source src="<?php echo esc_url( get_theme_file_uri( 'assets/videos/background.mp4' ) ); ?>" type="video/mp4">
-	</video>
-	<!-- Gradient scrim over the video for guaranteed text readability -->
-	<div class="video-overlay" aria-hidden="true"></div>
-
 	<!-- ============================================================
 	     STICKY GLASS HEADER
 	     ============================================================ -->
@@ -93,31 +76,9 @@
 	</header>
 
 	<!-- ============================================================
-	     PAGE CONTENT
-	     Minimal placeholder sections so the nav anchors + scroll
-	     behaviour are testable. Replace freely with your real content.
-	     ============================================================ -->
-	<main id="main">
-
-		<section class="hero" id="about">
-			<p class="hero-eyebrow">Portfolio</p>
-			<h1 class="hero-title">Zurab Kostava</h1>
-			<p class="hero-sub">Sound, code &amp; image — composed with intent.</p>
-		</section>
-
-		<section class="section" id="projects"><h2 class="section-title">Projects</h2></section>
-		<section class="section" id="music"><h2 class="section-title">Music</h2></section>
-		<section class="section" id="books"><h2 class="section-title">Books</h2></section>
-		<section class="section" id="gallery"><h2 class="section-title">Gallery</h2></section>
-		<section class="section" id="photography"><h2 class="section-title">Photography</h2></section>
-		<section class="section" id="video"><h2 class="section-title">Video</h2></section>
-
-	</main>
-
-	<!-- ============================================================
 	     NAV BEHAVIOUR — minimal, dependency-free, progressive
 	     enhancement. The desktop dropdown is pure CSS (:hover /
-	     :focus-within); this only powers the scrolled-header state,
+	     :focus-within); this powers the scrolled-header state,
 	     the mobile overlay, and the mobile tap-accordion.
 	     ============================================================ -->
 	<script>
@@ -174,12 +135,6 @@
 				trigger.setAttribute('aria-expanded', 'false');
 			}
 		});
-
-		/* Respect reduced-motion: pause the looping video */
-		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-			var v = document.querySelector('.fullscreen-video');
-			if (v) v.removeAttribute('autoplay'), v.pause && v.pause();
-		}
 	})();
 	</script>
 
