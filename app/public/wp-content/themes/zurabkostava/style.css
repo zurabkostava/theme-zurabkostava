@@ -5,14 +5,61 @@ Description: My Custom WordPress Theme
 Version: 1.0
 */
 
-.test-header {
-    background-color: #1a1a1a;
-    color: #ffffff;
-    padding: 60px 20px;
-    text-align: center;
-    font-family: sans-serif;
+/* საბაზისო განულება */
+body, h1, h2, h3, p, margin, padding {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.test-header h1 {
-    margin: 0 0 10px 0;
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: #0f0f0f; /* მუქი თემა */
+    color: #ffffff;
+}
+
+/* ჰედერის დიზაინი */
+.custom-header {
+    background-color: #1a1a1a;
+    border-bottom: 1px solid #333;
+    padding: 20px 0;
+    position: sticky; /* სქროლვისას რომ თავში დარჩეს */
+    top: 0;
+    z-index: 100;
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.site-logo {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+    text-decoration: none;
+    letter-spacing: 1px;
+    transition: color 0.3s ease;
+}
+
+.site-logo:hover {
+    color: #4CAF50; /* ჰოვერზე მწვანე ფერი */
+}
+
+.site-tagline {
+    font-size: 14px;
+    color: #888888;
+    font-style: italic;
+}
+
+.main-content {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 0 20px;
+    text-align: center;
+    color: #aaaaaa;
 }

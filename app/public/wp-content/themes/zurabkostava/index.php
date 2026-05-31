@@ -3,20 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zurab Kostava - Test</title>
+    <!-- საიტის სახელი დინამიურად ტაბის სათაურისთვის -->
+    <title><?php bloginfo('name'); ?> - <?php bloginfo('description'); ?></title>
 
-    <!-- ვორდპრესის აუცილებელი ჰედერი -->
+    <!-- ვაკავშირებთ ჩვენს style.css ფაილს -->
+    <link rel="stylesheet" href="<?php echo get_stylesheet_uri(); ?>">
+
     <?php wp_head(); ?>
 </head>
-<body style="margin: 0; padding: 0; font-family: sans-serif; background-color: #f4f4f4;">
+<body>
 
-<header style="background-color: #1a1a1a; color: #ffffff; padding: 80px 20px; text-align: center;">
-    <h1 style="margin: 0; font-size: 3em;">Zurab Kostava</h1>
-    <p style="font-size: 1.2em; color: #4CAF50;">საიტი დამუშავების პროცესშია</p>
+<header class="custom-header">
+    <div class="header-container">
+        <!-- ვორდპრესიდან მოგვაქვს მთავარი გვერდის ლინკი და საიტის სახელი -->
+        <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="site-logo">
+            <?php bloginfo( 'name' ); ?>
+        </a>
+
+        <!-- ვორდპრესიდან მოგვაქვს საიტის აღწერა (Tagline) -->
+        <div class="site-tagline">
+            <?php bloginfo( 'description' ); ?>
+        </div>
+    </div>
 </header>
 
-<!-- ვორდპრესის აუცილებელი ფუტერი -->
-<?php wp_footer(); ?>
+<!-- აქ მოგვიანებით კონტენტს ჩავსვამთ -->
+<main class="main-content">
+    <p>აქ იქნება შენი ვანილა კოდით აწყობილი საოცრებები!</p>
+</main>
 
+<?php wp_footer(); ?>
 </body>
 </html>
