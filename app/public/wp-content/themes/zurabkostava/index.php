@@ -116,21 +116,15 @@ $zk_view = ob_get_clean();
 
 <script>
     window.ZK = <?php echo wp_json_encode( array(
-            'home'   => home_url( '/' ),
-            'rest'   => esc_url_raw( rest_url() ),
-            'nonce'  => wp_create_nonce( 'wp_rest' ),
-            'site'   => $zk_site,
-            'routes' => $zk_routes,
+            'home' => home_url( '/' ),
+            'site' => $zk_site,
     ) ); ?>;
 </script>
 
 <script>
     (function () {
-        var ZK     = window.ZK || {};
-        var ROUTES = ZK.routes || {};
-        var SITE   = ZK.site || document.title;
-        var REST   = ZK.rest || '/wp-json/';
-        var BASE   = (function () { try { return new URL(ZK.home).pathname; } catch (e) { return '/'; } })();
+        var ZK   = window.ZK || {};
+        var BASE = (function () { try { return new URL(ZK.home).pathname; } catch (e) { return '/'; } })();
 
         var body      = document.body;
         var header    = document.getElementById('site-header');
@@ -138,9 +132,7 @@ $zk_view = ob_get_clean();
         var nav       = document.getElementById('primaryNav');
         var mq        = window.matchMedia('(max-width: 900px)');
         var viewEl    = document.getElementById('view');
-        var homeTpl   = document.getElementById('view-home');
         var announcer = document.getElementById('route-announcer');
-        var navLinks  = [].slice.call(document.querySelectorAll('.nav-link[data-route], .dropdown-link[data-route]'));
         var dropdowns = [].slice.call(nav.querySelectorAll('.has-dropdown, .has-nested-dropdown'));
         var cache     = {};
 
@@ -199,74 +191,41 @@ $zk_view = ob_get_clean();
         });
         window.addEventListener('resize', function () { if (!mq.matches) setMenu(false); });
 
-        /* Router Functions */
+        /* ===========================================================
+           Generic SPA router — fetch the real URL, lift out #view.
+           Works for ANY server-rendered route (pages, posts, archives,
+           dynamic grids) because the server is the single source of
+           truth for #view. No per-type route table needed.
+           =========================================================== */
         function toRoute(pathname) {
             var p = pathname || '/';
             if (BASE !== '/' && p.indexOf(BASE) === 0) p = '/' + p.slice(BASE.length);
             p = p.replace(/\/+$/, '');
             return p === '' ? '/' : p;
         }
+        function keyOf(u) { return u.pathname + u.search; }
         function delay(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-        function homeHTML() { return homeTpl ? homeTpl.innerHTML : ''; }
-        function notFoundHTML() {
-            return '<div class="page__inner"><p class="page__eyebrow">Error 404</p>' +
-                '<h1 class="page__title">Not found</h1>' +
-                '<div class="page__content"><p>This page doesn’t exist yet.</p></div></div>';
-        }
-        function pageHTML(route, page) {
-            var def     = ROUTES[route] || {};
-            var eyebrow = def.eyebrow ? '<p class="page__eyebrow">' + def.eyebrow + '</p>' : '';
-            var title   = (page && page.title && page.title.rendered) || def.label || '';
-            var content = (page && page.content && page.content.rendered) || '';
-            return '<div class="page__inner">' + eyebrow +
-                '<h1 class="page__title">' + title + '</h1>' +
-                '<div class="page__content">' + content + '</div></div>';
-        }
-
-        function fetchRoute(route) {
-            var def = ROUTES[route];
-            if (!def)       return Promise.resolve(notFoundHTML());
-            if (!def.slug)  return Promise.resolve(homeHTML());
-            var url  = REST + 'wp/v2/pages?per_page=1&_fields=title,content&slug=' + encodeURIComponent(def.slug);
-            var opts = ZK.nonce ? { headers: { 'X-WP-Nonce': ZK.nonce } } : {};
-            return fetch(url, opts)
-                .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-                .then(function (arr) { return (arr && arr.length) ? pageHTML(route, arr[0]) : notFoundHTML(); });
-        }
-        function getHTML(route) {
-            if (cache[route] != null) return Promise.resolve(cache[route]);
-            return fetchRoute(route).then(function (html) { cache[route] = html; return html; });
-        }
-
+        /* Mark the matching nav link + any ancestor dropdown triggers active */
         function updateChrome(route) {
-            // Clear all active states
-            navLinks.forEach(function (a) {
-                a.classList.remove('is-current');
-                a.removeAttribute('aria-current');
+            [].slice.call(nav.querySelectorAll('[data-route], .dropdown-trigger')).forEach(function (el) {
+                el.classList.remove('is-current');
+                el.removeAttribute('aria-current');
             });
-            var dropdownTriggers = [].slice.call(document.querySelectorAll('.dropdown-trigger'));
-            dropdownTriggers.forEach(function(btn) { btn.classList.remove('is-current'); });
-
-            // Set active state dynamically
-            var activeLink = document.querySelector('[data-route="' + route + '"]');
-            if (activeLink) {
-                activeLink.classList.add('is-current');
-                activeLink.setAttribute('aria-current', 'page');
-
-                // Highlight parent dropdown if nested
-                var parentMenu = activeLink.closest('.dropdown-menu');
-                if (parentMenu) {
-                    var triggerBtn = parentMenu.previousElementSibling;
-                    if (triggerBtn && triggerBtn.classList.contains('dropdown-trigger')) {
-                        triggerBtn.classList.add('is-current');
-                    }
+            var active = null;
+            [].slice.call(nav.querySelectorAll('[data-route]')).forEach(function (el) {
+                if (el.getAttribute('data-route') === route) active = el;
+            });
+            if (active) {
+                active.classList.add('is-current');
+                active.setAttribute('aria-current', 'page');
+                var li = active.closest('.has-dropdown, .has-nested-dropdown');
+                while (li) {
+                    var tr = li.children[0];
+                    if (tr && tr.classList.contains('dropdown-trigger')) tr.classList.add('is-current');
+                    li = li.parentElement && li.parentElement.closest('.has-dropdown, .has-nested-dropdown');
                 }
             }
-
-            var def = ROUTES[route];
-            document.title = (route === '/' || !def || !def.label) ? SITE : (def.label + ' — ' + SITE);
-            if (announcer && def) announcer.textContent = (def.label || 'Home') + ' — loaded';
         }
 
         function scrollTopInstant() {
@@ -276,54 +235,102 @@ $zk_view = ob_get_clean();
             d.style.scrollBehavior = prev;
         }
 
+        /* Fetch a URL and lift out the server-rendered #view fragment */
+        function fetchView(href) {
+            return fetch(href, {
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            }).then(function (r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                if ((r.headers.get('Content-Type') || '').indexOf('text/html') === -1) throw new Error('Not HTML');
+                return r.text();
+            }).then(function (html) {
+                var doc = new DOMParser().parseFromString(html, 'text/html');
+                var v   = doc.getElementById('view');
+                if (!v) throw new Error('No #view in response');
+                var titleEl = doc.querySelector('title');
+                return {
+                    html:  v.innerHTML,
+                    route: v.getAttribute('data-route') || toRoute(new URL(href, location.origin).pathname),
+                    title: titleEl ? titleEl.textContent : document.title
+                };
+            });
+        }
+        function getView(href, key) {
+            if (cache[key]) return Promise.resolve(cache[key]);
+            return fetchView(href).then(function (data) { cache[key] = data; return data; });
+        }
+
         var token = 0;
-        function go(route) {
-            var known = (route in ROUTES);
+        function navigate(href, push) {
+            var u;
+            try { u = new URL(href, location.origin); } catch (e) { window.location.href = href; return; }
+            var key = keyOf(u);
             var t = ++token;
-            updateChrome(known ? route : '/');
+
             setMenu(false);
             viewEl.classList.add('is-loading');
 
-            Promise.all([ getHTML(route), delay(200) ]).then(function (res) {
+            Promise.all([
+                getView(href, key).then(function (d) { return d; }, function (err) { return { error: err }; }),
+                delay(200)
+            ]).then(function (res) {
                 if (t !== token) return;
-                viewEl.innerHTML = res[0];
-                viewEl.setAttribute('data-route', route);
+                var data = res[0];
+                if (!data || data.error) { window.location.href = href; return; } // graceful hard fallback
+                if (push) history.pushState({ url: u.href }, '', u.href);
+                viewEl.innerHTML = data.html;
+                viewEl.setAttribute('data-route', data.route);
+                document.title = data.title;
                 viewEl.classList.remove('is-loading');
+                updateChrome(data.route);
+                if (announcer) announcer.textContent = (data.title || 'Page') + ' loaded';
                 scrollTopInstant();
                 viewEl.focus({ preventScroll: true });
-            }).catch(function () {
-                if (t !== token) return;
-                viewEl.innerHTML = notFoundHTML();
-                viewEl.classList.remove('is-loading');
             });
         }
 
-        function onLinkClick(e) {
+        /* Is this anchor an in-app navigation, or should the browser keep it? */
+        function isInternal(a, url) {
+            if (url.origin !== location.origin) return false;            // external host
+            if (a.hasAttribute('download')) return false;
+            if (a.target && a.target !== '_self') return false;          // _blank, etc.
+            if (/\bexternal\b/.test(a.getAttribute('rel') || '')) return false;
+            if (/\/wp-(admin|login|json|content|includes)\b/.test(url.pathname)) return false;
+            // a real file (.pdf, .jpg, .zip…) → let the browser download/open it
+            if (/\.[a-z0-9]{1,8}$/i.test(url.pathname) && !/\.html?$/i.test(url.pathname)) return false;
+            return true;
+        }
+
+        /* ONE delegated listener — covers the nav, grid cards, and any link
+           injected into #view later, with zero rebinding. */
+        document.addEventListener('click', function (e) {
             if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-            var a = e.currentTarget, url;
+            var a = e.target.closest && e.target.closest('a[href]');
+            if (!a) return;
+            var url;
             try { url = new URL(a.href); } catch (_) { return; }
-            if (url.origin !== location.origin) return;
-            var route = toRoute(url.pathname);
-            if (!(route in ROUTES)) return;
+            if (!isInternal(a, url)) return;
+
+            if (url.pathname === location.pathname && url.search === location.search) {
+                if (url.hash) return;            // same page + #anchor → let it scroll
+                e.preventDefault();
+                setMenu(false);
+                return;
+            }
             e.preventDefault();
-            if (url.pathname === location.pathname) { setMenu(false); return; }
-            history.pushState({ route: route }, '', a.href);
-            go(route);
-        }
+            navigate(a.href, true);
+        });
 
-        // Refresh navLinks listener attaching logic
-        function bindLinks() {
-            [].slice.call(header.querySelectorAll('a[data-route]')).forEach(function (a) {
-                a.addEventListener('click', onLinkClick);
-            });
-        }
-        bindLinks();
+        window.addEventListener('popstate', function () { navigate(location.href, false); });
 
-        window.addEventListener('popstate', function () { go(toRoute(location.pathname)); });
-
-        var initial = toRoute(location.pathname);
-        if (initial in ROUTES) cache[initial] = viewEl.innerHTML;
-        updateChrome(initial in ROUTES ? initial : '/');
+        /* Seed the cache with the already server-rendered initial view */
+        cache[keyOf(location)] = {
+            html:  viewEl.innerHTML,
+            route: viewEl.getAttribute('data-route') || toRoute(location.pathname),
+            title: document.title
+        };
+        updateChrome(viewEl.getAttribute('data-route') || toRoute(location.pathname));
     })();
 </script>
 
