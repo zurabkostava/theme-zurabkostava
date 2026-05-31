@@ -21,10 +21,17 @@ $zk_hero = ob_get_clean();
 $zk_current = '/';
 $zk_view    = $zk_hero;
 
-if ( is_page() && ! is_front_page() && have_posts() ) {
+// აქ დავამატეთ is_single(), რათა პოსტებიც ჩაიტვირთოს
+if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
     the_post();
-    $zk_current = '/' . get_post_field( 'post_name', get_the_ID() );
-    $zk_def     = isset( $zk_routes[ $zk_current ] ) ? $zk_routes[ $zk_current ] : array( 'eyebrow' => '' );
+
+    // მარშრუტის დინამიური ამოღება, რომელიც ერგება როგორც გვერდებს, ისე პოსტებს
+    $zk_current = rtrim( wp_parse_url( get_permalink(), PHP_URL_PATH ), '/' );
+    if ( empty( $zk_current ) ) {
+        $zk_current = '/';
+    }
+
+    $zk_def = isset( $zk_routes[ $zk_current ] ) ? $zk_routes[ $zk_current ] : array( 'eyebrow' => '' );
 
     ob_start(); ?>
     <div class="page__inner">
@@ -37,7 +44,7 @@ if ( is_page() && ! is_front_page() && have_posts() ) {
     <?php
     $zk_view = ob_get_clean();
     rewind_posts();
-} elseif ( is_404() ) {
+} elseif ( is_404() || is_archive() ) {
 $zk_current = '/404';
 ob_start(); ?>
 <div class="page__inner">
