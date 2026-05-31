@@ -86,6 +86,19 @@ button {
 	border-radius: 3px;
 }
 
+/* Screen-reader only (route announcer) */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 /* ============================================================
    STICKY GLASS HEADER
    ============================================================ */
@@ -321,21 +334,22 @@ button {
    ============================================================ */
 #app { position: relative; }
 
-.page { display: none; }
-.page:focus { outline: none; }          /* focus is programmatic only */
-
-.page.is-active {
-	display: block;
-	animation: pageIn 0.6s var(--ease) both;
+/* The single content surface the router swaps. The same transition
+   handles both the exit (.is-loading) and the entrance (class removed). */
+.view {
+	opacity: 1;
+	transform: translateY(0);
+	transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
 }
-
-@keyframes pageIn {
-	from { opacity: 0; transform: translateY(18px); }
-	to   { opacity: 1; transform: translateY(0); }
+.view:focus { outline: none; }           /* focus is moved programmatically */
+.view.is-loading {
+	opacity: 0;
+	transform: translateY(12px);
+	pointer-events: none;
 }
 
 /* ---- Landing / hero ---- */
-.page--home .hero {
+.hero {
 	min-height: 100vh;
 	min-height: 100dvh;
 	display: flex;
@@ -390,11 +404,56 @@ button {
 	line-height: 1.04;
 	margin-bottom: 24px;
 }
-.page__lead {
-	max-width: 56ch;
+/* Prose rendered from the WP editor (the_content / REST content.rendered) */
+.page__content {
+	max-width: 68ch;
 	color: var(--text-muted);
 	font-weight: 300;
 	font-size: clamp(1.02rem, 2vw, 1.2rem);
+}
+.page__content > :first-child { margin-top: 0; }
+.page__content > * + *        { margin-top: 1.15em; }
+.page__content h2 {
+	margin-top: 1.8em;
+	color: var(--text);
+	font-weight: 600;
+	font-size: clamp(1.4rem, 3vw, 2rem);
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+}
+.page__content h3 {
+	margin-top: 1.5em;
+	color: var(--text);
+	font-weight: 600;
+	font-size: 1.2rem;
+}
+.page__content a {
+	color: #fff;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	text-decoration-color: rgba(255, 255, 255, 0.35);
+	transition: text-decoration-color 0.3s var(--ease);
+}
+.page__content a:hover { text-decoration-color: #fff; }
+.page__content img {
+	border-radius: 14px;
+	margin-top: 1.4em;
+}
+.page__content ul,
+.page__content ol { padding-left: 1.3em; }
+.page__content li + li { margin-top: 0.4em; }
+.page__content blockquote {
+	border-left: 2px solid var(--hairline-strong);
+	padding-left: 1.2em;
+	color: var(--text);
+	font-style: italic;
+}
+.page__content code {
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	background: rgba(255, 255, 255, 0.08);
+	padding: 0.15em 0.4em;
+	border-radius: 6px;
+	font-size: 0.9em;
 }
 
 /* ============================================================
