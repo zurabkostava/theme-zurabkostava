@@ -5,55 +5,104 @@ Description: Custom Vanilla Theme
 Version: 1.0
 */
 
-/* --- CSS Reset --- */
-*, *::before, *::after {
-    box-sizing: border-box;
+/* საბაზისო განულება */
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
 body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     background-color: #0f0f0f;
     color: #ffffff;
-    line-height: 1.6;
 }
 
-/* ნავიგაციის სატესტო დიზაინი */
+/* ჰედერის სტრუქტურა */
 .site-header {
-    background-color: #1a1a1a;
+    background-color: rgba(26, 26, 26, 0.95);
+    backdrop-filter: blur(10px); /* უკანა ფონის დაბურვა */
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.header-container {
+    max-width: 1400px;
+    margin: 0 auto;
     padding: 20px 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #333;
 }
 
+/* ლოგო */
 .logo {
-    color: #fff;
+    color: #ffffff;
     text-decoration: none;
-    font-size: 24px;
-    font-weight: bold;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
 }
 
+/* ნავიგაცია */
 .nav-links {
     list-style: none;
     display: flex;
-    gap: 30px;
+    gap: 40px;
+    align-items: center;
 }
 
 .nav-links a {
-    color: #aaa;
+    color: #aaaaaa;
     text-decoration: none;
-    transition: color 0.3s;
+    font-size: 15px;
+    font-weight: 500;
+    transition: color 0.3s ease;
 }
 
 .nav-links a:hover {
-    color: #4CAF50;
+    color: #ffffff;
 }
 
-.main-content {
-    padding: 60px 40px;
-    max-width: 1200px;
-    margin: 0 auto;
+/* ჩამოსაშლელი მენიუ (Dropdown) */
+.has-dropdown {
+    position: relative;
+    padding: 10px 0;
+}
+
+.dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #1a1a1a;
+    min-width: 180px;
+    list-style: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 10px 0;
+}
+
+/* ჰოვერზე მენიუს გამოჩენა */
+.has-dropdown:hover .dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown li a {
+    display: block;
+    padding: 8px 20px;
+    font-size: 14px;
+}
+
+.dropdown li a:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
 }

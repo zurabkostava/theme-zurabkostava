@@ -20,3 +20,4 @@ function zurabkostava_scripts() {
 }
 add_action('wp_enqueue_scripts', 'zurabkostava_scripts');
 ?>
+
