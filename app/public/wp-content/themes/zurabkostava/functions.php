@@ -105,3 +105,57 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
         }
     }
 }
+
+/**
+ * Custom Badass Grid for 3Decade Posts
+ * Usage: [3decade_grid] in any page
+ */
+function zk_custom_post_grid() {
+    // მოგვაქვს პოსტები ამ ორი კატეგორიიდან
+    $args = array(
+        'category_name'  => 'nocturne,aubade', // მძიმე ნიშნავს "OR" (ან ერთია, ან მეორე)
+        'posts_per_page' => -1, // -1 ნიშნავს გამოიტანოს ყველა
+        'post_status'    => 'publish'
+    );
+
+    $query = new WP_Query( $args );
+
+    if ( ! $query->have_posts() ) {
+        return '<p class="page__content">No posts found for 3Decade.</p>';
+    }
+
+    // ვიწყებთ HTML გრიდის გენერაციას
+    $output = '<div class="zk-post-grid">';
+
+    while ( $query->have_posts() ) {
+        $query->the_post();
+
+        // ვიღებთ პოსტის მონაცემებს
+        $title = get_the_title();
+        $link = get_permalink();
+        $path = wp_parse_url( $link, PHP_URL_PATH ); // მხოლოდ სუფთა მარშრუტი (SPA-სთვის)
+
+        // კატეგორიის სახელის ამოღება, რომ გრიდში ლამაზად გამოვაჩინოთ
+        $categories = get_the_category();
+        $cat_name = ! empty( $categories ) ? esc_html( $categories[0]->name ) : 'Post';
+
+        // Thumbnail (თუ აქვს)
+        $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
+        $bg_style = $img_url ? 'style="background-image: url(' . esc_url( $img_url ) . ');"' : '';
+
+        // ვქმნით თითოეულ ქარდს (Card)
+        $output .= '<a href="' . esc_url( $link ) . '" class="zk-grid-card" data-route="' . esc_attr( $path ) . '">';
+        $output .= '<div class="zk-card-image" ' . $bg_style . '></div>';
+        $output .= '<div class="zk-card-content">';
+        $output .= '<span class="zk-card-category">' . $cat_name . '</span>';
+        $output .= '<h3 class="zk-card-title">' . $title . '</h3>';
+        $output .= '</div>';
+        $output .= '</a>';
+    }
+
+    wp_reset_postdata();
+    $output .= '</div>';
+
+    return $output;
+}
+add_shortcode( '3decade_grid', 'zk_custom_post_grid' );

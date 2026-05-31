@@ -584,3 +584,71 @@ button {
 		scroll-behavior: auto !important;
 	}
 }
+
+
+/* ============================================================
+   CUSTOM POST GRID (3DECADE)
+   ============================================================ */
+.zk-post-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	gap: 24px;
+	margin-top: 2rem;
+}
+
+.zk-grid-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	border-radius: 16px;
+	overflow: hidden;
+	background: var(--glass-bg);
+	border: 1px solid var(--hairline);
+	text-decoration: none !important;
+	transition: transform 0.4s var(--ease), border-color 0.4s var(--ease);
+	aspect-ratio: 4 / 5; /* აძლევს ქარდებს ერთიან პროპორციას */
+}
+
+.zk-grid-card:hover {
+	transform: translateY(-8px);
+	border-color: rgba(255, 255, 255, 0.3);
+}
+
+.zk-card-image {
+	flex: 1;
+	background-size: cover;
+	background-position: center;
+	background-color: rgba(255,255,255,0.03); /* თუ სურათი არ აქვს */
+	transition: transform 0.6s var(--ease);
+}
+
+.zk-grid-card:hover .zk-card-image {
+	transform: scale(1.05);
+}
+
+.zk-card-content {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	padding: 24px;
+	background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+	z-index: 2;
+}
+
+.zk-card-category {
+	display: inline-block;
+	font-size: 0.7rem;
+	font-weight: 500;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	color: var(--text-dim);
+	margin-bottom: 8px;
+}
+
+.zk-card-title {
+	margin: 0 !important;
+	font-size: 1.4rem !important;
+	color: #fff !important;
+	line-height: 1.2 !important;
+}
