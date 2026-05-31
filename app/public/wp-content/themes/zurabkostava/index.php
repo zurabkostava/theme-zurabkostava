@@ -1,44 +1,52 @@
 <!DOCTYPE html>
-<html lang="ka">
+<html <?php language_attributes(); ?>>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- საიტის სახელი დინამიურად ტაბის სათაურისთვის -->
-    <title><?php bloginfo('name'); ?> - <?php bloginfo('description'); ?></title>
-
-    <!-- ვაკავშირებთ ჩვენს style.css ფაილს -->
-    <link rel="stylesheet" href="<?php echo get_stylesheet_uri(); ?>">
-
+    <!-- wp_head() უზრუნველყოფს title-ის და style.css-ის ჩატვირთვას -->
     <?php wp_head(); ?>
 </head>
-<body>
+<body <?php body_class(); ?>>
 
-<header class="custom-header">
-    <div class="header-container">
-        <!-- ლოგო -->
-        <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="site-logo">
-            <?php bloginfo( 'name' ); ?>
-        </a>
+<!-- ჰედერი და ნავიგაცია -->
+<header class="site-header">
+    <a href="<?php echo esc_url(home_url('/')); ?>" class="logo">
+        <?php bloginfo('name'); ?>
+    </a>
 
-        <!-- ნავიგაციის მენიუ -->
-        <nav class="site-navigation">
-            <?php
-            wp_nav_menu( array(
-                    'theme_location' => 'primary_menu', // ფუნქციებში დარეგისტრირებული სახელი
-                    'container'      => false, // ვორდპრესის ზედმეტი div-ების მოსაშორებლად
-                    'menu_class'     => 'nav-list', // ჩვენი ქასთომ css კლასი ul ტეგისთვის
-                    'fallback_cb'    => false // თუ მენიუ არაა შექმნილი, არაფერი გამოაჩინოს
-            ) );
-            ?>
-        </nav>
-    </div>
+    <nav class="main-nav">
+        <?php
+        wp_nav_menu(array(
+                'theme_location' => 'primary',
+                'container'      => false,
+                'menu_class'     => 'nav-links',
+                'fallback_cb'    => false
+        ));
+        ?>
+    </nav>
 </header>
 
-<!-- აქ მოგვიანებით კონტენტს ჩავსვამთ -->
+<!-- მთავარი კონტენტი (WordPress Loop) -->
 <main class="main-content">
-    <p>აქ იქნება შენი ვანილა კოდით აწყობილი საოცრებები!</p>
+    <?php
+    if ( have_posts() ) :
+        while ( have_posts() ) : the_post();
+            ?>
+            <article class="post-item">
+                <h2><?php the_title(); ?></h2>
+                <div class="content">
+                    <?php the_content(); ?>
+                </div>
+            </article>
+        <?php
+        endwhile;
+    else :
+        echo '<p>კონტენტი ჯერ არ დამატებულა.</p>';
+    endif;
+    ?>
 </main>
 
+<!-- აუცილებელი ფუტერი -->
 <?php wp_footer(); ?>
 </body>
 </html>

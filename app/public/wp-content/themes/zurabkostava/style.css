@@ -1,91 +1,59 @@
 /*
 Theme Name: Zurab Kostava
 Author: Zurab Kostava
-Description: My Custom WordPress Theme
+Description: Custom Vanilla Theme
 Version: 1.0
 */
 
-/* საბაზისო განულება */
-body, h1, h2, h3, p, margin, padding {
+/* --- CSS Reset --- */
+*, *::before, *::after {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
 body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
-    background-color: #0f0f0f; /* მუქი თემა */
+    background-color: #0f0f0f;
     color: #ffffff;
+    line-height: 1.6;
 }
 
-/* ჰედერის დიზაინი */
-.custom-header {
+/* ნავიგაციის სატესტო დიზაინი */
+.site-header {
     background-color: #1a1a1a;
-    border-bottom: 1px solid #333;
-    padding: 20px 0;
-    position: sticky; /* სქროლვისას რომ თავში დარჩეს */
-    top: 0;
-    z-index: 100;
-}
-
-.header-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+    padding: 20px 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid #333;
 }
 
-.site-logo {
-    font-size: 24px;
-    font-weight: 700;
-    color: #ffffff;
+.logo {
+    color: #fff;
     text-decoration: none;
-    letter-spacing: 1px;
-    transition: color 0.3s ease;
+    font-size: 24px;
+    font-weight: bold;
 }
 
-.site-logo:hover {
-    color: #4CAF50; /* ჰოვერზე მწვანე ფერი */
-}
-
-.site-tagline {
-    font-size: 14px;
-    color: #888888;
-    font-style: italic;
-}
-
-.main-content {
-    max-width: 1200px;
-    margin: 50px auto;
-    padding: 0 20px;
-    text-align: center;
-    color: #aaaaaa;
-}
-
-/* ნავიგაციის მენიუს დიზაინი */
-.site-navigation .nav-list {
+.nav-links {
     list-style: none;
     display: flex;
     gap: 30px;
-    margin: 0;
-    padding: 0;
 }
 
-.site-navigation .nav-list li a {
-    color: #ffffff;
+.nav-links a {
+    color: #aaa;
     text-decoration: none;
-    font-size: 16px;
-    font-weight: 500;
-    transition: color 0.3s ease;
+    transition: color 0.3s;
 }
 
-.site-navigation .nav-list li a:hover {
-    color: #4CAF50; /* ჰოვერზე მწვანე ფერი */
-}
-
-/* ვორდპრესის აქტიური გვერდის კლასი (Current Menu Item) */
-.site-navigation .nav-list li.current-menu-item a {
+.nav-links a:hover {
     color: #4CAF50;
+}
+
+.main-content {
+    padding: 60px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
