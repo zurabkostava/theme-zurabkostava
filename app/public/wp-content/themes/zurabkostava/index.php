@@ -141,7 +141,7 @@ $zk_view = ob_get_clean();
         var homeTpl   = document.getElementById('view-home');
         var announcer = document.getElementById('route-announcer');
         var navLinks  = [].slice.call(document.querySelectorAll('.nav-link[data-route], .dropdown-link[data-route]'));
-        var dropdowns = [].slice.call(nav.querySelectorAll('.has-dropdown'));
+        var dropdowns = [].slice.call(nav.querySelectorAll('.has-dropdown, .has-nested-dropdown'));
         var cache     = {};
 
         /* Header Scroll */
@@ -158,30 +158,41 @@ $zk_view = ob_get_clean();
             if (!open) {
                 dropdowns.forEach(function(d) {
                     d.classList.remove('open');
-                    var tr = d.querySelector('.dropdown-trigger');
-                    if (tr) tr.setAttribute('aria-expanded', 'false');
+                    var tr = d.children[0]; // ვიღებთ უშუალო შვილს
+                    if (tr && tr.classList.contains('dropdown-trigger')) tr.setAttribute('aria-expanded', 'false');
                 });
             }
         }
-
-        toggle.addEventListener('click', function () { setMenu(!body.classList.contains('nav-open')); });
+        oggle.addEventListener('click', function () { setMenu(!body.classList.contains('nav-open')); });
         document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setMenu(false); });
 
         dropdowns.forEach(function(dropdown) {
-            var trigger = dropdown.querySelector('.dropdown-trigger');
-            if (trigger) {
+            var trigger = dropdown.children[0];
+            if (trigger && trigger.classList.contains('dropdown-trigger')) {
                 trigger.addEventListener('click', function (e) {
-                    if (!mq.matches) return;
+                    if (!mq.matches) return; // Desktop-ზე CSS hover აკეთებს საქმეს
                     e.preventDefault();
+                    e.stopPropagation(); // ხელს უშლის მშობელი მენიუს დახურვას
+
                     var isOpen = dropdown.classList.contains('open');
-                    dropdowns.forEach(function(d) {
-                        d.classList.remove('open');
-                        var t = d.querySelector('.dropdown-trigger');
-                        if(t) t.setAttribute('aria-expanded', 'false');
-                    });
+
+                    // ვხურავთ მხოლოდ და-ძმა (Sibling) ჩაშლებს და არა მშობელს
+                    var siblings = dropdown.parentElement.children;
+                    for (var i = 0; i < siblings.length; i++) {
+                        var sib = siblings[i];
+                        if (sib !== dropdown && (sib.classList.contains('has-dropdown') || sib.classList.contains('has-nested-dropdown'))) {
+                            sib.classList.remove('open');
+                            var t = sib.children[0];
+                            if(t && t.classList.contains('dropdown-trigger')) t.setAttribute('aria-expanded', 'false');
+                        }
+                    }
+
                     if (!isOpen) {
                         dropdown.classList.add('open');
                         trigger.setAttribute('aria-expanded', 'true');
+                    } else {
+                        dropdown.classList.remove('open');
+                        trigger.setAttribute('aria-expanded', 'false');
                     }
                 });
             }
