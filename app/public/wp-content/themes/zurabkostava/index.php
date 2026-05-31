@@ -15,15 +15,22 @@
 
 <header class="custom-header">
     <div class="header-container">
-        <!-- ვორდპრესიდან მოგვაქვს მთავარი გვერდის ლინკი და საიტის სახელი -->
+        <!-- ლოგო -->
         <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="site-logo">
             <?php bloginfo( 'name' ); ?>
         </a>
 
-        <!-- ვორდპრესიდან მოგვაქვს საიტის აღწერა (Tagline) -->
-        <div class="site-tagline">
-            <?php bloginfo( 'description' ); ?>
-        </div>
+        <!-- ნავიგაციის მენიუ -->
+        <nav class="site-navigation">
+            <?php
+            wp_nav_menu( array(
+                    'theme_location' => 'primary_menu', // ფუნქციებში დარეგისტრირებული სახელი
+                    'container'      => false, // ვორდპრესის ზედმეტი div-ების მოსაშორებლად
+                    'menu_class'     => 'nav-list', // ჩვენი ქასთომ css კლასი ul ტეგისთვის
+                    'fallback_cb'    => false // თუ მენიუ არაა შექმნილი, არაფერი გამოაჩინოს
+            ) );
+            ?>
+        </nav>
     </div>
 </header>
 
