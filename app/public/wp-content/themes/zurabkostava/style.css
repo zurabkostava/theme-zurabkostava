@@ -659,6 +659,16 @@ button {
    ============================================================ */
 .has-nested-dropdown { position: relative; }
 
+/* The nested trigger is a .dropdown-link (display:block), so its caret
+   would wrap to a new line. Make it a flex row: label left, caret right. */
+.dropdown-link.dropdown-trigger {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	width: 100%;
+}
+
 /* ---- Desktop: fly out to the LEFT. The parent menu is right-aligned
    against the screen edge, so opening rightwards would run off-screen. ---- */
 @media (min-width: 901px) {

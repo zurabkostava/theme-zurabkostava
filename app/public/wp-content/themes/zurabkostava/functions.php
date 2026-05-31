@@ -26,7 +26,9 @@ add_filter( 'wp_resource_hints', 'zk_resource_hints', 10, 2 );
 
 function zk_assets() {
     wp_enqueue_style( 'zk-fonts', 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap', array(), null );
-    wp_enqueue_style( 'zk-style', get_stylesheet_uri(), array( 'zk-fonts' ), wp_get_theme()->get( 'Version' ) );
+    // filemtime() => the version changes whenever style.css changes, so the
+    // browser always fetches the latest CSS (no more stale-cache surprises).
+    wp_enqueue_style( 'zk-style', get_stylesheet_uri(), array( 'zk-fonts' ), filemtime( get_stylesheet_directory() . '/style.css' ) );
 }
 add_action( 'wp_enqueue_scripts', 'zk_assets' );
 
