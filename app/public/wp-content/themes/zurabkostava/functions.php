@@ -60,9 +60,14 @@ function zk_routes() {
  * SPA Menu Walker.
  * გარდაქმნის WP-ის სტანდარტულ მენიუს შენს Custom SPA HTML სტრუქტურად.
  */
+/**
+ * SPA Menu Walker - Supports Nested Dropdowns
+ */
 class ZK_SPA_Walker extends Walker_Nav_Menu {
     public function start_lvl( &$output, $depth = 0, $args = null ) {
-        $output .= '<ul class="dropdown-menu">';
+        // თუ მეორე დონეა (ან უფრო ღრმა), ვამატებთ nested-menu კლასს
+        $class = $depth >= 1 ? 'dropdown-menu nested-menu' : 'dropdown-menu';
+        $output .= '<ul class="' . esc_attr( $class ) . '">';
     }
 
     public function start_el( &$output, $item, $depth = 0, $args = null, $id = 0 ) {
@@ -73,6 +78,10 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
         if ( $depth === 0 ) {
             $li_classes[] = 'nav-item';
             if ( $has_children ) $li_classes[] = 'has-dropdown';
+        } else {
+            // მეორადი ჩაშლის კლასები
+            $li_classes[] = 'nested-item';
+            if ( $has_children ) $li_classes[] = 'has-nested-dropdown';
         }
 
         $class_names = join( ' ', array_filter( $li_classes ) );
@@ -89,15 +98,18 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
         $is_current = in_array( 'current-menu-item', $classes ) || in_array( 'current-page-item', $classes );
         if ( $is_current ) $link_class .= ' is-current';
 
-        // თუ Dropdown-ის მთავარი ღილაკია (მაგ: Visual ან Blogs)
-        if ( $has_children && $depth === 0 ) {
+        // ღილაკი ჩაშლისთვის
+        if ( $has_children ) {
             $link_class .= ' dropdown-trigger';
             $output .= '<button class="' . esc_attr( $link_class ) . '" type="button" aria-haspopup="true" aria-expanded="false">';
             $output .= esc_html( $item->title );
-            $output .= '<svg class="dropdown-caret" width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+            // მეორად ჩაშლას ოდნავ სხვა ისარი სჭირდება (მარჯვნივ მიმართული)
+            $caret_class = $depth >= 1 ? 'dropdown-caret nested-caret' : 'dropdown-caret';
+            $output .= '<svg class="' . esc_attr( $caret_class ) . '" width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
             $output .= '</button>';
         } else {
-            // ჩვეულებრივი გვერდები
+            // ჩვეულებრივი ლინკი
             $aria = $is_current ? ' aria-current="page"' : '';
             $output .= '<a class="' . esc_attr( $link_class ) . '" data-route="' . esc_attr( $path ) . '" href="' . esc_url( $url ) . '"' . $aria . '>';
             $output .= esc_html( $item->title );
