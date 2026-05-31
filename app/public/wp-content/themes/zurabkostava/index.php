@@ -1,16 +1,22 @@
 <!DOCTYPE html>
-<html <?php language_attributes(); ?>>
+<html lang="ka">
 <head>
-    <meta charset="<?php bloginfo( 'charset' ); ?>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zurab Kostava - Test</title>
-    <link rel="stylesheet" href="<?php echo get_stylesheet_uri(); ?>">
+
+    <!-- ვორდპრესის აუცილებელი ჰედერი -->
     <?php wp_head(); ?>
 </head>
-<body>
-<header class="test-header">
-    <h1>Zurab Kostava</h1>
-    <p>CI/CD ტესტირება წარმატებულია</p>
+<body style="margin: 0; padding: 0; font-family: sans-serif; background-color: #f4f4f4;">
+
+<header style="background-color: #1a1a1a; color: #ffffff; padding: 80px 20px; text-align: center;">
+    <h1 style="margin: 0; font-size: 3em;">Zurab Kostava</h1>
+    <p style="font-size: 1.2em; color: #4CAF50;">WordPress თემა წარმატებით ჩაიტვირთა!</p>
 </header>
+
+<!-- ვორდპრესის აუცილებელი ფუტერი -->
 <?php wp_footer(); ?>
+
 </body>
 </html>
