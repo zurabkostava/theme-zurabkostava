@@ -46,7 +46,7 @@
 			<!-- Primary navigation -->
 			<nav class="primary-nav" id="primaryNav" aria-label="Primary">
 				<ul class="nav-list">
-					<li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+					<li class="nav-item"><a class="nav-link" href="<?php echo site_url('/about'); ?>">About</a></li>
 					<li class="nav-item"><a class="nav-link" href="#projects">Projects</a></li>
 					<li class="nav-item"><a class="nav-link" href="#music">Music</a></li>
 					<li class="nav-item"><a class="nav-link" href="#books">Books</a></li>
