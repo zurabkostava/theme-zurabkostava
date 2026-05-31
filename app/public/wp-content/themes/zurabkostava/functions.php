@@ -113,7 +113,7 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
 function zk_custom_post_grid() {
     // მოგვაქვს პოსტები ამ ორი კატეგორიიდან
     $args = array(
-        'category_name'  => 'nocturne,aubade', // მძიმე ნიშნავს "OR" (ან ერთია, ან მეორე)
+        'category_name'  => 'nocturnes,aubades', // მძიმე ნიშნავს "OR" (ან ერთია, ან მეორე)
         'posts_per_page' => -1, // -1 ნიშნავს გამოიტანოს ყველა
         'post_status'    => 'publish'
     );
