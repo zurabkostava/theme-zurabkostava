@@ -12,7 +12,7 @@
 
 <header style="background-color: #1a1a1a; color: #ffffff; padding: 80px 20px; text-align: center;">
     <h1 style="margin: 0; font-size: 3em;">Zurab Kostava</h1>
-    <p style="font-size: 1.2em; color: #4CAF50;">WordPress თემა წარმატებით ჩაიტვირთა!</p>
+    <p style="font-size: 1.2em; color: #4CAF50;">საიტი დამუშავების პროცესშია</p>
 </header>
 
 <!-- ვორდპრესის აუცილებელი ფუტერი -->
