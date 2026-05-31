@@ -652,3 +652,39 @@ button {
 	color: #fff !important;
 	line-height: 1.2 !important;
 }
+
+/* ============================================================
+   NESTED DROPDOWN (2nd Level)
+   ============================================================ */
+.has-nested-dropdown { position: relative; }
+
+@media (min-width: 901px) {
+	.nested-menu {
+		top: -12px;
+		left: 100%;
+		margin-left: 4px;
+		transform: translateX(-12px);
+	}
+	.has-nested-dropdown:hover > .nested-menu,
+	.has-nested-dropdown:focus-within > .nested-menu {
+		opacity: 1;
+		visibility: visible;
+		transform: translateX(0);
+	}
+	/* ისრის მიმართულება Desktop-ზე */
+	.nested-caret { transform: rotate(-90deg); }
+	.has-nested-dropdown:hover > .dropdown-trigger .nested-caret,
+	.has-nested-dropdown:focus-within > .dropdown-trigger .nested-caret,
+	.has-nested-dropdown.open > .dropdown-trigger .nested-caret {
+		transform: rotate(0deg);
+	}
+}
+
+@media (max-width: 900px) {
+	.nested-menu {
+		margin-left: 14px;
+		border-left: 1px solid var(--hairline-strong);
+		padding-left: 14px;
+	}
+	.nested-caret { transform: none; }
+}
