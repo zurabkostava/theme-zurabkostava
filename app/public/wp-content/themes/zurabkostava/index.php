@@ -163,7 +163,7 @@ $zk_view = ob_get_clean();
                 });
             }
         }
-        oggle.addEventListener('click', function () { setMenu(!body.classList.contains('nav-open')); });
+        toggle.addEventListener('click', function () { setMenu(!body.classList.contains('nav-open')); });
         document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setMenu(false); });
 
         dropdowns.forEach(function(dropdown) {

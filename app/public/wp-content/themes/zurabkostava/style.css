@@ -222,9 +222,9 @@ button {
 	opacity: 0.7;
 	transition: transform 0.4s var(--ease), opacity 0.3s var(--ease);
 }
-.has-dropdown:hover .dropdown-caret,
-.has-dropdown:focus-within .dropdown-caret,
-.has-dropdown.open .dropdown-caret {
+.has-dropdown:hover > .dropdown-trigger .dropdown-caret,
+.has-dropdown:focus-within > .dropdown-trigger .dropdown-caret,
+.has-dropdown.open > .dropdown-trigger .dropdown-caret {
 	transform: rotate(180deg);
 	opacity: 1;
 }
@@ -261,9 +261,10 @@ button {
 	height: 14px;
 }
 
-/* The gorgeous reveal: fade-in + slide-up */
-.has-dropdown:hover .dropdown-menu,
-.has-dropdown:focus-within .dropdown-menu {
+/* The gorgeous reveal: fade-in + slide-up — DIRECT child only, so a nested
+   submenu doesn't open just because its parent menu is being hovered */
+.has-dropdown:hover > .dropdown-menu,
+.has-dropdown:focus-within > .dropdown-menu {
 	opacity: 1;
 	visibility: visible;
 	transform: translateY(0);
@@ -554,7 +555,7 @@ button {
 		transition: max-height 0.45s var(--ease);
 	}
 	.dropdown-menu::before { display: none; }
-	.has-dropdown.open .dropdown-menu { max-height: 280px; }
+	.has-dropdown.open > .dropdown-menu { max-height: 600px; }
 
 	.dropdown-link {
 		padding: 9px 0;
@@ -654,16 +655,28 @@ button {
 }
 
 /* ============================================================
-   NESTED DROPDOWN (2nd Level)
+   NESTED DROPDOWN (2nd level — the "secondary" submenu)
    ============================================================ */
 .has-nested-dropdown { position: relative; }
 
+/* ---- Desktop: fly out to the LEFT. The parent menu is right-aligned
+   against the screen edge, so opening rightwards would run off-screen. ---- */
 @media (min-width: 901px) {
 	.nested-menu {
-		top: -12px;
-		left: 100%;
-		margin-left: 4px;
-		transform: translateX(-12px);
+		top: -11px;          /* line the submenu up with its parent row */
+		right: 100%;         /* anchor to the LEFT of the submenu item */
+		left: auto;          /* cancel the inherited .dropdown-menu right: 0 */
+		margin-right: 6px;
+		transform: translateX(12px);   /* hidden offset: slides in from the right */
+	}
+	/* Bridge the horizontal gap so hover survives crossing into the submenu */
+	.nested-menu::before {
+		top: 0;
+		bottom: 0;
+		left: auto;
+		right: -8px;
+		width: 12px;
+		height: auto;
 	}
 	.has-nested-dropdown:hover > .nested-menu,
 	.has-nested-dropdown:focus-within > .nested-menu {
@@ -671,15 +684,11 @@ button {
 		visibility: visible;
 		transform: translateX(0);
 	}
-	/* ისრის მიმართულება Desktop-ზე */
-	.nested-caret { transform: rotate(-90deg); }
-	.has-nested-dropdown:hover > .dropdown-trigger .nested-caret,
-	.has-nested-dropdown:focus-within > .dropdown-trigger .nested-caret,
-	.has-nested-dropdown.open > .dropdown-trigger .nested-caret {
-		transform: rotate(0deg);
-	}
+	/* Caret points left, toward the submenu it opens */
+	.nested-caret { transform: rotate(90deg); }
 }
 
+/* ---- Mobile: indented inline accordion ---- */
 @media (max-width: 900px) {
 	.nested-menu {
 		margin-left: 14px;
@@ -687,4 +696,6 @@ button {
 		padding-left: 14px;
 	}
 	.nested-caret { transform: none; }
+	.has-nested-dropdown.open > .dropdown-trigger .nested-caret { transform: rotate(180deg); }
+	.has-nested-dropdown.open > .nested-menu { max-height: 400px; }
 }
