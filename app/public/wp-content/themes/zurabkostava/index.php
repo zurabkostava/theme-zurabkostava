@@ -61,6 +61,13 @@ $zk_view = ob_get_clean();
     <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <?php wp_head(); ?>
+    <script>
+        /* Hide the native scrollbar before first paint (desktop pointers only) so
+           there's no layout shift; touch / no-JS keep the native bar. */
+        if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+            document.documentElement.classList.add('custom-scroll');
+        }
+    </script>
 </head>
 
 <body <?php body_class(); ?>>
@@ -331,6 +338,91 @@ $zk_view = ob_get_clean();
             title: document.title
         };
         updateChrome(viewEl.getAttribute('data-route') || toRoute(location.pathname));
+    })();
+</script>
+
+<script>
+    /* ============================================================
+       Custom floating scrollbar — dynamic thumb, auto-hide, drag.
+       Desktop / fine-pointer only; touch keeps native scrolling.
+       ============================================================ */
+    (function () {
+        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+        var docEl = document.documentElement;
+        docEl.classList.add('custom-scroll');         // idempotent (also set in <head>)
+
+        var bar = document.createElement('div');
+        bar.className = 'scrollbar';
+        bar.setAttribute('aria-hidden', 'true');
+        var thumb = document.createElement('div');
+        thumb.className = 'scrollbar__thumb';
+        bar.appendChild(thumb);
+        document.body.appendChild(bar);
+
+        var MIN = 40, hideTimer = null, dragging = false, rafId = 0;
+
+        function maxScroll() { return docEl.scrollHeight - window.innerHeight; }
+
+        function update() {
+            var ms = maxScroll();
+            if (ms <= 1) { bar.classList.add('is-empty'); return; }   // nothing to scroll
+            bar.classList.remove('is-empty');
+            var trackH = bar.clientHeight;
+            var thumbH = Math.max(MIN, (window.innerHeight / docEl.scrollHeight) * trackH);
+            var p = Math.min(1, Math.max(0, (window.scrollY || docEl.scrollTop) / ms));
+            thumb.style.height = thumbH + 'px';
+            thumb.style.transform = 'translateY(' + (p * (trackH - thumbH)) + 'px)';
+        }
+
+        function reveal() {
+            bar.classList.add('is-active');
+            if (hideTimer) clearTimeout(hideTimer);
+            if (!dragging) hideTimer = setTimeout(function () { bar.classList.remove('is-active'); }, 1200);
+        }
+
+        function onScroll() {                          // rAF-throttled
+            if (rafId) return;
+            rafId = requestAnimationFrame(function () { rafId = 0; update(); reveal(); });
+        }
+
+        /* Drag the thumb to scroll */
+        thumb.addEventListener('pointerdown', function (e) {
+            e.preventDefault();
+            dragging = true;
+            bar.classList.add('is-active', 'is-dragging');
+            try { thumb.setPointerCapture(e.pointerId); } catch (_) {}
+            var startY = e.clientY;
+            var startScroll = window.scrollY || docEl.scrollTop;
+            var thumbH = parseFloat(thumb.style.height) || MIN;
+            var ratio = maxScroll() / (bar.clientHeight - thumbH);
+            var prevBehavior = docEl.style.scrollBehavior;
+            docEl.style.scrollBehavior = 'auto';       // no smooth-scroll lag while dragging
+
+            function move(ev) { window.scrollTo(0, startScroll + (ev.clientY - startY) * ratio); }
+            function up() {
+                dragging = false;
+                bar.classList.remove('is-dragging');
+                docEl.style.scrollBehavior = prevBehavior;
+                document.removeEventListener('pointermove', move);
+                document.removeEventListener('pointerup', up);
+                reveal();
+            }
+            document.addEventListener('pointermove', move);
+            document.addEventListener('pointerup', up);
+        });
+
+        /* Reveal when the pointer approaches the right edge */
+        document.addEventListener('pointermove', function (e) {
+            if (!dragging && e.clientX >= window.innerWidth - 26) reveal();
+        }, { passive: true });
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', update);
+        /* Recompute when content height changes (SPA #view swaps, images, etc.) */
+        if ('ResizeObserver' in window) { new ResizeObserver(update).observe(document.body); }
+
+        update();
     })();
 </script>
 

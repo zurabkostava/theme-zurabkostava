@@ -709,3 +709,49 @@ button {
 	.has-nested-dropdown.open > .dropdown-trigger .nested-caret { transform: rotate(180deg); }
 	.has-nested-dropdown.open > .nested-menu { max-height: 400px; }
 }
+
+/* ============================================================
+   CUSTOM FLOATING SCROLLBAR  (desktop / fine-pointer only)
+   ============================================================ */
+/* The native bar is hidden only when JS opts in (.custom-scroll is set on
+   <html> before first paint). Touch devices and no-JS keep their native bar. */
+.custom-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+.custom-scroll::-webkit-scrollbar { display: none; }
+
+.scrollbar {
+	position: fixed;
+	top: calc(var(--header-h) + 16px);
+	right: 7px;
+	bottom: 16px;
+	width: 10px;
+	z-index: 1200;
+	pointer-events: none;          /* the track itself never blocks content */
+	opacity: 0;
+	transition: opacity 0.45s var(--ease);
+}
+.scrollbar.is-active { opacity: 1; }
+.scrollbar.is-empty  { opacity: 0 !important; }   /* page doesn't overflow → no bar */
+
+.scrollbar__thumb {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 5px;
+	height: 40px;
+	border-radius: 99px;
+	background: rgba(255, 255, 255, 0.30);
+	cursor: grab;
+	pointer-events: none;          /* grabbable only while the bar is visible */
+	transition: width 0.25s var(--ease), background-color 0.25s var(--ease);
+	will-change: transform;
+}
+.scrollbar.is-active .scrollbar__thumb { pointer-events: auto; }
+.scrollbar__thumb:hover {
+	width: 9px;
+	background: rgba(255, 255, 255, 0.55);
+}
+.scrollbar.is-dragging .scrollbar__thumb {
+	width: 9px;
+	background: rgba(255, 255, 255, 0.70);
+	cursor: grabbing;
+}
