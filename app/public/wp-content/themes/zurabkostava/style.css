@@ -4,3 +4,15 @@ Author: Zurab Kostava
 Description: My Custom WordPress Theme
 Version: 1.0
 */
+
+.test-header {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    padding: 60px 20px;
+    text-align: center;
+    font-family: sans-serif;
+}
+
+.test-header h1 {
+    margin: 0 0 10px 0;
+}
