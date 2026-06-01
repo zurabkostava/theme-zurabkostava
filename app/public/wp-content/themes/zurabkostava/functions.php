@@ -1,119 +1,236 @@
 <?php
 /**
  * functions.php — Zurab Kostava theme
- *
- * Loads the stylesheet + font, and provides the single source of truth for
- * the SPA route map (used by the nav, the server-side render, and the
- * client-side router alike).
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // No direct access.
+    exit; // No direct access.
 }
 
-/**
- * Theme supports.
- */
 function zk_setup() {
-	add_theme_support( 'title-tag' );
-	add_theme_support( 'post-thumbnails' );
-	add_theme_support( 'html5', array( 'style', 'script', 'navigation-widgets' ) );
-	add_theme_support( 'automatic-feed-links' );
+    add_theme_support( 'title-tag' );
+    add_theme_support( 'post-thumbnails' );
+    add_theme_support( 'html5', array( 'style', 'script', 'navigation-widgets' ) );
+    add_theme_support( 'automatic-feed-links' );
 }
 add_action( 'after_setup_theme', 'zk_setup' );
 
-/**
- * Faster font loading.
- */
 function zk_resource_hints( $hints, $relation_type ) {
-	if ( 'preconnect' === $relation_type ) {
-		$hints[] = 'https://fonts.googleapis.com';
-		$hints[] = array(
-			'href'        => 'https://fonts.gstatic.com',
-			'crossorigin' => 'anonymous',
-		);
-	}
-	return $hints;
+    if ( 'preconnect' === $relation_type ) {
+        $hints[] = 'https://fonts.googleapis.com';
+        $hints[] = array( 'href' => 'https://fonts.gstatic.com', 'crossorigin' => 'anonymous' );
+    }
+    return $hints;
 }
 add_filter( 'wp_resource_hints', 'zk_resource_hints', 10, 2 );
 
-/**
- * Enqueue styles.
- */
 function zk_assets() {
-	$theme = wp_get_theme();
+    wp_enqueue_style( 'zk-fonts', 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap', array(), null );
 
-	wp_enqueue_style(
-		'zk-fonts',
-		'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
-		array(),
-		null
-	);
+    // CSS-ის მიბმა
+    wp_enqueue_style( 'zk-style', get_stylesheet_uri(), array( 'zk-fonts' ), filemtime( get_stylesheet_directory() . '/style.css' ) );
 
-	wp_enqueue_style(
-		'zk-style',
-		get_stylesheet_uri(),
-		array( 'zk-fonts' ),
-		$theme->get( 'Version' )
-	);
+    // ახალი app.js ფაილის მიბმა სუფთად
+    wp_enqueue_script( 'zk-app', get_stylesheet_directory_uri() . '/app.js', array(), filemtime( get_stylesheet_directory() . '/app.js' ), true );
+
+    // აქ ვაწვდით app.js-ს ვორდპრესის დინამიურ ლინკებს (ამის წყალობით index.php-დან window.ZK სკრიპტის წაშლაც შეგვიძლია)
+    wp_localize_script( 'zk-app', 'ZK', array(
+        'home' => home_url( '/' ),
+        'site' => get_bloginfo( 'name' ),
+    ) );
 }
 add_action( 'wp_enqueue_scripts', 'zk_assets' );
-
-/**
- * SPA route map — the single source of truth.
- *
- * route  => the clean URL path (also the page's permalink path)
- * slug   => the WordPress Page slug to pull content from (null = the hero)
- * label  => nav text / <title>
- * eyebrow=> the small kicker shown above the page title
- */
-function zk_routes() {
-	return array(
-		'/'            => array( 'slug' => null,         'label' => 'Home',        'eyebrow' => '' ),
-		'/about'       => array( 'slug' => 'about',       'label' => 'About',       'eyebrow' => '01 — About' ),
-		'/projects'    => array( 'slug' => 'projects',    'label' => 'Projects',    'eyebrow' => '02 — Projects' ),
-		'/music'       => array( 'slug' => 'music',       'label' => 'Music',       'eyebrow' => '03 — Music' ),
-		'/books'       => array( 'slug' => 'books',       'label' => 'Books',       'eyebrow' => '04 — Books' ),
-		'/gallery'     => array( 'slug' => 'gallery',     'label' => 'Gallery',     'eyebrow' => '05 — Visual · Gallery' ),
-		'/photography' => array( 'slug' => 'photography', 'label' => 'Photography', 'eyebrow' => '06 — Visual · Photography' ),
-		'/video'       => array( 'slug' => 'video',       'label' => 'Video',       'eyebrow' => '07 — Visual · Video' ),
-	);
-}
-
-/**
- * Canonical URL for a route. Uses the real Page permalink when the Page
- * exists, so direct links never trigger a trailing-slash redirect.
- */
-function zk_route_url( $route, $slug = null ) {
-	if ( $slug ) {
-		$page = get_page_by_path( $slug );
-		if ( $page && 'publish' === $page->post_status ) {
-			return get_permalink( $page );
-		}
-	}
-	return home_url( '/' === $route ? '/' : $route );
-}
-
-/**
- * Render a single nav link with the correct href + active state.
- */
-function zk_nav_link( $route, $label, $current, $class = 'nav-link' ) {
-	$routes = zk_routes();
-	$slug   = isset( $routes[ $route ]['slug'] ) ? $routes[ $route ]['slug'] : null;
-	$is_cur = ( $route === $current );
-
-	return sprintf(
-		'<a class="%1$s%2$s" data-route="%3$s" href="%4$s"%5$s>%6$s</a>',
-		esc_attr( $class ),
-		$is_cur ? ' is-current' : '',
-		esc_attr( $route ),
-		esc_url( zk_route_url( $route, $slug ) ),
-		$is_cur ? ' aria-current="page"' : '',
-		esc_html( $label )
-	);
-}
 
 function zk_register_menus() {
     register_nav_menu('primary-menu', 'Primary Header Menu');
 }
 add_action('init', 'zk_register_menus');
+
+/**
+ * SPA route map — DYNAMIC VERSION.
+ * იღებს WordPress-ში შექმნილ ყველა გვერდს ავტომატურად.
+ */
+function zk_routes() {
+    $routes = array(
+        '/' => array( 'slug' => null, 'label' => 'Home', 'eyebrow' => '' ),
+    );
+
+    $pages = get_pages( array( 'post_status' => 'publish' ) );
+    foreach ( $pages as $page ) {
+        $path = '/' . get_page_uri( $page );
+        $routes[ $path ] = array(
+            'slug'    => $page->post_name,
+            'label'   => $page->post_title,
+            'eyebrow' => get_post_meta( $page->ID, 'zk_eyebrow', true ) ?: 'Z.K — ' . $page->post_title,
+        );
+    }
+    return $routes;
+}
+
+/**
+ * SPA Menu Walker.
+ * გარდაქმნის WP-ის სტანდარტულ მენიუს შენს Custom SPA HTML სტრუქტურად.
+ */
+/**
+ * SPA Menu Walker - Supports Nested Dropdowns
+ */
+class ZK_SPA_Walker extends Walker_Nav_Menu {
+    public function start_lvl( &$output, $depth = 0, $args = null ) {
+        // თუ მეორე დონეა (ან უფრო ღრმა), ვამატებთ nested-menu კლასს
+        $class = $depth >= 1 ? 'dropdown-menu nested-menu' : 'dropdown-menu';
+        $output .= '<ul class="' . esc_attr( $class ) . '">';
+    }
+
+    public function start_el( &$output, $item, $depth = 0, $args = null, $id = 0 ) {
+        $classes = empty( $item->classes ) ? array() : (array) $item->classes;
+        $has_children = in_array( 'menu-item-has-children', $classes );
+
+        $li_classes = array();
+        if ( $depth === 0 ) {
+            $li_classes[] = 'nav-item';
+            if ( $has_children ) $li_classes[] = 'has-dropdown';
+        } else {
+            // მეორადი ჩაშლის კლასები
+            $li_classes[] = 'nested-item';
+            if ( $has_children ) $li_classes[] = 'has-nested-dropdown';
+        }
+
+        $class_names = join( ' ', array_filter( $li_classes ) );
+        $class_names = $class_names ? ' class="' . esc_attr( $class_names ) . '"' : '';
+
+        $output .= '<li' . $class_names . '>';
+
+        $url = ! empty( $item->url ) ? $item->url : '';
+        $parsed = wp_parse_url( $url );
+        $path = isset( $parsed['path'] ) ? rtrim( $parsed['path'], '/' ) : '/';
+        if ( empty( $path ) ) $path = '/';
+
+        $link_class = ( $depth === 0 ) ? 'nav-link' : 'dropdown-link';
+        $is_current = in_array( 'current-menu-item', $classes ) || in_array( 'current-page-item', $classes );
+        if ( $is_current ) $link_class .= ' is-current';
+
+        // ღილაკი ჩაშლისთვის
+        if ( $has_children ) {
+            $link_class .= ' dropdown-trigger';
+            $output .= '<button class="' . esc_attr( $link_class ) . '" type="button" aria-haspopup="true" aria-expanded="false">';
+            $output .= esc_html( $item->title );
+
+            // მეორად ჩაშლას ოდნავ სხვა ისარი სჭირდება (მარჯვნივ მიმართული)
+            $caret_class = $depth >= 1 ? 'dropdown-caret nested-caret' : 'dropdown-caret';
+            $output .= '<svg class="' . esc_attr( $caret_class ) . '" width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+            $output .= '</button>';
+        } else {
+            // ჩვეულებრივი ლინკი
+            $aria = $is_current ? ' aria-current="page"' : '';
+            $output .= '<a class="' . esc_attr( $link_class ) . '" data-route="' . esc_attr( $path ) . '" href="' . esc_url( $url ) . '"' . $aria . '>';
+            $output .= esc_html( $item->title );
+            $output .= '</a>';
+        }
+    }
+}
+
+/**
+ * Smart Custom Grid for Posts (Updated with Date)
+ * Usage: [custom_grid category="aubades"] or [custom_grid category="nocturnes,aubades"]
+ */
+function zk_custom_post_grid( $atts ) {
+    $atts = shortcode_atts( array(
+        'category' => '',
+    ), $atts, 'custom_grid' );
+
+    $args = array(
+        'posts_per_page' => -1,
+        'post_status'    => 'publish'
+    );
+
+    if ( ! empty( $atts['category'] ) ) {
+        $args['category_name'] = sanitize_text_field( $atts['category'] );
+    }
+
+    $query = new WP_Query( $args );
+
+    if ( ! $query->have_posts() ) {
+        return '<p class="page__content">No posts found in this category.</p>';
+    }
+
+    $output = '<div class="zk-post-grid">';
+
+    while ( $query->have_posts() ) {
+        $query->the_post();
+
+        $title = get_the_title();
+        $link = get_permalink();
+        $path = wp_parse_url( $link, PHP_URL_PATH );
+
+        $categories = get_the_category();
+        $cat_name = ! empty( $categories ) ? esc_html( $categories[0]->name ) : 'Post';
+
+        // ვიღებთ თარიღს ლამაზ ფორმატში (მაგ: Oct 24, 2026)
+        $date = get_the_date( 'M j, Y' );
+
+        $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
+        $bg_style = $img_url ? 'style="background-image: url(' . esc_url( $img_url ) . ');"' : '';
+
+        $output .= '<a href="' . esc_url( $link ) . '" class="zk-grid-card" data-route="' . esc_attr( $path ) . '">';
+        $output .= '<div class="zk-card-image" ' . $bg_style . '></div>';
+        $output .= '<div class="zk-card-content">';
+
+        // ახალი Meta ბლოკი (კატეგორია + წერტილი + თარიღი)
+        $output .= '<div class="zk-card-meta">';
+        $output .= '<span class="zk-card-category">' . $cat_name . '</span>';
+        $output .= '<span class="zk-card-meta-separator"></span>';
+        $output .= '<span class="zk-card-date">' . esc_html( $date ) . '</span>';
+        $output .= '</div>';
+
+        $output .= '<h3 class="zk-card-title">' . $title . '</h3>';
+        $output .= '</div>';
+        $output .= '</a>';
+    }
+
+    wp_reset_postdata();
+    $output .= '</div>';
+
+    return $output;
+}
+add_shortcode( 'custom_grid', 'zk_custom_post_grid' );
+
+
+/* ============================================================
+   WP HEAD & FOOTER CLEANUP (მაქსიმალური მინიმალიზმი)
+   ============================================================ */
+function zk_clean_wp_head() {
+    // 1. ემოჯების ამოშლა
+    remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+    remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
+    remove_action( 'wp_print_styles', 'print_emoji_styles' );
+    remove_action( 'admin_print_styles', 'print_emoji_styles' );
+    remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
+    remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
+    remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
+
+    // 2. RSS Feeds-ის ამოშლა
+    remove_action( 'wp_head', 'feed_links_extra', 3 );
+    remove_action( 'wp_head', 'feed_links', 2 );
+
+    // 3. oEmbed და REST API ლინკების ამოშლა (თუ ვინმე არ აემბედებს შენს საიტს)
+    remove_action( 'wp_head', 'wp_oembed_add_discovery_links' );
+    remove_action( 'wp_head', 'wp_oembed_add_host_js' );
+    remove_action( 'wp_head', 'rest_output_link_wp_head', 10 );
+
+    // 4. Shortlink-ისა და WP Generator-ის (ვერსიის) ამოშლა
+    remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
+    remove_action( 'wp_head', 'wp_generator' );
+    // 6. Global Styles-ის და SVG ფილტრების სრული განადგურება (ახალი WP ვერსიებისთვის)
+    remove_action( 'wp_enqueue_scripts', 'wp_enqueue_global_styles' );
+    remove_action( 'wp_body_open', 'wp_global_styles_render_svg_filters' );
+}
+add_action( 'init', 'zk_clean_wp_head' );
+
+// 5. Gutenberg-ის სტილების, Global Styles-ის და Classic Theme CSS-ის ამოშლა
+function zk_remove_wp_block_library_css() {
+    wp_dequeue_style( 'wp-block-library' );
+    wp_dequeue_style( 'wp-block-library-theme' );
+    wp_dequeue_style( 'global-styles' );
+    wp_dequeue_style( 'classic-theme-styles' );
+}
+add_action( 'wp_enqueue_scripts', 'zk_remove_wp_block_library_css', 100 );
