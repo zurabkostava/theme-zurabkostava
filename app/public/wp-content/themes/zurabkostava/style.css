@@ -657,53 +657,13 @@ button {
 	text-decoration: none !important;
 	aspect-ratio: 4 / 5;
 
-	/* პრემიუმ ტრანზიცია */
-	transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-	box-shadow 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-	border-color 0.8s ease;
-
-	/* ჩარჩოს სინათლისთვის დამატებითი Layer */
-	isolation: isolate;
 }
 
-
-/* "გამჭვირვალე" სინათლის ეფექტი, რომელიც კიდეებზე ჩნდება */
-.zk-grid-card::before {
-	content: "";
-	position: absolute;
-	inset: 0;
-	border-radius: 16px;
-	padding: 1px; /* ჩარჩოს სისქე */
-	background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
-	-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-	-webkit-mask-composite: xor;
-	mask-composite: exclude;
-	opacity: 0;
-	transition: opacity 0.6s ease;
-}
-
-.zk-grid-card:hover {
-	/* 3D ოდნავი დახრა */
-	transform: translateY(-8px) rotateX(2deg) rotateY(2deg);
-	border-color: rgba(255, 255, 255, 0.2);
-	/* სინათლის აურა */
-	box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5),
-	0 0 0 1px rgba(255,255,255,0.1);
-}
-
-.zk-grid-card:hover::before {
-	opacity: 1;
-}
 .zk-card-image {
 	flex: 1;
 	background-size: cover;
 	background-position: center;
 	background-color: rgba(255,255,255,0.03);
-	transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.zk-grid-card:hover .zk-card-image {
-	transform: scale(1.08);
 }
 
 .zk-card-content {
