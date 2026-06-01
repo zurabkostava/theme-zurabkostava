@@ -206,6 +206,9 @@ function zk_clean_wp_head() {
     // 4. Shortlink-ისა და WP Generator-ის (ვერსიის) ამოშლა
     remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
     remove_action( 'wp_head', 'wp_generator' );
+    // 6. Global Styles-ის და SVG ფილტრების სრული განადგურება (ახალი WP ვერსიებისთვის)
+    remove_action( 'wp_enqueue_scripts', 'wp_enqueue_global_styles' );
+    remove_action( 'wp_body_open', 'wp_global_styles_render_svg_filters' );
 }
 add_action( 'init', 'zk_clean_wp_head' );
 
