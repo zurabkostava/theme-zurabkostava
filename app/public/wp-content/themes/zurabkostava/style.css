@@ -670,11 +670,22 @@ button {
 	bottom: 0;
 	left: 0;
 	width: 100%;
-	/* ზემოდან მეტი სივრცე მივეცით გრადიენტს, რომ რბილად შემოვიდეს */
-	padding: 40px 24px 24px;
-	/* უფრო ძლიერი და მაღალი გრადიენტი კონტრასტისთვის */
-	background: linear-gradient(to top, rgba(10, 10, 12, 0.98) 0%, rgba(10, 10, 12, 0.75) 45%, rgba(10, 10, 12, 0) 100%);
+	/* ოდნავ გავზარდეთ ზედა სივრცე, რომ ანიმაცია რბილად შემოვიდეს */
+	padding: 60px 24px 24px;
+
+	/* 1. უფრო გამჭვირვალე შავი გრადიენტი, რომ ფერებმა გამოანათოს */
+	background: linear-gradient(to top, rgba(10, 10, 12, 0.85) 0%, rgba(10, 10, 12, 0.3) 65%, transparent 100%);
+
+	/* 2. ფერების არევა და მინის ეფექტი (ეს აძლევს ზუსტად ფოტოს ელფერს) */
+	-webkit-backdrop-filter: blur(16px) saturate(180%);
+	backdrop-filter: blur(16px) saturate(180%);
+
+	/* 3. რბილი გადასვლა: ბლარი უხეშად რომ არ გაწყდეს ფოტოს შუაში */
+	-webkit-mask-image: linear-gradient(to top, black 0%, black 60%, transparent 100%);
+	mask-image: linear-gradient(to top, black 0%, black 60%, transparent 100%);
+
 	z-index: 2;
+	transition: padding-bottom 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* კატეგორიის და თარიღის საერთო კონტეინერი */
