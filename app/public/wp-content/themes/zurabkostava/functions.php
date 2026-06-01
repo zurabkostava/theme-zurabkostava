@@ -179,3 +179,41 @@ function zk_custom_post_grid( $atts ) {
 }
 // შორთკოდს დავარქვით უნივერსალური სახელი
 add_shortcode( 'custom_grid', 'zk_custom_post_grid' );
+
+
+/* ============================================================
+   WP HEAD & FOOTER CLEANUP (მაქსიმალური მინიმალიზმი)
+   ============================================================ */
+function zk_clean_wp_head() {
+    // 1. ემოჯების ამოშლა
+    remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+    remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
+    remove_action( 'wp_print_styles', 'print_emoji_styles' );
+    remove_action( 'admin_print_styles', 'print_emoji_styles' );
+    remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
+    remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
+    remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
+
+    // 2. RSS Feeds-ის ამოშლა
+    remove_action( 'wp_head', 'feed_links_extra', 3 );
+    remove_action( 'wp_head', 'feed_links', 2 );
+
+    // 3. oEmbed და REST API ლინკების ამოშლა (თუ ვინმე არ აემბედებს შენს საიტს)
+    remove_action( 'wp_head', 'wp_oembed_add_discovery_links' );
+    remove_action( 'wp_head', 'wp_oembed_add_host_js' );
+    remove_action( 'wp_head', 'rest_output_link_wp_head', 10 );
+
+    // 4. Shortlink-ისა და WP Generator-ის (ვერსიის) ამოშლა
+    remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
+    remove_action( 'wp_head', 'wp_generator' );
+}
+add_action( 'init', 'zk_clean_wp_head' );
+
+// 5. Gutenberg-ის სტილების, Global Styles-ის და Classic Theme CSS-ის ამოშლა
+function zk_remove_wp_block_library_css() {
+    wp_dequeue_style( 'wp-block-library' );
+    wp_dequeue_style( 'wp-block-library-theme' );
+    wp_dequeue_style( 'global-styles' );
+    wp_dequeue_style( 'classic-theme-styles' );
+}
+add_action( 'wp_enqueue_scripts', 'zk_remove_wp_block_library_css', 100 );
