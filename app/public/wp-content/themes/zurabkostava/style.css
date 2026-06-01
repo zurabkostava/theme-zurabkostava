@@ -646,6 +646,25 @@ button {
 	}
 }
 
+.zk-grid-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	border-radius: 16px;
+	overflow: hidden;
+	background: var(--glass-bg);
+	border: 1px solid var(--hairline);
+	text-decoration: none !important;
+	aspect-ratio: 4 / 5;
+}
+
+.zk-card-image {
+	flex: 1;
+	background-size: cover;
+	background-position: center;
+	background-color: rgba(255,255,255,0.03);
+}
+
 .zk-card-content {
 	position: absolute;
 	bottom: 0;
@@ -664,20 +683,16 @@ button {
 	margin-bottom: 8px;
 }
 
+
+
 .zk-card-category {
+	display: inline-block;
 	font-size: 0.7rem;
 	font-weight: 500;
 	letter-spacing: 0.15em;
 	text-transform: uppercase;
 	color: var(--text-dim);
-}
-
-/* პატარა მინიმალისტური წერტილი კატეგორიასა და თარიღს შორის */
-.zk-card-meta-separator {
-	width: 3px;
-	height: 3px;
-	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.15);
+	margin-bottom: 8px;
 }
 
 .zk-card-date {
@@ -686,6 +701,13 @@ button {
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	color: rgba(255, 255, 255, 0.3); /* თარიღი ოდნავ უფრო მკრთალია, ვიდრე კატეგორია */
+}
+/* პატარა მინიმალისტური წერტილი კატეგორიასა და თარიღს შორის */
+.zk-card-meta-separator {
+	width: 3px;
+	height: 3px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.15);
 }
 
 .zk-card-title {
