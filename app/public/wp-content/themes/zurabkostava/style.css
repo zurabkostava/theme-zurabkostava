@@ -670,19 +670,40 @@ button {
 	bottom: 0;
 	left: 0;
 	width: 100%;
-	/* ოდნავ გავზარდეთ ზედა სივრცე, რომ ანიმაცია რბილად შემოვიდეს */
-	padding: 60px 24px 24px;
+	/* ოდნავ მეტი სივრცე მივეცით (80px), რომ გრადიენტმა "სუნთქვა" შეძლოს და არ გაიჭყლიტოს */
+	padding: 80px 24px 24px;
 
-	/* 1. უფრო გამჭვირვალე შავი გრადიენტი, რომ ფერებმა გამოანათოს */
-	background: linear-gradient(to top, rgba(10, 10, 12, 0.85) 0%, rgba(10, 10, 12, 0.3) 65%, transparent 100%);
+	/* 1. არაწრფივი (Eased) შავი გრადიენტი, რომელიც ბუნებრივად ქრება */
+	background: linear-gradient(
+			to top,
+			rgba(10, 10, 12, 0.95) 0%,
+			rgba(10, 10, 12, 0.75) 30%,
+			rgba(10, 10, 12, 0.4) 60%,
+			rgba(10, 10, 12, 0.1) 85%,
+			transparent 100%
+	);
 
-	/* 2. ფერების არევა და მინის ეფექტი (ეს აძლევს ზუსტად ფოტოს ელფერს) */
-	-webkit-backdrop-filter: blur(16px) saturate(180%);
-	backdrop-filter: blur(16px) saturate(180%);
+	/* 2. ბლარი და რეალისტური ფერების გაჯერება */
+	-webkit-backdrop-filter: blur(16px) saturate(140%);
+	backdrop-filter: blur(16px) saturate(140%);
 
-	/* 3. რბილი გადასვლა: ბლარი უხეშად რომ არ გაწყდეს ფოტოს შუაში */
-	-webkit-mask-image: linear-gradient(to top, black 0%, black 60%, transparent 100%);
-	mask-image: linear-gradient(to top, black 0%, black 60%, transparent 100%);
+	/* 3. მინის ეფექტის ბუნებრივი გაქრობა (Mask) - კუთხოვანი ხაზების გარეშე */
+	-webkit-mask-image: linear-gradient(
+			to top,
+			rgba(0,0,0,1) 0%,
+			rgba(0,0,0,1) 40%,
+			rgba(0,0,0,0.8) 65%,
+			rgba(0,0,0,0.3) 85%,
+			transparent 100%
+	);
+	mask-image: linear-gradient(
+			to top,
+			rgba(0,0,0,1) 0%,
+			rgba(0,0,0,1) 40%,
+			rgba(0,0,0,0.8) 65%,
+			rgba(0,0,0,0.3) 85%,
+			transparent 100%
+	);
 
 	z-index: 2;
 	transition: padding-bottom 0.6s cubic-bezier(0.16, 1, 0.3, 1);
