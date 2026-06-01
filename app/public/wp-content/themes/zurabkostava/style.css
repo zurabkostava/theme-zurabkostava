@@ -624,6 +624,9 @@ button {
 	}
 }
 
+/* ============================================================
+   PREMIUM CARD HOVER EFFECT
+   ============================================================ */
 .zk-grid-card {
 	position: relative;
 	display: flex;
@@ -633,13 +636,26 @@ button {
 	background: var(--glass-bg);
 	border: 1px solid var(--hairline);
 	text-decoration: none !important;
-	transition: transform 0.4s var(--ease), border-color 0.4s var(--ease);
 	aspect-ratio: 4 / 5;
+
+	/* Hardware Acceleration უხეში "ხტომის" გასაქრობად */
+	transform: translateZ(0);
+	will-change: transform, box-shadow, border-color;
+
+	/* ულტრა-რბილი კინემატოგრაფიული ტრანზიცია */
+	transition:
+			transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+			border-color 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+			box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ბარათის აწევა და ჩრდილის გაჩენა */
 .zk-grid-card:hover {
-	transform: translateY(-8px);
-	border-color: rgba(255, 255, 255, 0.3);
+	transform: translateY(-6px) scale(1.01); /* ოდნავ ზემოთ და ოდნავ წინ */
+	border-color: rgba(255, 255, 255, 0.25);
+	/* ღრმა, პრემიუმ ჩრდილი, რომელიც ეკრანს წყვეტს ქარდს */
+	box-shadow: 0 22px 44px -12px rgba(0, 0, 0, 0.8),
+	0 0 20px rgba(255, 255, 255, 0.04);
 }
 
 .zk-card-image {
@@ -647,11 +663,14 @@ button {
 	background-size: cover;
 	background-position: center;
 	background-color: rgba(255,255,255,0.03);
-	transition: transform 0.6s var(--ease);
+	will-change: transform;
+	/* სურათის სუნთქვის (ზუმის) ანიმაცია უფრო ნელი და დინამიურია */
+	transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* სურათის შიდა ზუმი */
 .zk-grid-card:hover .zk-card-image {
-	transform: scale(1.05);
+	transform: scale(1.06);
 }
 
 .zk-card-content {
@@ -660,8 +679,15 @@ button {
 	left: 0;
 	width: 100%;
 	padding: 24px;
-	background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+	background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0) 100%);
 	z-index: 2;
+	/* ტექსტის მიკრო-ინტერაქცია */
+	transition: padding-bottom 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ჰოვერზე ტექსტიც ძალიან ოდნავ იწევს ზემოთ */
+.zk-grid-card:hover .zk-card-content {
+	padding-bottom: 30px;
 }
 
 .zk-card-category {
@@ -672,6 +698,11 @@ button {
 	text-transform: uppercase;
 	color: var(--text-dim);
 	margin-bottom: 8px;
+	transition: color 0.4s ease;
+}
+
+.zk-grid-card:hover .zk-card-category {
+	color: var(--text-muted); /* კატეგორია ოდნავ ნათდება */
 }
 
 .zk-card-title {
