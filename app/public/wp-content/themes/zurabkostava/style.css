@@ -472,19 +472,7 @@ button {
    RESPONSIVE — mobile overlay menu (≤ 900px)
    ============================================================ */
 
-/* ტაბლეტზე 2 სვეტი */
-@media (min-width: 768px) {
-	.zk-post-grid {
-		grid-template-columns: repeat(2, 1fr);
-	}
-}
 
-/* დესკტოპზე ზუსტად 3 სვეტი */
-@media (min-width: 1024px) {
-	.zk-post-grid {
-		grid-template-columns: repeat(3, 1fr);
-	}
-}
 @media (max-width: 900px) {
 	:root { --header-h: 64px; }
 
@@ -617,9 +605,23 @@ button {
    ============================================================ */
 .zk-post-grid {
 	display: grid;
-	grid-template-columns: 1fr; /* მობილურზე 1 სვეტი */
+	grid-template-columns: 1fr; /* მობილურზე ნაგულისხმევად 1 სვეტი */
 	gap: 24px;
 	margin-top: 2rem;
+}
+
+/* ტაბლეტზე (768px-დან ზემოთ) 2 სვეტი */
+@media (min-width: 768px) {
+	.zk-post-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+/* დესკტოპზე (1024px-დან ზემოთ) 3 სვეტი */
+@media (min-width: 1024px) {
+	.zk-post-grid {
+		grid-template-columns: repeat(3, 1fr);
+	}
 }
 
 .zk-grid-card {
@@ -632,7 +634,7 @@ button {
 	border: 1px solid var(--hairline);
 	text-decoration: none !important;
 	transition: transform 0.4s var(--ease), border-color 0.4s var(--ease);
-	aspect-ratio: 4 / 5; /* აძლევს ქარდებს ერთიან პროპორციას */
+	aspect-ratio: 4 / 5;
 }
 
 .zk-grid-card:hover {
@@ -644,7 +646,7 @@ button {
 	flex: 1;
 	background-size: cover;
 	background-position: center;
-	background-color: rgba(255,255,255,0.03); /* თუ სურათი არ აქვს */
+	background-color: rgba(255,255,255,0.03);
 	transition: transform 0.6s var(--ease);
 }
 
