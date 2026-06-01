@@ -129,22 +129,19 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
 }
 
 /**
- * Smart Custom Grid for Posts
+ * Smart Custom Grid for Posts (Updated with Date)
  * Usage: [custom_grid category="aubades"] or [custom_grid category="nocturnes,aubades"]
  */
 function zk_custom_post_grid( $atts ) {
-    // 1. ვიღებთ შორთკოდის ატრიბუტებს მომხმარებლისგან
     $atts = shortcode_atts( array(
-        'category' => '', // ნაგულისხმევად ცარიელია
+        'category' => '',
     ), $atts, 'custom_grid' );
 
-    // 2. ვაწყობთ მოთხოვნას ბაზასთან
     $args = array(
         'posts_per_page' => -1,
         'post_status'    => 'publish'
     );
 
-    // თუ კატეგორია მითითებულია, ვამატებთ ფილტრს
     if ( ! empty( $atts['category'] ) ) {
         $args['category_name'] = sanitize_text_field( $atts['category'] );
     }
@@ -155,7 +152,6 @@ function zk_custom_post_grid( $atts ) {
         return '<p class="page__content">No posts found in this category.</p>';
     }
 
-    // 3. ვიწყებთ HTML გრიდის გენერაციას
     $output = '<div class="zk-post-grid">';
 
     while ( $query->have_posts() ) {
@@ -168,13 +164,23 @@ function zk_custom_post_grid( $atts ) {
         $categories = get_the_category();
         $cat_name = ! empty( $categories ) ? esc_html( $categories[0]->name ) : 'Post';
 
+        // ვიღებთ თარიღს ლამაზ ფორმატში (მაგ: Oct 24, 2026)
+        $date = get_the_date( 'M j, Y' );
+
         $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
         $bg_style = $img_url ? 'style="background-image: url(' . esc_url( $img_url ) . ');"' : '';
 
         $output .= '<a href="' . esc_url( $link ) . '" class="zk-grid-card" data-route="' . esc_attr( $path ) . '">';
         $output .= '<div class="zk-card-image" ' . $bg_style . '></div>';
         $output .= '<div class="zk-card-content">';
+
+        // ახალი Meta ბლოკი (კატეგორია + წერტილი + თარიღი)
+        $output .= '<div class="zk-card-meta">';
         $output .= '<span class="zk-card-category">' . $cat_name . '</span>';
+        $output .= '<span class="zk-card-meta-separator"></span>';
+        $output .= '<span class="zk-card-date">' . esc_html( $date ) . '</span>';
+        $output .= '</div>';
+
         $output .= '<h3 class="zk-card-title">' . $title . '</h3>';
         $output .= '</div>';
         $output .= '</a>';
@@ -185,7 +191,6 @@ function zk_custom_post_grid( $atts ) {
 
     return $output;
 }
-// შორთკოდს დავარქვით უნივერსალური სახელი
 add_shortcode( 'custom_grid', 'zk_custom_post_grid' );
 
 
