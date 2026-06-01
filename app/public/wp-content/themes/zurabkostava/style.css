@@ -625,7 +625,7 @@ button {
 }
 
 /* ============================================================
-   PREMIUM CARD HOVER EFFECT
+   PREMIUM CARD HOVER EFFECT (FIXED & SMOOTH)
    ============================================================ */
 .zk-grid-card {
 	position: relative;
@@ -638,8 +638,8 @@ button {
 	text-decoration: none !important;
 	aspect-ratio: 4 / 5;
 
-	/* Hardware Acceleration უხეში "ხტომის" გასაქრობად */
-	transform: translateZ(0);
+	/* ანიმაციის საწყისი წერტილი GPU-სთვის (Z-ღერძით) */
+	transform: translateY(0) scale(1) translateZ(0);
 	will-change: transform, box-shadow, border-color;
 
 	/* ულტრა-რბილი კინემატოგრაფიული ტრანზიცია */
@@ -649,11 +649,10 @@ button {
 			box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ბარათის აწევა და ჩრდილის გაჩენა */
 .zk-grid-card:hover {
-	transform: translateY(-6px) scale(1.01); /* ოდნავ ზემოთ და ოდნავ წინ */
+	/* აქ translateZ(0) დარჩა, რომ 3D ფენა არ დაინგრეს და არ იხტუნაოს! */
+	transform: translateY(-6px) scale(1.01) translateZ(0);
 	border-color: rgba(255, 255, 255, 0.25);
-	/* ღრმა, პრემიუმ ჩრდილი, რომელიც ეკრანს წყვეტს ქარდს */
 	box-shadow: 0 22px 44px -12px rgba(0, 0, 0, 0.8),
 	0 0 20px rgba(255, 255, 255, 0.04);
 }
@@ -663,14 +662,15 @@ button {
 	background-size: cover;
 	background-position: center;
 	background-color: rgba(255,255,255,0.03);
+
+	/* სურათის საწყისი წერტილიც დაფიქსირებულია */
+	transform: scale(1) translateZ(0);
 	will-change: transform;
-	/* სურათის სუნთქვის (ზუმის) ანიმაცია უფრო ნელი და დინამიურია */
 	transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* სურათის შიდა ზუმი */
 .zk-grid-card:hover .zk-card-image {
-	transform: scale(1.06);
+	transform: scale(1.06) translateZ(0);
 }
 
 .zk-card-content {
@@ -681,13 +681,14 @@ button {
 	padding: 24px;
 	background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0) 100%);
 	z-index: 2;
-	/* ტექსტის მიკრო-ინტერაქცია */
-	transition: padding-bottom 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+
+	/* Padding-ის ნაცვლად Transform-ით ვწევთ ტექსტს (0% "ხტომა") */
+	transform: translateY(0) translateZ(0);
+	transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ჰოვერზე ტექსტიც ძალიან ოდნავ იწევს ზემოთ */
 .zk-grid-card:hover .zk-card-content {
-	padding-bottom: 30px;
+	transform: translateY(-6px) translateZ(0);
 }
 
 .zk-card-category {
@@ -702,7 +703,7 @@ button {
 }
 
 .zk-grid-card:hover .zk-card-category {
-	color: var(--text-muted); /* კატეგორია ოდნავ ნათდება */
+	color: var(--text-muted);
 }
 
 .zk-card-title {
