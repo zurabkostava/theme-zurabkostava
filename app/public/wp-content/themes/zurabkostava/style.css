@@ -222,9 +222,9 @@ button {
 	opacity: 0.7;
 	transition: transform 0.4s var(--ease), opacity 0.3s var(--ease);
 }
-.has-dropdown:hover > .dropdown-trigger .dropdown-caret,
-.has-dropdown:focus-within > .dropdown-trigger .dropdown-caret,
-.has-dropdown.open > .dropdown-trigger .dropdown-caret {
+.has-dropdown:hover .dropdown-caret,
+.has-dropdown:focus-within .dropdown-caret,
+.has-dropdown.open .dropdown-caret {
 	transform: rotate(180deg);
 	opacity: 1;
 }
@@ -261,10 +261,9 @@ button {
 	height: 14px;
 }
 
-/* The gorgeous reveal: fade-in + slide-up — DIRECT child only, so a nested
-   submenu doesn't open just because its parent menu is being hovered */
-.has-dropdown:hover > .dropdown-menu,
-.has-dropdown:focus-within > .dropdown-menu {
+/* The gorgeous reveal: fade-in + slide-up */
+.has-dropdown:hover .dropdown-menu,
+.has-dropdown:focus-within .dropdown-menu {
 	opacity: 1;
 	visibility: visible;
 	transform: translateY(0);
@@ -407,24 +406,13 @@ button {
 }
 /* Prose rendered from the WP editor (the_content / REST content.rendered) */
 .page__content {
-	/* max-width: 68ch; - ეს აქედან ამოვიღეთ, რომ გრიდი არ გაჭედოს */
+	max-width: 68ch;
 	color: var(--text-muted);
 	font-weight: 300;
 	font-size: clamp(1.02rem, 2vw, 1.2rem);
 }
 .page__content > :first-child { margin-top: 0; }
 .page__content > * + *        { margin-top: 1.15em; }
-
-/* ვუზღუდავთ სიგანეს მხოლოდ ტექსტებს, რომ კითხვადობა არ დაიკარგოს */
-.page__content > p,
-.page__content > ul,
-.page__content > ol,
-.page__content > blockquote,
-.page__content > h2,
-.page__content > h3 {
-	max-width: 68ch;
-}
-
 .page__content h2 {
 	margin-top: 1.8em;
 	color: var(--text);
@@ -471,8 +459,6 @@ button {
 /* ============================================================
    RESPONSIVE — mobile overlay menu (≤ 900px)
    ============================================================ */
-
-
 @media (max-width: 900px) {
 	:root { --header-h: 64px; }
 
@@ -568,7 +554,7 @@ button {
 		transition: max-height 0.45s var(--ease);
 	}
 	.dropdown-menu::before { display: none; }
-	.has-dropdown.open > .dropdown-menu { max-height: 600px; }
+	.has-dropdown.open .dropdown-menu { max-height: 280px; }
 
 	.dropdown-link {
 		padding: 9px 0;
@@ -597,323 +583,4 @@ button {
 		transition-duration: 0.001ms !important;
 		scroll-behavior: auto !important;
 	}
-}
-
-
-/* ============================================================
-   CUSTOM POST GRID (3DECADE)
-   ============================================================ */
-.zk-post-grid {
-	display: grid;
-	grid-template-columns: 1fr; /* მობილურზე ნაგულისხმევად 1 სვეტი */
-	gap: 24px;
-	margin-top: 2rem;
-}
-
-/* ტაბლეტზე (768px-დან ზემოთ) 2 სვეტი */
-@media (min-width: 768px) {
-	.zk-post-grid {
-		grid-template-columns: repeat(2, 1fr);
-	}
-}
-
-/* დესკტოპზე (1024px-დან ზემოთ) 3 სვეტი */
-@media (min-width: 1024px) {
-	.zk-post-grid {
-		grid-template-columns: repeat(3, 1fr);
-	}
-}
-
-/* ============================================================
-   CUSTOM POST GRID (3DECADE) - CLEAN SLATE
-   ============================================================ */
-.zk-post-grid {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 24px;
-	margin-top: 2rem;
-}
-
-@media (min-width: 768px) {
-	.zk-post-grid {
-		grid-template-columns: repeat(2, 1fr);
-	}
-}
-
-@media (min-width: 1024px) {
-	.zk-post-grid {
-		grid-template-columns: repeat(3, 1fr);
-	}
-}
-
-.zk-grid-card {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	border-radius: 16px;
-	overflow: hidden;
-	background: var(--glass-bg);
-	border: 1px solid var(--hairline);
-	text-decoration: none !important;
-	aspect-ratio: 4 / 5;
-
-	/* პრემიუმ მოძრაობა: აწევა + ჩრდილი + კიდის ნათება */
-	transform: translateY(0) scale(1);
-	transition:
-		transform    0.55s var(--ease),
-		box-shadow   0.55s var(--ease),
-		border-color 0.55s var(--ease);
-	will-change: transform;
-	-webkit-tap-highlight-color: transparent;
-}
-
-/* სპეკულარული ბზინვარება — სინათლე იკრიბება ზედა კიდეზე (მინა იჭერს შუქს) */
-.zk-grid-card::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	z-index: 3;
-	border-radius: inherit;
-	pointer-events: none;
-	background: radial-gradient(
-			120% 80% at 50% -20%,
-			rgba(255, 255, 255, 0.16) 0%,
-			rgba(255, 255, 255, 0) 55%
-	);
-	opacity: 0;
-	transition: opacity 0.55s var(--ease);
-}
-
-.zk-card-image {
-	flex: 1;
-	background-size: cover;
-	background-position: center;
-	background-color: rgba(255,255,255,0.03);
-
-	/* ნელი "Ken Burns" მიახლოება hover-ზე */
-	transform: scale(1);
-	transition: transform 0.9s var(--ease);
-}
-
-/* წარწერა ოდნავ ზემოთ ადის hover-ზე — transform-ით (და არა padding-ით),
-   რომ layout reflow არ მოხდეს და მოძრაობა იდეალურად რბილი იყოს */
-.zk-card-meta,
-.zk-card-title {
-	transition: transform 0.55s var(--ease);
-}
-
-/* ---------- HOVER (მხოლოდ მაუსიანი მოწყობილობები) ---------- */
-@media (hover: hover) {
-	.zk-grid-card:hover {
-		transform: translateY(-8px);
-		border-color: var(--hairline-strong);
-		box-shadow:
-			inset 0 1px 0 0 rgba(255, 255, 255, 0.08),   /* ზედა მინის ხაზი */
-			0 30px 60px -22px rgba(0, 0, 0, 0.75),        /* ღრმა ფონური ჩრდილი */
-			0 12px 24px -16px rgba(0, 0, 0, 0.65);        /* მჭიდრო კონტაქტის ჩრდილი */
-	}
-	.zk-grid-card:hover::after { opacity: 1; }
-	.zk-grid-card:hover .zk-card-image { transform: scale(1.07); }
-	.zk-grid-card:hover .zk-card-meta,
-	.zk-grid-card:hover .zk-card-title { transform: translateY(-6px); }
-}
-
-/* ---------- PRESSED (ტაქტილური "ჩაჭერა") ---------- */
-.zk-grid-card:active {
-	transform: translateY(-2px) scale(0.985);
-	border-color: var(--hairline-strong);
-	box-shadow:
-		inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
-		0 10px 22px -16px rgba(0, 0, 0, 0.7);
-	/* სწრაფი ease — დაჭერა მყისიერად უნდა იგრძნობოდეს */
-	transition:
-		transform    0.12s var(--ease-soft),
-		box-shadow   0.12s var(--ease-soft),
-		border-color 0.12s var(--ease-soft);
-}
-.zk-grid-card:active .zk-card-image {
-	transform: scale(1.03);
-	transition: transform 0.12s var(--ease-soft);
-}
-
-/* ---------- მოძრაობის შემცირების პატივისცემა ---------- */
-@media (prefers-reduced-motion: reduce) {
-	/* მოძრაობას ვხსნით (აწევა/zoom), მაგრამ ფერი/ჩრდილი/ნათება მაინც
-	   რბილად გადადის — ანუ snap/გადახტომა აღარ ხდება (აღარ ვაყენებთ
-	   transition-duration: 0-ს, რაც ადრე მყისიერ „ახტომას" იწვევდა). */
-	.zk-grid-card:hover { transform: none; }
-	.zk-grid-card:hover .zk-card-image { transform: none; }
-	.zk-grid-card:hover .zk-card-meta,
-	.zk-grid-card:hover .zk-card-title { transform: none; }
-	.zk-grid-card:active { transform: scale(0.99); }
-}
-
-.zk-card-content {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	width: 100%;
-	/* ოდნავ მეტი სივრცე მივეცით (80px), რომ გრადიენტმა "სუნთქვა" შეძლოს და არ გაიჭყლიტოს */
-	padding: 80px 24px 24px;
-
-	/* 1. არაწრფივი (Eased) შავი გრადიენტი, რომელიც ბუნებრივად ქრება */
-	background: linear-gradient(
-			to top,
-			rgba(10, 10, 12, 0.95) 0%,
-			rgba(10, 10, 12, 0.75) 30%,
-			rgba(10, 10, 12, 0.4) 60%,
-			rgba(10, 10, 12, 0.1) 85%,
-			transparent 100%
-	);
-
-	/* შენიშვნა: backdrop-filter (blur) და mask განზრახ მოვხსენით.
-	   ისინი hover-ზე ყოველ კადრზე თავიდან ითვლებოდა მზარდი ფოტოს უკან —
-	   სწორედ ეს „ახტუნებდა" ანიმაციას. ზედა მუქი გრადიენტი თავადვე
-	   კმარა ტექსტის წაკითხვადობისთვის; ახლა მოძრაობა 100% GPU-ზეა. */
-	z-index: 2;
-}
-
-/* კატეგორიის და თარიღის საერთო კონტეინერი */
-.zk-card-meta {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin-bottom: 8px;
-}
-
-
-
-.zk-card-category {
-	font-size: 0.7rem;
-	font-weight: 600; /* ოდნავ გავსქელდით */
-	letter-spacing: 0.15em;
-	text-transform: uppercase;
-	color: rgba(255, 255, 255, 0.85); /* ბევრად უფრო ნათელი და მკვეთრი */
-	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6); /* მკრთალი ჩრდილი */
-}
-
-.zk-card-date {
-	font-size: 0.65rem;
-	font-weight: 500;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: rgba(255, 255, 255, 0.65); /* უფრო ნათელი */
-	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-}
-/* პატარა მინიმალისტური წერტილი კატეგორიასა და თარიღს შორის */
-.zk-card-meta-separator {
-	width: 3px;
-	height: 3px;
-	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.4); /* წერტილიც უფრო გამოვაჩინეთ */
-}
-
-.zk-card-title {
-	margin: 0 !important;
-	font-size: 1.4rem !important;
-	color: #ffffff !important;
-	line-height: 1.3 !important;
-	text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8); /* ძლიერი ჩრდილი მთავარ სათაურს, რომ არ დაიკარგოს */
-}
-
-/* ============================================================
-   NESTED DROPDOWN (2nd level — the "secondary" submenu)
-   ============================================================ */
-.has-nested-dropdown { position: relative; }
-
-/* The nested trigger is a .dropdown-link (display:block), so its caret
-   would wrap to a new line. Make it a flex row: label left, caret right. */
-.dropdown-link.dropdown-trigger {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
-	width: 100%;
-}
-
-/* ---- Desktop: fly out to the LEFT. The parent menu is right-aligned
-   against the screen edge, so opening rightwards would run off-screen. ---- */
-@media (min-width: 901px) {
-	.nested-menu {
-		top: -11px;          /* line the submenu up with its parent row */
-		right: 100%;         /* anchor to the LEFT of the submenu item */
-		left: auto;          /* cancel the inherited .dropdown-menu right: 0 */
-		margin-right: 6px;
-		transform: translateX(12px);   /* hidden offset: slides in from the right */
-	}
-	/* Bridge the horizontal gap so hover survives crossing into the submenu */
-	.nested-menu::before {
-		top: 0;
-		bottom: 0;
-		left: auto;
-		right: -8px;
-		width: 12px;
-		height: auto;
-	}
-	.has-nested-dropdown:hover > .nested-menu,
-	.has-nested-dropdown:focus-within > .nested-menu {
-		opacity: 1;
-		visibility: visible;
-		transform: translateX(0);
-	}
-	/* Caret points left, toward the submenu it opens */
-	.nested-caret { transform: rotate(90deg); }
-}
-
-/* ---- Mobile: indented inline accordion ---- */
-@media (max-width: 900px) {
-	.nested-menu {
-		margin-left: 14px;
-		border-left: 1px solid var(--hairline-strong);
-		padding-left: 14px;
-	}
-	.nested-caret { transform: none; }
-	.has-nested-dropdown.open > .dropdown-trigger .nested-caret { transform: rotate(180deg); }
-	.has-nested-dropdown.open > .nested-menu { max-height: 400px; }
-}
-
-/* ============================================================
-   CUSTOM FLOATING SCROLLBAR  (desktop / fine-pointer only)
-   ============================================================ */
-/* The native bar is hidden only when JS opts in (.custom-scroll is set on
-   <html> before first paint). Touch devices and no-JS keep their native bar. */
-.custom-scroll { scrollbar-width: none; -ms-overflow-style: none; }
-.custom-scroll::-webkit-scrollbar { display: none; }
-
-.scrollbar {
-	position: fixed;
-	top: calc(var(--header-h) + 16px);
-	right: 7px;
-	bottom: 16px;
-	width: 10px;
-	z-index: 1200;
-	pointer-events: none;          /* the track itself never blocks content */
-	opacity: 0;
-	transition: opacity 0.45s var(--ease);
-}
-.scrollbar.is-active { opacity: 1; }
-.scrollbar.is-empty  { opacity: 0 !important; }   /* page doesn't overflow → no bar */
-
-.scrollbar__thumb {
-	position: absolute;
-	top: 0;
-	right: 0;
-	width: 5px;
-	height: 40px;
-	border-radius: 99px;
-	background: rgba(255, 255, 255, 0.30);
-	cursor: grab;
-	pointer-events: none;          /* grabbable only while the bar is visible */
-	transition: width 0.25s var(--ease), background-color 0.25s var(--ease);
-	will-change: transform;
-}
-.scrollbar.is-active .scrollbar__thumb { pointer-events: auto; }
-.scrollbar__thumb:hover {
-	width: 9px;
-	background: rgba(255, 255, 255, 0.55);
-}
-.scrollbar.is-dragging .scrollbar__thumb {
-	width: 9px;
-	background: rgba(255, 255, 255, 0.70);
-	cursor: grabbing;
 }
