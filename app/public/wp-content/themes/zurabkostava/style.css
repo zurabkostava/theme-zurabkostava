@@ -116,10 +116,10 @@ button {
 	backdrop-filter: blur(var(--blur)) saturate(160%);
 	border-bottom: 1px solid var(--hairline);
 	transition:
-		height        0.45s var(--ease),
-		background    0.45s var(--ease),
-		border-color  0.45s var(--ease),
-		box-shadow    0.45s var(--ease);
+			height        0.45s var(--ease),
+			background    0.45s var(--ease),
+			border-color  0.45s var(--ease),
+			box-shadow    0.45s var(--ease);
 }
 
 /* Condensed state after scroll — more opaque, tighter, lifted */
@@ -222,9 +222,9 @@ button {
 	opacity: 0.7;
 	transition: transform 0.4s var(--ease), opacity 0.3s var(--ease);
 }
-.has-dropdown:hover .dropdown-caret,
-.has-dropdown:focus-within .dropdown-caret,
-.has-dropdown.open .dropdown-caret {
+.has-dropdown:hover > .dropdown-trigger .dropdown-caret,
+.has-dropdown:focus-within > .dropdown-trigger .dropdown-caret,
+.has-dropdown.open > .dropdown-trigger .dropdown-caret {
 	transform: rotate(180deg);
 	opacity: 1;
 }
@@ -246,9 +246,9 @@ button {
 	visibility: hidden;
 	transform: translateY(12px);
 	transition:
-		opacity    0.34s var(--ease),
-		transform  0.34s var(--ease),
-		visibility 0.34s var(--ease);
+			opacity    0.34s var(--ease),
+			transform  0.34s var(--ease),
+			visibility 0.34s var(--ease);
 }
 
 /* Invisible bridge so the cursor can cross the gap without closing */
@@ -261,9 +261,10 @@ button {
 	height: 14px;
 }
 
-/* The gorgeous reveal: fade-in + slide-up */
-.has-dropdown:hover .dropdown-menu,
-.has-dropdown:focus-within .dropdown-menu {
+/* The gorgeous reveal: fade-in + slide-up — DIRECT child only, so a nested
+   submenu doesn't open just because its parent menu is being hovered */
+.has-dropdown:hover > .dropdown-menu,
+.has-dropdown:focus-within > .dropdown-menu {
 	opacity: 1;
 	visibility: visible;
 	transform: translateY(0);
@@ -279,9 +280,9 @@ button {
 	color: var(--text-muted);
 	border-radius: 10px;
 	transition:
-		color        0.3s var(--ease),
-		background   0.3s var(--ease),
-		padding-left 0.3s var(--ease);
+			color        0.3s var(--ease),
+			background   0.3s var(--ease),
+			padding-left 0.3s var(--ease);
 }
 .dropdown-link:hover,
 .dropdown-link:focus-visible {
@@ -316,9 +317,9 @@ button {
 	background: #fff;
 	border-radius: 2px;
 	transition:
-		transform 0.45s var(--ease),
-		opacity   0.25s var(--ease),
-		top       0.45s var(--ease);
+			transform 0.45s var(--ease),
+			opacity   0.25s var(--ease),
+			top       0.45s var(--ease);
 }
 .nav-toggle-line:nth-child(1) { top: 0; }
 .nav-toggle-line:nth-child(2) { top: 50%; transform: translateY(-50%); }
@@ -405,14 +406,26 @@ button {
 	margin-bottom: 24px;
 }
 /* Prose rendered from the WP editor (the_content / REST content.rendered) */
+/* Prose rendered from the WP editor (the_content / REST content.rendered) */
 .page__content {
-	max-width: 68ch;
+	/* max-width: 68ch; - ეს აქედან ამოვიღეთ, რომ გრიდი არ გაჭედოს */
 	color: var(--text-muted);
 	font-weight: 300;
 	font-size: clamp(1.02rem, 2vw, 1.2rem);
 }
 .page__content > :first-child { margin-top: 0; }
 .page__content > * + *        { margin-top: 1.15em; }
+
+/* ვუზღუდავთ სიგანეს მხოლოდ ტექსტებს, რომ კითხვადობა არ დაიკარგოს */
+.page__content > p,
+.page__content > ul,
+.page__content > ol,
+.page__content > blockquote,
+.page__content > h2,
+.page__content > h3 {
+	max-width: 68ch;
+}
+
 .page__content h2 {
 	margin-top: 1.8em;
 	color: var(--text);
@@ -482,9 +495,9 @@ button {
 		opacity: 0;
 		visibility: hidden;
 		transition:
-			transform  0.6s var(--ease),
-			opacity    0.6s var(--ease),
-			visibility 0.6s var(--ease);
+				transform  0.6s var(--ease),
+				opacity    0.6s var(--ease),
+				visibility 0.6s var(--ease);
 	}
 	@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
 		.primary-nav { background: rgba(7, 7, 9, 0.97); }
@@ -509,8 +522,8 @@ button {
 		opacity: 0;
 		transform: translateY(16px);
 		transition:
-			opacity   0.5s var(--ease),
-			transform 0.5s var(--ease);
+				opacity   0.5s var(--ease),
+				transform 0.5s var(--ease);
 	}
 	.nav-open .nav-item            { opacity: 1; transform: translateY(0); }
 	.nav-open .nav-item:nth-child(1) { transition-delay: 0.18s; }
@@ -554,7 +567,7 @@ button {
 		transition: max-height 0.45s var(--ease);
 	}
 	.dropdown-menu::before { display: none; }
-	.has-dropdown.open .dropdown-menu { max-height: 280px; }
+	.has-dropdown.open > .dropdown-menu { max-height: 600px; }
 
 	.dropdown-link {
 		padding: 9px 0;
@@ -583,4 +596,211 @@ button {
 		transition-duration: 0.001ms !important;
 		scroll-behavior: auto !important;
 	}
+}
+
+
+/* ============================================================
+   CUSTOM POST GRID (3DECADE) - CLEAN SLATE
+   ============================================================ */
+.zk-post-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 24px;
+	margin-top: 2rem;
+}
+
+@media (min-width: 768px) {
+	.zk-post-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media (min-width: 1024px) {
+	.zk-post-grid {
+		grid-template-columns: repeat(3, 1fr);
+	}
+}
+
+.zk-grid-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	border-radius: 16px;
+	overflow: hidden;
+	background: var(--glass-bg);
+	border: 1px solid var(--hairline);
+	text-decoration: none !important;
+	aspect-ratio: 4 / 5;
+}
+
+.zk-card-image {
+	flex: 1;
+	background-size: cover;
+	background-position: center;
+	background-color: rgba(255,255,255,0.03);
+}
+
+.zk-card-content {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	/* ოდნავ გავზარდეთ ზედა სივრცე, რომ ანიმაცია რბილად შემოვიდეს */
+	padding: 60px 24px 24px;
+
+	/* 1. უფრო გამჭვირვალე შავი გრადიენტი, რომ ფერებმა გამოანათოს */
+	background: linear-gradient(to top, rgba(10, 10, 12, 0.85) 0%, rgba(10, 10, 12, 0.3) 65%, transparent 100%);
+
+	/* 2. ფერების არევა და მინის ეფექტი (ეს აძლევს ზუსტად ფოტოს ელფერს) */
+	-webkit-backdrop-filter: blur(16px) saturate(180%);
+	backdrop-filter: blur(16px) saturate(180%);
+
+	/* 3. რბილი გადასვლა: ბლარი უხეშად რომ არ გაწყდეს ფოტოს შუაში */
+	-webkit-mask-image: linear-gradient(to top, black 0%, black 60%, transparent 100%);
+	mask-image: linear-gradient(to top, black 0%, black 60%, transparent 100%);
+
+	z-index: 2;
+	transition: padding-bottom 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.zk-card-meta {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 8px;
+}
+
+.zk-card-category {
+	font-size: 0.7rem;
+	font-weight: 600; /* ოდნავ გავსქელდით */
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.85); /* ბევრად უფრო ნათელი და მკვეთრი */
+	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6); /* მკრთალი ჩრდილი */
+}
+
+/* პატარა მინიმალისტური წერტილი კატეგორიასა და თარიღს შორის */
+.zk-card-meta-separator {
+	width: 3px;
+	height: 3px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.4); /* წერტილიც უფრო გამოვაჩინეთ */
+}
+.zk-card-date {
+	font-size: 0.65rem;
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.65); /* უფრო ნათელი */
+	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.zk-card-title {
+	margin: 0 !important;
+	font-size: 1.4rem !important;
+	color: #ffffff !important;
+	line-height: 1.3 !important;
+	text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8); /* ძლიერი ჩრდილი მთავარ სათაურს, რომ არ დაიკარგოს */
+}
+
+/* ============================================================
+   NESTED DROPDOWN (2nd level — the "secondary" submenu)
+   ============================================================ */
+.has-nested-dropdown { position: relative; }
+
+/* The nested trigger is a .dropdown-link (display:block), so its caret
+   would wrap to a new line. Make it a flex row: label left, caret right. */
+.dropdown-link.dropdown-trigger {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	width: 100%;
+}
+
+/* ---- Desktop: fly out to the LEFT. The parent menu is right-aligned
+   against the screen edge, so opening rightwards would run off-screen. ---- */
+@media (min-width: 901px) {
+	.nested-menu {
+		top: -11px;          /* line the submenu up with its parent row */
+		right: 100%;         /* anchor to the LEFT of the submenu item */
+		left: auto;          /* cancel the inherited .dropdown-menu right: 0 */
+		margin-right: 6px;
+		transform: translateX(12px);   /* hidden offset: slides in from the right */
+	}
+	/* Bridge the horizontal gap so hover survives crossing into the submenu */
+	.nested-menu::before {
+		top: 0;
+		bottom: 0;
+		left: auto;
+		right: -8px;
+		width: 12px;
+		height: auto;
+	}
+	.has-nested-dropdown:hover > .nested-menu,
+	.has-nested-dropdown:focus-within > .nested-menu {
+		opacity: 1;
+		visibility: visible;
+		transform: translateX(0);
+	}
+	/* Caret points left, toward the submenu it opens */
+	.nested-caret { transform: rotate(90deg); }
+}
+
+/* ---- Mobile: indented inline accordion ---- */
+@media (max-width: 900px) {
+	.nested-menu {
+		margin-left: 14px;
+		border-left: 1px solid var(--hairline-strong);
+		padding-left: 14px;
+	}
+	.nested-caret { transform: none; }
+	.has-nested-dropdown.open > .dropdown-trigger .nested-caret { transform: rotate(180deg); }
+	.has-nested-dropdown.open > .nested-menu { max-height: 400px; }
+}
+
+/* ============================================================
+   CUSTOM FLOATING SCROLLBAR  (desktop / fine-pointer only)
+   ============================================================ */
+/* The native bar is hidden only when JS opts in (.custom-scroll is set on
+   <html> before first paint). Touch devices and no-JS keep their native bar. */
+.custom-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+.custom-scroll::-webkit-scrollbar { display: none; }
+
+.scrollbar {
+	position: fixed;
+	top: calc(var(--header-h) + 16px);
+	right: 7px;
+	bottom: 16px;
+	width: 10px;
+	z-index: 1200;
+	pointer-events: none;          /* the track itself never blocks content */
+	opacity: 0;
+	transition: opacity 0.45s var(--ease);
+}
+.scrollbar.is-active { opacity: 1; }
+.scrollbar.is-empty  { opacity: 0 !important; }   /* page doesn't overflow → no bar */
+
+.scrollbar__thumb {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 5px;
+	height: 40px;
+	border-radius: 99px;
+	background: rgba(255, 255, 255, 0.30);
+	cursor: grab;
+	pointer-events: none;          /* grabbable only while the bar is visible */
+	transition: width 0.25s var(--ease), background-color 0.25s var(--ease);
+	will-change: transform;
+}
+.scrollbar.is-active .scrollbar__thumb { pointer-events: auto; }
+.scrollbar__thumb:hover {
+	width: 9px;
+	background: rgba(255, 255, 255, 0.55);
+}
+.scrollbar.is-dragging .scrollbar__thumb {
+	width: 9px;
+	background: rgba(255, 255, 255, 0.70);
+	cursor: grabbing;
 }
