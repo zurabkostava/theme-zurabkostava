@@ -26,12 +26,20 @@ add_filter( 'wp_resource_hints', 'zk_resource_hints', 10, 2 );
 
 function zk_assets() {
     wp_enqueue_style( 'zk-fonts', 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap', array(), null );
-    // filemtime() => the version changes whenever style.css changes, so the
-    // browser always fetches the latest CSS (no more stale-cache surprises).
+
+    // CSS-ის მიბმა
     wp_enqueue_style( 'zk-style', get_stylesheet_uri(), array( 'zk-fonts' ), filemtime( get_stylesheet_directory() . '/style.css' ) );
+
+    // ახალი app.js ფაილის მიბმა სუფთად
+    wp_enqueue_script( 'zk-app', get_stylesheet_directory_uri() . '/app.js', array(), filemtime( get_stylesheet_directory() . '/app.js' ), true );
+
+    // აქ ვაწვდით app.js-ს ვორდპრესის დინამიურ ლინკებს (ამის წყალობით index.php-დან window.ZK სკრიპტის წაშლაც შეგვიძლია)
+    wp_localize_script( 'zk-app', 'ZK', array(
+        'home' => home_url( '/' ),
+        'site' => get_bloginfo( 'name' ),
+    ) );
 }
 add_action( 'wp_enqueue_scripts', 'zk_assets' );
-
 function zk_register_menus() {
     register_nav_menu('primary-menu', 'Primary Header Menu');
 }
