@@ -657,6 +657,31 @@ button {
 	text-decoration: none !important;
 	aspect-ratio: 4 / 5;
 
+	/* პრემიუმ მოძრაობა: აწევა + ჩრდილი + კიდის ნათება */
+	transform: translateY(0) scale(1);
+	transition:
+		transform    0.55s var(--ease),
+		box-shadow   0.55s var(--ease),
+		border-color 0.55s var(--ease);
+	will-change: transform;
+	-webkit-tap-highlight-color: transparent;
+}
+
+/* სპეკულარული ბზინვარება — სინათლე იკრიბება ზედა კიდეზე (მინა იჭერს შუქს) */
+.zk-grid-card::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	border-radius: inherit;
+	pointer-events: none;
+	background: radial-gradient(
+			120% 80% at 50% -20%,
+			rgba(255, 255, 255, 0.16) 0%,
+			rgba(255, 255, 255, 0) 55%
+	);
+	opacity: 0;
+	transition: opacity 0.55s var(--ease);
 }
 
 .zk-card-image {
@@ -664,6 +689,55 @@ button {
 	background-size: cover;
 	background-position: center;
 	background-color: rgba(255,255,255,0.03);
+
+	/* ნელი "Ken Burns" მიახლოება hover-ზე */
+	transform: scale(1);
+	transition: transform 0.9s var(--ease);
+}
+
+/* ---------- HOVER (მხოლოდ მაუსიანი მოწყობილობები) ---------- */
+@media (hover: hover) {
+	.zk-grid-card:hover {
+		transform: translateY(-8px);
+		border-color: var(--hairline-strong);
+		box-shadow:
+			inset 0 1px 0 0 rgba(255, 255, 255, 0.08),   /* ზედა მინის ხაზი */
+			0 30px 60px -22px rgba(0, 0, 0, 0.75),        /* ღრმა ფონური ჩრდილი */
+			0 12px 24px -16px rgba(0, 0, 0, 0.65);        /* მჭიდრო კონტაქტის ჩრდილი */
+	}
+	.zk-grid-card:hover::after { opacity: 1; }
+	.zk-grid-card:hover .zk-card-image { transform: scale(1.07); }
+	.zk-grid-card:hover .zk-card-content { padding-bottom: 30px; }
+}
+
+/* ---------- PRESSED (ტაქტილური "ჩაჭერა") ---------- */
+.zk-grid-card:active {
+	transform: translateY(-2px) scale(0.985);
+	border-color: var(--hairline-strong);
+	box-shadow:
+		inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
+		0 10px 22px -16px rgba(0, 0, 0, 0.7);
+	/* სწრაფი ease — დაჭერა მყისიერად უნდა იგრძნობოდეს */
+	transition:
+		transform    0.12s var(--ease-soft),
+		box-shadow   0.12s var(--ease-soft),
+		border-color 0.12s var(--ease-soft);
+}
+.zk-grid-card:active .zk-card-image {
+	transform: scale(1.03);
+	transition: transform 0.12s var(--ease-soft);
+}
+
+/* ---------- მოძრაობის შემცირების პატივისცემა ---------- */
+@media (prefers-reduced-motion: reduce) {
+	.zk-grid-card,
+	.zk-grid-card::after,
+	.zk-card-image {
+		transition-duration: 0.001s;
+	}
+	.zk-grid-card:hover { transform: none; }
+	.zk-grid-card:hover .zk-card-image { transform: none; }
+	.zk-grid-card:active { transform: scale(0.99); }
 }
 
 .zk-card-content {
