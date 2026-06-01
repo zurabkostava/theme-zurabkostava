@@ -695,6 +695,13 @@ button {
 	transition: transform 0.9s var(--ease);
 }
 
+/* წარწერა ოდნავ ზემოთ ადის hover-ზე — transform-ით (და არა padding-ით),
+   რომ layout reflow არ მოხდეს და მოძრაობა იდეალურად რბილი იყოს */
+.zk-card-meta,
+.zk-card-title {
+	transition: transform 0.55s var(--ease);
+}
+
 /* ---------- HOVER (მხოლოდ მაუსიანი მოწყობილობები) ---------- */
 @media (hover: hover) {
 	.zk-grid-card:hover {
@@ -707,7 +714,8 @@ button {
 	}
 	.zk-grid-card:hover::after { opacity: 1; }
 	.zk-grid-card:hover .zk-card-image { transform: scale(1.07); }
-	.zk-grid-card:hover .zk-card-content { padding-bottom: 30px; }
+	.zk-grid-card:hover .zk-card-meta,
+	.zk-grid-card:hover .zk-card-title { transform: translateY(-6px); }
 }
 
 /* ---------- PRESSED (ტაქტილური "ჩაჭერა") ---------- */
@@ -730,13 +738,13 @@ button {
 
 /* ---------- მოძრაობის შემცირების პატივისცემა ---------- */
 @media (prefers-reduced-motion: reduce) {
-	.zk-grid-card,
-	.zk-grid-card::after,
-	.zk-card-image {
-		transition-duration: 0.001s;
-	}
+	/* მოძრაობას ვხსნით (აწევა/zoom), მაგრამ ფერი/ჩრდილი/ნათება მაინც
+	   რბილად გადადის — ანუ snap/გადახტომა აღარ ხდება (აღარ ვაყენებთ
+	   transition-duration: 0-ს, რაც ადრე მყისიერ „ახტომას" იწვევდა). */
 	.zk-grid-card:hover { transform: none; }
 	.zk-grid-card:hover .zk-card-image { transform: none; }
+	.zk-grid-card:hover .zk-card-meta,
+	.zk-grid-card:hover .zk-card-title { transform: none; }
 	.zk-grid-card:active { transform: scale(0.99); }
 }
 
@@ -758,30 +766,11 @@ button {
 			transparent 100%
 	);
 
-	/* 2. ბლარი და რეალისტური ფერების გაჯერება */
-	-webkit-backdrop-filter: blur(16px) saturate(140%);
-	backdrop-filter: blur(16px) saturate(140%);
-
-	/* 3. მინის ეფექტის ბუნებრივი გაქრობა (Mask) - კუთხოვანი ხაზების გარეშე */
-	-webkit-mask-image: linear-gradient(
-			to top,
-			rgba(0,0,0,1) 0%,
-			rgba(0,0,0,1) 40%,
-			rgba(0,0,0,0.8) 65%,
-			rgba(0,0,0,0.3) 85%,
-			transparent 100%
-	);
-	mask-image: linear-gradient(
-			to top,
-			rgba(0,0,0,1) 0%,
-			rgba(0,0,0,1) 40%,
-			rgba(0,0,0,0.8) 65%,
-			rgba(0,0,0,0.3) 85%,
-			transparent 100%
-	);
-
+	/* შენიშვნა: backdrop-filter (blur) და mask განზრახ მოვხსენით.
+	   ისინი hover-ზე ყოველ კადრზე თავიდან ითვლებოდა მზარდი ფოტოს უკან —
+	   სწორედ ეს „ახტუნებდა" ანიმაციას. ზედა მუქი გრადიენტი თავადვე
+	   კმარა ტექსტის წაკითხვადობისთვის; ახლა მოძრაობა 100% GPU-ზეა. */
 	z-index: 2;
-	transition: padding-bottom 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* კატეგორიის და თარიღის საერთო კონტეინერი */
