@@ -40,6 +40,7 @@ function zk_assets() {
     ) );
 }
 add_action( 'wp_enqueue_scripts', 'zk_assets' );
+
 function zk_register_menus() {
     register_nav_menu('primary-menu', 'Primary Header Menu');
 }

@@ -1,3 +1,5 @@
+index.php:
+
 <?php
 /**
  * index.php — main template
@@ -88,11 +90,11 @@ $zk_view = ob_get_clean();
                 aria-label="Open menu"
                 aria-expanded="false"
                 aria-controls="primaryNav">
-				<span class="nav-toggle-box" aria-hidden="true">
-					<span class="nav-toggle-line"></span>
-					<span class="nav-toggle-line"></span>
-					<span class="nav-toggle-line"></span>
-				</span>
+             <span class="nav-toggle-box" aria-hidden="true">
+                <span class="nav-toggle-line"></span>
+                <span class="nav-toggle-line"></span>
+                <span class="nav-toggle-line"></span>
+             </span>
         </button>
 
         <nav class="primary-nav" id="primaryNav" aria-label="Primary">
