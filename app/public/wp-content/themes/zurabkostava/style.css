@@ -638,8 +638,18 @@ button {
 	background-size: cover;
 	background-position: center;
 	background-color: rgba(255,255,255,0.03);
+
+	/* ვამატებთ რბილ ტრანზიციას და Hardware Acceleration-ს სუფთა ანიმაციისთვის */
+	transform: scale(1) translateZ(0);
+	backface-visibility: hidden;
+	will-change: transform;
+	transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* მხოლოდ სურათის ზუმი ჰოვერზე */
+.zk-grid-card:hover .zk-card-image {
+	transform: scale(1.05) translateZ(0);
+}
 .zk-card-content {
 	position: absolute;
 	bottom: 0;
