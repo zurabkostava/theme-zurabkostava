@@ -1,5 +1,3 @@
-index.php:
-
 <?php
 /**
  * index.php — main template
