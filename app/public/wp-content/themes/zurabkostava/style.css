@@ -600,8 +600,10 @@ button {
 
 
 /* ============================================================
-   CUSTOM POST GRID (3DECADE) - CLEAN SLATE
+   CUSTOM POST GRID (3DECADE) - FINAL VERSION
    ============================================================ */
+
+/* ── 1. Grid Layout ── */
 .zk-post-grid {
 	display: grid;
 	grid-template-columns: 1fr;
@@ -621,6 +623,7 @@ button {
 	}
 }
 
+/* ── 2. Card Base ── */
 .zk-grid-card {
 	position: relative;
 	display: flex;
@@ -633,73 +636,49 @@ button {
 	aspect-ratio: 4 / 5;
 }
 
-/* ── Image ── */
+/* ── 3. Image & Zoom Effect ── */
 .zk-card-image {
 	flex: 1;
 	background-size: cover;
 	background-position: center;
 	background-color: rgba(255, 255, 255, 0.03);
+
 	transform: scale(1) translateZ(0);
 	backface-visibility: hidden;
 	will-change: transform;
 	transition: transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.zk-grid-card:hover .zk-card-image {
-	transform: scale(1.04) translateZ(0);
-}
 
-/* მხოლოდ სურათის ზუმი ჰოვერზე */
 .zk-grid-card:hover .zk-card-image {
 	transform: scale(1.05) translateZ(0);
 }
-/* ── Content overlay (static — no padding animation) ── */
+
+/* ── 4. Content Overlay (Gradient) ── */
 .zk-card-content {
 	position: absolute;
 	bottom: 0;
 	left: 0;
 	width: 100%;
 	padding: 80px 24px 26px;
+
 	background: linear-gradient(
 			to top,
-			rgba(10, 10, 12, 0.95) 0%,
-			rgba(10, 10, 12, 0.75) 30%,
-			rgba(10, 10, 12, 0.4) 60%,
-			rgba(10, 10, 12, 0.1) 85%,
-			transparent 100%
-	);
-	-webkit-backdrop-filter: blur(16px) saturate(140%);
-	backdrop-filter: blur(16px) saturate(140%);
-	-webkit-mask-image: linear-gradient(
-			to top,
-			rgba(0, 0, 0, 1) 0%,
-			rgba(0, 0, 0, 1) 40%,
-			rgba(0, 0, 0, 0.8) 65%,
-			rgba(0, 0, 0, 0.3) 85%,
-			transparent 100%
-	);
-	mask-image: linear-gradient(
-			to top,
-			rgba(0, 0, 0, 1) 0%,
-			rgba(0, 0, 0, 1) 40%,
-			rgba(0, 0, 0, 0.8) 65%,
-			rgba(0, 0, 0, 0.3) 85%,
+			rgba(10, 10, 12, 0.98) 0%,
+			rgba(10, 10, 12, 0.85) 30%,
+			rgba(10, 10, 12, 0.5) 60%,
+			rgba(10, 10, 12, 0.15) 85%,
 			transparent 100%
 	);
 	z-index: 2;
 }
 
-/* ჰოვერზე კონტენტის (ტექსტების) რბილი აწევა */
-.zk-grid-card:hover .zk-card-content {
-	padding-bottom: 34px; /* დეფოლტად არის 24px, შესაბამისად აიწევს 10px-ით ზემოთ */
-}
-
-
-/* ── Meta: hidden at rest, rises in on hover ── */
+/* ── 5. Meta Information (Category & Date) ── */
 .zk-card-meta {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 	margin-bottom: 8px;
+
 	opacity: 0;
 	transform: translateY(6px) translateZ(0);
 	will-change: transform, opacity;
@@ -733,31 +712,30 @@ button {
 	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
-/* ── Title: always visible, lifts on hover ── */
+/* ── 6. Title ── */
 .zk-card-title {
 	margin: 0 !important;
 	font-size: 1.4rem !important;
 	color: #ffffff !important;
 	line-height: 1.3 !important;
 	text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8);
+
 	will-change: transform;
 	transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* -- ჰოვერის ანიმაციები (როცა ქარდზე მიგვაქვს მაუსი) -- */
-
+/* ── 7. Text Animation on Hover (Staggered Lift) ── */
 .zk-grid-card:hover .zk-card-meta {
 	opacity: 1;
 	transform: translateY(0) translateZ(0);
-	transition-delay: 0.05s; /* title-ის შემდეგ, sequence-ით შემოდის */
+	transition-delay: 0.05s; /* აყოვნებს წამის მეასედით, რომ სათაურს მიჰყვეს */
 }
 
-/* ── Hover states ── */
 .zk-grid-card:hover .zk-card-title {
 	transform: translateY(-6px) translateZ(0);
 }
 
-/* როცა მაუსს ვაშორებთ, უკან დაბრუნებისას სათაური აყოვნებს (Stagger out) */
+/* Stagger out (როცა მაუსს ვაშორებთ) */
 .zk-grid-card:not(:hover) .zk-card-meta {
 	transition-delay: 0.05s;
 }
