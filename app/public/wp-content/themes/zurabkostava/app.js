@@ -233,7 +233,7 @@
 
     function reveal() {
         bar.classList.add('is-active');
-        if (hideTimer) clearTimeout(hideTimer);
+        if (hideTimer) clearTimeout(hideTimer); 
         if (!dragging) hideTimer = setTimeout(function () { bar.classList.remove('is-active'); }, 1200);
     }
 
