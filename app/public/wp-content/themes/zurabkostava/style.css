@@ -636,6 +636,16 @@ button {
 	aspect-ratio: 4 / 5;
 }
 
+/* ── 2.1. Premium Pressed Effect ── */
+.zk-grid-card:active {
+	transform: scale(0.97) translateZ(0); /* ოდნავ პატარავდება და სიღრმეში მიდის */
+	border-color: rgba(255, 255, 255, 0.25); /* ჩარჩო ოდნავ ნათდება, თითქოს შუქი დაეცა */
+
+	/* დაჭერის (Press) მყისიერი და დინამიური ანიმაცია */
+	transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1),
+	border-color 0.1s ease;
+}
+
 /* ── 3. Image & Zoom Effect ── */
 .zk-card-image {
 	flex: 1;
