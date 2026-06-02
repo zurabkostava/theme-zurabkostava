@@ -673,6 +673,12 @@ button {
 	transition: padding-bottom 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ჰოვერზე კონტენტის (ტექსტების) რბილი აწევა */
+.zk-grid-card:hover .zk-card-content {
+	padding-bottom: 34px; /* დეფოლტად არის 24px, შესაბამისად აიწევს 10px-ით ზემოთ */
+}
+
+
 .zk-card-meta {
 	display: flex;
 	align-items: center;
