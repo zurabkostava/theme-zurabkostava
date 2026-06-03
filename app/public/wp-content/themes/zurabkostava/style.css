@@ -100,7 +100,7 @@ button {
 }
 
 /* ============================================================
-   STICKY GLASS HEADER
+   ULTRA-PREMIUM STICKY GLASS HEADER
    ============================================================ */
 .site-header {
 	position: fixed;
@@ -112,38 +112,38 @@ button {
 	align-items: center;
 	height: var(--header-h);
 
-	/* ამოვიღეთ ბლარი და ფონი აქედან, რომ Dropdown აღარ დაიბლოკოს */
 	background: transparent;
-	border-bottom: 1px solid var(--hairline);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08); /* ფაქიზი ხაზი */
 	transition: height 0.45s var(--ease), border-color 0.45s var(--ease), box-shadow 0.45s var(--ease);
 }
 
-/* ჰედერის შიდა მინა, რომელიც უკან ზის და დროპდაუნს ხელს არ უშლის */
+/* ── ჰედერის ძლიერი მინა (დროპდაუნის იდენტური) ── */
 .site-header::before {
 	content: "";
 	position: absolute;
 	inset: 0;
 	z-index: -1;
-	background: var(--header-bg);
-	-webkit-backdrop-filter: blur(var(--blur)) saturate(160%);
-	backdrop-filter: blur(var(--blur)) saturate(160%);
+	background: rgba(12, 12, 16, 0.35); /* იგივე გამჭვირვალობა */
+	-webkit-backdrop-filter: blur(32px) saturate(200%);
+	backdrop-filter: blur(32px) saturate(200%); /* იგივე ძლიერი ბლარი */
+	box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.03); /* ნაზი შიდა ნათება */
 	transition: background 0.45s var(--ease);
 }
 
-/* Condensed state after scroll */
+/* როცა გვერდს ჩამოვასქროლავთ (Condensed state) */
 .site-header.is-scrolled {
 	height: var(--header-h-scrolled);
-	border-bottom-color: var(--hairline-strong);
-	box-shadow: 0 10px 34px rgba(0, 0, 0, 0.38);
+	border-bottom-color: rgba(255, 255, 255, 0.12);
+	box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4); /* ღრმა ჩრდილი სქროლვისას */
 }
 
 .site-header.is-scrolled::before {
-	background: var(--header-bg-scrolled);
+	background: rgba(10, 10, 12, 0.6); /* ოდნავ მუქდება კითხვის გასამარტივებლად */
 }
 
-/* Fallback for browsers without backdrop-filter support */
+/* Fallback ძველი ბრაუზერებისთვის */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-	.site-header::before { background: rgba(9, 9, 11, 0.92); }
+	.site-header::before { background: rgba(9, 9, 11, 0.95); }
 }
 
 .header-inner {
@@ -241,26 +241,22 @@ button {
 }
 
 /* ============================================================
-   ULTRA-PREMIUM GLASS DROPDOWNS (Header Main & Nested)
+   ULTRA-PREMIUM GLASS DROPDOWNS (Main & Nested Unified)
    ============================================================ */
-.dropdown-menu {
+/* საერთო მინის ბაზა ორივე დონისთვის */
+.dropdown-menu,
+.nested-menu {
 	position: absolute;
-	top: 100%;
-	left: 0;
 	min-width: 210px;
 	padding: 8px;
-	margin-top: 12px;
 
-	/* ── ნამდვილი მინის ეფექტი: მეტი გამჭვირვალობა, მძლავრი ბლარი ── */
 	background: rgba(12, 12, 16, 0.35) !important;
 	-webkit-backdrop-filter: blur(32px) saturate(200%) !important;
 	backdrop-filter: blur(32px) saturate(200%) !important;
 
-	/* ── ფაქიზი 1px ჩარჩო ── */
 	border: 1px solid rgba(255, 255, 255, 0.1) !important;
 	border-bottom-color: rgba(255, 255, 255, 0.03) !important;
 	border-right-color: rgba(255, 255, 255, 0.03) !important;
-
 	border-radius: 14px;
 
 	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3),
@@ -268,22 +264,22 @@ button {
 
 	opacity: 0;
 	visibility: hidden;
-	transform: translateY(12px);
-	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	z-index: 100;
+	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* უხილავი ხიდი მთავარ მენიუსა და დროპდაუნს შორის */
+/* ── 1. მთავარი დროპდაუნის პოზიცია (ქვემოდან ამოდის) ── */
+.dropdown-menu {
+	top: 100%;
+	left: 0;
+	margin-top: 12px;
+	transform: translateY(12px);
+}
 .dropdown-menu::before {
 	content: "";
 	position: absolute;
-	top: -16px;
-	left: 0;
-	right: 0;
-	height: 16px;
+	top: -16px; left: 0; right: 0; height: 16px;
 }
-
-/* გამოჩენის ანიმაცია */
 .has-dropdown:hover > .dropdown-menu,
 .has-dropdown:focus-within > .dropdown-menu {
 	opacity: 1;
@@ -291,23 +287,25 @@ button {
 	transform: translateY(0);
 }
 
-/* ── შიდა (Nested) დროპდაუნის პოზიციონირება ── */
-.dropdown-menu .nested-menu {
+/* ── 2. შიდა (Nested) მენიუს პოზიცია (გვერდიდან გამოდის) ── */
+.nested-menu {
 	top: -9px;
 	left: calc(100% + 6px);
-	margin-top: 0;
+	transform: translateX(12px); /* მარჯვნიდან მოცურავს */
+}
+.nested-menu::before {
+	content: "";
+	position: absolute;
+	top: 0; bottom: 0; left: -12px; width: 12px; height: auto;
+}
+.has-nested-dropdown:hover > .nested-menu,
+.has-nested-dropdown:focus-within > .nested-menu {
+	opacity: 1;
+	visibility: visible;
+	transform: translateX(0);
 }
 
-/* უხილავი ხიდი შიდა მენიუსთვის */
-.dropdown-menu .nested-menu::before {
-	top: 0;
-	bottom: 0;
-	left: -12px;
-	width: 12px;
-	height: auto;
-}
-
-/* ── ლინკების ვიზუალი მინის შიგნით ── */
+/* ── ლინკების ვიზუალი ── */
 .dropdown-link {
 	display: flex;
 	align-items: center;
