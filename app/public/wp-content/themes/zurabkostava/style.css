@@ -856,10 +856,10 @@ button {
 }
 
 /* ============================================================
-   BREADCRUMBS STYLES (ულტრა-მინიმალისტური)
+   BREADCRUMBS STYLES (ახალი - Sticky & Glass თავსებადი)
    ============================================================ */
 .zk-breadcrumbs {
-	display: flex;
+	display: inline-flex; /* იკუმშება ზუსტად ტექსტის სიგანეზე */
 	align-items: center;
 	flex-wrap: wrap;
 	gap: 8px;
@@ -868,6 +868,32 @@ button {
 	font-weight: 500;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
+
+	/* ── STICKY ეფექტის ბაზა ── */
+	position: sticky;
+	top: calc(var(--header-h-scrolled) + 14px); /* გაჩერდება ჰედერის ქვემოთ, ნაზი კინემატოგრაფიული დაშორებით */
+	z-index: 90;
+
+	/* მოსამზადებელი სტილები რბილი გადასვლისთვის */
+	padding: 6px 0;
+	border: 1px solid transparent;
+	border-radius: 30px;
+	transition:
+			background-color 0.4s var(--ease),
+			backdrop-filter 0.4s var(--ease),
+			padding 0.4s var(--ease),
+			border-color 0.4s var(--ease),
+			box-shadow 0.4s var(--ease);
+}
+
+/* ── მინის კაფსულის ეფექტი (როცა სქროლვისას ჰედერს მიეკრობა) ── */
+.zk-breadcrumbs.is-stuck {
+	background-color: rgba(16, 16, 20, 0.45); /* ფაქიზი მუქი მინა */
+	-webkit-backdrop-filter: blur(14px) saturate(160%);
+	backdrop-filter: blur(14px) saturate(160%); /* ბლარავს უკანა ტექსტს */
+	border-color: var(--hairline); /* წვრილი პრემიუმ ჩარჩო */
+	padding: 6px 16px; /* ეძლევა შიდა სივრცე და ხდება ბეიჯივით */
+	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3); /* ნაზი ჩრდილი სიღრმისთვის */
 }
 
 /* ბმულების საწყისი სტილი (ოდნავ ჩამქრალი თეთრი) */

@@ -390,3 +390,42 @@
         }).observe(viewEl, { childList: true });
     }
 })();
+
+/* ============================================================
+   STICKY BREADCRUMBS SENSOR (მინის ეფექტის ჩამრთველი)
+   ============================================================ */
+(function() {
+    function initStickyBreadcrumbs() {
+        var breadcrumbs = document.querySelector('.zk-breadcrumbs');
+        // თუ ბრედკრამბი არ არსებობს ან სენსორი უკვე დასმულია, არაფერს ვაკეთებთ
+        if (!breadcrumbs || (breadcrumbs.previousElementSibling && breadcrumbs.previousElementSibling.classList.contains('zk-sentinel'))) return;
+
+        // ვქმნით უხილავ პატარა სენსორს ბრედკრამბის ზუსტად თავზე
+        var sentinel = document.createElement('div');
+        sentinel.className = 'zk-sentinel';
+        sentinel.style.position = 'absolute';
+        sentinel.style.height = '0px';
+        breadcrumbs.parentNode.insertBefore(sentinel, breadcrumbs);
+
+        // ვაკვირდებით, როდის გადაკვეთს ეს სენსორი ჰედერის ხაზს (64px სიმაღლე + 14px დაშორება = 78px)
+        var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                // თუ სენსორი გასცდა ხაზს (ზემოთ ავიდა), ვრთავთ მინის კაფსულას
+                breadcrumbs.classList.toggle('is-stuck', !entry.isIntersecting);
+            });
+        }, {
+            rootMargin: '-78px 0px 0px 0px'
+        });
+
+        observer.observe(sentinel);
+    }
+
+    // ვუშვებთ ეგრევე ჩატვირთვისას
+    initStickyBreadcrumbs();
+
+    // SPA როუტერისთვის: როცა გვერდები უდეფრეშოდ იცვლება, ახალ გვერდზეც ავტომატურად ვრთავთ სენსორს
+    var viewEl = document.getElementById('view');
+    if (viewEl) {
+        new MutationObserver(initStickyBreadcrumbs).observe(viewEl, { childList: true });
+    }
+})();
