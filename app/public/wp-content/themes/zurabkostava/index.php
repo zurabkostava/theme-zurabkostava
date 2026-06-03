@@ -60,6 +60,39 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
             <p class="page__description"><?php echo get_the_excerpt(); ?></p>
         <?php endif; ?>
         <div class="page__content"><?php the_content(); ?></div>
+        <?php
+        // პოსტის ნავიგაცია (Next / Prev)
+        $prev_post = get_previous_post();
+        $next_post = get_next_post();
+
+        if ( is_single() && ( $prev_post || $next_post ) ) :
+            ?>
+            <nav class="zk-post-nav">
+                <?php if ( $prev_post ) :
+                    $prev_url = get_permalink( $prev_post );
+                    $prev_path = wp_parse_url( $prev_url, PHP_URL_PATH );
+                    ?>
+                    <a href="<?php echo esc_url( $prev_url ); ?>" data-route="<?php echo esc_attr( $prev_path ); ?>" class="zk-nav-link zk-nav-prev">
+                        <span class="zk-nav-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Previous</span>
+                        <span class="zk-nav-title"><?php echo esc_html( get_the_title( $prev_post ) ); ?></span>
+                    </a>
+                <?php else : ?>
+                    <div class="zk-nav-link zk-nav-empty"></div>
+                <?php endif; ?>
+
+                <?php if ( $next_post ) :
+                    $next_url = get_permalink( $next_post );
+                    $next_path = wp_parse_url( $next_url, PHP_URL_PATH );
+                    ?>
+                    <a href="<?php echo esc_url( $next_url ); ?>" data-route="<?php echo esc_attr( $next_path ); ?>" class="zk-nav-link zk-nav-next">
+                        <span class="zk-nav-label">Next <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
+                        <span class="zk-nav-title"><?php echo esc_html( get_the_title( $next_post ) ); ?></span>
+                    </a>
+                <?php else : ?>
+                    <div class="zk-nav-link zk-nav-empty"></div>
+                <?php endif; ?>
+            </nav>
+        <?php endif; ?>
     </div>
     <?php
     $zk_view = ob_get_clean();
