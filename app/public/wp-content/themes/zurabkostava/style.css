@@ -77,7 +77,8 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	background: transparent;
 	border: none;
 	box-shadow: none;
-	transition: height 0.45s var(--ease);
+	transition: height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+	background 0.45s ease;
 
 }
 
