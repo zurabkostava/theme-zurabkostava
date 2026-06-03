@@ -70,7 +70,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .site-header {
 	position: fixed;
 	top: 0; left: 0; right: 0;
-	z-index: var(--z-header);
+	z-index: 90;
 	display: flex;
 	align-items: center;
 	height: var(--header-h);
@@ -78,6 +78,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	border: none;
 	box-shadow: none;
 	transition: height 0.45s var(--ease);
+
 }
 
 /* ── ულტრა-რბილი და გრძელი Gradient Blur ── */
