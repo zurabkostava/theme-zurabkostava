@@ -281,26 +281,52 @@
 
 
 /* ============================================================
-   CUSTOM GRID SORTING (Vanilla JS, Instant Reorder)
+   CUSTOM GRID SORTING WITH DROPDOWN (Vanilla JS)
    ============================================================ */
 document.addEventListener('click', function (e) {
-    var btn = e.target.closest('.zk-sort-btn');
-    if (!btn) return;
+    // 1. Dropdown-ის გახსნა/დახურვა
+    var trigger = e.target.closest('.zk-sort-trigger');
+    if (trigger) {
+        var dropdown = trigger.closest('.zk-sort-dropdown');
+        var isOpen = dropdown.classList.contains('is-open');
 
-    // არ ვაკეთებთ არაფერს, თუ უკვე აქტიურ ღილაკს აჭერს
-    if (btn.classList.contains('is-active')) return;
+        // ვხურავთ ყველა სხვა ღია დროპდაუნს (თუ მომავალში დაემატება)
+        document.querySelectorAll('.zk-sort-dropdown').forEach(function(d) { d.classList.remove('is-open'); });
 
-    var wrapper = btn.closest('.zk-grid-wrapper');
+        if (!isOpen) dropdown.classList.add('is-open');
+        return;
+    }
+
+    // თუ სხვაგან დავაკლიკეთ, ვხურავთ დროპდაუნს
+    if (!e.target.closest('.zk-sort-dropdown')) {
+        document.querySelectorAll('.zk-sort-dropdown').forEach(function(d) { d.classList.remove('is-open'); });
+    }
+
+    // 2. უშუალოდ სორტირების არჩევა
+    var option = e.target.closest('.zk-sort-option');
+    if (!option) return;
+
+    var wrapper = option.closest('.zk-grid-wrapper');
+    var dropdown = wrapper.querySelector('.zk-sort-dropdown');
+    var currentText = wrapper.querySelector('.zk-sort-current');
     var grid = wrapper.querySelector('.zk-post-grid');
-    var order = btn.getAttribute('data-sort');
+    var order = option.getAttribute('data-sort');
 
-    // აქტიური ღილაკის ვიზუალის შეცვლა
-    wrapper.querySelectorAll('.zk-sort-btn').forEach(function(b) {
-        b.classList.remove('is-active');
-    });
-    btn.classList.add('is-active');
+    // თუ უკვე არჩეულს ვაკლიკებთ, უბრალოდ ვხურავთ
+    if (option.classList.contains('is-selected')) {
+        dropdown.classList.remove('is-open');
+        return;
+    }
 
-    // ქარდების დალაგება თარიღის (data-time) მიხედვით
+    // განვაახლოთ არჩეული კლასები
+    wrapper.querySelectorAll('.zk-sort-option').forEach(function(o) { o.classList.remove('is-selected'); });
+    option.classList.add('is-selected');
+
+    // განვაახლოთ ტექსტი Trigger-ში
+    currentText.textContent = option.textContent;
+    dropdown.classList.remove('is-open'); // ვხურავთ მენიუს
+
+    // 3. ქარდების გადალაგება
     var cards = [].slice.call(grid.querySelectorAll('.zk-grid-card'));
     cards.sort(function(a, b) {
         var tA = parseInt(a.getAttribute('data-time'), 10);
@@ -308,15 +334,12 @@ document.addEventListener('click', function (e) {
         return order === 'asc' ? tA - tB : tB - tA;
     });
 
-    // კინემატოგრაფიული გადალაგების ანიმაცია
+    // ანიმაცია
     grid.style.transition = 'opacity 0.25s var(--ease)';
     grid.style.opacity = '0';
 
     setTimeout(function() {
-        // ვცვლით ქარდების ადგილებს DOM-ში
         cards.forEach(function(card) { grid.appendChild(card); });
-
-        // ვაბრუნებთ ხილვადობას
         grid.style.opacity = '1';
     }, 250);
 });

@@ -914,36 +914,104 @@ button {
 
 
 /* ============================================================
-   GRID CONTROLS & FILTERING
+   GRID CONTROLS & PREMIUM DROPDOWN
    ============================================================ */
 .zk-grid-controls {
 	display: flex;
-	align-items: center;
-	justify-content: flex-end; /* მარჯვენა მხარეს გასწორება */
-	gap: 8px;
+	justify-content: flex-end;
 	margin-bottom: 24px;
 }
 
-.zk-sort-btn {
-	font-size: 0.65rem;
-	font-weight: 600;
-	letter-spacing: 0.15em;
+.zk-sort-dropdown {
+	position: relative;
+	z-index: 100;
+}
+
+/* ღილაკი, რომელიც ჩანს ეკრანზე */
+.zk-sort-trigger {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.72rem;
+	font-weight: 500;
+	letter-spacing: 0.08em;
 	text-transform: uppercase;
-	color: var(--text-dim);
-	background: transparent;
-	border: 1px solid var(--hairline-strong);
-	padding: 8px 16px;
-	border-radius: 40px; /* მომრგვალებული პრემიუმ ღილაკები */
+	color: var(--text-muted);
+	padding: 8px 12px;
+	border-radius: 8px;
+	transition: color 0.3s var(--ease), background 0.3s var(--ease);
+}
+
+.zk-sort-trigger:hover,
+.zk-sort-dropdown.is-open .zk-sort-trigger {
+	color: var(--text);
+	background: rgba(255, 255, 255, 0.04);
+}
+
+.zk-sort-label { color: rgba(255, 255, 255, 0.3); } /* "Sort by:" ოდნავ ჩამქრალია */
+.zk-sort-current { color: #fff; } /* არჩეული ვარიანტი ანათებს */
+
+/* ისარი ღილაკში */
+.zk-sort-trigger .dropdown-caret {
+	margin-left: 2px;
+	opacity: 0.6;
+	transition: transform 0.4s var(--ease);
+}
+.zk-sort-dropdown.is-open .zk-sort-trigger .dropdown-caret {
+	transform: rotate(180deg);
+}
+
+/* ჩამოსაშლელი ფანჯარა (Glassmorphism) */
+.zk-sort-menu {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	min-width: 160px;
+	background: var(--glass-bg);
+	-webkit-backdrop-filter: blur(22px) saturate(170%);
+	backdrop-filter: blur(22px) saturate(170%);
+	border: 1px solid var(--hairline);
+	border-radius: 12px;
+	padding: 6px;
+	box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+
+	/* ანიმაციის საწყისი მდგომარეობა */
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(8px);
 	transition: all 0.3s var(--ease);
 }
 
-.zk-sort-btn:hover {
-	color: var(--text);
-	border-color: rgba(255, 255, 255, 0.3);
+/* როცა დროპდაუნი ღიაა */
+.zk-sort-dropdown.is-open .zk-sort-menu {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
 }
 
-.zk-sort-btn.is-active {
-	color: #000;
-	background: #fff;
-	border-color: #fff;
+/* ვარიანტები მენიუში */
+.zk-sort-option {
+	display: block;
+	width: 100%;
+	text-align: left;
+	padding: 10px 14px;
+	font-size: 0.75rem;
+	font-weight: 500;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	border-radius: 8px;
+	transition: all 0.25s var(--ease);
+}
+
+.zk-sort-option:hover {
+	color: #fff;
+	background: rgba(255, 255, 255, 0.08);
+	padding-left: 18px; /* ჰოვერზე ოდნავ მარჯვნივ იწევა, ელეგანტურია */
+}
+
+/* აქტიური (არჩეული) ვარიანტი მენიუში */
+.zk-sort-option.is-selected {
+	color: #fff;
+	background: rgba(255, 255, 255, 0.12);
 }

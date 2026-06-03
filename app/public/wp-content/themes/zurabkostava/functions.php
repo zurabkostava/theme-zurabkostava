@@ -156,11 +156,19 @@ function zk_custom_post_grid( $atts ) {
     // მთავარი კონტეინერი (Wrapper)
     $output = '<div class="zk-grid-wrapper">';
 
-    // ფილტრაციის/სორტირების ღილაკები
+// ფილტრაციის/სორტირების Custom Dropdown
     $output .= '<div class="zk-grid-controls">';
-    $output .= '<button class="zk-sort-btn is-active" type="button" data-sort="desc">Newest</button>';
-    $output .= '<button class="zk-sort-btn" type="button" data-sort="asc">Oldest</button>';
-    $output .= '</div>';
+    $output .= '<div class="zk-sort-dropdown" id="sortDropdown">';
+    $output .= '<button class="zk-sort-trigger" type="button" aria-expanded="false">';
+    $output .= '<span class="zk-sort-label">Sort by: </span><span class="zk-sort-current">Newest</span>';
+    $output .= '<svg class="dropdown-caret" width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    $output .= '</button>';
+    $output .= '<div class="zk-sort-menu">';
+    $output .= '<button class="zk-sort-option is-selected" type="button" data-sort="desc">Newest</button>';
+    $output .= '<button class="zk-sort-option" type="button" data-sort="asc">Oldest</button>';
+    $output .= '</div>'; // end menu
+    $output .= '</div>'; // end dropdown
+    $output .= '</div>'; // end controls
 
     // უშუალოდ გრიდი
     $output .= '<div class="zk-post-grid">';
