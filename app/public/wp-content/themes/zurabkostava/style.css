@@ -129,84 +129,51 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .has-dropdown:hover > .dropdown-trigger .dropdown-caret, .has-dropdown:focus-within > .dropdown-trigger .dropdown-caret, .has-dropdown.open > .dropdown-trigger .dropdown-caret { transform: rotate(180deg); opacity: 1; }
 
 /* ============================================================
-   ULTRA-PREMIUM GLASS DROPDOWNS (DESKTOP ONLY)
-   აქ მოხდა იზოლაცია!
-   ============================================================ */
-/* ============================================================
-   ULTRA-PREMIUM GLASS DROPDOWNS (DESKTOP ONLY)
+   ULTRA-PREMIUM GLASS DROPDOWNS (DESKTOP ONLY) - PLAN A
    ============================================================ */
 @media (min-width: 901px) {
-	/* 1. მთავარი კონტეინერი (მხოლოდ ანიმაციისთვის, ფერების გარეშე) */
 	.dropdown-menu, .nested-menu {
 		position: absolute; min-width: 210px; padding: 8px;
 		border-radius: 14px;
+
+		/* ── ბაზა და ბლარი პირდაპირ მთავარ ელემენტზე ── */
+		background: rgba(18, 18, 22, 0.55) !important;
+		-webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+		backdrop-filter: blur(24px) saturate(180%) !important;
+
+		border: 1px solid rgba(255, 255, 255, 0.1) !important;
+		border-bottom-color: rgba(255, 255, 255, 0.03) !important;
+		border-right-color: rgba(255, 255, 255, 0.03) !important;
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
 		opacity: 0; visibility: hidden; z-index: 100;
 
-		/* ── GPU აქსელერაცია (ბლარის ლაგის მოსახსნელად) ── */
+		/* ── GPU აქსელერაცია (ყველაზე მნიშვნელოვანი) ── */
 		will-change: transform, opacity;
 		-webkit-backface-visibility: hidden;
 		backface-visibility: hidden;
-
-		/* all-ის მაგივრად კონკრეტულ თვისებებს ვაძლევთ ანიმაციას, რომ ბრაუზერი არ დაიბნეს */
-		transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-		transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-		visibility 0.4s;
+		transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
 	}
 
-	/* 2. ── მინის დამოუკიდებელი ფენა (ბაგის მკურნალი) ── */
-	.dropdown-menu::after, .nested-menu::after {
-		content: ""; position: absolute; inset: 0; z-index: -1;
-		border-radius: 14px;
-
-		background: rgba(12, 12, 16, 0.35);
-		-webkit-backdrop-filter: blur(32px) saturate(200%);
-		backdrop-filter: blur(32px) saturate(200%);
-
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-bottom-color: rgba(255, 255, 255, 0.03);
-		border-right-color: rgba(255, 255, 255, 0.03);
-		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-
-		/* ── ვაიძულებთ ვიდეობარათს (GPU), რომ ანიმაციისას ბლარი არ დაკარგოს ── */
-		-webkit-transform: translate3d(0, 0, 0);
-		transform: translate3d(0, 0, 0);
-	}
-
-	.dropdown-menu { top: 100%; left: 0; margin-top: 12px; transform: translateY(12px); }
-
-	/* უხილავი ხიდი მთავარი მენიუსთვის */
+	/* ── Transform-ში translateZ(0) აუცილებელია ბლარის ანიმაციისთვის ── */
+	.dropdown-menu { top: 100%; left: 0; margin-top: 12px; transform: translateY(12px) translateZ(0); }
 	.dropdown-menu::before { content: ""; position: absolute; top: -16px; left: 0; right: 0; height: 16px; }
-
-	.has-dropdown:hover > .dropdown-menu, .has-dropdown:focus-within > .dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+	.has-dropdown:hover > .dropdown-menu, .has-dropdown:focus-within > .dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0) translateZ(0); }
 
 	.has-nested-dropdown { position: relative; }
-
 	.nested-menu {
 		top: -9px !important; right: calc(100% + 6px) !important; left: auto !important; margin-top: 0;
-		transform: translateX(12px) !important;
+		transform: translateX(12px) translateZ(0) !important;
 	}
-
-	/* შიდა მენიუს სპეციფიკური ჩარჩო შუქისთვის */
-	.nested-menu::after {
-		border-right-color: rgba(255, 255, 255, 0.1);
-		border-left-color: rgba(255, 255, 255, 0.03);
-	}
-
-	/* უხილავი ხიდი შიდა მენიუსთვის */
 	.nested-menu::before { content: ""; position: absolute; top: 0; bottom: 0; right: -12px; left: auto; width: 12px; height: auto; }
+	.has-nested-dropdown:hover > .nested-menu, .has-nested-dropdown:focus-within > .nested-menu { opacity: 1; visibility: visible; transform: translateX(0) translateZ(0) !important; }
 
-	.has-nested-dropdown:hover > .nested-menu, .has-nested-dropdown:focus-within > .nested-menu { opacity: 1; visibility: visible; transform: translateX(0) !important; }
-
-	/* 3. ── ლინკების ვიზუალი ── */
 	.dropdown-link {
-		position: relative; z-index: 2; /* ლინკი ამოგვყავს მინის წინ */
 		display: flex; align-items: center; justify-content: space-between;
-		padding: 10px 14px; color: rgba(255, 255, 255, 0.7); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 8px; transition: all 0.3s var(--ease); text-decoration: none !important;
+		padding: 10px 14px; color: rgba(255, 255, 255, 0.7); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 8px; transition: all 0.25s var(--ease); text-decoration: none !important;
 	}
-
 	.dropdown-link:hover, .dropdown-link:focus-visible { color: #fff; background: rgba(255, 255, 255, 0.08); padding-left: 18px; }
-
-	.nested-caret { opacity: 0.4; transform: rotate(90deg); transition: transform 0.3s var(--ease), opacity 0.3s var(--ease); }
+	.nested-caret { opacity: 0.4; transform: rotate(90deg); transition: transform 0.25s var(--ease), opacity 0.25s var(--ease); }
 	.dropdown-link:hover .nested-caret { opacity: 1; transform: rotate(90deg) translateY(-3px); }
 }
 
