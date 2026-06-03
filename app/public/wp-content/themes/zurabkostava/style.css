@@ -1165,3 +1165,23 @@ button {
 	color: rgba(255, 255, 255, 0.5);
 	display: block;
 }
+
+/* ============================================================
+   BREADCRUMBS HOME ICON
+   ============================================================ */
+.zk-breadcrumbs .zk-home-link {
+	display: flex;
+	align-items: center;
+	color: var(--text-dim);
+	transition: color 0.3s var(--ease), transform 0.3s var(--ease);
+}
+
+.zk-breadcrumbs .zk-home-icon {
+	/* ოდნავ მაღლა ვწევთ, რომ ტექსტის ცენტრს იდეალურად გაუსწორდეს */
+	margin-top: -2px;
+}
+
+.zk-breadcrumbs .zk-home-link:hover {
+	color: var(--text);
+	transform: scale(1.05); /* მაუსის მიტანისას ოდნავ იზრდება (პულსაცია) */
+}
