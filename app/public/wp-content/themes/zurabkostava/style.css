@@ -230,23 +230,26 @@ button {
 }
 
 /* ============================================================
-   PREMIUM GLASS DROPDOWNS (Header Main & Nested)
+   PREMIUM OBSIDIAN GLASS DROPDOWNS (Header Main & Nested)
    ============================================================ */
 .dropdown-menu {
 	position: absolute;
 	top: 100%;
 	left: 0;
-	min-width: 200px;
+	min-width: 220px; /* ოდნავ განიერი, უფრო ელეგანტური სუნთქვისთვის */
 	padding: 8px;
 
-	/* ── ვაიძულებთ ბრაუზერს, რომ აუცილებლად ეს მინა გამოიყენოს ── */
-	background: rgba(255, 255, 255, 0.03) !important; /* ბევრად უფრო ნათელი/გამჭვირვალე, რომ ბლარმა იმუშაოს */
-	-webkit-backdrop-filter: blur(30px) saturate(200%) !important;
-	backdrop-filter: blur(30px) saturate(200%) !important;
+	/* ── მუქი ობსიდიანის მინა (მუშაობს ნებისმიერ ჭრელ ფონზე) ── */
+	background: rgba(12, 12, 16, 0.75) !important;
+	-webkit-backdrop-filter: blur(24px) saturate(150%) !important;
+	backdrop-filter: blur(24px) saturate(150%) !important;
 
+	/* კრიალა ჩარჩო და 3D შიდა განათება (Apple Pro ეფექტი) */
 	border: 1px solid rgba(255, 255, 255, 0.08) !important;
-	border-radius: 12px;
-	box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+	border-radius: 14px;
+	box-shadow:
+			0 30px 60px rgba(0, 0, 0, 0.6),
+			inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 
 	opacity: 0;
 	visibility: hidden;
@@ -255,21 +258,7 @@ button {
 	z-index: 100;
 }
 
-/* როცა დროპდაუნი იხსნება */
-.nav-item.has-dropdown:hover > .dropdown-menu,
-.nested-item.has-nested-dropdown:hover > .nested-menu {
-	opacity: 1;
-	visibility: visible;
-	transform: translateY(0);
-}
-
-/* შიდა Nested დროპდაუნი (მეორე დონე) */
-.dropdown-menu .nested-menu {
-	top: -9px; /* უსწორდება მშობელ ელემენტს (padding + border გათვალისწინებით) */
-	left: calc(100% + 4px); /* ოდნავ მარჯვნივ გადის, რომ არ გადაფაროს */
-}
-
-/* Invisible bridge so the cursor can cross the gap without closing */
+/* უხილავი ხიდი, რომ მაუსის გადატანისას მენიუ არ დაიხუროს */
 .dropdown-menu::before {
 	content: "";
 	position: absolute;
@@ -279,8 +268,7 @@ button {
 	height: 14px;
 }
 
-/* The gorgeous reveal: fade-in + slide-up — DIRECT child only, so a nested
-   submenu doesn't open just because its parent menu is being hovered */
+/* ანიმაცია: ჩნდება და ამოდის (მხოლოდ პირდაპირ შვილზე) */
 .has-dropdown:hover > .dropdown-menu,
 .has-dropdown:focus-within > .dropdown-menu {
 	opacity: 1;
@@ -288,13 +276,19 @@ button {
 	transform: translateY(0);
 }
 
+/* ── Nested დროპდაუნის (მეორე დონის) პოზიციონირება ── */
+.dropdown-menu .nested-menu {
+	top: -9px;
+	left: calc(100% + 12px); /* +12px ქმნის სუფთა, კინემატოგრაფიულ დაშორებას ორ მენიუს შორის */
+}
+
 /* ── ლინკების ვიზუალი მინის შიგნით ── */
 .dropdown-link {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 10px 14px;
-	color: rgba(255, 255, 255, 0.65);
+	padding: 10px 16px;
+	color: rgba(255, 255, 255, 0.6); /* ოდნავ ჩამქრალი ტექსტი საწყის ეტაპზე */
 	font-size: 0.72rem;
 	font-weight: 500;
 	letter-spacing: 0.1em;
@@ -303,21 +297,23 @@ button {
 	transition: all 0.3s var(--ease);
 	text-decoration: none !important;
 }
+
+/* ჰოვერის დროს ნათდება და ინაცვლებს */
 .dropdown-link:hover,
 .dropdown-link:focus-visible {
 	color: #fff;
-	background: rgba(255, 255, 255, 0.06); /* ნაზი განათება უკან */
-	padding-left: 20px; /* კინემატოგრაფიული წანაცვლება მარჯვნივ */
+	background: rgba(255, 255, 255, 0.08); /* ძალიან ნაზი ნათება ღილაკის უკან */
+	padding-left: 20px;
 }
 
 /* ისარი შიდა დროპდაუნისთვის */
 .nested-caret {
-	opacity: 0.5;
+	opacity: 0.4;
 	transition: transform 0.3s var(--ease);
 }
 .dropdown-link:hover .nested-caret {
 	opacity: 1;
-	transform: translateX(3px); /* ჰოვერზე ისარიც მარჯვნივ იწევა */
+	transform: translateX(4px);
 }
 
 /* ------------------------------------------------------------
