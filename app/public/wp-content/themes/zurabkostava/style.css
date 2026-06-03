@@ -75,27 +75,25 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	align-items: center;
 	height: var(--header-h);
 	background: transparent;
-
-	/* მოვხსენით უხეში ხაზები და ჩრდილები სრული, კინემატოგრაფიული შერწყმისთვის */
 	border: none;
 	box-shadow: none;
 	transition: height 0.45s var(--ease);
 }
 
-/* ── გენიალური Gradient Blur & Mask ეფექტი ── */
+/* ── ულტრა-რბილი და გრძელი Gradient Blur ── */
 .site-header::before {
 	content: "";
 	position: absolute;
 	top: 0; left: 0; right: 0;
-	height: 180px; /* ვწელავთ ქვემოთ, რომ ფეიდს საკმარისი სუნთქვის სივრცე ჰქონდეს */
+	height: 280px; /* საგრძნობლად გავზარდეთ სიგრძე შეუმჩნეველი გადასვლისთვის */
 	z-index: -1;
-	pointer-events: none; /* რომ ამ გრძელმა ფეიდმა ტექსტებზე ან სურათებზე კლიკები არ დაბლოკოს */
+	pointer-events: none;
 
-	/* 1. ფერის გრადიენტი (ზემოთ მუქი ტექსტის წასაკითხად, ქვემოთ ნელ-ნელა ქრება) */
+	/* 1. ფერის გრადიენტი - მოვაშორეთ მძიმე სიშავე (0.55-დან ვიწყებთ) */
 	background: linear-gradient(
 			to bottom,
-			rgba(10, 10, 12, 0.9) 0%,
-			rgba(10, 10, 12, 0.35) 45%,
+			rgba(10, 10, 12, 0.55) 0%,
+			rgba(10, 10, 12, 0.25) 40%,
 			transparent 100%
 	);
 
@@ -103,9 +101,9 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	-webkit-backdrop-filter: blur(28px) saturate(160%);
 	backdrop-filter: blur(28px) saturate(160%);
 
-	/* 3. ნიღაბი (Mask), რომელიც ბლარსაც გრადიენტულად აქრობს */
-	-webkit-mask-image: linear-gradient(to bottom, black 0%, black 35%, transparent 100%);
-	mask-image: linear-gradient(to bottom, black 0%, black 35%, transparent 100%);
+	/* 3. ნიღაბი - 25%-მდე (უშუალოდ მენიუს უკან) იჭერს ძალას, მერე ნაზად ქრება ფოტოში */
+	-webkit-mask-image: linear-gradient(to bottom, black 0%, black 25%, transparent 100%);
+	mask-image: linear-gradient(to bottom, black 0%, black 25%, transparent 100%);
 
 	transition: background 0.45s var(--ease);
 }
@@ -115,19 +113,19 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	height: var(--header-h-scrolled);
 }
 .site-header.is-scrolled::before {
-	/* სქროლზე ოდნავ ვამუქებთ, რომ საიტის კონტენტმა ჰედერის ტექსტს არ გადაუაროს */
+	/* სქროლზეც დავაკელით სიშავე, რომ ზედმეტად არ ჩამუქდეს */
 	background: linear-gradient(
 			to bottom,
-			rgba(8, 8, 10, 0.98) 0%,
-			rgba(8, 8, 10, 0.6) 45%,
+			rgba(10, 10, 12, 0.75) 0%,
+			rgba(10, 10, 12, 0.35) 40%,
 			transparent 100%
 	);
 }
 
-/* ძველი ბრაუზერების მხარდაჭერა, სადაც ბლარი არ მუშაობს */
+/* ძველი ბრაუზერების მხარდაჭერა */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
 	.site-header::before {
-		background: linear-gradient(to bottom, rgba(9, 9, 11, 0.98) 0%, transparent 100%);
+		background: linear-gradient(to bottom, rgba(9, 9, 11, 0.85) 0%, transparent 100%);
 		-webkit-mask-image: none;
 		mask-image: none;
 	}
@@ -137,7 +135,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	display: flex; align-items: center; justify-content: space-between;
 	gap: 24px; width: 100%; max-width: var(--maxw);
 	margin: 0 auto; padding: 0 var(--gutter);
-	height: 100%; /* სრულად იკავებს .site-header-ის ინტერაქტიულ სიმაღლეს */
+	height: 100%;
 }
 /* ------------------------------------------------------------
    Logo & Navigation Links
