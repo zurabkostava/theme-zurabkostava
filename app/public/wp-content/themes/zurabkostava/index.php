@@ -47,6 +47,11 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
 
     <div class="page__inner <?php echo $has_image ? 'has-hero' : ''; ?>">
         <?php zk_breadcrumbs(); ?>
+        <?php if ( is_single() ) : ?>
+            <div class="page__meta">
+                <span class="page__date"><?php echo get_the_date( 'M j, Y' ); ?></span>
+            </div>
+        <?php endif; ?>
         <h1 class="page__title"><?php the_title(); ?></h1>
         <?php if ( has_excerpt() ) : ?>
             <p class="page__description"><?php echo get_the_excerpt(); ?></p>
