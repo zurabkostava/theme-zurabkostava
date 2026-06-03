@@ -109,16 +109,17 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
         $is_current = in_array( 'current-menu-item', $classes ) || in_array( 'current-page-item', $classes );
         if ( $is_current ) $link_class .= ' is-current';
 
-        // ღილაკი ჩაშლისთვის
+        // ლინკი ჩაშლისთვის (გახდა კლიკებადი)
         if ( $has_children ) {
             $link_class .= ' dropdown-trigger';
-            $output .= '<button class="' . esc_attr( $link_class ) . '" type="button" aria-haspopup="true" aria-expanded="false">';
+            $aria = $is_current ? ' aria-current="page"' : '';
+            $output .= '<a class="' . esc_attr( $link_class ) . '" data-route="' . esc_attr( $path ) . '" href="' . esc_url( $url ) . '" aria-haspopup="true" aria-expanded="false"' . $aria . '>';
             $output .= esc_html( $item->title );
 
             // მეორად ჩაშლას ოდნავ სხვა ისარი სჭირდება (მარჯვნივ მიმართული)
             $caret_class = $depth >= 1 ? 'dropdown-caret nested-caret' : 'dropdown-caret';
             $output .= '<svg class="' . esc_attr( $caret_class ) . '" width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-            $output .= '</button>';
+            $output .= '</a>';
         } else {
             // ჩვეულებრივი ლინკი
             $aria = $is_current ? ' aria-current="page"' : '';
