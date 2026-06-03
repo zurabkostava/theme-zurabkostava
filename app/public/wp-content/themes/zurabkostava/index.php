@@ -34,7 +34,18 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
     $zk_def = isset( $zk_routes[ $zk_current ] ) ? $zk_routes[ $zk_current ] : array( 'eyebrow' => '' );
 
     ob_start(); ?>
-    <div class="page__inner">
+
+    <?php
+    // ვამოწმებთ, აქვს თუ არა პოსტს სურათი (Featured Image)
+    $has_image = has_post_thumbnail();
+    if ( $has_image ) :
+        ?>
+        <div class="zk-post-hero" style="background-image: url('<?php echo esc_url( get_the_post_thumbnail_url( get_the_ID(), 'full' ) ); ?>');">
+            <div class="zk-post-hero-gradient"></div>
+        </div>
+    <?php endif; ?>
+
+    <div class="page__inner <?php echo $has_image ? 'has-hero' : ''; ?>">
         <?php zk_breadcrumbs(); ?>
         <h1 class="page__title"><?php the_title(); ?></h1>
         <?php if ( has_excerpt() ) : ?>
