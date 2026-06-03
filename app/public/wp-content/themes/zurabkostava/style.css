@@ -1230,13 +1230,16 @@ button {
 	display: flex;
 	flex-direction: column;
 	text-decoration: none !important;
-	padding: 32px; /* ოდნავ გავზარდეთ სივრცე სურათისთვის */
+	padding: 32px;
 	border-radius: 16px;
 	position: relative;
-	overflow: hidden; /* რომ ბლარმა საზღვრებიდან არ გამოჟონოს */
+	overflow: hidden;
 	background-color: transparent;
 	border: 1px solid transparent;
 	transition: border-color 0.4s var(--ease);
+
+	/* აჩუმებს IntelliJ IDEA-ს შეცდომას და აძლევს საწყის სტატუსს */
+	--nav-bg: initial;
 }
 
 /* უშუალოდ სურათის Layer */
