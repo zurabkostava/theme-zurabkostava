@@ -114,12 +114,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 }
 .site-header.is-scrolled::before {
 	/* სქროლზეც დავაკელით სიშავე, რომ ზედმეტად არ ჩამუქდეს */
-	background: linear-gradient(
-			to bottom,
-			rgba(10, 10, 12, 0.75) 0%,
-			rgba(10, 10, 12, 0.35) 40%,
-			transparent 100%
-	);
+
 }
 
 /* ძველი ბრაუზერების მხარდაჭერა */
