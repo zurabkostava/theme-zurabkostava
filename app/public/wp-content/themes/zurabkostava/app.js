@@ -277,3 +277,46 @@
 
     update();
 })();
+
+
+
+/* ============================================================
+   CUSTOM GRID SORTING (Vanilla JS, Instant Reorder)
+   ============================================================ */
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.zk-sort-btn');
+    if (!btn) return;
+
+    // არ ვაკეთებთ არაფერს, თუ უკვე აქტიურ ღილაკს აჭერს
+    if (btn.classList.contains('is-active')) return;
+
+    var wrapper = btn.closest('.zk-grid-wrapper');
+    var grid = wrapper.querySelector('.zk-post-grid');
+    var order = btn.getAttribute('data-sort');
+
+    // აქტიური ღილაკის ვიზუალის შეცვლა
+    wrapper.querySelectorAll('.zk-sort-btn').forEach(function(b) {
+        b.classList.remove('is-active');
+    });
+    btn.classList.add('is-active');
+
+    // ქარდების დალაგება თარიღის (data-time) მიხედვით
+    var cards = [].slice.call(grid.querySelectorAll('.zk-grid-card'));
+    cards.sort(function(a, b) {
+        var tA = parseInt(a.getAttribute('data-time'), 10);
+        var tB = parseInt(b.getAttribute('data-time'), 10);
+        return order === 'asc' ? tA - tB : tB - tA;
+    });
+
+    // კინემატოგრაფიული გადალაგების ანიმაცია
+    grid.style.transition = 'opacity 0.25s var(--ease)';
+    grid.style.opacity = '0';
+
+    setTimeout(function() {
+        // ვცვლით ქარდების ადგილებს DOM-ში
+        cards.forEach(function(card) { grid.appendChild(card); });
+
+        // ვაბრუნებთ ხილვადობას
+        grid.style.opacity = '1';
+    }, 250);
+});

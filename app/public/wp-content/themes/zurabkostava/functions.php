@@ -131,8 +131,7 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
 }
 
 /**
- * Smart Custom Grid for Posts (Updated with Date)
- * Usage: [custom_grid category="aubades"] or [custom_grid category="nocturnes,aubades"]
+ * Smart Custom Grid for Posts (Updated with Sorting UI and Time Data)
  */
 function zk_custom_post_grid( $atts ) {
     $atts = shortcode_atts( array(
@@ -154,7 +153,17 @@ function zk_custom_post_grid( $atts ) {
         return '<p class="page__content">No posts found in this category.</p>';
     }
 
-    $output = '<div class="zk-post-grid">';
+    // მთავარი კონტეინერი (Wrapper)
+    $output = '<div class="zk-grid-wrapper">';
+
+    // ფილტრაციის/სორტირების ღილაკები
+    $output .= '<div class="zk-grid-controls">';
+    $output .= '<button class="zk-sort-btn is-active" type="button" data-sort="desc">Newest</button>';
+    $output .= '<button class="zk-sort-btn" type="button" data-sort="asc">Oldest</button>';
+    $output .= '</div>';
+
+    // უშუალოდ გრიდი
+    $output .= '<div class="zk-post-grid">';
 
     while ( $query->have_posts() ) {
         $query->the_post();
@@ -166,17 +175,18 @@ function zk_custom_post_grid( $atts ) {
         $categories = get_the_category();
         $cat_name = ! empty( $categories ) ? esc_html( $categories[0]->name ) : 'Post';
 
-        // ვიღებთ თარიღს ლამაზ ფორმატში (მაგ: Oct 24, 2026)
         $date = get_the_date( 'M j, Y' );
+        // ვიღებთ პოსტის გამოქვეყნების ზუსტ წამებს, რათა JS-მა სორტირება შეძლოს
+        $timestamp = get_the_time( 'U' );
 
         $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
         $bg_style = $img_url ? 'style="background-image: url(' . esc_url( $img_url ) . ');"' : '';
 
-        $output .= '<a href="' . esc_url( $link ) . '" class="zk-grid-card" data-route="' . esc_attr( $path ) . '">';
+        // ქარდს ვუმატებთ data-time ატრიბუტს
+        $output .= '<a href="' . esc_url( $link ) . '" class="zk-grid-card" data-route="' . esc_attr( $path ) . '" data-time="' . esc_attr( $timestamp ) . '">';
         $output .= '<div class="zk-card-image" ' . $bg_style . '></div>';
         $output .= '<div class="zk-card-content">';
 
-        // ახალი Meta ბლოკი (კატეგორია + წერტილი + თარიღი)
         $output .= '<div class="zk-card-meta">';
         $output .= '<span class="zk-card-category">' . $cat_name . '</span>';
         $output .= '<span class="zk-card-meta-separator"></span>';
@@ -189,7 +199,8 @@ function zk_custom_post_grid( $atts ) {
     }
 
     wp_reset_postdata();
-    $output .= '</div>';
+    $output .= '</div>'; // იხურება zk-post-grid
+    $output .= '</div>'; // იხურება zk-grid-wrapper
 
     return $output;
 }
