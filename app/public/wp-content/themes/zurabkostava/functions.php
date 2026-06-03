@@ -123,8 +123,19 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
         } else {
             // ჩვეულებრივი ლინკი
             $aria = $is_current ? ' aria-current="page"' : '';
-            $output .= '<a class="' . esc_attr( $link_class ) . '" data-route="' . esc_attr( $path ) . '" href="' . esc_url( $url ) . '"' . $aria . '>';
+
+            // ვამოწმებთ, არის თუ არა ლინკი გარე საიტის (არ შეიცავს შენი საიტის მთავარ მისამართს)
+            $is_external = ( strpos( $url, home_url() ) === false && ( strpos( $url, 'http' ) === 0 || strpos( $url, '//' ) === 0 ) );
+            $target = $is_external ? ' target="_blank" rel="noopener noreferrer"' : '';
+
+            $output .= '<a class="' . esc_attr( $link_class ) . '" data-route="' . esc_attr( $path ) . '" href="' . esc_url( $url ) . '"' . $aria . $target . '>';
             $output .= esc_html( $item->title );
+
+            // თუ გარე ლინკია, ავტომატურად ვამატებთ მინიმალისტურ ისრის იკონს
+            if ( $is_external ) {
+                $output .= '<svg class="zk-external-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>';
+            }
+
             $output .= '</a>';
         }
     }

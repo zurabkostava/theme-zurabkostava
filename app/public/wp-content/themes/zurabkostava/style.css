@@ -1083,3 +1083,21 @@ button {
 	color: #fff;
 	background: rgba(255, 255, 255, 0.12);
 }
+
+/* ============================================================
+   EXTERNAL LINK MENU ICON (გარე ბმულის ისრის იკონი)
+   ============================================================ */
+.dropdown-link .zk-external-icon {
+	display: inline-block;
+	margin-left: 6px; /* დაშორება ტექსტსა და ისარს შორის */
+	vertical-align: middle;
+	margin-top: -2px;
+	opacity: 0.5; /* საწყის ეტაპზე ოდნავ ჩამქრალია */
+	transition: transform 0.3s var(--ease), opacity 0.3s var(--ease);
+}
+
+/* როცა მომხმარებელი მაუსს მიიტანს ამ ლინკზე, ისარი აინთება და ოდნავ ავა ზემოთ/მარჯვნივ */
+.dropdown-link:hover .zk-external-icon {
+	opacity: 1;
+	transform: translate(1px, -1px);
+}
