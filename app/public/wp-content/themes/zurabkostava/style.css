@@ -816,31 +816,64 @@ button {
 
 /* ---- Desktop: fly out to the LEFT. The parent menu is right-aligned
    against the screen edge, so opening rightwards would run off-screen. ---- */
+/* ── 2. შიდა (Nested) მენიუს პოზიცია (გამოდის მარცხნივ - მხოლოდ დესკტოპზე) ── */
 @media (min-width: 901px) {
-	.nested-menu {
-		top: -11px;          /* line the submenu up with its parent row */
-		right: 100%;         /* anchor to the LEFT of the submenu item */
-		left: auto;          /* cancel the inherited .dropdown-menu right: 0 */
-		margin-right: 6px;
-		transform: translateX(12px);   /* hidden offset: slides in from the right */
+	.dropdown-menu .nested-menu {
+		position: absolute !important;
+		top: -9px !important;
+		right: calc(100% + 6px) !important; /* ეკრანიდან რომ არ გავიდეს, ვხსნით მარცხნივ */
+		left: auto !important;
+		min-width: 210px !important;
+		padding: 8px !important;
+		margin: 0 !important;
+
+		background: rgba(12, 12, 16, 0.35) !important;
+		-webkit-backdrop-filter: blur(32px) saturate(200%) !important;
+		backdrop-filter: blur(32px) saturate(200%) !important;
+
+		border: 1px solid rgba(255, 255, 255, 0.1) !important;
+		border-bottom-color: rgba(255, 255, 255, 0.03) !important;
+		border-left-color: rgba(255, 255, 255, 0.03) !important;
+		border-radius: 14px !important;
+
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3),
+		inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+
+		opacity: 0;
+		visibility: hidden;
+		transform: translateX(12px) !important; /* მარჯვნიდან მოცურავს მარცხნივ */
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+		z-index: 101;
 	}
-	/* Bridge the horizontal gap so hover survives crossing into the submenu */
-	.nested-menu::before {
-		top: 0;
-		bottom: 0;
-		left: auto;
-		right: -8px;
-		width: 12px;
-		height: auto;
+
+	/* უხილავი ხიდი, რომ მაუსი არ გაიქცეს */
+	.dropdown-menu .nested-menu::before {
+		content: "";
+		position: absolute;
+		top: 0; bottom: 0;
+		right: -12px; left: auto;
+		width: 12px; height: 100%;
 	}
+
+	/* გამოჩენის ანიმაცია */
 	.has-nested-dropdown:hover > .nested-menu,
 	.has-nested-dropdown:focus-within > .nested-menu {
-		opacity: 1;
-		visibility: visible;
-		transform: translateX(0);
+		opacity: 1 !important;
+		visibility: visible !important;
+		transform: translateX(0) !important;
 	}
-	/* Caret points left, toward the submenu it opens */
-	.nested-caret { transform: rotate(90deg); }
+
+	/* ისარი შიდა დროპდაუნისთვის (მობრუნებულია მარცხნივ) */
+	.nested-caret {
+		opacity: 0.4;
+		transform: rotate(90deg); /* ვაბრუნებთ, რომ მიუთითოს გახსნის მიმართულება */
+		transition: transform 0.3s var(--ease), opacity 0.3s var(--ease);
+	}
+
+	.dropdown-link:hover .nested-caret {
+		opacity: 1;
+		transform: rotate(90deg) translateY(-3px); /* ჰოვერზე ისარი მარცხნივ იწევს */
+	}
 }
 
 /* ---- Mobile: indented inline accordion ---- */
