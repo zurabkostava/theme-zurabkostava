@@ -281,65 +281,95 @@
 
 
 /* ============================================================
-   CUSTOM GRID SORTING WITH DROPDOWN (Vanilla JS)
+   CUSTOM GRID SORTING WITH DROPDOWN & MEMORY (Vanilla JS)
    ============================================================ */
-document.addEventListener('click', function (e) {
-    // 1. Dropdown-ის გახსნა/დახურვა
-    var trigger = e.target.closest('.zk-sort-trigger');
-    if (trigger) {
-        var dropdown = trigger.closest('.zk-sort-dropdown');
-        var isOpen = dropdown.classList.contains('is-open');
+(function() {
+    // 1. მთავარი ფუნქცია, რომელიც ახარისხებს გრიდს
+    function applySort(wrapper, order, animate) {
+        var dropdown = wrapper.querySelector('.zk-sort-dropdown');
+        var currentText = wrapper.querySelector('.zk-sort-current');
+        var grid = wrapper.querySelector('.zk-post-grid');
+        var options = wrapper.querySelectorAll('.zk-sort-option');
+        var targetOption = wrapper.querySelector('.zk-sort-option[data-sort="' + order + '"]');
 
-        // ვხურავთ ყველა სხვა ღია დროპდაუნს (თუ მომავალში დაემატება)
-        document.querySelectorAll('.zk-sort-dropdown').forEach(function(d) { d.classList.remove('is-open'); });
+        if (!grid || !targetOption) return;
 
-        if (!isOpen) dropdown.classList.add('is-open');
-        return;
+        // ვაახლებთ დიზაინს (რომელი ვარიანტია არჩეული)
+        options.forEach(function(o) { o.classList.remove('is-selected'); });
+        targetOption.classList.add('is-selected');
+        if (currentText) currentText.textContent = targetOption.textContent;
+        if (dropdown) dropdown.classList.remove('is-open');
+
+        // ვინახავთ არჩევანს ბრაუზერის მეხსიერებაში
+        try { localStorage.setItem('zkGridSort', order); } catch(e) {}
+
+        // ვალაგებთ ქარდებს
+        var cards = [].slice.call(grid.querySelectorAll('.zk-grid-card'));
+        cards.sort(function(a, b) {
+            var tA = parseInt(a.getAttribute('data-time'), 10);
+            var tB = parseInt(b.getAttribute('data-time'), 10);
+            return order === 'asc' ? tA - tB : tB - tA;
+        });
+
+        // თუ კლიკით ხდება (animate = true), რბილად ვაქრობთ და ვაჩენთ
+        if (animate) {
+            grid.style.transition = 'opacity 0.25s var(--ease)';
+            grid.style.opacity = '0';
+            setTimeout(function() {
+                cards.forEach(function(card) { grid.appendChild(card); });
+                grid.style.opacity = '1';
+            }, 250);
+        } else {
+            // თუ გვერდის ჩატვირთვისას ხდება (უკან დაბრუნებისას), მომენტალურად ვალაგებთ
+            cards.forEach(function(card) { grid.appendChild(card); });
+        }
     }
 
-    // თუ სხვაგან დავაკლიკეთ, ვხურავთ დროპდაუნს
-    if (!e.target.closest('.zk-sort-dropdown')) {
-        document.querySelectorAll('.zk-sort-dropdown').forEach(function(d) { d.classList.remove('is-open'); });
-    }
+    // 2. კლიკების მართვა
+    document.addEventListener('click', function (e) {
+        var trigger = e.target.closest('.zk-sort-trigger');
+        if (trigger) {
+            var dropdown = trigger.closest('.zk-sort-dropdown');
+            var isOpen = dropdown.classList.contains('is-open');
+            document.querySelectorAll('.zk-sort-dropdown').forEach(function(d) { d.classList.remove('is-open'); });
+            if (!isOpen) dropdown.classList.add('is-open');
+            return;
+        }
 
-    // 2. უშუალოდ სორტირების არჩევა
-    var option = e.target.closest('.zk-sort-option');
-    if (!option) return;
+        if (!e.target.closest('.zk-sort-dropdown')) {
+            document.querySelectorAll('.zk-sort-dropdown').forEach(function(d) { d.classList.remove('is-open'); });
+        }
 
-    var wrapper = option.closest('.zk-grid-wrapper');
-    var dropdown = wrapper.querySelector('.zk-sort-dropdown');
-    var currentText = wrapper.querySelector('.zk-sort-current');
-    var grid = wrapper.querySelector('.zk-post-grid');
-    var order = option.getAttribute('data-sort');
-
-    // თუ უკვე არჩეულს ვაკლიკებთ, უბრალოდ ვხურავთ
-    if (option.classList.contains('is-selected')) {
-        dropdown.classList.remove('is-open');
-        return;
-    }
-
-    // განვაახლოთ არჩეული კლასები
-    wrapper.querySelectorAll('.zk-sort-option').forEach(function(o) { o.classList.remove('is-selected'); });
-    option.classList.add('is-selected');
-
-    // განვაახლოთ ტექსტი Trigger-ში
-    currentText.textContent = option.textContent;
-    dropdown.classList.remove('is-open'); // ვხურავთ მენიუს
-
-    // 3. ქარდების გადალაგება
-    var cards = [].slice.call(grid.querySelectorAll('.zk-grid-card'));
-    cards.sort(function(a, b) {
-        var tA = parseInt(a.getAttribute('data-time'), 10);
-        var tB = parseInt(b.getAttribute('data-time'), 10);
-        return order === 'asc' ? tA - tB : tB - tA;
+        var option = e.target.closest('.zk-sort-option');
+        if (option) {
+            var wrapper = option.closest('.zk-grid-wrapper');
+            var order = option.getAttribute('data-sort');
+            if (!option.classList.contains('is-selected')) {
+                applySort(wrapper, order, true);
+            }
+        }
     });
 
-    // ანიმაცია
-    grid.style.transition = 'opacity 0.25s var(--ease)';
-    grid.style.opacity = '0';
+    // 3. მეხსიერების შემოწმება გვერდის ჩატვირთვისას და SPA გადასვლებისას
+    function checkMemory() {
+        try {
+            var savedOrder = localStorage.getItem('zkGridSort');
+            if (savedOrder) {
+                document.querySelectorAll('.zk-grid-wrapper').forEach(function(wrapper) {
+                    applySort(wrapper, savedOrder, false); // false = ანიმაციის გარეშე
+                });
+            }
+        } catch(e) {}
+    }
 
-    setTimeout(function() {
-        cards.forEach(function(card) { grid.appendChild(card); });
-        grid.style.opacity = '1';
-    }, 250);
-});
+    // ვამოწმებთ ეგრევე
+    checkMemory();
+
+    // SPA როუტერის Observer: როგორც კი როუტერი ახალ გვერდს ჩატვირთავს #view-ში, ეგრევე ვამოწმებთ მეხსიერებას
+    var viewEl = document.getElementById('view');
+    if (viewEl) {
+        new MutationObserver(function() {
+            checkMemory();
+        }).observe(viewEl, { childList: true });
+    }
+})();
