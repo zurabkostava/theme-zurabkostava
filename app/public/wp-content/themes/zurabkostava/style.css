@@ -1170,18 +1170,19 @@ button {
    BREADCRUMBS HOME ICON
    ============================================================ */
 .zk-breadcrumbs .zk-home-link {
-	display: flex;
+	display: inline-flex;
 	align-items: center;
+	justify-content: center;
 	color: var(--text-dim);
 	transition: color 0.3s var(--ease), transform 0.3s var(--ease);
 }
 
 .zk-breadcrumbs .zk-home-icon {
-	/* ოდნავ მაღლა ვწევთ, რომ ტექსტის ცენტრს იდეალურად გაუსწორდეს */
-	margin-top: -2px;
+	margin-top: 0;
+	transform: translateY(-1px); /* მილიმეტრული აწევა ოპტიკური ცენტრირებისთვის */
 }
 
 .zk-breadcrumbs .zk-home-link:hover {
 	color: var(--text);
-	transform: scale(1.05); /* მაუსის მიტანისას ოდნავ იზრდება (პულსაცია) */
+	transform: translateY(-1px) scale(1.05); /* ჰოვერის დროსაც ინარჩუნებს სიმაღლეს */
 }
