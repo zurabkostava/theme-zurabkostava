@@ -132,39 +132,70 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
    ULTRA-PREMIUM GLASS DROPDOWNS (DESKTOP ONLY)
    აქ მოხდა იზოლაცია!
    ============================================================ */
+/* ============================================================
+   ULTRA-PREMIUM GLASS DROPDOWNS (DESKTOP ONLY)
+   ============================================================ */
 @media (min-width: 901px) {
+	/* 1. მთავარი კონტეინერი (მხოლოდ ანიმაციისთვის, ფერების გარეშე) */
 	.dropdown-menu, .nested-menu {
 		position: absolute; min-width: 210px; padding: 8px;
-		background: rgba(12, 12, 16, 0.35) !important;
-		-webkit-backdrop-filter: blur(32px) saturate(200%) !important;
-		backdrop-filter: blur(32px) saturate(200%) !important;
-		border: 1px solid rgba(255, 255, 255, 0.1) !important;
-		border-bottom-color: rgba(255, 255, 255, 0.03) !important;
-		border-right-color: rgba(255, 255, 255, 0.03) !important;
 		border-radius: 14px;
-		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-		opacity: 0; visibility: hidden; z-index: 100; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+		opacity: 0; visibility: hidden; z-index: 100;
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	}
+
+	/* 2. ── მინის დამოუკიდებელი ფენა (ბაგის მკურნალი) ── */
+	.dropdown-menu::after, .nested-menu::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: -1; /* ლინკების უკან რომ დაჯდეს */
+		border-radius: 14px;
+
+		background: rgba(12, 12, 16, 0.35);
+		-webkit-backdrop-filter: blur(32px) saturate(200%);
+		backdrop-filter: blur(32px) saturate(200%);
+
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-bottom-color: rgba(255, 255, 255, 0.03);
+		border-right-color: rgba(255, 255, 255, 0.03);
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+	}
+
 	.dropdown-menu { top: 100%; left: 0; margin-top: 12px; transform: translateY(12px); }
+
+	/* უხილავი ხიდი მთავარი მენიუსთვის */
 	.dropdown-menu::before { content: ""; position: absolute; top: -16px; left: 0; right: 0; height: 16px; }
+
 	.has-dropdown:hover > .dropdown-menu, .has-dropdown:focus-within > .dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
 
-	/* ── აი ის დაკარგული ხაზი, რომელიც მენიუს აკავებს! ── */
 	.has-nested-dropdown { position: relative; }
 
 	.nested-menu {
 		top: -9px !important; right: calc(100% + 6px) !important; left: auto !important; margin-top: 0;
-		border-left-color: rgba(255, 255, 255, 0.03) !important;
 		transform: translateX(12px) !important;
 	}
+
+	/* შიდა მენიუს სპეციფიკური ჩარჩო შუქისთვის */
+	.nested-menu::after {
+		border-right-color: rgba(255, 255, 255, 0.1);
+		border-left-color: rgba(255, 255, 255, 0.03);
+	}
+
+	/* უხილავი ხიდი შიდა მენიუსთვის */
 	.nested-menu::before { content: ""; position: absolute; top: 0; bottom: 0; right: -12px; left: auto; width: 12px; height: auto; }
+
 	.has-nested-dropdown:hover > .nested-menu, .has-nested-dropdown:focus-within > .nested-menu { opacity: 1; visibility: visible; transform: translateX(0) !important; }
 
+	/* 3. ── ლინკების ვიზუალი ── */
 	.dropdown-link {
+		position: relative; z-index: 2; /* ლინკი ამოგვყავს მინის წინ */
 		display: flex; align-items: center; justify-content: space-between;
 		padding: 10px 14px; color: rgba(255, 255, 255, 0.7); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 8px; transition: all 0.3s var(--ease); text-decoration: none !important;
 	}
+
 	.dropdown-link:hover, .dropdown-link:focus-visible { color: #fff; background: rgba(255, 255, 255, 0.08); padding-left: 18px; }
+
 	.nested-caret { opacity: 0.4; transform: rotate(90deg); transition: transform 0.3s var(--ease), opacity 0.3s var(--ease); }
 	.dropdown-link:hover .nested-caret { opacity: 1; transform: rotate(90deg) translateY(-3px); }
 }
