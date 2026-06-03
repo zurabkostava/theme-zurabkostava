@@ -284,8 +284,10 @@ function zk_breadcrumbs() {
 
     echo '<nav class="zk-breadcrumbs" aria-label="Breadcrumb">';
 
-    // 1. Home Link
-    echo '<a href="' . esc_url( home_url( '/' ) ) . '" data-route="/">Home</a>';
+    // 1. Home Link (მინიმალისტური იკონი)
+    echo '<a href="' . esc_url( home_url( '/' ) ) . '" data-route="/" aria-label="Home" class="zk-home-link">';
+    echo '<svg class="zk-home-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>';
+    echo '</a>';
 
     if ( is_single() ) {
         // --- ლოგიკა ცალკეული პოსტებისთვის (მაგ: Nocturne #50) ---
