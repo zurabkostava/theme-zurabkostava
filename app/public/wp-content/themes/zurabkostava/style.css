@@ -1370,23 +1370,28 @@ button {
 	gap: 10px;
 }
 
-/* უშუალოდ თეგის დიზაინი (Pill shape) */
+/* უშუალოდ თეგის დიზაინი (Tactile Premium Pill) */
 .zk-tag {
 	font-size: 0.72rem;
 	font-weight: 500;
 	letter-spacing: 0.05em;
 	color: var(--text-muted);
-	padding: 6px 14px;
-	border-radius: 20px; /* სრულად მომრგვალებული კუთხეები */
-	border: 1px solid var(--hairline-strong); /* ფაქიზი ჩარჩო */
-	background: transparent;
+	padding: 7px 16px;
+	border-radius: 30px;
+
+	/* ულტრა-მინიმალისტური მინის ბაზა */
+	background: rgba(255, 255, 255, 0.02);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+
 	transition: all 0.3s var(--ease);
 	text-decoration: none !important;
 }
 
-/* ჰოვერზე ინთება ჩარჩოც და ტექსტიც */
+/* ჰოვერზე ოდნავ ნათდება და იწევა მაღლა (3D შეგრძნება ფერების გარეშე) */
 .zk-tag:hover {
-	color: var(--text);
-	border-color: rgba(255, 255, 255, 0.35);
-	background: rgba(255, 255, 255, 0.03);
+	color: #fff;
+	background: rgba(255, 255, 255, 0.06);
+	border-color: rgba(255, 255, 255, 0.25);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
