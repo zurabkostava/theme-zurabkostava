@@ -61,7 +61,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
         <?php endif; ?>
         <div class="page__content"><?php the_content(); ?></div>
         <?php
-        // პოსტის ნავიგაცია (Next / Prev)
+        // პოსტის ნავიგაცია (Cinematic Next / Prev)
         $prev_post = get_previous_post();
         $next_post = get_next_post();
 
@@ -71,8 +71,10 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                 <?php if ( $prev_post ) :
                     $prev_url = get_permalink( $prev_post );
                     $prev_path = wp_parse_url( $prev_url, PHP_URL_PATH );
+                    $prev_img = get_the_post_thumbnail_url( $prev_post->ID, 'large' );
+                    $prev_style = $prev_img ? 'style="--nav-bg: url(\'' . esc_url( $prev_img ) . '\');"' : '';
                     ?>
-                    <a href="<?php echo esc_url( $prev_url ); ?>" data-route="<?php echo esc_attr( $prev_path ); ?>" class="zk-nav-link zk-nav-prev">
+                    <a href="<?php echo esc_url( $prev_url ); ?>" data-route="<?php echo esc_attr( $prev_path ); ?>" class="zk-nav-link zk-nav-prev" <?php echo $prev_style; ?>>
                         <span class="zk-nav-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Previous</span>
                         <span class="zk-nav-title"><?php echo esc_html( get_the_title( $prev_post ) ); ?></span>
                     </a>
@@ -83,8 +85,10 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                 <?php if ( $next_post ) :
                     $next_url = get_permalink( $next_post );
                     $next_path = wp_parse_url( $next_url, PHP_URL_PATH );
+                    $next_img = get_the_post_thumbnail_url( $next_post->ID, 'large' );
+                    $next_style = $next_img ? 'style="--nav-bg: url(\'' . esc_url( $next_img ) . '\');"' : '';
                     ?>
-                    <a href="<?php echo esc_url( $next_url ); ?>" data-route="<?php echo esc_attr( $next_path ); ?>" class="zk-nav-link zk-nav-next">
+                    <a href="<?php echo esc_url( $next_url ); ?>" data-route="<?php echo esc_attr( $next_path ); ?>" class="zk-nav-link zk-nav-next" <?php echo $next_style; ?>>
                         <span class="zk-nav-label">Next <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
                         <span class="zk-nav-title"><?php echo esc_html( get_the_title( $next_post ) ); ?></span>
                     </a>

@@ -1225,18 +1225,58 @@ button {
 	border-top: 1px solid var(--hairline-strong); /* ნაზი გამყოფი ხაზი */
 }
 
-/* თითოეული ღილაკის ბაზა */
+/* თითოეული ღილაკის ბაზა (Cinematic Blur Background) */
 .zk-nav-link {
 	display: flex;
 	flex-direction: column;
 	text-decoration: none !important;
-	padding: 24px;
+	padding: 32px; /* ოდნავ გავზარდეთ სივრცე სურათისთვის */
 	border-radius: 16px;
-	transition: background-color 0.4s var(--ease), transform 0.4s var(--ease);
+	position: relative;
+	overflow: hidden; /* რომ ბლარმა საზღვრებიდან არ გამოჟონოს */
+	background-color: transparent;
+	border: 1px solid transparent;
+	transition: border-color 0.4s var(--ease);
 }
 
+/* უშუალოდ სურათის Layer */
+.zk-nav-link::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-image: var(--nav-bg, none);
+	background-size: cover;
+	background-position: center;
+	filter: blur(25px) saturate(120%); /* ძლიერი ბლარი და ფერების ოდნავ გამოკვეთა */
+	opacity: 0.25; /* ვაჩაბნელებთ, რომ ტექსტი იკითხებოდეს */
+	z-index: 0;
+	transition: opacity 0.4s var(--ease), transform 0.6s var(--ease);
+}
+
+/* გრადიენტული მასკები - ცენტრისკენ შავდება, კიდეებისკენ ფოტოა */
+.zk-nav-prev::before {
+	-webkit-mask-image: linear-gradient(to right, black 0%, transparent 95%);
+	mask-image: linear-gradient(to right, black 0%, transparent 95%);
+}
+
+.zk-nav-next::before {
+	-webkit-mask-image: linear-gradient(to left, black 0%, transparent 95%);
+	mask-image: linear-gradient(to left, black 0%, transparent 95%);
+}
+
+/* ტექსტებს მაღლა ვწევთ, რომ სურათმა არ დაფაროს */
+.zk-nav-label, .zk-nav-title {
+	position: relative;
+	z-index: 2;
+}
+
+/* ── ჰოვერის დროს ფოტო ინთება და ოდნავ იზუმება ── */
 .zk-nav-link:hover {
-	background-color: rgba(255, 255, 255, 0.02); /* ჰოვერზე ოდნავ ნათდება უკანა ფონი */
+	border-color: rgba(255, 255, 255, 0.08); /* ჩარჩო ნაზად ინთება */
+}
+.zk-nav-link:hover::before {
+	opacity: 0.45; /* ფოტო უფრო მკვეთრად ჩნდება */
+	transform: scale(1.08); /* კინემატოგრაფიული ზუმი */
 }
 
 /* ტექსტის გასწორება */
