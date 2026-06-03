@@ -1342,3 +1342,51 @@ button {
 		width: 100%;
 	}
 }
+
+
+/* ============================================================
+   POST TAGS (სტატიის ბოლოს)
+   ============================================================ */
+.zk-post-tags {
+	margin-top: 56px;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+/* პატარა წარწერა "Topics:" */
+.zk-tags-label {
+	font-size: 0.65rem;
+	font-weight: 600;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	color: var(--text-dim);
+}
+
+.zk-tags-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+/* უშუალოდ თეგის დიზაინი (Pill shape) */
+.zk-tag {
+	font-size: 0.72rem;
+	font-weight: 500;
+	letter-spacing: 0.05em;
+	color: var(--text-muted);
+	padding: 6px 14px;
+	border-radius: 20px; /* სრულად მომრგვალებული კუთხეები */
+	border: 1px solid var(--hairline-strong); /* ფაქიზი ჩარჩო */
+	background: transparent;
+	transition: all 0.3s var(--ease);
+	text-decoration: none !important;
+}
+
+/* ჰოვერზე ინთება ჩარჩოც და ტექსტიც */
+.zk-tag:hover {
+	color: var(--text);
+	border-color: rgba(255, 255, 255, 0.35);
+	background: rgba(255, 255, 255, 0.03);
+}

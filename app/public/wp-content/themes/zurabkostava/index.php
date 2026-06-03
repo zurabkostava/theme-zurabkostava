@@ -61,6 +61,25 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
         <?php endif; ?>
         <div class="page__content"><?php the_content(); ?></div>
         <?php
+        // პოსტის თეგების (Tags) გამოტანა
+        $post_tags = get_the_tags();
+        if ( is_single() && $post_tags ) :
+            ?>
+            <div class="zk-post-tags">
+                <span class="zk-tags-label">Topics:</span>
+                <div class="zk-tags-list">
+                    <?php foreach( $post_tags as $tag ) :
+                        $tag_link = get_tag_link( $tag->term_id );
+                        $tag_path = wp_parse_url( $tag_link, PHP_URL_PATH );
+                        ?>
+                        <a href="<?php echo esc_url( $tag_link ); ?>" data-route="<?php echo esc_attr( $tag_path ); ?>" class="zk-tag">
+                            #<?php echo esc_html( $tag->name ); ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php endif; ?>
+        <?php
         // პოსტის ნავიგაცია (Cinematic Next / Prev)
         $prev_post = get_previous_post();
         $next_post = get_next_post();
