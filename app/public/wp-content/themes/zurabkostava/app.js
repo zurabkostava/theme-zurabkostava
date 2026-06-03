@@ -281,10 +281,10 @@
 
 
 /* ============================================================
-   CUSTOM GRID SORTING WITH DROPDOWN & MEMORY (Vanilla JS)
+   CUSTOM GRID CONTROLS: SORTING & LIVE SEARCH (Vanilla JS)
    ============================================================ */
 (function() {
-    // 1. მთავარი ფუნქცია, რომელიც ახარისხებს გრიდს
+    // 1. სორტირების მთავარი ფუნქცია
     function applySort(wrapper, order, animate) {
         var dropdown = wrapper.querySelector('.zk-sort-dropdown');
         var currentText = wrapper.querySelector('.zk-sort-current');
@@ -294,16 +294,13 @@
 
         if (!grid || !targetOption) return;
 
-        // ვაახლებთ დიზაინს (რომელი ვარიანტია არჩეული)
         options.forEach(function(o) { o.classList.remove('is-selected'); });
         targetOption.classList.add('is-selected');
         if (currentText) currentText.textContent = targetOption.textContent;
         if (dropdown) dropdown.classList.remove('is-open');
 
-        // ვინახავთ არჩევანს ბრაუზერის მეხსიერებაში
         try { localStorage.setItem('zkGridSort', order); } catch(e) {}
 
-        // ვალაგებთ ქარდებს
         var cards = [].slice.call(grid.querySelectorAll('.zk-grid-card'));
         cards.sort(function(a, b) {
             var tA = parseInt(a.getAttribute('data-time'), 10);
@@ -311,7 +308,6 @@
             return order === 'asc' ? tA - tB : tB - tA;
         });
 
-        // თუ კლიკით ხდება (animate = true), რბილად ვაქრობთ და ვაჩენთ
         if (animate) {
             grid.style.transition = 'opacity 0.25s var(--ease)';
             grid.style.opacity = '0';
@@ -320,12 +316,11 @@
                 grid.style.opacity = '1';
             }, 250);
         } else {
-            // თუ გვერდის ჩატვირთვისას ხდება (უკან დაბრუნებისას), მომენტალურად ვალაგებთ
             cards.forEach(function(card) { grid.appendChild(card); });
         }
     }
 
-    // 2. კლიკების მართვა
+    // 2. კლიკების მართვა (Dropdown)
     document.addEventListener('click', function (e) {
         var trigger = e.target.closest('.zk-sort-trigger');
         if (trigger) {
@@ -350,22 +345,44 @@
         }
     });
 
-    // 3. მეხსიერების შემოწმება გვერდის ჩატვირთვისას და SPA გადასვლებისას
+    // 3. მყისიერი ძებნისა და ფილტრაციის ლოგიკა (Live Search)
+    document.addEventListener('input', function(e) {
+        var input = e.target.closest('.zk-search-input');
+        if (!input) return;
+
+        var wrapper = input.closest('.zk-grid-wrapper');
+        var query = input.value.toLowerCase().trim();
+        var cards = wrapper.querySelectorAll('.zk-grid-card');
+
+        cards.forEach(function(card) {
+            // ეძებს როგორც სათაურში, ისე კატეგორიის სახელში
+            var title = (card.querySelector('.zk-card-title').textContent || '').toLowerCase();
+            var cat = (card.querySelector('.zk-card-category').textContent || '').toLowerCase();
+
+            if (title.indexOf(query) !== -1 || cat.indexOf(query) !== -1) {
+                card.style.display = '';
+                card.style.opacity = '1';
+            } else {
+                card.style.display = 'none';
+                card.style.opacity = '0';
+            }
+        });
+    });
+
+    // 4. მეხსიერების შემოწმება გვერდის ჩატვირთვისას და SPA გადასვლებისას
     function checkMemory() {
         try {
             var savedOrder = localStorage.getItem('zkGridSort');
             if (savedOrder) {
                 document.querySelectorAll('.zk-grid-wrapper').forEach(function(wrapper) {
-                    applySort(wrapper, savedOrder, false); // false = ანიმაციის გარეშე
+                    applySort(wrapper, savedOrder, false);
                 });
             }
         } catch(e) {}
     }
 
-    // ვამოწმებთ ეგრევე
     checkMemory();
 
-    // SPA როუტერის Observer: როგორც კი როუტერი ახალ გვერდს ჩატვირთავს #view-ში, ეგრევე ვამოწმებთ მეხსიერებას
     var viewEl = document.getElementById('view');
     if (viewEl) {
         new MutationObserver(function() {

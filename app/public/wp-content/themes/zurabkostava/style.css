@@ -914,20 +914,95 @@ button {
 
 
 /* ============================================================
-   GRID CONTROLS & PREMIUM DROPDOWN
+   GRID CONTROLS: LIVE SEARCH & PREMIUM DROPDOWN
    ============================================================ */
 .zk-grid-controls {
 	display: flex;
-	justify-content: flex-end;
-	margin-bottom: 24px;
+	align-items: center;
+	justify-content: space-between; /* ძებნა მარცხნივ, სორტირება მარჯვნივ */
+	gap: 20px;
+	margin-bottom: 32px;
+	width: 100%;
 }
 
+/* მობილურზე კოდი ლამაზად გადადის ორ ხაზზე */
+@media (max-width: 600px) {
+	.zk-grid-controls {
+		flex-direction: column-reverse; /* ძებნა ზემოთ, სორტირება ქვემოთ */
+		align-items: stretch;
+		gap: 14px;
+	}
+}
+
+/* ── ძებნის ინპუტის კონტეინერი ── */
+.zk-search-box {
+	position: relative;
+	display: flex;
+	align-items: center;
+	flex: 1;
+	max-width: 280px; /* ფაქიზი, მინიმალისტური სიგანე */
+}
+
+@media (max-width: 600px) {
+	.zk-search-box {
+		max-width: 100%;
+	}
+}
+
+/* ინპუტის ველის დიზაინი (Premium Glass Surface) */
+.zk-search-input {
+	width: 100%;
+	font-family: var(--font);
+	font-size: 0.76rem;
+	font-weight: 400;
+	letter-spacing: 0.04em;
+	color: #fff;
+	background: rgba(255, 255, 255, 0.02);
+	border: 1px solid var(--hairline);
+	padding: 9px 12px 9px 34px; /* მარცხნიდან მეტი სივრცე აიქონისთვის */
+	border-radius: 8px;
+	outline: none;
+	transition:
+			border-color 0.35s var(--ease),
+			background-color 0.35s var(--ease),
+			box-shadow 0.35s var(--ease);
+}
+
+/* Placeholder ტექსტის სტილი (ჩამქრალი) */
+.zk-search-input::placeholder {
+	color: var(--text-dim);
+	opacity: 0.6;
+}
+
+/* ძებნის პატარა ნაზი აიქონი */
+.zk-search-icon {
+	position: absolute;
+	left: 12px;
+	color: var(--text-dim);
+	pointer-events: none;
+	opacity: 0.6;
+	transition: color 0.3s var(--ease), opacity 0.3s var(--ease);
+}
+
+/* ფოკუსის (აქტიური) მდგომარეობა - ველის ნაზი განათება */
+.zk-search-input:focus {
+	background: rgba(255, 255, 255, 0.04);
+	border-color: rgba(255, 255, 255, 0.22);
+	box-shadow: 0 0 24px rgba(255, 255, 255, 0.01);
+}
+
+/* ფოკუსის დროს აიქონიც ნათდება */
+.zk-search-input:focus ~ .zk-search-icon {
+	color: var(--text);
+	opacity: 1;
+}
+
+/* ── სორტირების დროპდაუნი ── */
 .zk-sort-dropdown {
 	position: relative;
 	z-index: 100;
 }
 
-/* ღილაკი, რომელიც ჩანს ეკრანზე */
 .zk-sort-trigger {
 	display: flex;
 	align-items: center;
@@ -937,7 +1012,7 @@ button {
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	color: var(--text-muted);
-	padding: 8px 12px;
+	padding: 9px 12px;
 	border-radius: 8px;
 	transition: color 0.3s var(--ease), background 0.3s var(--ease);
 }
@@ -948,10 +1023,9 @@ button {
 	background: rgba(255, 255, 255, 0.04);
 }
 
-.zk-sort-label { color: rgba(255, 255, 255, 0.3); } /* "Sort by:" ოდნავ ჩამქრალია */
-.zk-sort-current { color: #fff; } /* არჩეული ვარიანტი ანათებს */
+.zk-sort-label { color: rgba(255, 255, 255, 0.3); }
+.zk-sort-current { color: #fff; }
 
-/* ისარი ღილაკში */
 .zk-sort-trigger .dropdown-caret {
 	margin-left: 2px;
 	opacity: 0.6;
@@ -961,7 +1035,6 @@ button {
 	transform: rotate(180deg);
 }
 
-/* ჩამოსაშლელი ფანჯარა (Glassmorphism) */
 .zk-sort-menu {
 	position: absolute;
 	top: calc(100% + 8px);
@@ -974,22 +1047,18 @@ button {
 	border-radius: 12px;
 	padding: 6px;
 	box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
-
-	/* ანიმაციის საწყისი მდგომარეობა */
 	opacity: 0;
 	visibility: hidden;
 	transform: translateY(8px);
 	transition: all 0.3s var(--ease);
 }
 
-/* როცა დროპდაუნი ღიაა */
 .zk-sort-dropdown.is-open .zk-sort-menu {
 	opacity: 1;
 	visibility: visible;
 	transform: translateY(0);
 }
 
-/* ვარიანტები მენიუში */
 .zk-sort-option {
 	display: block;
 	width: 100%;
@@ -1007,10 +1076,9 @@ button {
 .zk-sort-option:hover {
 	color: #fff;
 	background: rgba(255, 255, 255, 0.08);
-	padding-left: 18px; /* ჰოვერზე ოდნავ მარჯვნივ იწევა, ელეგანტურია */
+	padding-left: 18px;
 }
 
-/* აქტიური (არჩეული) ვარიანტი მენიუში */
 .zk-sort-option.is-selected {
 	color: #fff;
 	background: rgba(255, 255, 255, 0.12);

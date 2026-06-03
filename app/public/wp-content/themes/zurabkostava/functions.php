@@ -156,8 +156,16 @@ function zk_custom_post_grid( $atts ) {
     // მთავარი კონტეინერი (Wrapper)
     $output = '<div class="zk-grid-wrapper">';
 
-// ფილტრაციის/სორტირების Custom Dropdown
+// ფილტრაციის კონტროლები (მყისიერი ძებნა + სორტირება)
     $output .= '<div class="zk-grid-controls">';
+
+    // პრემიუმ შიდა ძებნის ინპუტი (Glass Design)
+    $output .= '<div class="zk-search-box">';
+    $output .= '<input type="text" class="zk-search-input" placeholder="Search projects..." aria-label="Search">';
+    $output .= '<svg class="zk-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
+    $output .= '</div>';
+
+    // სორტირების Custom Dropdown
     $output .= '<div class="zk-sort-dropdown" id="sortDropdown">';
     $output .= '<button class="zk-sort-trigger" type="button" aria-expanded="false">';
     $output .= '<span class="zk-sort-label">Sort by: </span><span class="zk-sort-current">Newest</span>';
