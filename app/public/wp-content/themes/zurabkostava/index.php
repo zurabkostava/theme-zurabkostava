@@ -38,6 +38,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
         <?php if ( ! empty( $zk_def['eyebrow'] ) ) : ?>
             <p class="page__eyebrow"><?php echo esc_html( $zk_def['eyebrow'] ); ?></p>
         <?php endif; ?>
+        <?php zk_breadcrumbs(); ?>
         <h1 class="page__title"><?php the_title(); ?></h1>
         <div class="page__content"><?php the_content(); ?></div>
     </div>

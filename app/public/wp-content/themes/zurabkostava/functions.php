@@ -234,3 +234,36 @@ function zk_remove_wp_block_library_css() {
     wp_dequeue_style( 'classic-theme-styles' );
 }
 add_action( 'wp_enqueue_scripts', 'zk_remove_wp_block_library_css', 100 );
+
+/* ============================================================
+   BREADCRUMBS (ნავიგაციის ბილიკი) - SPA თავსებადი
+   ============================================================ */
+function zk_breadcrumbs() {
+    if ( is_front_page() ) {
+        return; // მთავარ გვერდზე არ გვინდა
+    }
+
+    echo '<nav class="zk-breadcrumbs" aria-label="Breadcrumb">';
+
+    // მთავარი გვერდის ლინკი
+    echo '<a href="' . esc_url( home_url( '/' ) ) . '" data-route="/">Home</a>';
+
+    if ( is_single() ) {
+        echo '<span class="zk-breadcrumb-separator">/</span>';
+        $categories = get_the_category();
+        if ( ! empty( $categories ) ) {
+            $cat = $categories[0];
+            $cat_link = get_category_link( $cat->term_id );
+            $cat_path = wp_parse_url( $cat_link, PHP_URL_PATH );
+            // კატეგორიის ლინკი
+            echo '<a href="' . esc_url( $cat_link ) . '" data-route="' . esc_attr( $cat_path ) . '">' . esc_html( $cat->name ) . '</a>';
+        }
+        echo '<span class="zk-breadcrumb-separator">/</span>';
+        echo '<span class="zk-breadcrumb-current">' . get_the_title() . '</span>';
+    } elseif ( is_page() ) {
+        echo '<span class="zk-breadcrumb-separator">/</span>';
+        echo '<span class="zk-breadcrumb-current">' . get_the_title() . '</span>';
+    }
+
+    echo '</nav>';
+}

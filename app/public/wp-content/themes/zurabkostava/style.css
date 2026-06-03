@@ -854,3 +854,46 @@ button {
 	background: rgba(255, 255, 255, 0.70);
 	cursor: grabbing;
 }
+
+/* ============================================================
+   BREADCRUMBS STYLES (ულტრა-მინიმალისტური)
+   ============================================================ */
+.zk-breadcrumbs {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 20px;
+	font-size: 0.72rem;
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+/* ბმულების საწყისი სტილი (ოდნავ ჩამქრალი თეთრი) */
+.zk-breadcrumbs a {
+	color: var(--text-dim);
+	transition: color 0.3s var(--ease);
+	text-decoration: none !important;
+}
+
+/* მაუსის მიტანისას ნათდება */
+.zk-breadcrumbs a:hover {
+	color: var(--text);
+}
+
+/* გამყოფი დახრილი ხაზები (/) */
+.zk-breadcrumbs .zk-breadcrumb-separator {
+	color: rgba(255, 255, 255, 0.15);
+	user-select: none;
+}
+
+/* მიმდინარე გვერდის სათაური (აქტიური, არაკლიკებადი ტექსტი) */
+.zk-breadcrumbs .zk-breadcrumb-current {
+	color: var(--text-muted);
+	pointer-events: none;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 220px; /* იცავს დიზაინს ძალიან გრძელი სათაურებისგან */
+}
