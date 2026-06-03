@@ -141,15 +141,21 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 		position: absolute; min-width: 210px; padding: 8px;
 		border-radius: 14px;
 		opacity: 0; visibility: hidden; z-index: 100;
-		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+		/* ── GPU აქსელერაცია (ბლარის ლაგის მოსახსნელად) ── */
+		will-change: transform, opacity;
+		-webkit-backface-visibility: hidden;
+		backface-visibility: hidden;
+
+		/* all-ის მაგივრად კონკრეტულ თვისებებს ვაძლევთ ანიმაციას, რომ ბრაუზერი არ დაიბნეს */
+		transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+		transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+		visibility 0.4s;
 	}
 
 	/* 2. ── მინის დამოუკიდებელი ფენა (ბაგის მკურნალი) ── */
 	.dropdown-menu::after, .nested-menu::after {
-		content: "";
-		position: absolute;
-		inset: 0;
-		z-index: -1; /* ლინკების უკან რომ დაჯდეს */
+		content: ""; position: absolute; inset: 0; z-index: -1;
 		border-radius: 14px;
 
 		background: rgba(12, 12, 16, 0.35);
@@ -160,6 +166,10 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 		border-bottom-color: rgba(255, 255, 255, 0.03);
 		border-right-color: rgba(255, 255, 255, 0.03);
 		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+		/* ── ვაიძულებთ ვიდეობარათს (GPU), რომ ანიმაციისას ბლარი არ დაკარგოს ── */
+		-webkit-transform: translate3d(0, 0, 0);
+		transform: translate3d(0, 0, 0);
 	}
 
 	.dropdown-menu { top: 100%; left: 0; margin-top: 12px; transform: translateY(12px); }
