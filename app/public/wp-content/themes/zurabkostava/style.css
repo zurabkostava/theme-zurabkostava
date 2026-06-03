@@ -346,7 +346,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .page__meta { display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.03); -webkit-backdrop-filter: blur(10px) saturate(140%); backdrop-filter: blur(10px) saturate(140%); border: 1px solid rgba(255, 255, 255, 0.07); padding: 6px 12px; border-radius: 30px; margin-bottom: 18px; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 255, 255, 0.8); }
 .page__meta-icon { color: rgba(255, 255, 255, 0.5); display: block; }
 
-.zk-breadcrumbs { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; position: sticky; top: calc(var(--header-h-scrolled) + 14px);}
+.zk-breadcrumbs { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px;transform: translateZ(10px); margin-bottom: 20px; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; position: sticky; top: calc(var(--header-h-scrolled) + 14px);}
 
 
 .zk-breadcrumbs.is-stuck { background-color: rgba(16, 16, 20, 0.45); -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%); border-color: var(--hairline); padding: 6px 16px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3); z-index: 1001 }
