@@ -251,19 +251,18 @@ button {
 	padding: 8px;
 	margin-top: 12px;
 
-	/* ── ნამდვილი მინის ეფექტი: მეტი გამჭვირვალობა, მეტი ბლარი ── */
+	/* ── ნამდვილი მინის ეფექტი: მეტი გამჭვირვალობა, მძლავრი ბლარი ── */
 	background: rgba(12, 12, 16, 0.35) !important;
 	-webkit-backdrop-filter: blur(32px) saturate(200%) !important;
 	backdrop-filter: blur(32px) saturate(200%) !important;
 
-	/* ── ფაქიზი 1px ჩარჩო შუქ-ჩრდილით ── */
+	/* ── ფაქიზი 1px ჩარჩო ── */
 	border: 1px solid rgba(255, 255, 255, 0.1) !important;
 	border-bottom-color: rgba(255, 255, 255, 0.03) !important;
 	border-right-color: rgba(255, 255, 255, 0.03) !important;
 
 	border-radius: 14px;
 
-	/* ნაზი ჩრდილი სიღრმისთვის და ოდნავი შიდა განათება */
 	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3),
 	inset 0 1px 0 rgba(255, 255, 255, 0.05);
 
@@ -295,7 +294,7 @@ button {
 /* ── შიდა (Nested) დროპდაუნის პოზიციონირება ── */
 .dropdown-menu .nested-menu {
 	top: -9px;
-	left: calc(100% + 6px); /* ესთეტიკური დაშორება მშობლისგან */
+	left: calc(100% + 6px);
 	margin-top: 0;
 }
 
@@ -314,7 +313,7 @@ button {
 	align-items: center;
 	justify-content: space-between;
 	padding: 10px 14px;
-	color: rgba(255, 255, 255, 0.7); /* სუფთა, ნაზი თეთრი */
+	color: rgba(255, 255, 255, 0.7);
 	font-size: 0.75rem;
 	font-weight: 500;
 	letter-spacing: 0.08em;
@@ -324,22 +323,20 @@ button {
 	text-decoration: none !important;
 }
 
-/* ულამაზესი, მინიმალისტური ჰოვერ ეფექტი */
 .dropdown-link:hover,
 .dropdown-link:focus-visible {
 	color: #fff;
-	background: rgba(255, 255, 255, 0.08); /* ოდნავ ინთება */
-	padding-left: 18px; /* ფაქიზი წანაცვლება, ზედმეტობების გარეშე */
+	background: rgba(255, 255, 255, 0.08);
+	padding-left: 18px;
 }
 
-/* ისარი შიდა დროპდაუნისთვის */
 .nested-caret {
 	opacity: 0.4;
 	transition: transform 0.3s var(--ease), opacity 0.3s var(--ease);
 }
 .dropdown-link:hover .nested-caret {
 	opacity: 1;
-	transform: translateX(3px); /* ჰოვერზე ისარი ოდნავ მარჯვნივ იწევს */
+	transform: translateX(3px);
 }
 
 /* ------------------------------------------------------------
