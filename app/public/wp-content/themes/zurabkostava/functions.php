@@ -12,6 +12,7 @@ function zk_setup() {
     add_theme_support( 'post-thumbnails' );
     add_theme_support( 'html5', array( 'style', 'script', 'navigation-widgets' ) );
     add_theme_support( 'automatic-feed-links' );
+    add_post_type_support( 'page', 'excerpt' );
 }
 add_action( 'after_setup_theme', 'zk_setup' );
 

@@ -897,3 +897,17 @@ button {
 	text-overflow: ellipsis;
 	max-width: 220px; /* იცავს დიზაინს ძალიან გრძელი სათაურებისგან */
 }
+
+/* ============================================================
+   PAGE DESCRIPTION (მოკლე აღწერა სათაურის ქვეშ)
+   ============================================================ */
+.page__description {
+	font-size: clamp(1.1rem, 2vw, 1.25rem);
+	font-weight: 300;
+	color: var(--text-muted);
+	max-width: 68ch;
+	margin-top: -12px; /* სათაურთან ოდნავ ახლოს მიწევა */
+	margin-bottom: 36px;
+	line-height: 1.6;
+	letter-spacing: 0.01em;
+}

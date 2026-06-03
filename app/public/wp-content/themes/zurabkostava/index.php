@@ -37,6 +37,9 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
     <div class="page__inner">
         <?php zk_breadcrumbs(); ?>
         <h1 class="page__title"><?php the_title(); ?></h1>
+        <?php if ( has_excerpt() ) : ?>
+            <p class="page__description"><?php echo get_the_excerpt(); ?></p>
+        <?php endif; ?>
         <div class="page__content"><?php the_content(); ?></div>
     </div>
     <?php
