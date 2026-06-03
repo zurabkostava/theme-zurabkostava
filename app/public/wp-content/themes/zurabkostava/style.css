@@ -229,26 +229,44 @@ button {
 	opacity: 1;
 }
 
+/* ============================================================
+   PREMIUM GLASS DROPDOWNS (Header Main & Nested)
+   ============================================================ */
 .dropdown-menu {
 	position: absolute;
 	top: 100%;
-	right: 0;
-	min-width: 210px;
-	padding: 10px;
-	background: var(--glass-bg);
-	-webkit-backdrop-filter: blur(22px) saturate(170%);
-	backdrop-filter: blur(22px) saturate(170%);
-	border: 1px solid var(--hairline);
-	border-radius: 16px;
-	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
-	/* Hidden resting state */
+	left: 0;
+	min-width: 200px; /* ოდნავ განიერი, უკეთესი სუნთქვისთვის */
+	padding: 8px;
+
+	/* ── გიჟური მინის ეფექტი ── */
+	background: rgba(10, 10, 12, 0.45); /* მუქი ბაზა */
+	-webkit-backdrop-filter: blur(28px) saturate(180%);
+	backdrop-filter: blur(28px) saturate(180%); /* მძლავრი ბლარი */
+	border: 1px solid rgba(255, 255, 255, 0.08); /* ულტრა-თხელი ჩარჩო */
+	border-radius: 12px; /* ელეგანტური სიმრგვალე */
+	box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5); /* ღრმა 3D ჩრდილი */
+
+	/* ანიმაციის ბაზა */
 	opacity: 0;
 	visibility: hidden;
 	transform: translateY(12px);
-	transition:
-			opacity    0.34s var(--ease),
-			transform  0.34s var(--ease),
-			visibility 0.34s var(--ease);
+	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+	z-index: 100;
+}
+
+/* როცა დროპდაუნი იხსნება */
+.nav-item.has-dropdown:hover > .dropdown-menu,
+.nested-item.has-nested-dropdown:hover > .nested-menu {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+}
+
+/* შიდა Nested დროპდაუნი (მეორე დონე) */
+.dropdown-menu .nested-menu {
+	top: -9px; /* უსწორდება მშობელ ელემენტს (padding + border გათვალისწინებით) */
+	left: calc(100% + 4px); /* ოდნავ მარჯვნივ გადის, რომ არ გადაფაროს */
 }
 
 /* Invisible bridge so the cursor can cross the gap without closing */
@@ -270,25 +288,36 @@ button {
 	transform: translateY(0);
 }
 
+/* ── ლინკების ვიზუალი მინის შიგნით ── */
 .dropdown-link {
-	display: block;
-	padding: 11px 16px;
-	font-size: 0.78rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 14px;
+	color: rgba(255, 255, 255, 0.65);
+	font-size: 0.72rem;
 	font-weight: 500;
-	letter-spacing: 0.07em;
+	letter-spacing: 0.1em;
 	text-transform: uppercase;
-	color: var(--text-muted);
-	border-radius: 10px;
-	transition:
-			color        0.3s var(--ease),
-			background   0.3s var(--ease),
-			padding-left 0.3s var(--ease);
+	border-radius: 8px;
+	transition: all 0.3s var(--ease);
+	text-decoration: none !important;
 }
 .dropdown-link:hover,
 .dropdown-link:focus-visible {
 	color: #fff;
-	background: rgba(255, 255, 255, 0.06);
-	padding-left: 22px;
+	background: rgba(255, 255, 255, 0.06); /* ნაზი განათება უკან */
+	padding-left: 20px; /* კინემატოგრაფიული წანაცვლება მარჯვნივ */
+}
+
+/* ისარი შიდა დროპდაუნისთვის */
+.nested-caret {
+	opacity: 0.5;
+	transition: transform 0.3s var(--ease);
+}
+.dropdown-link:hover .nested-caret {
+	opacity: 1;
+	transform: translateX(3px); /* ჰოვერზე ისარიც მარჯვნივ იწევა */
 }
 
 /* ------------------------------------------------------------
