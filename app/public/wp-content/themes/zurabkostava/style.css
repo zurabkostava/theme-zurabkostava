@@ -71,45 +71,55 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	position: fixed;
 	top: 0; left: 0; right: 0;
 	z-index: var(--z-header);
-	display: flex; align-items: center;
+	display: flex;
+	align-items: center;
 	height: var(--header-h);
 	background: transparent;
 	border: none;
+	box-shadow: none;
 	transition: height 0.45s var(--ease);
 }
 
+/* ── ულტრა-რბილი და გრძელი Gradient Blur ── */
 .site-header::before {
 	content: "";
 	position: absolute;
 	top: 0; left: 0; right: 0;
-	height: 280px;
+	height: 280px; /* საგრძნობლად გავზარდეთ სიგრძე შეუმჩნეველი გადასვლისთვის */
 	z-index: -1;
 	pointer-events: none;
 
-	/* ── ფერი, რომელიც არ იცვლება, იცვლება მხოლოდ მისი გამჭვირვალობა ── */
+	/* 1. ფერის გრადიენტი - მოვაშორეთ მძიმე სიშავე (0.55-დან ვიწყებთ) */
 	background: linear-gradient(
 			to bottom,
-			rgba(10, 10, 12, 0.85) 0%,
-			rgba(10, 10, 12, 0.3) 45%,
+			rgba(10, 10, 12, 0.55) 0%,
+			rgba(10, 10, 12, 0.25) 40%,
 			transparent 100%
 	);
 
+	/* 2. მძლავრი ბლარი */
 	-webkit-backdrop-filter: blur(28px) saturate(160%);
 	backdrop-filter: blur(28px) saturate(160%);
+
+	/* 3. ნიღაბი - 25%-მდე (უშუალოდ მენიუს უკან) იჭერს ძალას, მერე ნაზად ქრება ფოტოში */
 	-webkit-mask-image: linear-gradient(to bottom, black 0%, black 25%, transparent 100%);
 	mask-image: linear-gradient(to bottom, black 0%, black 25%, transparent 100%);
 
-	/* აი საიდუმლო: ვცვლით opacity-ს და არა background-ს */
-	opacity: 0.6;
-	transition: opacity 0.5s ease;
+	transition: background 0.45s var(--ease);
 }
 
-/* სქროლვის დროს - მხოლოდ opacity-ს ვზრდით */
+/* ── სქროლვის დროს (ოდნავ კომპაქტური ხდება) ── */
 .site-header.is-scrolled {
 	height: var(--header-h-scrolled);
 }
 .site-header.is-scrolled::before {
-	opacity: 1; /* სქროლზე მინა ხდება უფრო მკვეთრი და დამცავი */
+	/* სქროლზეც დავაკელით სიშავე, რომ ზედმეტად არ ჩამუქდეს */
+	background: linear-gradient(
+			to bottom,
+			rgba(10, 10, 12, 0.75) 0%,
+			rgba(10, 10, 12, 0.35) 40%,
+			transparent 100%
+	);
 }
 
 /* ძველი ბრაუზერების მხარდაჭერა */
