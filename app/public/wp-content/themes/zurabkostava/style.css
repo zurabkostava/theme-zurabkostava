@@ -1135,15 +1135,33 @@ button {
 }
 
 /* ============================================================
-   POST META (თარიღის სტილი შიდა გვერდზე)
+   POST META (Floating Glass Badge)
    ============================================================ */
 .page__meta {
-	font-size: 0.72rem;
-	font-weight: 500;
-	letter-spacing: 0.15em; /* ფართო და კინემატოგრაფიული დაშორება ასოებს შორის */
-	text-transform: uppercase;
-	color: var(--text-dim); /* ნაზი, ოდნავ ჩამქრალი თეთრი */
-	margin-bottom: 12px;    /* დაშორება სათაურამდე */
-	display: flex;
+	display: inline-flex;  /* იკუმშება ზუსტად კონტენტის სიგანეზე */
 	align-items: center;
+	gap: 8px;              /* დაშორება იკონსა და ტექსტს შორის */
+
+	/* პრემიუმ მინის ეფექტი (Glassmorphism) */
+	background: rgba(255, 255, 255, 0.03);
+	-webkit-backdrop-filter: blur(10px) saturate(140%);
+	backdrop-filter: blur(10px) saturate(140%);
+	border: 1px solid rgba(255, 255, 255, 0.07);
+
+	padding: 6px 12px;     /* შიდა დაშორებები (ჰაერი) */
+	border-radius: 30px;    /* სრულად მომრგვალებული, კაფსულისებრი ფორმა */
+	margin-bottom: 18px;    /* დაშორება სათაურამდე */
+
+	/* ტიპოგრაფია */
+	font-size: 0.68rem;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.8);
+}
+
+/* კალენდრის იკონის ნაზი სტილი */
+.page__meta-icon {
+	color: rgba(255, 255, 255, 0.5);
+	display: block;
 }
