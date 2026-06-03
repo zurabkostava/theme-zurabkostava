@@ -73,7 +73,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                         $tag_path = wp_parse_url( $tag_link, PHP_URL_PATH );
                         ?>
                         <a href="<?php echo esc_url( $tag_link ); ?>" data-route="<?php echo esc_attr( $tag_path ); ?>" class="zk-tag">
-                            #<?php echo esc_html( $tag->name ); ?>
+                            <?php echo esc_html( $tag->name ); ?>
                         </a>
                     <?php endforeach; ?>
                 </div>
