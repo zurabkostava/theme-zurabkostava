@@ -892,10 +892,6 @@ button {
 .zk-breadcrumbs .zk-breadcrumb-current {
 	color: var(--text-muted);
 	pointer-events: none;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	max-width: 220px; /* იცავს დიზაინს ძალიან გრძელი სათაურებისგან */
 }
 
 /* ============================================================
