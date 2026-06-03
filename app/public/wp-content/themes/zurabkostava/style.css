@@ -70,7 +70,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .site-header {
 	position: fixed;
 	top: 0; left: 0; right: 0;
-	z-index: 90;
+	z-index: 90;!important;
 	display: flex;
 	align-items: center;
 	height: var(--header-h);
@@ -112,7 +112,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 /* ── სქროლვის დროს (ოდნავ კომპაქტური ხდება) ── */
 .site-header.is-scrolled {
 	height: var(--header-h-scrolled);
-	z-index: 90;
+	z-index: 90;!important;
 }
 .site-header.is-scrolled::before {
 	/* სქროლზეც დავაკელით სიშავე, რომ ზედმეტად არ ჩამუქდეს */
