@@ -78,6 +78,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	border: none;
 	box-shadow: none;
 	transition: height 0.45s var(--ease);
+	isolation: isolate;
 
 }
 
