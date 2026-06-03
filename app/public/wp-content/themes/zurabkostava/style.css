@@ -149,6 +149,9 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	.dropdown-menu::before { content: ""; position: absolute; top: -16px; left: 0; right: 0; height: 16px; }
 	.has-dropdown:hover > .dropdown-menu, .has-dropdown:focus-within > .dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
 
+	/* ── აი ის დაკარგული ხაზი, რომელიც მენიუს აკავებს! ── */
+	.has-nested-dropdown { position: relative; }
+
 	.nested-menu {
 		top: -9px !important; right: calc(100% + 6px) !important; left: auto !important; margin-top: 0;
 		border-left-color: rgba(255, 255, 255, 0.03) !important;
