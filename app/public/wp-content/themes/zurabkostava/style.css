@@ -70,7 +70,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .site-header {
 	position: fixed;
 	top: 0; left: 0; right: 0;
-	z-index: 90;!important;
+	z-index: 90;
 	display: flex;
 	align-items: center;
 	height: var(--header-h);
@@ -112,7 +112,6 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 /* ── სქროლვის დროს (ოდნავ კომპაქტური ხდება) ── */
 .site-header.is-scrolled {
 	height: var(--header-h-scrolled);
-	z-index: 90;!important;
 }
 .site-header.is-scrolled::before {
 	/* სქროლზეც დავაკელით სიშავე, რომ ზედმეტად არ ჩამუქდეს */
@@ -346,7 +345,23 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .page__meta { display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.03); -webkit-backdrop-filter: blur(10px) saturate(140%); backdrop-filter: blur(10px) saturate(140%); border: 1px solid rgba(255, 255, 255, 0.07); padding: 6px 12px; border-radius: 30px; margin-bottom: 18px; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 255, 255, 0.8); }
 .page__meta-icon { color: rgba(255, 255, 255, 0.5); display: block; }
 
-.zk-breadcrumbs { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; position: sticky; top: calc(var(--header-h-scrolled) + 14px); z-index: 95; padding: 6px 0; border: 1px solid transparent; border-radius: 30px;  transition: background-color 0.4s var(--ease), backdrop-filter 0.4s var(--ease), padding 0.4s var(--ease), border-color 0.4s var(--ease), box-shadow 0.4s var(--ease); }
+.zk-breadcrumbs {
+	display: inline-flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 20px;
+	font-size: 0.72rem;
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+
+	/* ── ცვლილება: სტიკის ნაცვლად ვიყენებთ ჰედერის ქვეშ პოზიციონირებას ── */
+	position: relative;
+	z-index: 1; /* ჰედერის ქვეშ, რომ არ დაეჯახოს */
+	padding: 6px 0;
+	transition: all 0.4s var(--ease);
+}
 .zk-breadcrumbs.is-stuck { background-color: rgba(16, 16, 20, 0.45); -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%); border-color: var(--hairline); padding: 6px 16px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3); }
 .zk-breadcrumbs a { color: var(--text-dim); transition: color 0.3s var(--ease); text-decoration: none !important; }
 .zk-breadcrumbs a:hover { color: var(--text); }
