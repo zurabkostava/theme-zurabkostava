@@ -814,18 +814,18 @@ button {
 	width: 100%;
 }
 
-/* ---- Desktop: fly out to the LEFT. The parent menu is right-aligned
-   against the screen edge, so opening rightwards would run off-screen. ---- */
-/* ── 2. შიდა (Nested) მენიუს პოზიცია (გამოდის მარცხნივ - მხოლოდ დესკტოპზე) ── */
+/* ============================================================
+   ULTRA-PREMIUM GLASS DROPDOWNS (Main & Nested Unified)
+   ============================================================ */
+
+/* ── 1. მხოლოდ დესკტოპის ლოგიკა (მობილურს არ ეხება!) ── */
 @media (min-width: 901px) {
-	.dropdown-menu .nested-menu {
-		position: absolute !important;
-		top: -9px !important;
-		right: calc(100% + 6px) !important; /* ეკრანიდან რომ არ გავიდეს, ვხსნით მარცხნივ */
-		left: auto !important;
-		min-width: 210px !important;
-		padding: 8px !important;
-		margin: 0 !important;
+	/* საერთო მინის ბაზა ორივე დონისთვის */
+	.dropdown-menu,
+	.nested-menu {
+		position: absolute;
+		min-width: 210px;
+		padding: 8px;
 
 		background: rgba(12, 12, 16, 0.35) !important;
 		-webkit-backdrop-filter: blur(32px) saturate(200%) !important;
@@ -833,47 +833,90 @@ button {
 
 		border: 1px solid rgba(255, 255, 255, 0.1) !important;
 		border-bottom-color: rgba(255, 255, 255, 0.03) !important;
-		border-left-color: rgba(255, 255, 255, 0.03) !important;
-		border-radius: 14px !important;
+		border-right-color: rgba(255, 255, 255, 0.03) !important;
+		border-radius: 14px;
 
 		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3),
-		inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+		inset 0 1px 0 rgba(255, 255, 255, 0.05);
 
 		opacity: 0;
 		visibility: hidden;
-		transform: translateX(12px) !important; /* მარჯვნიდან მოცურავს მარცხნივ */
-		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-		z-index: 101;
+		z-index: 100;
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	}
 
-	/* უხილავი ხიდი, რომ მაუსი არ გაიქცეს */
-	.dropdown-menu .nested-menu::before {
+	/* მთავარი დროპდაუნის პოზიცია (ქვემოდან ამოდის) */
+	.dropdown-menu {
+		top: 100%;
+		left: 0;
+		margin-top: 12px;
+		transform: translateY(12px);
+	}
+	.dropdown-menu::before {
 		content: "";
 		position: absolute;
-		top: 0; bottom: 0;
-		right: -12px; left: auto;
-		width: 12px; height: 100%;
+		top: -16px; left: 0; right: 0; height: 16px;
+	}
+	.has-dropdown:hover > .dropdown-menu,
+	.has-dropdown:focus-within > .dropdown-menu {
+		opacity: 1;
+		visibility: visible;
+		transform: translateY(0);
 	}
 
-	/* გამოჩენის ანიმაცია */
+	/* ── შიდა (Nested) მენიუს პოზიცია (იხსნება მარცხნივ!) ── */
+	.nested-menu {
+		top: -9px;
+		right: calc(100% + 6px); /* მარცხნივ გადის, რომ ეკრანს არ გასცდეს */
+		left: auto;
+		transform: translateX(12px);
+	}
+	/* უხილავი ხიდი მაუსისთვის */
+	.nested-menu::before {
+		content: "";
+		position: absolute;
+		top: 0; bottom: 0; right: -12px; left: auto; width: 12px; height: auto;
+	}
 	.has-nested-dropdown:hover > .nested-menu,
 	.has-nested-dropdown:focus-within > .nested-menu {
-		opacity: 1 !important;
-		visibility: visible !important;
-		transform: translateX(0) !important;
+		opacity: 1;
+		visibility: visible;
+		transform: translateX(0);
 	}
 
-	/* ისარი შიდა დროპდაუნისთვის (მობრუნებულია მარცხნივ) */
+	/* ისარი დესკტოპზე (იყურება მარცხნივ) */
 	.nested-caret {
+		transform: rotate(90deg);
 		opacity: 0.4;
-		transform: rotate(90deg); /* ვაბრუნებთ, რომ მიუთითოს გახსნის მიმართულება */
 		transition: transform 0.3s var(--ease), opacity 0.3s var(--ease);
 	}
-
 	.dropdown-link:hover .nested-caret {
 		opacity: 1;
-		transform: rotate(90deg) translateY(-3px); /* ჰოვერზე ისარი მარცხნივ იწევს */
+		transform: rotate(90deg) translateY(-3px); /* ოდნავ მარცხნივ იწევა ჰოვერზე */
 	}
+}
+
+/* ── 2. ლინკების ვიზუალი (მუშაობს დესკტოპზეც და მობილურზეც) ── */
+.dropdown-link {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 14px;
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 0.75rem;
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	border-radius: 8px;
+	transition: all 0.3s var(--ease);
+	text-decoration: none !important;
+}
+
+.dropdown-link:hover,
+.dropdown-link:focus-visible {
+	color: #fff;
+	background: rgba(255, 255, 255, 0.08);
+	padding-left: 18px;
 }
 
 /* ---- Mobile: indented inline accordion ---- */
