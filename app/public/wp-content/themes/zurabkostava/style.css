@@ -230,56 +230,73 @@ button {
 }
 
 /* ============================================================
-   PREMIUM OBSIDIAN GLASS DROPDOWNS (Header Main & Nested)
+   PREMIUM DARK GLASS DROPDOWNS (Header Main & Nested)
    ============================================================ */
 .dropdown-menu {
 	position: absolute;
 	top: 100%;
 	left: 0;
-	min-width: 220px; /* ოდნავ განიერი, უფრო ელეგანტური სუნთქვისთვის */
-	padding: 8px;
+	min-width: 220px; /* ოდნავ მეტი სივრცე უკეთესი სუნთქვისთვის */
+	padding: 10px;
+	margin-top: 16px; /* ოდნავ ვაშორებთ მთავარ მენიუს, რომ ჰაერში დაეკიდოს */
 
-	/* ── მუქი ობსიდიანის მინა (მუშაობს ნებისმიერ ჭრელ ფონზე) ── */
-	background: rgba(12, 12, 16, 0.75) !important;
-	-webkit-backdrop-filter: blur(24px) saturate(150%) !important;
-	backdrop-filter: blur(24px) saturate(150%) !important;
+	/* ── ნამდვილი, ძვირადღირებული მუქი მინა ── */
+	background: rgba(18, 18, 22, 0.65) !important; /* მუქი, ელეგანტური ბაზა */
+	-webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+	backdrop-filter: blur(24px) saturate(160%) !important;
 
-	/* კრიალა ჩარჩო და 3D შიდა განათება (Apple Pro ეფექტი) */
-	border: 1px solid rgba(255, 255, 255, 0.08) !important;
-	border-radius: 14px;
-	box-shadow:
-			0 30px 60px rgba(0, 0, 0, 0.6),
-			inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+	/* ფაქიზი 3D ჩარჩო (ზემოდან და მარცხნიდან ნათელი, ქვემოდან მუქი) */
+	border: 1px solid rgba(255, 255, 255, 0.12) !important;
+	border-bottom-color: rgba(255, 255, 255, 0.04) !important;
+	border-right-color: rgba(255, 255, 255, 0.04) !important;
 
+	border-radius: 16px;
+
+	/* გარე ღრმა ჩრდილი + შიდა ნაზი განათება მოცულობისთვის */
+	box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6),
+	inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+	/* ანიმაციის საწყისი მდგომარეობა (ოდნავ პატარავდება და ქვემოთ ჩადის) */
 	opacity: 0;
 	visibility: hidden;
-	transform: translateY(12px);
+	transform: translateY(16px) scale(0.96);
+	transform-origin: top left;
 	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	z-index: 100;
 }
 
-/* უხილავი ხიდი, რომ მაუსის გადატანისას მენიუ არ დაიხუროს */
+/* უხილავი ხიდი მთავარ მენიუსა და დროპდაუნს შორის (რომ მაუსი არ გაგვექცეს) */
 .dropdown-menu::before {
 	content: "";
 	position: absolute;
-	top: -14px;
+	top: -24px;
 	left: 0;
 	right: 0;
-	height: 14px;
+	height: 24px;
 }
 
-/* ანიმაცია: ჩნდება და ამოდის (მხოლოდ პირდაპირ შვილზე) */
+/* ── ანიმაციის გამოძახება ── */
 .has-dropdown:hover > .dropdown-menu,
 .has-dropdown:focus-within > .dropdown-menu {
 	opacity: 1;
 	visibility: visible;
-	transform: translateY(0);
+	transform: translateY(0) scale(1);
 }
 
-/* ── Nested დროპდაუნის (მეორე დონის) პოზიციონირება ── */
+/* ── შიდა (Nested) დროპდაუნის პოზიციონირება ── */
 .dropdown-menu .nested-menu {
-	top: -9px;
-	left: calc(100% + 12px); /* +12px ქმნის სუფთა, კინემატოგრაფიულ დაშორებას ორ მენიუს შორის */
+	top: -10px;
+	left: calc(100% + 8px); /* მშობელს აღარ ედება, აქვს 8px-იანი ესთეტიკური დაშორება */
+	margin-top: 0;
+}
+
+/* უხილავი ხიდი Nested მენიუსთვის */
+.dropdown-menu .nested-menu::before {
+	top: 0;
+	bottom: 0;
+	left: -12px;
+	width: 12px;
+	height: auto;
 }
 
 /* ── ლინკების ვიზუალი მინის შიგნით ── */
@@ -287,33 +304,34 @@ button {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 10px 16px;
-	color: rgba(255, 255, 255, 0.6); /* ოდნავ ჩამქრალი ტექსტი საწყის ეტაპზე */
+	padding: 12px 16px;
+	color: rgba(255, 255, 255, 0.6); /* ნაზი, ჩამქრალი თეთრი */
 	font-size: 0.72rem;
 	font-weight: 500;
-	letter-spacing: 0.1em;
+	letter-spacing: 0.12em;
 	text-transform: uppercase;
-	border-radius: 8px;
-	transition: all 0.3s var(--ease);
+	border-radius: 10px;
+	transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 	text-decoration: none !important;
 }
 
-/* ჰოვერის დროს ნათდება და ინაცვლებს */
+/* კინემატოგრაფიული ჰოვერ ეფექტი ტექსტზე */
 .dropdown-link:hover,
 .dropdown-link:focus-visible {
 	color: #fff;
-	background: rgba(255, 255, 255, 0.08); /* ძალიან ნაზი ნათება ღილაკის უკან */
-	padding-left: 20px;
+	background: rgba(255, 255, 255, 0.1); /* მკვეთრი განათება უკან */
+	padding-left: 24px; /* უფრო შესამჩნევი წანაცვლება მარჯვნივ */
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* თვითონ ღილაკსაც უჩნდება მცირე ჩრდილი */
 }
 
 /* ისარი შიდა დროპდაუნისთვის */
 .nested-caret {
 	opacity: 0.4;
-	transition: transform 0.3s var(--ease);
+	transition: transform 0.3s var(--ease), opacity 0.3s var(--ease);
 }
 .dropdown-link:hover .nested-caret {
 	opacity: 1;
-	transform: translateX(4px);
+	transform: translateX(4px); /* ჰოვერზე ისარი მარჯვნივ იწევს */
 }
 
 /* ------------------------------------------------------------
