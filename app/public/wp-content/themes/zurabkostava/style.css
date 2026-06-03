@@ -111,28 +111,39 @@ button {
 	display: flex;
 	align-items: center;
 	height: var(--header-h);
+
+	/* ამოვიღეთ ბლარი და ფონი აქედან, რომ Dropdown აღარ დაიბლოკოს */
+	background: transparent;
+	border-bottom: 1px solid var(--hairline);
+	transition: height 0.45s var(--ease), border-color 0.45s var(--ease), box-shadow 0.45s var(--ease);
+}
+
+/* ჰედერის შიდა მინა, რომელიც უკან ზის და დროპდაუნს ხელს არ უშლის */
+.site-header::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
 	background: var(--header-bg);
 	-webkit-backdrop-filter: blur(var(--blur)) saturate(160%);
 	backdrop-filter: blur(var(--blur)) saturate(160%);
-	border-bottom: 1px solid var(--hairline);
-	transition:
-			height        0.45s var(--ease),
-			background    0.45s var(--ease),
-			border-color  0.45s var(--ease),
-			box-shadow    0.45s var(--ease);
+	transition: background 0.45s var(--ease);
 }
 
-/* Condensed state after scroll — more opaque, tighter, lifted */
+/* Condensed state after scroll */
 .site-header.is-scrolled {
 	height: var(--header-h-scrolled);
-	background: var(--header-bg-scrolled);
 	border-bottom-color: var(--hairline-strong);
 	box-shadow: 0 10px 34px rgba(0, 0, 0, 0.38);
 }
 
+.site-header.is-scrolled::before {
+	background: var(--header-bg-scrolled);
+}
+
 /* Fallback for browsers without backdrop-filter support */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-	.site-header { background: rgba(9, 9, 11, 0.92); }
+	.site-header::before { background: rgba(9, 9, 11, 0.92); }
 }
 
 .header-inner {
