@@ -236,31 +236,66 @@ function zk_remove_wp_block_library_css() {
 add_action( 'wp_enqueue_scripts', 'zk_remove_wp_block_library_css', 100 );
 
 /* ============================================================
-   BREADCRUMBS (ნავიგაციის ბილიკი) - SPA თავსებადი
+   BREADCRUMBS (ნავიგაციის ბილიკი) - SPA & Page Hierarchy თავსებადი
    ============================================================ */
 function zk_breadcrumbs() {
     if ( is_front_page() ) {
-        return; // მთავარ გვერდზე არ გვინდა
+        return;
     }
 
     echo '<nav class="zk-breadcrumbs" aria-label="Breadcrumb">';
 
-    // მთავარი გვერდის ლინკი
+    // 1. Home Link
     echo '<a href="' . esc_url( home_url( '/' ) ) . '" data-route="/">Home</a>';
 
     if ( is_single() ) {
+        // --- ლოგიკა ცალკეული პოსტებისთვის (მაგ: Nocturne #50) ---
+
+        // ხელით ვამატებთ Blog-ს, რადგან ყველა პოსტი ბლოგის ქვეშაა
         echo '<span class="zk-breadcrumb-separator">/</span>';
+        echo '<a href="' . esc_url( home_url( '/blog/' ) ) . '" data-route="/blog">Blog</a>';
+
         $categories = get_the_category();
         if ( ! empty( $categories ) ) {
             $cat = $categories[0];
-            $cat_link = get_category_link( $cat->term_id );
-            $cat_path = wp_parse_url( $cat_link, PHP_URL_PATH );
-            // კატეგორიის ლინკი
-            echo '<a href="' . esc_url( $cat_link ) . '" data-route="' . esc_attr( $cat_path ) . '">' . esc_html( $cat->name ) . '</a>';
+
+            // თუ კატეგორიას აქვს მშობელი (მაგ: Raw)
+            if ( $cat->parent != 0 ) {
+                $parent_cat = get_category( $cat->parent );
+                $parent_slug = $parent_cat->slug;
+                $parent_path = '/blog/' . $parent_slug;
+                echo '<span class="zk-breadcrumb-separator">/</span>';
+                echo '<a href="' . esc_url( home_url( $parent_path . '/' ) ) . '" data-route="' . esc_attr( $parent_path ) . '">' . esc_html( $parent_cat->name ) . '</a>';
+            }
+
+            // უშუალოდ მიმდინარე კატეგორია (მაგ: Nocturnes)
+            $parent_prefix = ( $cat->parent != 0 ) ? '/blog/' . get_category( $cat->parent )->slug . '/' : '/blog/';
+            $cat_path = $parent_prefix . $cat->slug;
+
+            echo '<span class="zk-breadcrumb-separator">/</span>';
+            echo '<a href="' . esc_url( home_url( $cat_path . '/' ) ) . '" data-route="' . esc_attr( $cat_path ) . '">' . esc_html( $cat->name ) . '</a>';
         }
+
+        // უშუალოდ პოსტის სათაური
         echo '<span class="zk-breadcrumb-separator">/</span>';
         echo '<span class="zk-breadcrumb-current">' . get_the_title() . '</span>';
+
     } elseif ( is_page() ) {
+        // --- ლოგიკა უშუალოდ გვერდებისთვის (მაგ: როცა ხარ Blog/Raw/Nocturnes გვერდზე) ---
+        global $post;
+        $ancestors = get_post_ancestors( $post );
+
+        if ( $ancestors ) {
+            $ancestors = array_reverse( $ancestors ); // ვატრიალებთ, რომ Home-დან დაიწყოს
+            foreach ( $ancestors as $ancestor ) {
+                $anc_post = get_post( $ancestor );
+                $anc_path = '/' . get_page_uri( $anc_post );
+                echo '<span class="zk-breadcrumb-separator">/</span>';
+                echo '<a href="' . esc_url( get_permalink( $anc_post ) ) . '" data-route="' . esc_attr( $anc_path ) . '">' . esc_html( $anc_post->post_title ) . '</a>';
+            }
+        }
+
+        // უშუალოდ მიმდინარე გვერდის სათაური
         echo '<span class="zk-breadcrumb-separator">/</span>';
         echo '<span class="zk-breadcrumb-current">' . get_the_title() . '</span>';
     }
