@@ -230,67 +230,65 @@ button {
 }
 
 /* ============================================================
-   PREMIUM DARK GLASS DROPDOWNS (Header Main & Nested)
+   ULTRA-PREMIUM GLASS DROPDOWNS (Header Main & Nested)
    ============================================================ */
 .dropdown-menu {
 	position: absolute;
 	top: 100%;
 	left: 0;
-	min-width: 220px; /* ოდნავ მეტი სივრცე უკეთესი სუნთქვისთვის */
-	padding: 10px;
-	margin-top: 16px; /* ოდნავ ვაშორებთ მთავარ მენიუს, რომ ჰაერში დაეკიდოს */
+	min-width: 210px;
+	padding: 8px;
+	margin-top: 12px;
 
-	/* ── ნამდვილი, ძვირადღირებული მუქი მინა ── */
-	background: rgba(18, 18, 22, 0.65) !important; /* მუქი, ელეგანტური ბაზა */
-	-webkit-backdrop-filter: blur(24px) saturate(160%) !important;
-	backdrop-filter: blur(24px) saturate(160%) !important;
+	/* ── ნამდვილი მინის ეფექტი: მეტი გამჭვირვალობა, მეტი ბლარი ── */
+	background: rgba(12, 12, 16, 0.35) !important;
+	-webkit-backdrop-filter: blur(32px) saturate(200%) !important;
+	backdrop-filter: blur(32px) saturate(200%) !important;
 
-	/* ფაქიზი 3D ჩარჩო (ზემოდან და მარცხნიდან ნათელი, ქვემოდან მუქი) */
-	border: 1px solid rgba(255, 255, 255, 0.12) !important;
-	border-bottom-color: rgba(255, 255, 255, 0.04) !important;
-	border-right-color: rgba(255, 255, 255, 0.04) !important;
+	/* ── ფაქიზი 1px ჩარჩო შუქ-ჩრდილით ── */
+	border: 1px solid rgba(255, 255, 255, 0.1) !important;
+	border-bottom-color: rgba(255, 255, 255, 0.03) !important;
+	border-right-color: rgba(255, 255, 255, 0.03) !important;
 
-	border-radius: 16px;
+	border-radius: 14px;
 
-	/* გარე ღრმა ჩრდილი + შიდა ნაზი განათება მოცულობისთვის */
-	box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6),
-	inset 0 1px 0 rgba(255, 255, 255, 0.08);
+	/* ნაზი ჩრდილი სიღრმისთვის და ოდნავი შიდა განათება */
+	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3),
+	inset 0 1px 0 rgba(255, 255, 255, 0.05);
 
-	/* ანიმაციის საწყისი მდგომარეობა (ოდნავ პატარავდება და ქვემოთ ჩადის) */
 	opacity: 0;
 	visibility: hidden;
-	transform: translateY(16px) scale(0.96);
-	transform-origin: top left;
+	transform: translateY(12px);
 	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	z-index: 100;
 }
 
-/* უხილავი ხიდი მთავარ მენიუსა და დროპდაუნს შორის (რომ მაუსი არ გაგვექცეს) */
+/* უხილავი ხიდი მთავარ მენიუსა და დროპდაუნს შორის */
 .dropdown-menu::before {
 	content: "";
 	position: absolute;
-	top: -24px;
+	top: -16px;
 	left: 0;
 	right: 0;
-	height: 24px;
+	height: 16px;
 }
 
-/* ── ანიმაციის გამოძახება ── */
+/* გამოჩენის ანიმაცია */
 .has-dropdown:hover > .dropdown-menu,
 .has-dropdown:focus-within > .dropdown-menu {
 	opacity: 1;
 	visibility: visible;
-	transform: translateY(0) scale(1);
+	transform: translateY(0);
 }
 
 /* ── შიდა (Nested) დროპდაუნის პოზიციონირება ── */
 .dropdown-menu .nested-menu {
-	top: -10px;
-	left: calc(100% + 8px); /* მშობელს აღარ ედება, აქვს 8px-იანი ესთეტიკური დაშორება */
+	top: -9px;
+	left: calc(100% + 6px); /* ესთეტიკური დაშორება მშობლისგან */
 	margin-top: 0;
 }
 
-/* უხილავი ხიდი Nested მენიუსთვის */
+/* უხილავი ხიდი შიდა მენიუსთვის */
 .dropdown-menu .nested-menu::before {
 	top: 0;
 	bottom: 0;
@@ -304,24 +302,23 @@ button {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 12px 16px;
-	color: rgba(255, 255, 255, 0.6); /* ნაზი, ჩამქრალი თეთრი */
-	font-size: 0.72rem;
+	padding: 10px 14px;
+	color: rgba(255, 255, 255, 0.7); /* სუფთა, ნაზი თეთრი */
+	font-size: 0.75rem;
 	font-weight: 500;
-	letter-spacing: 0.12em;
+	letter-spacing: 0.08em;
 	text-transform: uppercase;
-	border-radius: 10px;
-	transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+	border-radius: 8px;
+	transition: all 0.3s var(--ease);
 	text-decoration: none !important;
 }
 
-/* კინემატოგრაფიული ჰოვერ ეფექტი ტექსტზე */
+/* ულამაზესი, მინიმალისტური ჰოვერ ეფექტი */
 .dropdown-link:hover,
 .dropdown-link:focus-visible {
 	color: #fff;
-	background: rgba(255, 255, 255, 0.1); /* მკვეთრი განათება უკან */
-	padding-left: 24px; /* უფრო შესამჩნევი წანაცვლება მარჯვნივ */
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* თვითონ ღილაკსაც უჩნდება მცირე ჩრდილი */
+	background: rgba(255, 255, 255, 0.08); /* ოდნავ ინთება */
+	padding-left: 18px; /* ფაქიზი წანაცვლება, ზედმეტობების გარეშე */
 }
 
 /* ისარი შიდა დროპდაუნისთვის */
@@ -331,7 +328,7 @@ button {
 }
 .dropdown-link:hover .nested-caret {
 	opacity: 1;
-	transform: translateX(4px); /* ჰოვერზე ისარი მარჯვნივ იწევს */
+	transform: translateX(3px); /* ჰოვერზე ისარი ოდნავ მარჯვნივ იწევს */
 }
 
 /* ------------------------------------------------------------
