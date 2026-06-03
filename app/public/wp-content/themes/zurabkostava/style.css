@@ -70,7 +70,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .site-header {
 	position: fixed;
 	top: 0; left: 0; right: 0;
-	z-index: 900;
+	z-index: 90;
 	display: flex;
 	align-items: center;
 	height: var(--header-h);
@@ -346,18 +346,17 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .page__meta-icon { color: rgba(255, 255, 255, 0.5); display: block; }
 
 .zk-breadcrumbs { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; position: sticky; top: calc(var(--header-h-scrolled) + 14px); z-index: 1001; padding: 6px 0; border: 1px solid transparent; border-radius: 30px;  transition: background-color 0.4s var(--ease), backdrop-filter 0.4s var(--ease), padding 0.4s var(--ease), border-color 0.4s var(--ease), box-shadow 0.4s var(--ease); }
+/* ── მინის კაფსულის ეფექტი (როცა სქროლვისას ჰედერს მიეკრობა) ── */
 .zk-breadcrumbs.is-stuck {
-	/* ჰედერის იდენტური მინა */
-	background: rgba(12, 12, 16, 0.6) !important;
-	-webkit-backdrop-filter: blur(32px) saturate(200%) !important;
-	backdrop-filter: blur(32px) saturate(200%) !important;
-
-	border: 1px solid rgba(255, 255, 255, 0.12) !important;
+	background-color: rgba(16, 16, 20, 0.45);
+	-webkit-backdrop-filter: blur(14px) saturate(160%);
+	backdrop-filter: blur(14px) saturate(160%);
+	border-color: var(--hairline);
 	padding: 6px 16px;
-	box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
 
-	/* Z-Index აუცილებლად მაღალი */
-	z-index: 9999 !important;
+	/* ── აი აქ არის ცვლილება: ── */
+	z-index: 1001 !important;
 }.zk-breadcrumbs a { color: var(--text-dim); transition: color 0.3s var(--ease); text-decoration: none !important; z-index: 1001;}
 .zk-breadcrumbs a:hover { color: var(--text); }
 .zk-breadcrumbs .zk-breadcrumb-separator { color: rgba(255, 255, 255, 0.15); user-select: none; z-index: 1001;}
