@@ -882,3 +882,19 @@ body.zk-lb-open { overflow: hidden; }
    ავტომატურად ინაცვლებს მარცხნივ სქროლისთვის! */
 .zk-lightbox-thumb-item:first-child { margin-left: auto; }
 .zk-lightbox-thumb-item:last-child { margin-right: auto; }
+
+
+/* ── მობილური მენიუს პრიორიტეტულობა (Mobile-only Fix) ── */
+@media (max-width: 900px) {
+	/* როცა მენიუ ღიაა, ბრედკრამბები და ფილტრები "უკან" იწევენ */
+	body.nav-open .zk-breadcrumbs,
+	body.nav-open .zk-gallery-filters {
+		z-index: 1 !important;
+		pointer-events: none; /* მენიუს გახსნისას ამათზე დაჭერას ვბლოკავთ */
+	}
+
+	/* თავად მენიუს ვაძლევთ მაქსიმალურ პრიორიტეტს */
+	.nav-open .primary-nav {
+		z-index: 2000 !important;
+	}
+}
