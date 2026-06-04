@@ -1046,7 +1046,7 @@ function zk_about_page_shortcode() {
                     <?php
                     // აქ იძახებს FileBird-ის გალერეას.
                     // ! არ დაგავიწყდეს id="1" შეცვალო შენი რეალური ფოლდერის ან გალერეის ID-ით !
-                    echo do_shortcode('[filebird_gallery id="1"]');
+                    echo do_shortcode('[filebird_gallery id="gallery"]');
                     ?>
                 </div>
             </div>
