@@ -886,11 +886,12 @@ body.zk-lb-open { overflow: hidden; }
 
 /* ── მობილური მენიუს პრიორიტეტულობა (Mobile-only Fix) ── */
 @media (max-width: 900px) {
-	/* როცა მენიუ ღიაა, ბრედკრამბები და ფილტრები "უკან" იწევენ */
+	/* როცა მენიუ ღიაა, ბრედკრამბები, ფილტრები და Sort dropdown-ი "უკან" იწევენ */
 	body.nav-open .zk-breadcrumbs,
-	body.nav-open .zk-gallery-filters {
+	body.nav-open .zk-gallery-filters,
+	body.nav-open .zk-sort-dropdown {
 		z-index: 1 !important;
-		pointer-events: none; /* მენიუს გახსნისას ამათზე დაჭერას ვბლოკავთ */
+		pointer-events: none;
 	}
 
 	/* თავად მენიუს ვაძლევთ მაქსიმალურ პრიორიტეტს */
