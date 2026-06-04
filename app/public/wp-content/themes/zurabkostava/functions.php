@@ -462,6 +462,21 @@ function zk_cinematic_gallery() {
     $output .= '<img class="zk-lightbox-img" src="" alt="">';
     $output .= '<div class="zk-lightbox-exif" id="zkLightboxExif"></div>';
     $output .= '</div>';
+    // 6. Cinematic Lightbox (გამდიდრებული ისრებით და ნავიგაციით)
+    $output .= '<div class="zk-lightbox" id="zkLightbox" aria-hidden="true">';
+    $output .= '<button class="zk-lightbox-close" aria-label="Close">✕</button>';
+
+    // ნავიგაციის ისრები
+    $output .= '<button class="zk-lightbox-arrow zk-lightbox-prev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>';
+    $output .= '<button class="zk-lightbox-arrow zk-lightbox-next" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>';
+
+    $output .= '<img class="zk-lightbox-img" src="" alt="">';
+    $output .= '<div class="zk-lightbox-exif" id="zkLightboxExif"></div>';
+
+    // ქვედა პატარა ფოტოების (Thumbnails) კონტეინერი
+    $output .= '<div class="zk-lightbox-thumbs" id="zkLightboxThumbs"></div>';
+
+    $output .= '</div>';
 
     return $output;
 }
