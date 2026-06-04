@@ -220,10 +220,24 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	.nav-open .nav-toggle-line:nth-child(3) { top: 50%; transform: translateY(-50%) rotate(-45deg); }
 
 	.primary-nav {
-		position: fixed; inset: 0; z-index: var(--z-overlay); height: 100vh; height: 100dvh; padding: calc(var(--header-h) + 6vh) var(--gutter) 8vh;
-		display: flex; flex-direction: column; justify-content: center;
-		background: rgba(7, 7, 9, 0.85); -webkit-backdrop-filter: blur(28px) saturate(160%); backdrop-filter: blur(28px) saturate(160%);
-		transform: translateX(100%); opacity: 0; visibility: hidden; transition: transform 0.6s var(--ease), opacity 0.6s var(--ease), visibility 0.6s var(--ease);
+		position: fixed; inset: 0; z-index: 2000;
+		height: 100dvh; /* დინამიური სიმაღლე - საუკეთესო მობილურისთვის */
+		padding: calc(var(--header-h) + 40px) var(--gutter) 40px;
+
+		display: flex; flex-direction: column;
+		justify-content: flex-start; /* შევცვალეთ center-ი, რომ მენიუ ზემოდან დაიწყოს */
+
+		background: rgba(7, 7, 9, 0.85);
+		-webkit-backdrop-filter: blur(28px) saturate(160%);
+		backdrop-filter: blur(28px) saturate(160%);
+
+		transform: translateX(100%);
+		opacity: 0; visibility: hidden;
+		transition: transform 0.6s var(--ease), opacity 0.6s var(--ease), visibility 0.6s var(--ease);
+
+		/* ── სქროლის დამატება ── */
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch; /* IOS-ისთვის სმუზ სქროლი */
 	}
 	@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) { .primary-nav { background: rgba(7, 7, 9, 0.97); } }
 	.nav-open .primary-nav { transform: translateX(0); opacity: 1; visibility: visible; }
