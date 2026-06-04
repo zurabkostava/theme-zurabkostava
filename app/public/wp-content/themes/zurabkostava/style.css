@@ -635,11 +635,31 @@ html.zk-img-js .zk-post-hero.is-loaded { opacity: 1; }
    ============================================================ */
 .zk-gallery-wrapper { margin-top: 2rem; }
 
-/* ── 1. Apple-style Segmented Filters ── */
+/* ── 1. Apple-style Segmented Filters (Sticky Glass) ── */
 .zk-gallery-filters {
 	display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px;
 	margin-bottom: 40px;
+
+	/* ── Sticky ლოგიკა ── */
+	position: sticky;
+	top: calc(var(--header-h-scrolled) + 64px); /* ბრედკრამბების ოდნავ ქვემოთ */
+	z-index: 990;
+	padding: 8px 12px;
+	border-radius: 40px;
+	border: 1px solid transparent;
+	transition: all 0.4s var(--ease);
 }
+
+/* ── მინის ეფექტი ჩასქროლვისას ── */
+.zk-gallery-filters.is-stuck {
+	background-color: rgba(16, 16, 20, 0.65);
+	-webkit-backdrop-filter: blur(24px) saturate(160%);
+	backdrop-filter: blur(24px) saturate(160%);
+	border-color: var(--hairline);
+	box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+	transform: translateY(-8px);
+}
+/* ღილაკების სტილი იგივე რჩება */
 .zk-filter-btn {
 	padding: 8px 20px;
 	border-radius: 30px;

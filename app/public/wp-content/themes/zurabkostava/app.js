@@ -524,6 +524,23 @@
         if (!lightbox) { current = null; return; }
         wrap.dataset.zkReady = '1';
 
+
+// ── Sticky Filters სენსორი ──
+        var filters = wrap.querySelector('.zk-gallery-filters');
+        if (filters && !wrap.querySelector('.zk-filter-sentinel')) {
+            var sentinel = document.createElement('div');
+            sentinel.className = 'zk-filter-sentinel';
+            sentinel.style.position = 'absolute';
+            sentinel.style.height = '0px';
+            filters.parentNode.insertBefore(sentinel, filters);
+
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    filters.classList.toggle('is-stuck', !entry.isIntersecting);
+                });
+            }, { rootMargin: '-130px 0px 0px 0px' });
+            observer.observe(sentinel);
+        }
         var grid     = wrap.querySelector('.zk-gallery-grid');
         var buttons  = Array.prototype.slice.call(wrap.querySelectorAll('.zk-filter-btn'));
         var allItems = Array.prototype.slice.call(wrap.querySelectorAll('.zk-gallery-item'));
