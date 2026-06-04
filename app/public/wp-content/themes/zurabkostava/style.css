@@ -1041,7 +1041,63 @@ body.zk-lb-open { overflow: hidden; }
 	font-size: 0.95rem; color: var(--text-muted); line-height: 1.7;
 	margin-bottom: 24px;
 }
-.zk-timeline-body p { margin-bottom: 1em; }
+/* ── ტექსტის რედაქტორის (Rich Text) სტილები ბარათისთვის ── */
+.zk-timeline-body {
+	font-size: 0.95rem; color: var(--text-muted); line-height: 1.7;
+	margin-bottom: 24px;
+}
+
+/* აბზაცები და გამოტოვებები */
+.zk-timeline-body p {
+	margin-bottom: 1.2em;
+}
+.zk-timeline-body p:last-child {
+	margin-bottom: 0;
+}
+
+/* ლოკალური "Break" (Shift+Enter) */
+.zk-timeline-body br {
+	display: block;
+	content: "";
+	margin-top: 0.5em;
+}
+
+/* გამუქებული ტექსტი (Bold) - რომ კარგად გამოჩნდეს მუქ ფონზე */
+.zk-timeline-body strong,
+.zk-timeline-body b {
+	font-weight: 600;
+	color: #ffffff; /* თეთრი ფერი უკეთეს კონტრასტს მისცემს */
+}
+
+/* დახრილი ტექსტი (Italic) */
+.zk-timeline-body em,
+.zk-timeline-body i {
+	font-style: italic;
+	opacity: 0.9;
+}
+
+/* ლინკები ტექსტში */
+.zk-timeline-body a {
+	color: #fff;
+	text-decoration: underline;
+	text-decoration-color: var(--text-dim);
+	text-underline-offset: 3px;
+	transition: text-decoration-color 0.3s var(--ease);
+}
+.zk-timeline-body a:hover {
+	text-decoration-color: #fff;
+}
+
+/* ჩამონათვალი (Lists) */
+.zk-timeline-body ul,
+.zk-timeline-body ol {
+	margin-bottom: 1.2em;
+	padding-left: 1.2em; /* შეწევა */
+}
+.zk-timeline-body ul { list-style-type: disc; }
+.zk-timeline-body ol { list-style-type: decimal; }
+.zk-timeline-body li { margin-bottom: 0.4em; }
+.zk-timeline-body li::marker { color: var(--text-dim); }
 .zk-timeline-body p:last-child { margin-bottom: 0; }
 
 /* ── YouTube / Embed Container ── */
