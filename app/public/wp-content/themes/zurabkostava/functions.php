@@ -1044,9 +1044,9 @@ function zk_about_page_shortcode() {
 
                 <div class="zk-filebird-gallery-wrapper">
                     <?php
-                    // აქ იძახებს FileBird-ის გალერეას.
-                    // ! არ დაგავიწყდეს id="1" შეცვალო შენი რეალური ფოლდერის ან გალერეის ID-ით !
-                    echo do_shortcode('[filebird_gallery id="gallery"]');
+                    // აქ იძახებს ჩვენს დაწერილ PHP ფუნქციას.
+                    // !მნიშვნელოვანია! რიცხვი 2 უნდა შეცვალო შენი ფოლდერის ნამდვილი ID-ით
+                    echo zk_get_filebird_gallery( 2 );
                     ?>
                 </div>
             </div>
@@ -1057,3 +1057,42 @@ function zk_about_page_shortcode() {
     <?php return ob_get_clean();
 }
 add_shortcode( 'zk_about', 'zk_about_page_shortcode' );
+
+
+/* ============================================================
+   FILEBIRD CUSTOM GALLERY FETCHER
+   ============================================================ */
+function zk_get_filebird_gallery( $folder_id ) {
+    global $wpdb;
+
+    // FileBird-ის ცხრილი, სადაც ინახება კავშირი ფოტოსა და ფოლდერს შორის
+    $table_name = $wpdb->prefix . 'fbv_attachment_folder';
+
+    // ვამოწმებთ, არსებობს თუ არა ეს ცხრილი (უსაფრთხოებისთვის)
+    if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" ) != $table_name ) {
+        return '<p style="color:var(--text-dim);">FileBird database table not found.</p>';
+    }
+
+    // ვიღებთ ამ ფოლდერში არსებული ყველა ფოტოს ID-ს (უახლესები პირველად)
+    $attachment_ids = $wpdb->get_col(
+            $wpdb->prepare( "SELECT attachment_id FROM $table_name WHERE folder_id = %d ORDER BY attachment_id DESC", intval( $folder_id ) )
+    );
+
+    if ( empty( $attachment_ids ) ) {
+        return '<p style="color:var(--text-dim);">No photos found in this FileBird folder.</p>';
+    }
+
+    // ვხატავთ ჩვენს Cinematic გრიდს
+    $output = '<div class="zk-masonry-gallery">';
+    foreach ( $attachment_ids as $id ) {
+        $img_url = wp_get_attachment_image_url( $id, 'large' ); // ვიყენებთ large ზომას ხარისხისთვის
+        if ( $img_url ) {
+            $output .= '<div class="zk-masonry-item zk-filebird-item">';
+            $output .= '<img src="' . esc_url( $img_url ) . '" alt="Zurab Kostava Capture" loading="lazy" />';
+            $output .= '</div>';
+        }
+    }
+    $output .= '</div>';
+
+    return $output;
+}

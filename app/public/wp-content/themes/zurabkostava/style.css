@@ -1654,6 +1654,27 @@ body.zk-lb-open { overflow: hidden; }
 	background: transparent !important;
 }
 
+
+/* ── FileBird Custom Grid Items ── */
+.zk-filebird-item img {
+	width: 100%;
+	height: 280px; /* ფოტოების ერთგვაროვანი სიმაღლე */
+	object-fit: cover; /* რომ არ დეფორმირდეს შუაში ამოჭრის */
+	display: block;
+	border-radius: 12px;
+	border: 1px solid rgba(255, 255, 255, 0.05);
+	filter: contrast(1.1) grayscale(15%); /* ოდნავ ჩამქრალი Cinematic ფერი */
+	transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.5s var(--ease), box-shadow 0.5s var(--ease);
+}
+
+.zk-filebird-item img:hover {
+	transform: scale(1.02);
+	filter: contrast(1) grayscale(0%);
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+	z-index: 2;
+	position: relative;
+}
+
 /* ============================================================
    RESPONSIVE (MEDIA QUERIES)
    ============================================================ */
@@ -1727,3 +1748,4 @@ body.zk-lb-open { overflow: hidden; }
 		font-size: 0.85rem;
 	}
 }
+
