@@ -1531,8 +1531,8 @@ body.zk-lb-open { overflow: hidden; }
 /* ── 7. Favorites Grid (The Curated Mind) ── */
 .zk-favorites-grid {
 	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 32px;
+	grid-template-columns: repeat(4, 1fr); /* 3-ის ნაცვლად 4 სვეტი */
+	gap: 20px; /* ოდნავ შევამცირეთ დაშორება, რომ 4-ივე კომფორტულად დაეტიოს */
 }
 
 .zk-fav-col h4 {
@@ -1546,8 +1546,16 @@ body.zk-lb-open { overflow: hidden; }
 	margin: 0;
 	padding-left: 20px;
 	color: var(--text-muted);
-	font-size: 0.9rem;
+	font-size: 0.85rem; /* ტექსტი ოდნავ დავაპატარავეთ 4 სვეტისთვის */
 	line-height: 1.8;
+}
+
+/* პლანშეტებზე (მაგ: iPad) გადაეწყოს 2x2 სვეტად */
+@media (max-width: 950px) {
+	.zk-favorites-grid {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 32px;
+	}
 }
 
 .zk-fav-col li {
