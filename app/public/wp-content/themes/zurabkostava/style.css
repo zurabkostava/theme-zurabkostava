@@ -1318,51 +1318,27 @@ body.zk-lb-open { overflow: hidden; }
 	to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Tab 1: Bento Box Dashboard ── */
+/* ============================================================
+   ABOUT PAGE: IDENTITY DASHBOARD & BENTO BOXES
+   ============================================================ */
+
+/* ── 1. Main Grid Layout ── */
 .zk-identity-dashboard {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 20px;
 }
-.zk-id-name { font-size: 2.5rem; margin-bottom: 5px; font-weight: 600; }
-.zk-id-roles {
-	font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase;
-	letter-spacing: 0.15em; margin-bottom: 24px; font-weight: 600;
-}
-.zk-id-bio { font-size: 1.2rem; color: #fff; line-height: 1.5; margin-bottom: 24px; }
-.zk-image-placeholder {
-	width: 100%; aspect-ratio: 4/5;
-	background: rgba(255,255,255,0.02); border: 1px solid var(--hairline);
-	border-radius: 16px; display: flex; align-items: center; justify-content: center;
-	color: var(--text-dim);
+
+.zk-col-span-2 {
+	grid-column: 1 / -1;
 }
 
-/* ── 4. Tab 3: Masonry Gallery ── */
-.zk-masonry-gallery {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-	gap: 20px;
-}
-.zk-img-dummy {
-	width: 100%; height: 200px;
-	background: rgba(255,255,255,0.02); border: 1px dashed var(--hairline-strong);
-	border-radius: 12px; display: flex; align-items: center; justify-content: center;
-	color: var(--text-dim); transition: transform 0.3s var(--ease);
-}
-.zk-img-dummy:hover { transform: scale(1.02); }
-
-@media (max-width: 768px) {
-	.zk-tab-btn { padding: 10px 16px; font-size: 0.7rem; }
-}
-
-
-
+/* ── 2. Bento Box Base & Animations ── */
 .zk-bento-box {
 	background: rgba(255, 255, 255, 0.02);
 	border: 1px solid var(--hairline);
 	border-radius: 16px;
 	padding: 32px;
-	/* ── აქ შემოდის ულტრა-რბილი, ელასტიური ანიმაცია (0.6s) ── */
 	transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
 	border-color 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
 	box-shadow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -1370,17 +1346,10 @@ body.zk-lb-open { overflow: hidden; }
 
 .zk-bento-box:hover {
 	border-color: rgba(255, 255, 255, 0.1);
-	/* 4px-ის ნაცვლად ავწიოთ მხოლოდ 2px-ით და ჩრდილიც დავარბილოთ */
 	transform: translateY(-2px);
 	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
 }
 
-/* რომ მესამე ბლოკმა სრული სიგანე დაიკავოს */
-.zk-col-span-2 {
-	grid-column: 1 / -1;
-}
-
-/* ── Bento Headers ── */
 .zk-bento-header {
 	display: flex;
 	align-items: center;
@@ -1389,10 +1358,12 @@ body.zk-lb-open { overflow: hidden; }
 	border-bottom: 1px solid var(--hairline-strong);
 	padding-bottom: 16px;
 }
+
 .zk-bento-header svg {
 	width: 22px; height: 22px;
 	color: var(--text-dim);
 }
+
 .zk-bento-header h3 {
 	font-size: 1.1rem;
 	font-weight: 600;
@@ -1402,7 +1373,49 @@ body.zk-lb-open { overflow: hidden; }
 	text-transform: uppercase;
 }
 
-/* ── Vitals List (წერტილების იძულებითი გათიშვა) ── */
+/* ── 3. Profile Split Layout & Digital ID Photo ── */
+.zk-profile-inner {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 32px;
+}
+
+.zk-profile-content {
+	flex: 1;
+}
+
+.zk-profile-photo {
+	flex-shrink: 0;
+	width: 130px;
+	height: 170px;
+	border-radius: 12px;
+	overflow: hidden;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid var(--hairline-strong);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+	position: relative;
+	transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.zk-profile-photo:hover {
+	transform: scale(1.05) rotate(2deg);
+}
+
+.zk-profile-photo img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	filter: contrast(1.1) grayscale(20%);
+	transition: filter 0.4s var(--ease);
+}
+
+.zk-profile-photo:hover img {
+	filter: contrast(1) grayscale(0%);
+}
+
+/* ── 4. Vitals List (Icons & Strict Overrides) ── */
 .zk-vitals-list,
 .zk-vitals-list li {
 	list-style: none !important;
@@ -1414,12 +1427,12 @@ body.zk-lb-open { overflow: hidden; }
 	margin: 0 0 32px 0 !important;
 }
 
-/* კლავს WordPress-ის თემის მიერ ჩუმად დამატებულ წერტილებს */
 .zk-vitals-list li::before,
 .zk-vitals-list li::after {
 	content: none !important;
 	display: none !important;
 }
+
 .zk-vitals-list li {
 	display: flex;
 	align-items: flex-start;
@@ -1427,10 +1440,9 @@ body.zk-lb-open { overflow: hidden; }
 	margin-bottom: 16px;
 	font-size: 0.95rem;
 	color: var(--text-muted);
-	padding-left: 0 !important; /* აუქმებს თემის დამატებულ სივრცეს */
+	padding-left: 0 !important;
 }
-/* იკონის სტილი */
-/* იკონის სტილი (იგივე რჩება) */
+
 .zk-vital-icon {
 	width: 18px;
 	height: 18px;
@@ -1439,7 +1451,6 @@ body.zk-lb-open { overflow: hidden; }
 	margin-top: 3px;
 }
 
-/* ტექსტის განაწილება სვეტებად (იგივე რჩება) */
 .zk-vital-text {
 	display: flex;
 	flex-wrap: wrap;
@@ -1452,7 +1463,6 @@ body.zk-lb-open { overflow: hidden; }
 	font-weight: 500;
 }
 
-/* ლინკების ვიზუალი (იგივე რჩება) */
 .zk-vital-text a {
 	color: #fff;
 	text-decoration: none;
@@ -1465,60 +1475,159 @@ body.zk-lb-open { overflow: hidden; }
 	border-bottom-color: #fff;
 }
 
-
-
-/* ── Social Bar ── */
+/* ── 5. Social Bar ── */
 .zk-social-bar {
-	display: flex; gap: 14px; flex-wrap: wrap;
+	display: flex;
+	gap: 14px;
+	flex-wrap: wrap;
 }
+
 .zk-social-btn {
 	width: 44px; height: 44px;
 	border-radius: 50%;
 	background: rgba(255, 255, 255, 0.04);
 	border: 1px solid var(--hairline-strong);
 	display: flex; align-items: center; justify-content: center;
-	color: var(--text-dim); text-decoration: none !important;
+	color: var(--text-dim);
+	text-decoration: none !important;
 	transition: all 0.3s var(--ease);
 }
+
 .zk-social-btn:hover {
-	background: #fff; color: #070709;
+	background: #fff;
+	color: #070709;
 	transform: scale(1.1);
 	border-color: #fff;
 }
-.zk-social-btn svg { width: 18px; height: 18px; }
 
-/* ── Tags (The Arsenal) ── */
-.zk-tags-container {
-	display: flex; flex-wrap: wrap; gap: 10px;
+.zk-social-btn svg {
+	width: 18px; height: 18px;
 }
+
+/* ── 6. Skills / Tags (The Arsenal) ── */
+.zk-tags-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
 .zk-tag {
-	font-size: 0.8rem; font-weight: 500; letter-spacing: 0.05em;
-	padding: 8px 16px; border-radius: 20px;
+	font-size: 0.8rem;
+	font-weight: 500;
+	letter-spacing: 0.05em;
+	padding: 8px 16px;
+	border-radius: 20px;
 	background: rgba(255, 255, 255, 0.03);
-	color: var(--text-dim); border: 1px solid var(--hairline-strong);
+	color: var(--text-dim);
+	border: 1px solid var(--hairline-strong);
 	transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
 }
+
 .zk-tag:hover {
-	color: #fff; border-color: rgba(255,255,255,0.2);
+	color: #fff;
+	border-color: rgba(255,255,255,0.2);
 }
 
-/* ── Favorites Grid ── */
+/* ── 7. Favorites Grid (The Curated Mind) ── */
 .zk-favorites-grid {
-	display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 32px;
 }
+
 .zk-fav-col h4 {
-	font-size: 1rem; color: #fff; margin-bottom: 20px; font-weight: 500;
+	font-size: 1rem;
+	color: #fff;
+	margin-bottom: 20px;
+	font-weight: 500;
 }
+
 .zk-fav-col ol {
-	margin: 0; padding-left: 20px; color: var(--text-muted); font-size: 0.9rem;
+	margin: 0;
+	padding-left: 20px;
+	color: var(--text-muted);
+	font-size: 0.9rem;
 	line-height: 1.8;
 }
-.zk-fav-col li { margin-bottom: 8px; }
-.zk-fav-col li::marker { color: var(--text-dim); font-weight: 600; }
 
-/* ── Responsive ── */
+.zk-fav-col li {
+	margin-bottom: 8px;
+}
+
+.zk-fav-col li::marker {
+	color: var(--text-dim);
+	font-weight: 600;
+}
+
+/* ── 8. Tab 3: Masonry Gallery & Legacy ── */
+.zk-masonry-gallery {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+	gap: 20px;
+}
+
+.zk-img-dummy {
+	width: 100%; height: 200px;
+	background: rgba(255,255,255,0.02);
+	border: 1px dashed var(--hairline-strong);
+	border-radius: 12px;
+	display: flex; align-items: center; justify-content: center;
+	color: var(--text-dim);
+	transition: transform 0.3s var(--ease);
+}
+
+.zk-img-dummy:hover {
+	transform: scale(1.02);
+}
+
+/* Legacy / Backup Identity Classes (In case needed) */
+.zk-id-name { font-size: 2.5rem; margin-bottom: 5px; font-weight: 600; }
+.zk-id-roles { font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 24px; font-weight: 600; }
+.zk-id-bio { font-size: 1.2rem; color: #fff; line-height: 1.5; margin-bottom: 24px; }
+.zk-image-placeholder { width: 100%; aspect-ratio: 4/5; background: rgba(255,255,255,0.02); border: 1px solid var(--hairline); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); }
+
+/* ============================================================
+   RESPONSIVE (MEDIA QUERIES)
+   ============================================================ */
+
+/* ტაბების ღილაკების დაპატარავება */
+@media (max-width: 768px) {
+	.zk-tab-btn {
+		padding: 10px 16px;
+		font-size: 0.7rem;
+	}
+}
+
+/* Bento ბლოკების მობილურზე ერთ სვეტად ჩამოშლა */
 @media (max-width: 800px) {
-	.zk-identity-dashboard { grid-template-columns: 1fr; }
-	.zk-col-span-2 { grid-column: auto; }
-	.zk-favorites-grid { grid-template-columns: 1fr; gap: 24px; }
+	.zk-identity-dashboard {
+		grid-template-columns: 1fr;
+	}
+	.zk-col-span-2 {
+		grid-column: auto;
+	}
+	.zk-favorites-grid {
+		grid-template-columns: 1fr;
+		gap: 24px;
+	}
+}
+
+/* ფოტოსა და ტექსტის პოზიციის შეცვლა პატარა ეკრანებზე */
+@media (max-width: 650px) {
+	.zk-profile-inner {
+		flex-direction: column-reverse;
+		align-items: center;
+		text-align: center;
+	}
+	.zk-bento-header,
+	.zk-social-bar,
+	.zk-vital-text {
+		justify-content: center;
+	}
+	.zk-vitals-list li {
+		justify-content: center;
+	}
+	.zk-vital-text strong {
+		min-width: auto;
+	}
 }
