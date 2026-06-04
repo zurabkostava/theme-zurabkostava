@@ -741,8 +741,11 @@
 
                 // 2. ── ანიმაციური სქროლი ──
                 // თუ მომხმარებელი სქროლილია, ავტომატურად ვბრუნდებით გალერეის საწყის წერტილში
+                // 2. ── ანიმაციური სქროლი ──
                 if (window.scrollY > 100) {
-                    var headerOffset = 160; // ჰედერი + ბრედკრამბები + პადინგი
+                    // ზუსტი მათემატიკა: ჰედერი(64px) + ბრედკრამბების დამაგრების ადგილი(64px)
+                    var headerOffset = 128;
+
                     var elementPosition = wrap.getBoundingClientRect().top + window.scrollY;
                     var offsetPosition = elementPosition - headerOffset;
 
