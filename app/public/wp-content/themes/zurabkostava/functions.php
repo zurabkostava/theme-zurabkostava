@@ -584,6 +584,7 @@ function zk_music_meta_callback( $post ) {
     $media_type  = get_post_meta( $post->ID, '_zk_media_type', true );
     $media_id    = get_post_meta( $post->ID, '_zk_media_id', true );
     $spotify_url = get_post_meta( $post->ID, '_zk_spotify_url', true );
+    $more_url    = get_post_meta( $post->ID, '_zk_more_url', true ); // <--- ახალი ცვლადი
     ?>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
         <div>
@@ -605,6 +606,10 @@ function zk_music_meta_callback( $post ) {
                 <option value="spotify" <?php selected( $media_type, 'spotify' ); ?>>Spotify</option>
                 <option value="none" <?php selected( $media_type, 'none' ); ?>>None</option>
             </select>
+            <div style="grid-column: 1 / -1;">
+                <label><strong>"See More" URL</strong> (Link to a blog post or external source. Leave empty to hide)</label><br>
+                <input type="url" name="zk_more_url" value="<?php echo esc_url( $more_url ); ?>" style="width:100%; margin-top:5px;" />
+            </div>
         </div>
         <div>
             <label><strong>Media ID</strong> (YouTube/Spotify ID)</label><br>
@@ -632,6 +637,7 @@ function zk_music_save_meta_data( $post_id ) {
             'zk_media_type'   => '_zk_media_type',
             'zk_media_id'     => '_zk_media_id',
             'zk_spotify_url'  => '_zk_spotify_url',
+            'zk_more_url'     => '_zk_more_url',
     );
 
     foreach ( $fields as $post_key => $meta_key ) {
@@ -668,6 +674,7 @@ function zk_music_timeline_shortcode() {
                     'mediaType'   => get_post_meta( $post_id, '_zk_media_type', true ),
                     'mediaId'     => get_post_meta( $post_id, '_zk_media_id', true ),
                     'spotifyUrl'  => get_post_meta( $post_id, '_zk_spotify_url', true ),
+                    'moreUrl'     => get_post_meta( $post_id, '_zk_more_url', true ),
             );
         }
         wp_reset_postdata();

@@ -1063,6 +1063,37 @@ body.zk-lb-open { overflow: hidden; }
 	margin-top: 24px;
 	display: flex;
 	align-items: center;
+	justify-content: space-between; /* აქტიურებს დაშორებას: Spotify მარცხნივ, More მარჯვნივ */
+	flex-wrap: wrap; /* მობილურზე რომ არ გაიჭედოს */
+	gap: 16px;
+}
+
+/* ── "See More" ღილაკი ── */
+.zk-more-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--text-dim);
+	text-decoration: none !important;
+	transition: color 0.3s var(--ease), transform 0.3s var(--ease);
+}
+
+.zk-more-btn svg {
+	width: 14px;
+	height: 14px;
+	transition: transform 0.3s var(--ease);
+}
+
+/* Hover ეფექტი: ტექსტი ნათდება და ისარი მარჯვნივ იწევა */
+.zk-more-btn:hover {
+	color: var(--text);
+}
+.zk-more-btn:hover svg {
+	transform: translateX(4px);
 }
 
 /* ── კრეატიული Spotify ღილაკი ── */

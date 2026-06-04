@@ -840,7 +840,14 @@
             // ── ჟანრის (Genre) HTML-ის გენერაცია ──
             // თუ ადმინკაში ჟანრი ჩავწერეთ, გამოაჩენს, თუ არადა დატოვებს ცარიელს
             var genreHtml = item.genre ? `<span class="zk-timeline-tag">${item.genre}</span>` : '';
-
+            var moreBtnHtml = item.moreUrl ? `
+                <a href="${item.moreUrl}" target="_blank" rel="noopener noreferrer" class="zk-more-btn">
+                    See more 
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            ` : '';
             html += `
                 <div class="zk-timeline-node">
                     <div class="zk-timeline-point"><div class="zk-point-core"></div></div>
@@ -854,8 +861,10 @@
                         <div class="zk-timeline-body">${item.description}</div>
                         ${embedHtml}
                         
+                        <!-- ღილაკების კონტეინერი -->
                         <div class="zk-card-actions">
                             ${spotifyBtnHtml}
+                            ${moreBtnHtml}
                         </div>
                     </div>
                 </div>
