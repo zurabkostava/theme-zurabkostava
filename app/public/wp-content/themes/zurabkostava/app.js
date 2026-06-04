@@ -723,6 +723,23 @@
         grid.addEventListener('click', function (e) {
             var item = e.target.closest('.zk-gallery-item');
             if (!item) return;
+
+            // ── VISUAL SORTING MAGIC (ადამიანური კითხვის ლოგიკა) ──
+            // ვასწავლით სისტემას, დაალაგოს ფოტოები ეკრანზე მათი რეალური პოზიციების მიხედვით
+            activeItems.sort(function(a, b) {
+                // ვყოფთ სივრცეს 200px-იან ვირტუალურ ჰორიზონტალურ რიგებად
+                var rowA = Math.round(a.offsetTop / 200);
+                var rowB = Math.round(b.offsetTop / 200);
+
+                if (rowA === rowB) {
+                    return a.offsetLeft - b.offsetLeft; // თუ ერთ რიგშია, მიდის მარცხნიდან მარჯვნივ
+                }
+                return rowA - rowB; // თუ სხვადასხვა რიგშია, მიდის ზემოდან ქვემოთ
+            });
+
+            // რადგან თანმიმდევრობა ვიზუალურად დავალაგეთ, თამბნეილებს თავიდან ვხატავთ
+            buildThumbnails();
+
             var i = activeItems.indexOf(item);
             if (i > -1) open(i);
         });
