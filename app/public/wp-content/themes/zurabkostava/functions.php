@@ -710,18 +710,71 @@ function zk_about_page_shortcode() {
         <div class="zk-tabs-content">
 
             <div class="zk-tab-panel active" id="tab-identity">
-                <div class="zk-identity-grid">
-                    <div class="zk-id-image">
-                        <div class="zk-image-placeholder">Portrait Image</div>
-                    </div>
-                    <div class="zk-id-info">
-                        <h1 class="zk-id-name">Zurab Kostava</h1>
-                        <p class="zk-id-roles">Composer | Visual Artist | Tech Geek</p>
-                        <p class="zk-id-bio">Translating complex emotions into cinematic soundscapes and digital art.</p>
-                        <div class="zk-id-details">
-                            <p>Here you can write a brief, welcoming introduction. A few sentences about what drives your multidisciplinary approach.</p>
+                <div class="zk-bento-dashboard">
+
+                    <div class="zk-bento-card zk-bento-vitals">
+                        <div class="zk-vitals-list">
+                            <div class="zk-vital-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                <div><span class="label">Base:</span> <span class="value">Tbilisi, Georgia</span></div>
+                            </div>
+                            <div class="zk-vital-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                                <div><span class="label">Studio:</span> <span class="value">Creative Lead @ Kostava Creative</span></div>
+                            </div>
+                            <div class="zk-vital-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>
+                                <div><span class="label">Focus:</span> <span class="value">Cinematic Soundscapes & Visual Arts</span></div>
+                            </div>
+                        </div>
+
+                        <div class="zk-social-pill-container">
+                            <a href="#" class="zk-social-pill">Instagram</a>
+                            <a href="#" class="zk-social-pill">YouTube</a>
+                            <a href="#" class="zk-social-pill">LinkedIn</a>
+                            <a href="#" class="zk-social-pill">X</a>
                         </div>
                     </div>
+
+                    <div class="zk-bento-card zk-bento-skills">
+                        <h4 class="zk-bento-title">The Arsenal</h4>
+                        <div class="zk-tags-cloud">
+                            <span class="zk-tag">Ableton Live</span>
+                            <span class="zk-tag">Logic Pro</span>
+                            <span class="zk-tag">DaVinci Resolve</span>
+                            <span class="zk-tag">Figma</span>
+                            <span class="zk-tag">Tech Geek</span>
+                            <span class="zk-tag">Sound Design</span>
+                            <span class="zk-tag">Color Grading</span>
+                        </div>
+                    </div>
+
+                    <div class="zk-bento-card zk-bento-cinema">
+                        <h4 class="zk-bento-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
+                            Top Cinema
+                        </h4>
+                        <ul class="zk-favorites-list">
+                            <li>Interstellar <span class="director">Christopher Nolan</span></li>
+                            <li>Abre los ojos <span class="director">Alejandro Amenábar</span></li>
+                            <li>Stay <span class="director">Marc Forster</span></li>
+                            <li>28 Years Later <span class="director">Danny Boyle</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="zk-bento-card zk-bento-audio">
+                        <h4 class="zk-bento-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                            Frequencies
+                        </h4>
+                        <ul class="zk-favorites-list">
+                            <li>Hans Zimmer <span class="director">Composer</span></li>
+                            <li>Nils Frahm <span class="director">Neoclassical</span></li>
+                            <li>Georgian Polyphony <span class="director">Traditional</span></li>
+                            <li>Ambient & Drone <span class="director">Genre</span></li>
+                        </ul>
+                    </div>
+
                 </div>
             </div>
 

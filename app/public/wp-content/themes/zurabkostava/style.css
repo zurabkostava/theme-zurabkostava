@@ -1356,3 +1356,107 @@ body.zk-lb-open { overflow: hidden; }
 	.zk-identity-grid { grid-template-columns: 1fr; }
 	.zk-tab-btn { padding: 10px 16px; font-size: 0.7rem; }
 }
+
+
+/* ============================================================
+   BENTO BOX DASHBOARD (Identity Tab)
+   ============================================================ */
+.zk-bento-dashboard {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 20px;
+	margin-top: 10px;
+}
+
+/* საერთო ბარათის სტილი */
+.zk-bento-card {
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid var(--hairline);
+	border-radius: 16px;
+	padding: 24px;
+	transition: transform 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+.zk-bento-card:hover {
+	border-color: rgba(255, 255, 255, 0.1);
+	transform: translateY(-2px);
+}
+
+/* გრიდის განაწილება */
+.zk-bento-vitals { grid-column: span 2; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px; }
+.zk-bento-skills { grid-column: span 2; }
+.zk-bento-cinema { grid-column: span 1; }
+.zk-bento-audio { grid-column: span 1; }
+
+/* ── Vitals (მთავარი ინფო) ── */
+.zk-vitals-list {
+	display: flex; flex-direction: column; gap: 16px;
+}
+.zk-vital-item {
+	display: flex; align-items: center; gap: 12px;
+	font-size: 0.95rem; color: #fff;
+}
+.zk-vital-item svg {
+	width: 20px; height: 20px; color: var(--text-dim);
+}
+.zk-vital-item .label {
+	color: var(--text-dim); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px;
+}
+.zk-vital-item .value { font-weight: 500; }
+
+/* სოციალური პილულები */
+.zk-social-pill-container {
+	display: flex; gap: 10px; flex-wrap: wrap;
+}
+.zk-social-pill {
+	padding: 8px 16px;
+	background: rgba(255,255,255,0.05);
+	border-radius: 40px;
+	font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;
+	color: var(--text-dim); text-decoration: none !important;
+	border: 1px solid var(--hairline-strong);
+	transition: all 0.3s var(--ease);
+}
+.zk-social-pill:hover {
+	background: #fff; color: #000; border-color: #fff;
+}
+
+/* ── საერთო სათაურები ── */
+.zk-bento-title {
+	display: flex; align-items: center; gap: 8px;
+	font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.15em;
+	color: var(--text-dim); margin-bottom: 20px; font-weight: 600;
+}
+
+/* ── The Arsenal (Skills) ── */
+.zk-tags-cloud {
+	display: flex; flex-wrap: wrap; gap: 10px;
+}
+.zk-tag {
+	padding: 6px 14px;
+	background: transparent;
+	border: 1px solid var(--hairline-strong);
+	border-radius: 8px;
+	font-size: 0.85rem; color: var(--text-muted);
+}
+
+/* ── Favorites Lists ── */
+.zk-favorites-list {
+	list-style: none; padding: 0; margin: 0;
+	display: flex; flex-direction: column; gap: 12px;
+}
+.zk-favorites-list li {
+	font-size: 0.95rem; color: #fff;
+	display: flex; justify-content: space-between; align-items: center;
+	padding-bottom: 8px; border-bottom: 1px solid var(--hairline);
+}
+.zk-favorites-list li:last-child { border-bottom: none; padding-bottom: 0; }
+.zk-favorites-list .director {
+	font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+/* ── მობილური რესპონსივი ── */
+@media (max-width: 768px) {
+	.zk-bento-dashboard { grid-template-columns: 1fr; }
+	.zk-bento-vitals, .zk-bento-skills, .zk-bento-cinema, .zk-bento-audio { grid-column: span 1; }
+	.zk-bento-vitals { flex-direction: column; }
+}
