@@ -487,3 +487,86 @@
         document.documentElement.classList.remove('zk-img-js');
     }
 })();
+
+
+/* ============================================================
+   CINEMATIC PHOTOGRAPHY GALLERY - LOGIC
+   ============================================================ */
+(function() {
+    function initGallery() {
+        var gallery = document.querySelector('.zk-gallery-wrapper');
+        if (!gallery) return;
+
+        var buttons = gallery.querySelectorAll('.zk-filter-btn');
+        var items = gallery.querySelectorAll('.zk-gallery-item');
+
+        // 1. ფილტრაცია (Seamless Masonry Sort)
+        buttons.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var filter = this.getAttribute('data-filter');
+
+                buttons.forEach(function(b) { b.classList.remove('is-active'); });
+                this.classList.add('is-active');
+
+                items.forEach(function(item) {
+                    var cat = item.getAttribute('data-category');
+                    if (filter === 'all' || cat === filter) {
+                        item.style.position = 'relative';
+                        item.style.opacity = '1';
+                        item.style.transform = 'scale(1)';
+                        item.style.pointerEvents = 'auto';
+                    } else {
+                        item.style.opacity = '0';
+                        item.style.transform = 'scale(0.9)';
+                        item.style.pointerEvents = 'none';
+                        // რათა სივრცე გაათავისუფლოს და სვეტები შეიკრას
+                        setTimeout(function() {
+                            if (item.style.opacity === '0') item.style.position = 'absolute';
+                        }, 400);
+                    }
+                });
+            });
+        });
+
+        // 2. Cinematic Lightbox (გადიდება)
+        var lightbox = document.getElementById('zkLightbox');
+        var lightboxImg = lightbox.querySelector('.zk-lightbox-img');
+        var lightboxExif = lightbox.querySelector('.zk-lightbox-exif');
+        var closeBtn = lightbox.querySelector('.zk-lightbox-close');
+
+        items.forEach(function(item) {
+            var img = item.querySelector('img');
+            if (!img) return;
+
+            item.addEventListener('click', function() {
+                var fullSrc = img.getAttribute('data-full');
+                var exif = img.getAttribute('data-exif');
+
+                lightboxImg.src = fullSrc;
+                lightboxExif.textContent = exif || '';
+                lightbox.classList.add('is-open');
+            });
+        });
+
+        function closeLightbox() {
+            lightbox.classList.remove('is-open');
+            setTimeout(function() { lightboxImg.src = ''; }, 500);
+        }
+
+        closeBtn.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', function(e) {
+            if (e.target === lightbox) closeLightbox();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && lightbox.classList.contains('is-open')) closeLightbox();
+        });
+    }
+
+    initGallery();
+
+    // SPA თავსებადობა
+    var viewEl = document.getElementById('view');
+    if (viewEl) {
+        new MutationObserver(initGallery).observe(viewEl, { childList: true });
+    }
+})();

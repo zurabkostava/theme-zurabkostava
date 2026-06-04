@@ -370,56 +370,40 @@ add_action( 'init', 'zk_force_enable_excerpts', 999 );
 
 
 /* ============================================================
-   ZURAB KOSTAVA - CINEMATIC PHOTOGRAPHY GALLERY (V4 - Direct DB)
+   ZURAB KOSTAVA - CINEMATIC PHOTOGRAPHY GALLERY (V4.1 - Smooth Layout)
    ============================================================ */
 function zk_cinematic_gallery() {
     global $wpdb;
 
-    // FileBird-ის ცხრილები ბაზაში
     $fbv_table = $wpdb->prefix . 'fbv';
     $rel_table = $wpdb->prefix . 'fbv_attachment_folder';
 
-    // 0. ვამოწმებთ, საერთოდ არსებობს თუ არა ეს ცხრილები
     if ( $wpdb->get_var("SHOW TABLES LIKE '$fbv_table'") !== $fbv_table ) {
-        return '<p class="page__content" style="color: #ff5555;">FileBird tables not found in the database. Are you using an alternative folder plugin?</p>';
+        return '<p class="page__content" style="color: #ff5555;">FileBird tables not found.</p>';
     }
 
-    // 1. პირდაპირ ბაზიდან მოგვაქვს ჩვენი ორი ფოლდერი
     $folders = $wpdb->get_results("SELECT id, name FROM $fbv_table WHERE name IN ('Camera Photography', 'Mobile Photography')");
 
-    if ( empty( $folders ) ) {
-        // DEBUG: თუ ვერ იპოვა, გამოგვიტანოს რეალურად რა ფოლდერები წერია ბაზაში
-        $all_folders = $wpdb->get_results("SELECT name FROM $fbv_table");
-        $names = array();
-        if ( ! empty( $all_folders ) ) {
-            foreach ( $all_folders as $f ) { $names[] = $f->name; }
-        }
-        return '<p class="page__content" style="color: #ff5555;">Folders not found! <br><strong>Available folders in DB:</strong> ' . esc_html( implode(', ', $names) ) . '</p>';
-    }
+    if ( empty( $folders ) ) return '<p class="page__content">Folders not found!</p>';
 
     $valid_attachment_ids = array();
     $attachment_category_map = array();
 
-    // 2. თითოეული ფოლდერისთვის ამოგვაქვს მასში შენახული ფოტოების ID-ები
     foreach ( $folders as $folder ) {
-        $prefix = strtolower( explode( ' ', $folder->name )[0] ); // იღებს სიტყვას 'camera' ან 'mobile'
+        $prefix = strtolower( explode( ' ', $folder->name )[0] );
         $cat_class = 'filter-' . $prefix;
-
         $attachments = $wpdb->get_col( $wpdb->prepare( "SELECT attachment_id FROM $rel_table WHERE folder_id = %d", $folder->id ) );
 
         if ( ! empty( $attachments ) ) {
             foreach ( $attachments as $att_id ) {
                 $valid_attachment_ids[] = $att_id;
-                $attachment_category_map[$att_id] = $cat_class; // ვიმახსოვრებთ რომელ ფოტოს რომელი კლასი ეკუთვნის
+                $attachment_category_map[$att_id] = $cat_class;
             }
         }
     }
 
-    if ( empty( $valid_attachment_ids ) ) {
-        return '<p class="page__content" style="color: #ff5555;">The folders "Camera Photography" and "Mobile Photography" were found, but they are empty!</p>';
-    }
+    if ( empty( $valid_attachment_ids ) ) return '<p class="page__content">Folders are empty!</p>';
 
-    // 3. ახლა უკვე ვეუბნებით WP-ს, მოგვცეს ეს ფოტოები
     $args = array(
         'post_type'      => 'attachment',
         'post_status'    => 'inherit',
@@ -433,49 +417,46 @@ function zk_cinematic_gallery() {
 
     $output = '<div class="zk-gallery-wrapper">';
 
-    // 4. ფილტრაციის ტაბები
     $output .= '<div class="zk-gallery-filters">';
     $output .= '<button class="zk-filter-btn is-active" data-filter="all">All Works</button>';
     $output .= '<button class="zk-filter-btn" data-filter="filter-camera">Camera</button>';
     $output .= '<button class="zk-filter-btn" data-filter="filter-mobile">Mobile</button>';
     $output .= '</div>';
 
-    // 5. გრიდი
     $output .= '<div class="zk-gallery-grid" id="zkGalleryGrid">';
 
     while ( $query->have_posts() ) {
         $query->the_post();
         $image_id = get_the_ID();
 
-        $grid_img = wp_get_attachment_image_url( $image_id, 'large' );
         $full_img = wp_get_attachment_image_url( $image_id, 'full' );
-
         $cat_class = isset( $attachment_category_map[$image_id] ) ? $attachment_category_map[$image_id] : 'all';
 
-        // EXIF მონაცემების გენერაცია
         $meta = wp_get_attachment_metadata( $image_id );
         $exif_text = '';
         if ( isset( $meta['image_meta'] ) ) {
             $cam = !empty( $meta['image_meta']['camera'] ) ? $meta['image_meta']['camera'] : '';
             $focal = !empty( $meta['image_meta']['focal_length'] ) ? $meta['image_meta']['focal_length'] . 'mm' : '';
             $aperture = !empty( $meta['image_meta']['aperture'] ) ? 'f/' . $meta['image_meta']['aperture'] : '';
-
             $exif_parts = array_filter( array( $cam, $focal, $aperture ) );
-            if ( ! empty( $exif_parts ) ) {
-                $exif_text = implode( ' • ', $exif_parts );
-            }
+            if ( ! empty( $exif_parts ) ) $exif_text = implode( ' • ', $exif_parts );
         }
 
-        // HTML (data-category მიბმულია ფილტრაციისთვის)
+        // ── აქ არის მთავარი ცვლილება: ვიყენებთ wp_get_attachment_image-ს ──
+        $img_attrs = array(
+            'data-full' => esc_url( $full_img ),
+            'data-exif' => esc_attr( $exif_text ),
+            'class'     => 'zk-grid-photo' // უნიკალური კლასი ჰოვერისთვის
+        );
+        $img_html = wp_get_attachment_image( $image_id, 'large', false, $img_attrs );
+
         $output .= '<div class="zk-gallery-item ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '">';
-        $output .= '<div class="zk-gallery-image-wrap">';
-        $output .= '<img src="' . esc_url( $grid_img ) . '" data-full="' . esc_url( $full_img ) . '" data-exif="' . esc_attr( $exif_text ) . '" alt="Photography by Zurab Kostava" loading="lazy">';
-        $output .= '</div></div>';
+        $output .= '<div class="zk-gallery-image-wrap">' . $img_html . '</div>';
+        $output .= '</div>';
     }
     wp_reset_postdata();
     $output .= '</div></div>';
 
-    // 6. Lightbox
     $output .= '<div class="zk-lightbox" id="zkLightbox" aria-hidden="true">';
     $output .= '<button class="zk-lightbox-close" aria-label="Close">✕</button>';
     $output .= '<img class="zk-lightbox-img" src="" alt="">';
