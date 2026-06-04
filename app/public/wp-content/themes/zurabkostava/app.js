@@ -429,3 +429,61 @@
         new MutationObserver(initStickyBreadcrumbs).observe(viewEl, { childList: true });
     }
 })();
+
+/* ============================================================
+   CINEMATIC IMAGE LOADING — soft fade-in once fully loaded
+   ------------------------------------------------------------
+   Reveals real <img> (article content) and CSS background-image
+   holders (.zk-card-image, .zk-post-hero) only after their pixels
+   are ready, so nothing pops. Re-runs on every SPA view swap.
+   ============================================================ */
+(function () {
+    try {
+        var LOADED = 'is-loaded';
+        function reveal(el) { el.classList.add(LOADED); }
+
+        /* Real <img>: native load/error events (+ cached check). */
+        function watchImg(img) {
+            if (img.dataset.zkFade) return;
+            img.dataset.zkFade = '1';
+            if (img.complete && img.naturalWidth > 0) { reveal(img); return; }
+            function done() {
+                reveal(img);
+                img.removeEventListener('load', done);
+                img.removeEventListener('error', done);
+            }
+            img.addEventListener('load', done);
+            img.addEventListener('error', done); // a broken image must not stay hidden
+        }
+
+        /* CSS background-image holder: preload the URL, then reveal. */
+        function watchBg(el) {
+            if (el.dataset.zkFade) return;
+            el.dataset.zkFade = '1';
+            var bg = el.style.backgroundImage || getComputedStyle(el).backgroundImage;
+            var m  = bg && bg.match(/url\(\s*["']?(.*?)["']?\s*\)/);
+            if (!m || !m[1]) { reveal(el); return; } // nothing to wait for
+            var pre = new Image();
+            pre.onload = pre.onerror = function () { reveal(el); };
+            pre.src = m[1];
+            if (pre.complete && pre.naturalWidth > 0) reveal(el); // already cached
+        }
+
+        function scan(scope) {
+            var root = scope || document;
+            root.querySelectorAll('.page__content img').forEach(watchImg);
+            root.querySelectorAll('.zk-card-image, .zk-post-hero').forEach(watchBg);
+        }
+
+        scan(document);
+
+        /* Re-scan after each SPA navigation (matches the grid/breadcrumb modules). */
+        var viewEl = document.getElementById('view');
+        if (viewEl) {
+            new MutationObserver(function () { scan(viewEl); }).observe(viewEl, { childList: true });
+        }
+    } catch (e) {
+        /* Fail open — never leave images invisible if something goes wrong. */
+        document.documentElement.classList.remove('zk-img-js');
+    }
+})();

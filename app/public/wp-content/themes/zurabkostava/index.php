@@ -138,6 +138,9 @@ $zk_view = ob_get_clean();
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <?php wp_head(); ?>
     <script>
+        /* Enable cinematic image fade-in before the first paint (JS users only)
+           so images stay hidden until fully loaded instead of popping in. */
+        document.documentElement.classList.add('zk-img-js');
         /* Hide the native scrollbar before first paint (desktop pointers only) so
            there's no layout shift; touch / no-JS keep the native bar. */
         if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
