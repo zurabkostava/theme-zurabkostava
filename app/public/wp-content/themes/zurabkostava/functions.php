@@ -167,7 +167,7 @@ function zk_custom_post_grid( $atts ) {
     // მთავარი კონტეინერი (Wrapper)
     $output = '<div class="zk-grid-wrapper">';
 
-// ფილტრაციის კონტროლები (მყისიერი ძებნა + სორტირება)
+    // ფილტრაციის კონტროლები (მყისიერი ძებნა + სორტირება)
     $output .= '<div class="zk-grid-controls">';
 
     // პრემიუმ შიდა ძებნის ინპუტი (Glass Design)
@@ -194,35 +194,35 @@ function zk_custom_post_grid( $atts ) {
 
     while ( $query->have_posts() ) {
         $query->the_post();
-        $image_id = get_the_ID();
 
-        $full_img = wp_get_attachment_image_url( $image_id, 'full' );
-        // ── ვიწერთ ფოტოს ოფიციალურ მინიატურას (ბევრად მსუბუქი და სწრაფია) ──
-        $thumb_img = wp_get_attachment_image_url( $image_id, 'thumbnail' );
+        $title = get_the_title();
+        $link = get_permalink();
+        $path = wp_parse_url( $link, PHP_URL_PATH );
 
-        $cat_class = isset( $attachment_category_map[$image_id] ) ? $attachment_category_map[$image_id] : 'all';
+        $categories = get_the_category();
+        $cat_name = ! empty( $categories ) ? esc_html( $categories[0]->name ) : 'Post';
 
-        $meta = wp_get_attachment_metadata( $image_id );
-        $exif_text = '';
-        if ( isset( $meta['image_meta'] ) ) {
-            $cam = !empty( $meta['image_meta']['camera'] ) ? $meta['image_meta']['camera'] : '';
-            $focal = !empty( $meta['image_meta']['focal_length'] ) ? $meta['image_meta']['focal_length'] . 'mm' : '';
-            $aperture = !empty( $meta['image_meta']['aperture'] ) ? 'f/' . $meta['image_meta']['aperture'] : '';
-            $exif_parts = array_filter( array( $cam, $focal, $aperture ) );
-            if ( ! empty( $exif_parts ) ) $exif_text = implode( ' • ', $exif_parts );
-        }
+        $date = get_the_date( 'M j, Y' );
+        // ვიღებთ პოსტის გამოქვეყნების ზუსტ წამებს, რათა JS-მა სორტირება შეძლოს
+        $timestamp = get_the_time( 'U' );
 
-        $img_attrs = array(
-            'data-full'  => esc_url( $full_img ),
-            'data-thumb' => esc_url( $thumb_img ), // ── გავატანეთ HTML-ში ──
-            'data-exif'  => esc_attr( $exif_text ),
-            'class'      => 'zk-grid-photo'
-        );
-        $img_html = wp_get_attachment_image( $image_id, 'large', false, $img_attrs );
+        $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
+        $bg_style = $img_url ? 'style="background-image: url(' . esc_url( $img_url ) . ');"' : '';
 
-        $output .= '<div class="zk-gallery-item ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '">';
-        $output .= '<div class="zk-gallery-image-wrap">' . $img_html . '</div>';
+        // ქარდს ვუმატებთ data-time ატრიბუტს
+        $output .= '<a href="' . esc_url( $link ) . '" class="zk-grid-card" data-route="' . esc_attr( $path ) . '" data-time="' . esc_attr( $timestamp ) . '">';
+        $output .= '<div class="zk-card-image" ' . $bg_style . '></div>';
+        $output .= '<div class="zk-card-content">';
+
+        $output .= '<div class="zk-card-meta">';
+        $output .= '<span class="zk-card-category">' . $cat_name . '</span>';
+        $output .= '<span class="zk-card-meta-separator"></span>';
+        $output .= '<span class="zk-card-date">' . esc_html( $date ) . '</span>';
         $output .= '</div>';
+
+        $output .= '<h3 class="zk-card-title">' . $title . '</h3>';
+        $output .= '</div>';
+        $output .= '</a>';
     }
 
     wp_reset_postdata();
