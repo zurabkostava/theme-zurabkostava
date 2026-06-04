@@ -948,32 +948,3 @@ body.zk-lb-open { overflow: hidden; }
 	}
 }
 
-/* ── მობილურის მენიუს პუნქტების უნიფიცირება ── */
-@media (max-width: 900px) {
-	/* ყველა ლინკი ერთნაირი სიმაღლის და დაშორების */
-	.dropdown-menu .dropdown-link,
-	.nested-menu .dropdown-link {
-		padding: 10px 0 !important;
-		margin: 0 !important;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-
-	/* სიის ელემენტები ერთ ხაზზე */
-	.dropdown-menu li {
-		margin: 0 !important;
-		padding: 0 !important;
-	}
-
-	/* "Raw"-ის და "KC Blog"-ის გასწორება */
-	.dropdown-menu {
-		padding-left: 0 !important; /* მოვაშორეთ ზედმეტი გაწევა */
-	}
-
-	/* თუ გინდა რომ მესამე დონის მენიუები (რომლებიც არ ჩანს) ოდნავ შეწეული იყოს */
-	.nested-menu {
-		margin-left: 20px !important;
-		border-left: 1px solid var(--hairline-strong);
-	}
-}
