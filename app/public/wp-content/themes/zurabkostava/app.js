@@ -724,16 +724,33 @@
             if (item && !item.classList.contains('is-hidden')) item.classList.remove('is-animating');
         });
 
+        /* ---- Wire up Filters ---- */
         buttons.forEach(function (btn) {
             btn.addEventListener('click', function () {
                 if (btn.classList.contains('is-active')) return;
+
                 buttons.forEach(function (b) {
                     b.classList.remove('is-active');
                     b.setAttribute('aria-pressed', 'false');
                 });
                 btn.classList.add('is-active');
                 btn.setAttribute('aria-pressed', 'true');
+
+                // 1. ვუშვებთ ფილტრაციის ლოგიკას
                 applyFilter(btn.getAttribute('data-filter'));
+
+                // 2. ── ანიმაციური სქროლი ──
+                // თუ მომხმარებელი სქროლილია, ავტომატურად ვბრუნდებით გალერეის საწყის წერტილში
+                if (window.scrollY > 100) {
+                    var headerOffset = 160; // ჰედერი + ბრედკრამბები + პადინგი
+                    var elementPosition = wrap.getBoundingClientRect().top + window.scrollY;
+                    var offsetPosition = elementPosition - headerOffset;
+
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }
             });
         });
 
