@@ -471,7 +471,9 @@
 
         function scan(scope) {
             var root = scope || document;
-            root.querySelectorAll('.page__content img').forEach(watchImg);
+            // The lightbox image reveals itself (preload-gated focus-pull), so it
+            // must NOT get .is-loaded here — that rule would override its .is-ready state.
+            root.querySelectorAll('.page__content img:not(.zk-lightbox-img)').forEach(watchImg);
             root.querySelectorAll('.zk-card-image, .zk-post-hero').forEach(watchBg);
         }
 
@@ -490,193 +492,253 @@
 
 
 /* ============================================================
-   CINEMATIC PHOTOGRAPHY GALLERY - LOGIC (V2 with Navigation)
+   CINEMATIC PHOTOGRAPHY GALLERY — LOGIC (V3, leak-free + flash-free)
+   ------------------------------------------------------------
+   • One persistent keydown listener — no per-navigation leaks.
+   • Full-res preload before reveal — the focus-pull never shows a FOUC.
+   • Container-only thumbnail centering — no page-scroll jitter.
+   • Batched, race-safe masonry filtering (single reflow per change).
    ============================================================ */
-(function() {
+(function () {
+    var REDUCE  = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var current = null; // controller for the gallery in the live DOM (or null)
+
+    function delay(ms) {
+        return new Promise(function (r) { ms ? setTimeout(r, ms) : r(); });
+    }
+    function preload(url) {
+        return new Promise(function (resolve) {
+            if (!url) { resolve(); return; }
+            var im = new Image();
+            im.onload = im.onerror = function () { resolve(); };
+            im.src = url;
+            if (im.complete) resolve();
+        });
+    }
+
+    /* Bound ONCE — reads whichever gallery is currently live. No re-binding
+       per SPA navigation, so arrow/Escape handlers can never stack up. */
+    document.addEventListener('keydown', function (e) {
+        if (!current || !current.isOpen()) return;
+        if (e.key === 'Escape') { current.close(); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); current.next(); }
+        else if (e.key === 'ArrowLeft')  { e.preventDefault(); current.prev(); }
+    });
+
     function initGallery() {
-        var gallery = document.querySelector('.zk-gallery-wrapper');
-        if (!gallery) return;
-
-        var buttons = gallery.querySelectorAll('.zk-filter-btn');
-        // ვიღებთ ყველა ფოტოს და ვაქცევთ მასივად, რათა ლოგიკამ ადვილად გადაარჩიოს
-        var allItems = Array.from(gallery.querySelectorAll('.zk-gallery-item'));
-
-        // ── მდგომარეობის (State) მართვა ──
-        var currentFilter = 'all';
-        var activeItems = allItems; // თავიდან ყველა ფოტო აქტიურია
-        var currentIndex = 0;
-
-        // Lightbox ელემენტები
+        var wrap = document.querySelector('.zk-gallery-wrapper');
+        if (!wrap) { current = null; return; }     // navigated away from the gallery
+        if (wrap.dataset.zkReady === '1') return;   // this DOM is already wired
         var lightbox = document.getElementById('zkLightbox');
-        var lightboxImg = lightbox.querySelector('.zk-lightbox-img');
-        var lightboxExif = lightbox.querySelector('.zk-lightbox-exif');
+        if (!lightbox) { current = null; return; }
+        wrap.dataset.zkReady = '1';
+
+        var grid     = wrap.querySelector('.zk-gallery-grid');
+        var buttons  = Array.prototype.slice.call(wrap.querySelectorAll('.zk-filter-btn'));
+        var allItems = Array.prototype.slice.call(wrap.querySelectorAll('.zk-gallery-item'));
+
+        var lbImg    = lightbox.querySelector('.zk-lightbox-img');
+        var lbExif   = lightbox.querySelector('.zk-lightbox-exif');
         var closeBtn = lightbox.querySelector('.zk-lightbox-close');
-        var prevBtn = lightbox.querySelector('.zk-lightbox-prev');
-        var nextBtn = lightbox.querySelector('.zk-lightbox-next');
-        var thumbsContainer = document.getElementById('zkLightboxThumbs');
+        var prevBtn  = lightbox.querySelector('.zk-lightbox-prev');
+        var nextBtn  = lightbox.querySelector('.zk-lightbox-next');
+        var thumbs   = document.getElementById('zkLightboxThumbs');
 
-        // 1. თამბნეილების აწყობა (გამოიძახება ფილტრის შეცვლისას)
+        var activeItems = allItems.slice();
+        var thumbEls    = [];
+        var index       = 0;
+        var swapToken   = 0; // cancels superseded image swaps
+        var filterToken = 0; // cancels superseded filter passes
+        var lastFocus   = null;
+
+        /* ---- Thumbnail strip: batched build (one reflow) + delegated clicks ---- */
         function buildThumbnails() {
-            thumbsContainer.innerHTML = '';
-            activeItems.forEach(function(item, index) {
-                var img = item.querySelector('img');
-
-                var thumbDiv = document.createElement('div');
-                thumbDiv.className = 'zk-lightbox-thumb-item';
-
-                var thumbImg = document.createElement('img');
-
-                // ── ვიღებთ მონაცემს სპეციალური ატრიბუტიდან (გვერდს ვუვლით Lazy Load-ს) ──
-                var thumbUrl = img.getAttribute('data-thumb') || img.getAttribute('data-src') || img.src;
-                thumbImg.src = thumbUrl;
-                thumbImg.loading = 'lazy';
-
-                thumbDiv.appendChild(thumbImg);
-
-                // თამბნეილზე კლიკით პირდაპირ მაგ ფოტოზე გადასვლა
-                thumbDiv.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    goToIndex(index);
-                });
-
-                thumbsContainer.appendChild(thumbDiv);
+            var frag = document.createDocumentFragment();
+            thumbEls = [];
+            activeItems.forEach(function (item) {
+                var src  = item.querySelector('img');
+                var cell = document.createElement('div');
+                cell.className = 'zk-lightbox-thumb-item';
+                var im = document.createElement('img');
+                im.src = src.getAttribute('data-thumb') || src.currentSrc || src.src;
+                im.loading  = 'lazy';
+                im.decoding = 'async';
+                im.alt = '';
+                cell.appendChild(im);
+                frag.appendChild(cell);
+                thumbEls.push(cell);
             });
+            thumbs.innerHTML = '';
+            thumbs.appendChild(frag);
         }
-
-        // საწყისი ჩატვირთვა
-        buildThumbnails();
-
-        // 2. ფილტრაციის ლოგიკა
-        buttons.forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                if (this.classList.contains('is-active')) return;
-
-                currentFilter = this.getAttribute('data-filter');
-                buttons.forEach(function(b) { b.classList.remove('is-active'); });
-                this.classList.add('is-active');
-
-                activeItems = []; // ვასუფთავებთ აქტიურ სიას
-
-                allItems.forEach(function(item) {
-                    var cat = item.getAttribute('data-category');
-                    var isMatch = (currentFilter === 'all' || cat === currentFilter);
-
-                    if (isMatch) {
-                        activeItems.push(item); // ვამატებთ ახალ სიაში (ნავიგაციისთვის)
-                        if (item.style.display === 'none') {
-                            item.style.display = '';
-                            void item.offsetWidth;
-                        }
-                        item.style.opacity = '1';
-                        item.style.transform = 'scale(1)';
-                        item.style.pointerEvents = 'auto';
-                    } else {
-                        item.style.opacity = '0';
-                        item.style.transform = 'scale(0.9)';
-                        item.style.pointerEvents = 'none';
-                        setTimeout(function() {
-                            if (item.style.opacity === '0') {
-                                item.style.display = 'none';
-                                item.style.position = '';
-                            }
-                        }, 300);
-                    }
-                });
-
-                // ფილტრის შეცვლისთანავე თამბნეილებიც შესაბამისად იცვლება!
-                buildThumbnails();
-            });
+        thumbs.addEventListener('click', function (e) {
+            var cell = e.target.closest('.zk-lightbox-thumb-item');
+            if (!cell) return;
+            e.stopPropagation();
+            var i = thumbEls.indexOf(cell);
+            if (i > -1) show(i);
         });
 
-        // 3. ეკრანის განახლება (ფოტოს ცვლილება ლაითბოქსში)
-        function updateLightbox(index) {
-            if (index < 0 || index >= activeItems.length) return;
-            currentIndex = index;
-
-            var targetItem = activeItems[currentIndex];
-            var img = targetItem.querySelector('img');
-
-            // ულამაზესი ფოკუს-პულ გადასვლა ფოტოებს შორის
-            lightboxImg.style.opacity = '0';
-            lightboxImg.style.filter = 'blur(10px)';
-            lightboxImg.style.transform = 'scale(0.95)';
-
-            setTimeout(function() {
-                lightboxImg.src = img.getAttribute('data-full');
-                lightboxExif.textContent = img.getAttribute('data-exif') || '';
-
-                lightboxImg.style.opacity = '1';
-                lightboxImg.style.filter = 'blur(0)';
-                lightboxImg.style.transform = 'scale(1)';
-            }, 300);
-
-            // ვაქტიურებთ შესაბამის თამბნეილს და ვასქროლავთ ცენტრში
-            var thumbs = thumbsContainer.querySelectorAll('.zk-lightbox-thumb-item');
-            thumbs.forEach(function(t, i) {
-                if (i === currentIndex) {
-                    t.classList.add('is-active');
-                    // ეს ხაზი ავტომატურად აცენტრებს არჩეულ თამბნეილს!
-                    t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                } else {
-                    t.classList.remove('is-active');
-                }
-            });
+        function centerThumb(cell) {
+            if (!cell) return;
+            // Scroll ONLY the strip (CSS scroll-behavior animates it) — never
+            // scrollIntoView, which would also nudge the page behind = jitter.
+            var target = cell.offsetLeft - (thumbs.clientWidth - cell.offsetWidth) / 2;
+            thumbs.scrollLeft = target < 0 ? 0 : target;
+        }
+        function markActiveThumb() {
+            for (var i = 0; i < thumbEls.length; i++) {
+                thumbEls[i].classList.toggle('is-active', i === index);
+            }
+            centerThumb(thumbEls[index]);
         }
 
-        // 4. ნავიგაციის ფუნქციები (უსასრულო წრე)
-        function goToIndex(index) { updateLightbox(index); }
-        function nextImage() { goToIndex((currentIndex + 1) % activeItems.length); }
-        function prevImage() { goToIndex((currentIndex - 1 + activeItems.length) % activeItems.length); }
+        /* ---- Image swap: preload → focus-pull. No flash; rapid swaps are safe. ---- */
+        function show(i, opts) {
+            opts = opts || {};
+            var n = activeItems.length;
+            if (!n) return;
+            index = ((i % n) + n) % n; // infinite wrap, NaN-proof
+            var img   = activeItems[index].querySelector('img');
+            var full  = img.getAttribute('data-full');
+            var exif  = img.getAttribute('data-exif') || '';
+            var token = ++swapToken;
+            var hadImage = lbImg.classList.contains('is-ready');
 
-        // ფოტოზე კლიკი გრიდში
-        allItems.forEach(function(item) {
-            item.addEventListener('click', function() {
-                var idx = activeItems.indexOf(item);
-                if (idx > -1) {
-                    updateLightbox(idx);
-                    lightbox.classList.add('is-open');
-                }
-            });
-        });
+            lbImg.classList.remove('is-ready'); // begin exit (or stay hidden on open)
+            var waitExit = (hadImage && !opts.initial && !REDUCE) ? 260 : 0;
 
-        // ისრებზე კლიკი
-        if (nextBtn) {
-            nextBtn.addEventListener('click', function(e) {
-                e.stopPropagation(); nextImage();
+            Promise.all([preload(full), delay(waitExit)]).then(function () {
+                if (token !== swapToken) return; // a newer swap superseded this one
+                lbImg.src = full;
+                lbImg.alt = img.alt || '';
+                lbExif.textContent = exif;
+                markActiveThumb();
+                // Two frames so the new src + exit-state are committed before we
+                // sharpen, guaranteeing the focus-pull animates onto a real frame.
+                requestAnimationFrame(function () {
+                    requestAnimationFrame(function () {
+                        if (token === swapToken) lbImg.classList.add('is-ready');
+                    });
+                });
             });
         }
-        if (prevBtn) {
-            prevBtn.addEventListener('click', function(e) {
-                e.stopPropagation(); prevImage();
-            });
-        }
+        function next() { show(index + 1); }
+        function prev() { show(index - 1); }
 
-        // 5. დახურვა და კლავიატურა
-        function closeLightbox() {
+        /* ---- Open / close ---- */
+        function open(i) {
+            lastFocus = document.activeElement;
+            lightbox.classList.add('is-open');
+            lightbox.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('zk-lb-open'); // CSS locks page scroll
+            show(i, { initial: true });
+            if (closeBtn) closeBtn.focus({ preventScroll: true });
+        }
+        function close() {
             lightbox.classList.remove('is-open');
-            setTimeout(function() { lightboxImg.src = ''; }, 600);
+            lightbox.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('zk-lb-open');
+            lbImg.classList.remove('is-ready'); // photo eases out with the backdrop
+            swapToken++;                        // cancel any in-flight swap
+            setTimeout(function () {
+                if (!lightbox.classList.contains('is-open')) lbImg.removeAttribute('src');
+            }, 600);
+            if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+        }
+        function isOpen() { return lightbox.classList.contains('is-open'); }
+
+        /* ---- Filtering: class-based, single batched reflow, race-safe ---- */
+        function settleHide(item, myToken) {
+            var done = false;
+            function finish() {
+                if (done) return;
+                done = true;
+                item.removeEventListener('transitionend', onEnd);
+                clearTimeout(timer);
+                // Only pull it from flow if this pass still stands and it's still hidden.
+                if (myToken === filterToken && item.classList.contains('is-hidden')) {
+                    item.style.display = 'none';
+                    item.classList.remove('is-animating');
+                }
+            }
+            function onEnd(e) { if (e.propertyName === 'opacity') finish(); }
+            item.addEventListener('transitionend', onEnd);
+            var timer = setTimeout(finish, 650); // fallback if transitionend never fires
         }
 
-        closeBtn.addEventListener('click', closeLightbox);
-        lightbox.addEventListener('click', function(e) {
-            if (e.target === lightbox) closeLightbox();
+        function applyFilter(filter) {
+            var myToken = ++filterToken;
+            var toShow  = [];
+            activeItems = [];
+
+            allItems.forEach(function (item) {
+                var match  = (filter === 'all' || item.getAttribute('data-category') === filter);
+                var hidden = item.style.display === 'none' || item.classList.contains('is-hidden');
+                if (match) {
+                    activeItems.push(item);
+                    if (hidden) {
+                        item.classList.add('is-animating');
+                        if (item.style.display === 'none') item.style.display = '';
+                        toShow.push(item); // un-hide together after a single reflow
+                    }
+                } else if (!hidden) {
+                    item.classList.add('is-animating', 'is-hidden');
+                    settleHide(item, myToken);
+                }
+            });
+
+            if (toShow.length) {
+                void grid.offsetWidth; // ONE forced reflow commits the hidden state
+                requestAnimationFrame(function () {
+                    if (myToken !== filterToken) return;
+                    toShow.forEach(function (item) { item.classList.remove('is-hidden'); });
+                });
+            }
+            buildThumbnails();
+        }
+
+        // Release the transient compositor hint once a fade-in settles.
+        grid.addEventListener('transitionend', function (e) {
+            if (e.propertyName !== 'opacity') return;
+            var item = e.target.closest('.zk-gallery-item');
+            if (item && !item.classList.contains('is-hidden')) item.classList.remove('is-animating');
         });
 
-        // კლავიატურის მხარდაჭერა
-        document.addEventListener('keydown', function(e) {
-            if (!lightbox.classList.contains('is-open')) return;
-            if (e.key === 'Escape') closeLightbox();
-            if (e.key === 'ArrowRight') nextImage();
-            if (e.key === 'ArrowLeft') prevImage();
+        /* ---- Wire up ---- */
+        buttons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (btn.classList.contains('is-active')) return;
+                buttons.forEach(function (b) {
+                    b.classList.remove('is-active');
+                    b.setAttribute('aria-pressed', 'false');
+                });
+                btn.classList.add('is-active');
+                btn.setAttribute('aria-pressed', 'true');
+                applyFilter(btn.getAttribute('data-filter'));
+            });
         });
+
+        grid.addEventListener('click', function (e) {
+            var item = e.target.closest('.zk-gallery-item');
+            if (!item) return;
+            var i = activeItems.indexOf(item); // -1 for a mid-fade item → ignored
+            if (i > -1) open(i);
+        });
+
+        if (nextBtn)  nextBtn.addEventListener('click', function (e) { e.stopPropagation(); next(); });
+        if (prevBtn)  prevBtn.addEventListener('click', function (e) { e.stopPropagation(); prev(); });
+        if (closeBtn) closeBtn.addEventListener('click', close);
+        lightbox.addEventListener('click', function (e) { if (e.target === lightbox) close(); });
+
+        buildThumbnails();
+        current = { isOpen: isOpen, next: next, prev: prev, close: close };
     }
 
     initGallery();
 
-    // SPA თავსებადობა
+    // SPA compatibility — re-init after each view swap (idempotent + leak-free).
     var viewEl = document.getElementById('view');
-    if (viewEl) {
-        new MutationObserver(initGallery).observe(viewEl, { childList: true });
-    }
+    if (viewEl) new MutationObserver(initGallery).observe(viewEl, { childList: true });
 })();
 

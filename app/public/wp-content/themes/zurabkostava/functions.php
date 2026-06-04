@@ -370,57 +370,116 @@ add_action( 'init', 'zk_force_enable_excerpts', 999 );
 
 
 /* ============================================================
-   ZURAB KOSTAVA - CINEMATIC PHOTOGRAPHY GALLERY (V4.1 - Smooth Layout)
+   ZURAB KOSTAVA - CINEMATIC PHOTOGRAPHY GALLERY (V5 - Hardened)
    ============================================================ */
-function zk_cinematic_gallery() {
-    global $wpdb;
 
-    $fbv_table = $wpdb->prefix . 'fbv';
-    $rel_table = $wpdb->prefix . 'fbv_attachment_folder';
-
-    if ( $wpdb->get_var("SHOW TABLES LIKE '$fbv_table'") !== $fbv_table ) {
-        return '<p class="page__content" style="color: #ff5555;">FileBird tables not found.</p>';
+/**
+ * Build a human EXIF string ("Camera • 35mm • f/1.8") for an attachment.
+ * Reads only the cached _wp_attachment_metadata — no extra queries.
+ */
+function zk_attachment_exif( $attachment_id ) {
+    $meta = wp_get_attachment_metadata( $attachment_id );
+    if ( empty( $meta['image_meta'] ) ) {
+        return '';
     }
+    $im    = $meta['image_meta'];
+    $parts = array_filter( array(
+        ! empty( $im['camera'] )       ? $im['camera']              : '',
+        ! empty( $im['focal_length'] ) ? $im['focal_length'] . 'mm' : '',
+        ! empty( $im['aperture'] )     ? 'f/' . $im['aperture']     : '',
+    ) );
+    return $parts ? implode( ' • ', $parts ) : '';
+}
 
-    $folders = $wpdb->get_results("SELECT id, name FROM $fbv_table WHERE name IN ('Camera Photography', 'Mobile Photography')");
+/**
+ * Photography folders we pull from. Keyed by the exact FileBird folder name,
+ * mapped to the CSS filter class the front-end toggles on.
+ */
+function zk_gallery_folders() {
+    return array(
+        'Camera Photography' => 'filter-camera',
+        'Mobile Photography' => 'filter-mobile',
+    );
+}
 
-    if ( empty( $folders ) ) return '<p class="page__content">Folders not found!</p>';
-
-    $valid_attachment_ids = array();
-    $attachment_category_map = array();
-
-    foreach ( $folders as $folder ) {
-        $prefix = strtolower( explode( ' ', $folder->name )[0] );
-        $cat_class = 'filter-' . $prefix;
-        $attachments = $wpdb->get_col( $wpdb->prepare( "SELECT attachment_id FROM $rel_table WHERE folder_id = %d", $folder->id ) );
-
-        if ( ! empty( $attachments ) ) {
-            foreach ( $attachments as $att_id ) {
-                $valid_attachment_ids[] = $att_id;
-                $attachment_category_map[$att_id] = $cat_class;
-            }
+function zk_cinematic_gallery() {
+    // Optional render cache (off by default — see zk_flush_gallery_cache notes).
+    $cache_key = 'zk_gallery_html_v5';
+    $use_cache = (bool) apply_filters( 'zk_gallery_cache_enabled', false );
+    if ( $use_cache ) {
+        $cached = get_transient( $cache_key );
+        if ( is_string( $cached ) ) {
+            return $cached;
         }
     }
 
-    if ( empty( $valid_attachment_ids ) ) return '<p class="page__content">Folders are empty!</p>';
+    global $wpdb;
+    $fbv_table = $wpdb->prefix . 'fbv';
+    $rel_table = $wpdb->prefix . 'fbv_attachment_folder';
 
-    $args = array(
-        'post_type'      => 'attachment',
-        'post_status'    => 'inherit',
-        'post_mime_type' => 'image',
-        'posts_per_page' => -1,
-        'post__in'       => $valid_attachment_ids,
-        'orderby'        => 'date',
-        'order'          => 'DESC'
+    // Guard: is FileBird installed? esc_like() so "_" isn't read as a wildcard.
+    $found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $fbv_table ) ) );
+    if ( $found !== $fbv_table ) {
+        return '<p class="page__content" style="color:#ff5555;">FileBird tables not found.</p>';
+    }
+
+    $folder_map   = zk_gallery_folders();
+    $folder_names = array_keys( $folder_map );
+
+    // (1) Folder names → ids — one prepared query.
+    $name_ph = implode( ', ', array_fill( 0, count( $folder_names ), '%s' ) );
+    $folders = $wpdb->get_results(
+        $wpdb->prepare( "SELECT id, name FROM {$fbv_table} WHERE name IN ($name_ph)", $folder_names )
     );
-    $query = new WP_Query( $args );
+    if ( empty( $folders ) ) {
+        return '<p class="page__content">Folders not found!</p>';
+    }
 
-    $output = '<div class="zk-gallery-wrapper">';
+    $folder_class = array(); // folder_id => filter-xxx
+    foreach ( $folders as $folder ) {
+        if ( isset( $folder_map[ $folder->name ] ) ) {
+            $folder_class[ (int) $folder->id ] = $folder_map[ $folder->name ];
+        }
+    }
 
-    $output .= '<div class="zk-gallery-filters">';
-    $output .= '<button class="zk-filter-btn is-active" data-filter="all">All Works</button>';
-    $output .= '<button class="zk-filter-btn" data-filter="filter-camera">Camera</button>';
-    $output .= '<button class="zk-filter-btn" data-filter="filter-mobile">Mobile</button>';
+    // (2) Folder ids → attachments (+ category map) — one prepared query.
+    $folder_ids = array_keys( $folder_class );
+    $id_ph      = implode( ', ', array_fill( 0, count( $folder_ids ), '%d' ) );
+    $rows       = $wpdb->get_results(
+        $wpdb->prepare( "SELECT attachment_id, folder_id FROM {$rel_table} WHERE folder_id IN ($id_ph)", $folder_ids )
+    );
+    if ( empty( $rows ) ) {
+        return '<p class="page__content">Folders are empty!</p>';
+    }
+
+    $category_map = array(); // attachment_id => filter-xxx (first folder wins)
+    foreach ( $rows as $row ) {
+        $att = (int) $row->attachment_id;
+        $fid = (int) $row->folder_id;
+        if ( ! isset( $category_map[ $att ] ) && isset( $folder_class[ $fid ] ) ) {
+            $category_map[ $att ] = $folder_class[ $fid ];
+        }
+    }
+
+    // (3) Fetch attachments. WP_Query primes the post + meta caches in bulk,
+    //     so every helper below reads cache instead of hitting the DB again.
+    $query = new WP_Query( array(
+        'post_type'              => 'attachment',
+        'post_status'            => 'inherit',
+        'post_mime_type'         => 'image',
+        'posts_per_page'         => -1,
+        'post__in'               => array_keys( $category_map ),
+        'orderby'                => 'date',
+        'order'                  => 'DESC',
+        'no_found_rows'          => true,
+        'update_post_term_cache' => false,
+    ) );
+
+    $output  = '<div class="zk-gallery-wrapper">';
+    $output .= '<div class="zk-gallery-filters" role="group" aria-label="Filter photography">';
+    $output .= '<button class="zk-filter-btn is-active" type="button" data-filter="all" aria-pressed="true">All Works</button>';
+    $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-camera" aria-pressed="false">Camera</button>';
+    $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-mobile" aria-pressed="false">Mobile</button>';
     $output .= '</div>';
 
     $output .= '<div class="zk-gallery-grid" id="zkGalleryGrid">';
@@ -429,25 +488,17 @@ function zk_cinematic_gallery() {
         $query->the_post();
         $image_id = get_the_ID();
 
-        $full_img = wp_get_attachment_image_url( $image_id, 'full' );
-        $cat_class = isset( $attachment_category_map[$image_id] ) ? $attachment_category_map[$image_id] : 'all';
+        $full_img  = wp_get_attachment_image_url( $image_id, 'full' );
+        $thumb_img = wp_get_attachment_image_url( $image_id, 'thumbnail' ); // light strip image
+        $cat_class = isset( $category_map[ $image_id ] ) ? $category_map[ $image_id ] : 'all';
+        $exif_text = zk_attachment_exif( $image_id );
 
-        $meta = wp_get_attachment_metadata( $image_id );
-        $exif_text = '';
-        if ( isset( $meta['image_meta'] ) ) {
-            $cam = !empty( $meta['image_meta']['camera'] ) ? $meta['image_meta']['camera'] : '';
-            $focal = !empty( $meta['image_meta']['focal_length'] ) ? $meta['image_meta']['focal_length'] . 'mm' : '';
-            $aperture = !empty( $meta['image_meta']['aperture'] ) ? 'f/' . $meta['image_meta']['aperture'] : '';
-            $exif_parts = array_filter( array( $cam, $focal, $aperture ) );
-            if ( ! empty( $exif_parts ) ) $exif_text = implode( ' • ', $exif_parts );
-        }
-
-        $img_attrs = array(
-            'data-full' => esc_url( $full_img ),
-            'data-exif' => esc_attr( $exif_text ),
-            'class'     => 'zk-grid-photo'
-        );
-        $img_html = wp_get_attachment_image( $image_id, 'large', false, $img_attrs );
+        $img_html = wp_get_attachment_image( $image_id, 'large', false, array(
+            'data-full'  => esc_url( $full_img ),
+            'data-thumb' => esc_url( $thumb_img ? $thumb_img : $full_img ),
+            'data-exif'  => esc_attr( $exif_text ),
+            'class'      => 'zk-grid-photo',
+        ) );
 
         $output .= '<div class="zk-gallery-item ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '">';
         $output .= '<div class="zk-gallery-image-wrap">' . $img_html . '</div>';
@@ -456,22 +507,34 @@ function zk_cinematic_gallery() {
     wp_reset_postdata();
     $output .= '</div></div>';
 
-    // 6. Cinematic Lightbox (გამდიდრებული ისრებით და ნავიგაციით - დუბლიკატი ამოღებულია)
-    $output .= '<div class="zk-lightbox" id="zkLightbox" aria-hidden="true">';
-    $output .= '<button class="zk-lightbox-close" aria-label="Close">✕</button>';
-
-    // ნავიგაციის ისრები
-    $output .= '<button class="zk-lightbox-arrow zk-lightbox-prev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>';
-    $output .= '<button class="zk-lightbox-arrow zk-lightbox-next" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>';
-
-    $output .= '<img class="zk-lightbox-img" src="" alt="">';
+    // Cinematic lightbox — one instance, rebuilt with the view on SPA swaps.
+    $output .= '<div class="zk-lightbox" id="zkLightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Photo viewer">';
+    $output .= '<button class="zk-lightbox-close" type="button" aria-label="Close">✕</button>';
+    $output .= '<button class="zk-lightbox-arrow zk-lightbox-prev" type="button" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg></button>';
+    $output .= '<button class="zk-lightbox-arrow zk-lightbox-next" type="button" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg></button>';
+    $output .= '<img class="zk-lightbox-img" src="" alt="" decoding="async">';
     $output .= '<div class="zk-lightbox-exif" id="zkLightboxExif"></div>';
-
-    // ქვედა პატარა ფოტოების (Thumbnails) კონტეინერი
     $output .= '<div class="zk-lightbox-thumbs" id="zkLightboxThumbs"></div>';
-
     $output .= '</div>';
+
+    if ( $use_cache ) {
+        set_transient( $cache_key, $output, 6 * HOUR_IN_SECONDS );
+    }
 
     return $output;
 }
 add_shortcode( 'zk_photography', 'zk_cinematic_gallery' );
+
+/**
+ * Optional gallery render cache — OFF by default.
+ * Enable with:  add_filter( 'zk_gallery_cache_enabled', '__return_true' );
+ * These hooks bust it whenever the media library changes. Note: moving an
+ * image between FileBird folders fires no core hook, so the 6h TTL is the
+ * backstop there — flush manually (or wait it out) after re-foldering.
+ */
+function zk_flush_gallery_cache() {
+    delete_transient( 'zk_gallery_html_v5' );
+}
+add_action( 'add_attachment',    'zk_flush_gallery_cache' );
+add_action( 'edit_attachment',   'zk_flush_gallery_cache' );
+add_action( 'delete_attachment', 'zk_flush_gallery_cache' );
