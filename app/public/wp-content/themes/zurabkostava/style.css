@@ -908,3 +908,12 @@ body.zk-lb-open { overflow: hidden; }
 		z-index: 2001 !important; /* მენიუს 2000-ზე მაღალი, რომ ლოგო და ღილაკი გამოჩნდეს */
 	}
 }
+
+/* ── მობილურზე მენიუს გახსნისას ლოგოს და ღილაკის წინა პლანზე გამოწევა ── */
+@media (max-width: 900px) {
+	body.nav-open .logo,
+	body.nav-open .nav-toggle {
+		position: relative; /* z-index-ისთვის აუცილებელია */
+		z-index: 3000 !important; /* მენიუს 2000-ზე მაღალი */
+	}
+}
