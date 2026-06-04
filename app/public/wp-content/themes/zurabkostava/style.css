@@ -261,7 +261,12 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	.dropdown-link { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; font-size: clamp(1rem, 4.6vw, 1.25rem); font-weight: 300; letter-spacing: 0.02em; text-transform: none; color: rgba(255,255,255,0.65); text-decoration: none !important; }
 	.dropdown-link:hover, .dropdown-link:focus-visible { background: none; padding-left: 0; color: #fff; }
 
-	.nested-menu { margin-left: 14px; border-left: 1px solid var(--hairline-strong); padding-left: 14px; }
+	.nested-menu {
+		margin-left: 14px;
+		border-left: none !important; /* ხაზი გაქრება */
+		padding-left: 10px;           /* დაშორება უფრო დაბალანსებული იქნება */
+		margin-top: 4px;              /* ზემოდანაც დავუმატოთ ოდნავ სივრცე */
+	}
 	.nested-caret { transform: none; opacity: 0.5; transition: transform 0.3s var(--ease); }
 	.dropdown-link:hover .nested-caret { opacity: 1; }
 	.has-nested-dropdown.open > .dropdown-trigger .nested-caret { transform: rotate(180deg); }
