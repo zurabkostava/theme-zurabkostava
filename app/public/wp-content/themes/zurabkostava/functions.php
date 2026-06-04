@@ -729,11 +729,11 @@ function zk_about_page_shortcode() {
                             </li>
                             <li>
                                 <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
-                                <div class="zk-vital-text"><strong>Studio:</strong> <span>Creative Lead @ <a href="https://zurabkostava.com" target="_blank">Kostava Creative</a></span></div>
+                                <div class="zk-vital-text"><strong>Studio:</strong> <span>Creative Lead<a href="https://zurabkostava.com" target="_blank">Kostava Creative</a></span></div>
                             </li>
                             <li>
                                 <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-                                <div class="zk-vital-text"><strong>Position:</strong> <span>Web Designer @ <a href="https://emis.ge" target="_blank">EMIS Georgia</a></span></div>
+                                <div class="zk-vital-text"><strong>Position:</strong> <span>Web Designer<a href="https://emis.ge" target="_blank">EMIS Georgia</a></span></div>
                             </li>
                             <li>
                                 <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
