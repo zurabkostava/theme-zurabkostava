@@ -354,7 +354,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	border-color: var(--hairline);
 	padding: 6px 16px;
 	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-
+	transform: translateY(-15px)!important;
 	/* ── აი აქ არის ცვლილება: ── */
 	z-index: 1001 !important;
 }.zk-breadcrumbs a { color: var(--text-dim); transition: color 0.3s var(--ease); text-decoration: none !important; z-index: 1001;}
