@@ -366,3 +366,89 @@ function zk_force_enable_excerpts() {
     add_post_type_support( 'post', 'excerpt' ); // პოსტებზეც იძულებით ვრთავთ, ყოველ შემთხვევისთვის
 }
 add_action( 'init', 'zk_force_enable_excerpts', 999 );
+
+
+
+/* ============================================================
+   ZURAB KOSTAVA - CINEMATIC PHOTOGRAPHY GALLERY
+   ============================================================ */
+function zk_cinematic_gallery() {
+    // 1. მოგვაქვს სურათები FileBird-ის ტაქსონომიიდან
+    $args = array(
+        'post_type'      => 'attachment',
+        'post_status'    => 'inherit',
+        'post_mime_type' => 'image',
+        'posts_per_page' => -1, // მოაქვს ყველა ფოტო
+        'tax_query'      => array(
+            array(
+                'taxonomy' => 'fbv', // FileBird-ის ფარული სისტემა
+                'field'    => 'slug',
+                'terms'    => array('camera-photography', 'mobile-photography'), // შენი ფოლდერების ზუსტი სახელები
+                'operator' => 'IN',
+            ),
+        ),
+    );
+
+    $query = new WP_Query( $args );
+
+    if ( ! $query->have_posts() ) {
+        return '<p class="page__content">No photos found. Please make sure images are placed in FileBird folders.</p>';
+    }
+
+    $output = '<div class="zk-gallery-wrapper">';
+
+    // 2. ფილტრაციის ტაბები (Apple Segmented Control Style)
+    $output .= '<div class="zk-gallery-filters">';
+    $output .= '<button class="zk-filter-btn is-active" data-filter="all">All Works</button>';
+    $output .= '<button class="zk-filter-btn" data-filter="camera-photography">Camera</button>';
+    $output .= '<button class="zk-filter-btn" data-filter="mobile-photography">Mobile</button>';
+    $output .= '</div>';
+
+    // 3. უშუალოდ ფოტოების გრიდი
+    $output .= '<div class="zk-gallery-grid" id="zkGalleryGrid">';
+
+    while ( $query->have_posts() ) {
+        $query->the_post();
+        $image_id = get_the_ID();
+
+        // ვიღებთ სურათის ლინკებს (საშუალო გრიდისთვის და სრული გადიდებისთვის)
+        $grid_img = wp_get_attachment_image_url( $image_id, 'large' );
+        $full_img = wp_get_attachment_image_url( $image_id, 'full' );
+
+        // ვიღებთ, რომელ ფოლდერშია ეს კონკრეტული ფოტო
+        $terms = wp_get_object_terms( $image_id, 'fbv' );
+        $folder_slug = ( ! empty( $terms ) && ! is_wp_error( $terms ) ) ? $terms[0]->slug : 'all';
+
+        // ვაგენერირებთ EXIF მონაცემებს (თუ აქვს)
+        $meta = wp_get_attachment_metadata( $image_id );
+        $exif_text = '';
+        if ( isset( $meta['image_meta'] ) ) {
+            $cam = !empty( $meta['image_meta']['camera'] ) ? $meta['image_meta']['camera'] : '';
+            $focal = !empty( $meta['image_meta']['focal_length'] ) ? $meta['image_meta']['focal_length'] . 'mm' : '';
+            $aperture = !empty( $meta['image_meta']['aperture'] ) ? 'f/' . $meta['image_meta']['aperture'] : '';
+
+            $exif_parts = array_filter( array( $cam, $focal, $aperture ) );
+            if ( ! empty( $exif_parts ) ) {
+                $exif_text = implode( ' • ', $exif_parts );
+            }
+        }
+
+        // ვხატავთ ფოტოს HTML-ს
+        $output .= '<div class="zk-gallery-item" data-category="' . esc_attr( $folder_slug ) . '">';
+        $output .= '<div class="zk-gallery-image-wrap">';
+        $output .= '<img src="' . esc_url( $grid_img ) . '" data-full="' . esc_url( $full_img ) . '" data-exif="' . esc_attr( $exif_text ) . '" alt="Photography by Zurab Kostava" loading="lazy">';
+        $output .= '</div></div>';
+    }
+    wp_reset_postdata();
+    $output .= '</div></div>'; // გრიდის და მთავარი კონტეინერის დახურვა
+
+    // 4. Cinematic Lightbox (ეს დამალული იქნება და მხოლოდ ფოტოზე კლიკისას ამოვა ეკრანზე)
+    $output .= '<div class="zk-lightbox" id="zkLightbox" aria-hidden="true">';
+    $output .= '<button class="zk-lightbox-close" aria-label="Close">✕</button>';
+    $output .= '<img class="zk-lightbox-img" src="" alt="">';
+    $output .= '<div class="zk-lightbox-exif" id="zkLightboxExif"></div>';
+    $output .= '</div>';
+
+    return $output;
+}
+add_shortcode( 'zk_photography', 'zk_cinematic_gallery' );
