@@ -339,6 +339,20 @@ function zk_breadcrumbs() {
         // უშუალოდ მიმდინარე გვერდის სათაური
         echo '<span class="zk-breadcrumb-separator">/</span>';
         echo '<span class="zk-breadcrumb-current">' . get_the_title() . '</span>';
+
+    } elseif ( is_archive() || is_search() ) {
+        // --- ლოგიკა არქივებისთვის და თეგებისთვის ---
+        echo '<span class="zk-breadcrumb-separator">/</span>';
+        echo '<a href="' . esc_url( home_url( '/blog/' ) ) . '" data-route="/blog">Blog</a>';
+
+        echo '<span class="zk-breadcrumb-separator">/</span>';
+        if ( is_tag() ) {
+            echo '<span class="zk-breadcrumb-current">Topic: ' . single_tag_title( '', false ) . '</span>';
+        } elseif ( is_category() ) {
+            echo '<span class="zk-breadcrumb-current">Category: ' . single_cat_title( '', false ) . '</span>';
+        } else {
+            echo '<span class="zk-breadcrumb-current">Archive</span>';
+        }
     }
 
     echo '</nav>';

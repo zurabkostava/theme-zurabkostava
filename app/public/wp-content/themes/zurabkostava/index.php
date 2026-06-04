@@ -120,18 +120,107 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
     <?php
     $zk_view = ob_get_clean();
     rewind_posts();
-} elseif ( is_404() || is_archive() ) {
-$zk_current = '/404';
-ob_start(); ?>
-<div class="page__inner">
-    <p class="page__eyebrow">Error 404</p>
-    <h1 class="page__title">Not found</h1>
-    <div class="page__content"><p>This page doesn&rsquo;t exist yet.</p></div>
-</div>
-<?php
-$zk_view = ob_get_clean();
+} elseif ( is_archive() || is_search() ) {
+    // ── თეგების, კატეგორიებისა და ძებნის გვერდები ──
+    $zk_current = rtrim( wp_parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' );
+    if ( empty( $zk_current ) ) {
+        $zk_current = '/';
+    }
+
+    $eyebrow = 'Archive';
+    $archive_title = 'Posts';
+
+    // ვარკვევთ რის არქივში ვართ
+    if ( is_tag() ) {
+        $eyebrow = 'Topic';
+        $archive_title = single_tag_title( '', false );
+    } elseif ( is_category() ) {
+        $eyebrow = 'Category';
+        $archive_title = single_cat_title( '', false );
+    } elseif ( is_search() ) {
+        $eyebrow = 'Search Results';
+        $archive_title = get_search_query();
+    }
+
+    ob_start(); ?>
+    <div class="page__inner">
+        <?php zk_breadcrumbs(); ?>
+        <p class="page__eyebrow"><?php echo esc_html( $eyebrow ); ?></p>
+        <h1 class="page__title"><?php echo esc_html( $archive_title ); ?></h1>
+
+        <?php if ( get_the_archive_description() ) : ?>
+            <div class="page__description"><?php echo wp_kses_post( get_the_archive_description() ); ?></div>
+        <?php endif; ?>
+
+        <?php if ( have_posts() ) : ?>
+            <div class="zk-grid-wrapper">
+                <!-- ── გრიდის კონტროლები (Live Search & Sort) ── -->
+                <div class="zk-grid-controls">
+                    <div class="zk-search-box">
+                        <input type="text" class="zk-search-input" placeholder="Search in <?php echo esc_attr( $archive_title ); ?>..." aria-label="Search">
+                        <svg class="zk-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </div>
+                    <div class="zk-sort-dropdown" id="sortDropdown">
+                        <button class="zk-sort-trigger" type="button" aria-expanded="false">
+                            <span class="zk-sort-label">Sort by: </span><span class="zk-sort-current">Newest</span>
+                            <svg class="dropdown-caret" width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <div class="zk-sort-menu">
+                            <button class="zk-sort-option is-selected" type="button" data-sort="desc">Newest</button>
+                            <button class="zk-sort-option" type="button" data-sort="asc">Oldest</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── ქარდების გრიდი ── -->
+                <div class="zk-post-grid">
+                    <?php while ( have_posts() ) : the_post();
+                        $title = get_the_title();
+                        $link = get_permalink();
+                        $path = wp_parse_url( $link, PHP_URL_PATH );
+                        $categories = get_the_category();
+                        $cat_name = ! empty( $categories ) ? esc_html( $categories[0]->name ) : 'Post';
+                        $date = get_the_date( 'M j, Y' );
+                        $timestamp = get_the_time( 'U' );
+                        $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
+                        $bg_style = $img_url ? 'style="background-image: url(' . esc_url( $img_url ) . ');"' : '';
+                        ?>
+                        <a href="<?php echo esc_url( $link ); ?>" class="zk-grid-card" data-route="<?php echo esc_attr( $path ); ?>" data-time="<?php echo esc_attr( $timestamp ); ?>">
+                            <div class="zk-card-image" <?php echo $bg_style; // phpcs:ignore ?>></div>
+                            <div class="zk-card-content">
+                                <div class="zk-card-meta">
+                                    <span class="zk-card-category"><?php echo $cat_name; ?></span>
+                                    <span class="zk-card-meta-separator"></span>
+                                    <span class="zk-card-date"><?php echo esc_html( $date ); ?></span>
+                                </div>
+                                <h3 class="zk-card-title"><?php echo esc_html( $title ); ?></h3>
+                            </div>
+                        </a>
+                    <?php endwhile; ?>
+                </div>
+            </div>
+        <?php else : ?>
+            <div class="page__content"><p>No posts found for this topic.</p></div>
+        <?php endif; ?>
+    </div>
+    <?php
+    $zk_view = ob_get_clean();
+    rewind_posts();
+
+} elseif ( is_404() ) {
+    // ── რეალური 404 გვერდი ──
+    $zk_current = '/404';
+    ob_start(); ?>
+    <div class="page__inner">
+        <p class="page__eyebrow">Error 404</p>
+        <h1 class="page__title">Not found</h1>
+        <div class="page__content"><p>This page doesn&rsquo;t exist yet.</p></div>
+    </div>
+    <?php
+    $zk_view = ob_get_clean();
 }
-?><!DOCTYPE html>
+?>
+<!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
     <meta charset="<?php bloginfo( 'charset' ); ?>">
