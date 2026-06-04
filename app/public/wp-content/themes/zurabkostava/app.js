@@ -811,7 +811,7 @@
                 <p>This is a short announcement for my first piano album. This is just the first step. More genres, more music, more to come.</p>
             `,
             mediaType: "youtube", // 'youtube', 'spotify', ან 'none'
-            mediaId: "https://www.youtube.com/watch?v=DXFjN3g_WZw" // მაგ: dQw4w9WgXcQ (URL-ის ბოლო ნაწილი)
+            mediaId: "DXFjN3g_WZw" // მაგ: dQw4w9WgXcQ (URL-ის ბოლო ნაწილი)
         }
         // შემდეგი ტრეკი დაემატება აქ, მძიმის მერე...
     ];
