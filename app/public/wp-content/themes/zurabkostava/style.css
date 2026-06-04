@@ -1038,8 +1038,13 @@ body.zk-lb-open { overflow: hidden; }
 	margin-bottom: 24px;
 }
 .zk-timeline-body {
-	font-size: 0.95rem; color: var(--text-muted); line-height: 1.7;
+	font-size: 0.95rem;
+	color: var(--text-muted);
+	line-height: 1.7;
 	margin-bottom: 24px;
+
+	/* ── ეს არის მთავარი გასაღები ── */
+	white-space: pre-line;
 }
 /* ── ტექსტის რედაქტორის (Rich Text) სტილები ბარათისთვის ── */
 .zk-timeline-body {

@@ -671,7 +671,7 @@ function zk_music_timeline_shortcode() {
                     'genre'       => get_post_meta( $post_id, '_zk_genre', true ), // <--- აქაც Genre
                     'title'       => get_the_title(),
                     'subtitle'    => get_post_meta( $post_id, '_zk_subtitle', true ),
-                    'description' => apply_filters( 'the_content', get_the_content() ),
+                    'description' => do_shortcode( wpautop( get_the_content() ) ),
                     'mediaType'   => get_post_meta( $post_id, '_zk_media_type', true ),
                     'mediaId'     => get_post_meta( $post_id, '_zk_media_id', true ),
                     'spotifyUrl'  => get_post_meta( $post_id, '_zk_spotify_url', true ),
