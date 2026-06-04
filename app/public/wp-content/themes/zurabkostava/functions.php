@@ -714,23 +714,32 @@ function zk_about_page_shortcode() {
                 <div class="zk-identity-dashboard">
 
                     <!-- Box 1: Vitals & Connect (Full Width with Photo) -->
+                    <!-- Box 1: Vitals & Connect (Full Width with Photo) -->
                     <div class="zk-bento-box zk-bento-profile zk-col-span-2">
+
+                        <!-- 1. HEADER (გამოტანილია გარეთ, რომ სრულ სიგანეზე გაიშალოს და ხაზი გაავლოს) -->
+                        <div class="zk-bento-header">
+                            <div class="zk-header-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                <h3>Vitals & Connect</h3>
+                            </div>
+                            <p class="zk-bento-desc">Zurab Kostava's digital ID, where he objectively looks much better than on his actual passport.</p>
+                        </div>
+
+                        <!-- 2. CONTENT WRAPPER (ინფორმაცია და ფოტო უკვე ამის შიგნითაა და ზედა კიდით სწორდება) -->
                         <div class="zk-profile-inner">
 
                             <!-- მარცხენა მხარე: ინფორმაცია -->
                             <div class="zk-profile-content">
-                                <div class="zk-bento-header">
-                                    <div class="zk-header-title">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                        <h3>Vitals & Connect</h3>
-                                    </div>
-                                    <p class="zk-bento-desc">Zurab Kostava's digital ID, where he objectively looks much better than on his actual passport.</p>
-                                </div>
-
                                 <ul class="zk-vitals-list">
                                     <li>
                                         <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                                         <div class="zk-vital-text"><strong>Born:</strong> <span>DD.MM.YYYY</span></div>
+                                    </li>
+                                    <!-- ახალი: Origin / დაბადების ადგილი კომპასის იკონით -->
+                                    <li>
+                                        <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                                        <div class="zk-vital-text"><strong>Origin:</strong> <span>Ozurgeti, Guria, Georgia</span></div>
                                     </li>
                                     <li>
                                         <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
