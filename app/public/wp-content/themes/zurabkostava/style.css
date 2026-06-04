@@ -712,7 +712,7 @@ html.zk-img-js .zk-post-hero.is-loaded { opacity: 1; }
 	filter: brightness(1.1);
 }
 
-/* ── 4. Cinematic Lightbox (ფარული, JS-ს ელოდება) ── */
+/* ── 4. Cinematic Lightbox (Ultra-Smooth Focus Pull) ── */
 .zk-lightbox {
 	position: fixed; inset: 0; z-index: 2000;
 	display: flex; align-items: center; justify-content: center; flex-direction: column;
@@ -720,11 +720,15 @@ html.zk-img-js .zk-post-hero.is-loaded { opacity: 1; }
 	-webkit-backdrop-filter: blur(35px) saturate(140%);
 	backdrop-filter: blur(35px) saturate(140%);
 	opacity: 0; visibility: hidden; pointer-events: none;
-	transition: opacity 0.5s var(--ease), visibility 0.5s;
+	/* დახურვისას ვაძლევთ 0.6წმ დაყოვნებას visibility-ს, რომ არ მოიჭრას ანიმაცია */
+	transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.6s;
 }
 .zk-lightbox.is-open {
 	opacity: 1; visibility: visible; pointer-events: auto;
+	/* გახსნისას visibility მომენტალურად ერთვება */
+	transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s;
 }
+/* ── დახურვის ღილაკი ── */
 .zk-lightbox-close {
 	position: absolute; top: 24px; right: 24px;
 	width: 44px; height: 44px;
@@ -732,29 +736,46 @@ html.zk-img-js .zk-post-hero.is-loaded { opacity: 1; }
 	font-size: 1.2rem; color: var(--text-muted);
 	background: rgba(255, 255, 255, 0.05); border-radius: 50%;
 	border: 1px solid var(--hairline);
-	transition: all 0.3s var(--ease);
+	opacity: 0; transform: translateY(-10px);
+	transition: opacity 0.4s ease, transform 0.4s ease, background 0.3s ease;
 	z-index: 2001; cursor: pointer;
 }
-.zk-lightbox-close:hover {
-	color: var(--text); background: rgba(255, 255, 255, 0.1); transform: scale(1.05);
+.zk-lightbox.is-open .zk-lightbox-close {
+	opacity: 1; transform: translateY(0);
+	transition-delay: 0.3s; /* ღილაკი ოდნავ იგვიანებს შემოსვლას */
 }
+.zk-lightbox-close:hover {
+	color: var(--text); background: rgba(255, 255, 255, 0.1); transform: scale(1.05) !important;
+}
+/* ── უშუალოდ ფოტოს ანიმაცია (Focus Pull ეფექტით) ── */
 .zk-lightbox-img {
 	max-width: 90vw; max-height: 82vh;
 	border-radius: 12px;
-	box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
-	transform: scale(0.95) translateY(20px);
-	transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+	box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+	/* საწყისი პოზიცია: დაპატარავებული, ბუნდოვანი და ოდნავ ქვემოთ */
+	transform: scale(0.92) translateY(15px);
+	filter: blur(12px);
+	opacity: 0;
+	will-change: transform, filter, opacity;
+	transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+	filter 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+	opacity 0.6s ease;
 }
 .zk-lightbox.is-open .zk-lightbox-img {
+	/* საბოლოო პოზიცია: 100% ზომა, სუფთა და ფოკუსში */
 	transform: scale(1) translateY(0);
+	filter: blur(0);
+	opacity: 1;
 }
+/* ── EXIF მონაცემები ── */
 .zk-lightbox-exif {
 	margin-top: 20px;
 	font-size: 0.75rem; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase;
 	color: var(--text-dim);
 	opacity: 0; transform: translateY(10px);
-	transition: opacity 0.5s var(--ease) 0.2s, transform 0.5s var(--ease) 0.2s;
+	transition: opacity 0.5s ease, transform 0.5s ease;
 }
 .zk-lightbox.is-open .zk-lightbox-exif {
 	opacity: 1; transform: translateY(0);
+	transition-delay: 0.25s; /* ტექსტი ფოტოს მერე ჩნდება */
 }
