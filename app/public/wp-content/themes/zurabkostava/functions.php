@@ -690,3 +690,62 @@ function zk_music_timeline_shortcode() {
     return $output;
 }
 add_shortcode( 'zk_music', 'zk_music_timeline_shortcode' );
+
+/* ============================================================
+   ABOUT PAGE - DYNAMIC TABS SHORTCODE
+   ============================================================ */
+function zk_about_page_shortcode() {
+    ob_start(); ?>
+
+    <div class="zk-about-wrapper">
+        <div class="zk-tabs-nav-container">
+            <div class="zk-tabs-nav">
+                <div class="zk-tab-highlight"></div>
+                <button class="zk-tab-btn active" data-target="tab-identity">Identity</button>
+                <button class="zk-tab-btn" data-target="tab-journey">The Journey</button>
+                <button class="zk-tab-btn" data-target="tab-captures">Life & Captures</button>
+            </div>
+        </div>
+
+        <div class="zk-tabs-content">
+
+            <div class="zk-tab-panel active" id="tab-identity">
+                <div class="zk-identity-grid">
+                    <div class="zk-id-image">
+                        <div class="zk-image-placeholder">Portrait Image</div>
+                    </div>
+                    <div class="zk-id-info">
+                        <h1 class="zk-id-name">Zurab Kostava</h1>
+                        <p class="zk-id-roles">Composer | Visual Artist | Tech Geek</p>
+                        <p class="zk-id-bio">Translating complex emotions into cinematic soundscapes and digital art.</p>
+                        <div class="zk-id-details">
+                            <p>Here you can write a brief, welcoming introduction. A few sentences about what drives your multidisciplinary approach.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="zk-tab-panel" id="tab-journey">
+                <div class="zk-timeline-body">
+                    <h3>The Creative Process</h3>
+                    <p>This is where you can dive deep into your story. Talk about your connection to music, cinematography, and technology.</p>
+                    <p>Explain how you use tools to build nocturnes and aubades, and what inspires your visual projects.</p>
+                    <blockquote>"A place for a nice, meaningful quote about your art."</blockquote>
+                </div>
+            </div>
+
+            <div class="zk-tab-panel" id="tab-captures">
+                <div class="zk-masonry-gallery">
+                    <div class="zk-masonry-item"><div class="zk-img-dummy">Photo 1</div></div>
+                    <div class="zk-masonry-item"><div class="zk-img-dummy" style="height: 250px;">Photo 2</div></div>
+                    <div class="zk-masonry-item"><div class="zk-img-dummy" style="height: 300px;">Photo 3</div></div>
+                    <div class="zk-masonry-item"><div class="zk-img-dummy">Photo 4</div></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <?php return ob_get_clean();
+}
+add_shortcode( 'zk_about', 'zk_about_page_shortcode' );

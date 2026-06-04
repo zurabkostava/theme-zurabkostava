@@ -891,3 +891,58 @@
         new MutationObserver(renderTimeline).observe(viewEl, { childList: true });
     }
 })();
+
+
+
+/* ============================================================
+   ABOUT PAGE - TABS LOGIC
+   ============================================================ */
+(function() {
+    function initTabs() {
+        const nav = document.querySelector('.zk-tabs-nav');
+        if (!nav) return;
+
+        const buttons = nav.querySelectorAll('.zk-tab-btn');
+        const highlight = nav.querySelector('.zk-tab-highlight');
+        const panels = document.querySelectorAll('.zk-tab-panel');
+
+        // საწყისი პოზიციის დაყენება (პირველ ღილაკზე)
+        function setHighlight(btn) {
+            highlight.style.width = btn.offsetWidth + 'px';
+            highlight.style.transform = `translateX(${btn.offsetLeft - 6}px)`; // 6px არის padding
+        }
+
+        // ვპოულობთ აქტიურს და ვსვამთ ფონს
+        const activeBtn = nav.querySelector('.zk-tab-btn.active');
+        if (activeBtn) setHighlight(activeBtn);
+
+        // კლიკის ივენთები
+        buttons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 1. ღილაკების კლასების შეცვლა
+                buttons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                // 2. Highlight-ის გადაადგილება
+                setHighlight(this);
+
+                // 3. პანელების შეცვლა
+                const targetId = this.getAttribute('data-target');
+                panels.forEach(panel => {
+                    if (panel.id === targetId) {
+                        panel.classList.add('active');
+                    } else {
+                        panel.classList.remove('active');
+                    }
+                });
+            });
+        });
+    }
+
+    // SPA თავსებადობა
+    initTabs();
+    var viewEl = document.getElementById('view');
+    if (viewEl) {
+        new MutationObserver(initTabs).observe(viewEl, { childList: true });
+    }
+})();
