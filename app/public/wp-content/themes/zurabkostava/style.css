@@ -930,8 +930,6 @@ body.zk-lb-open { overflow: hidden; }
 	}
 }
 
-
-
 /* ── მობილური მენიუს გახსნისას ჰედერის პრიორიტეტი ── */
 @media (max-width: 900px) {
 	body.nav-open .site-header {
@@ -947,4 +945,3 @@ body.zk-lb-open { overflow: hidden; }
 		z-index: 3000 !important; /* მენიუს 2000-ზე მაღალი */
 	}
 }
-
