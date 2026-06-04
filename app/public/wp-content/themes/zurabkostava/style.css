@@ -814,10 +814,12 @@ body.zk-lb-open { overflow: hidden; }
 /* ── ქვედა ნავიგაცია (Thumbnails) ── */
 .zk-lightbox-thumbs {
 	position: absolute; bottom: 30px; left: 0; right: 0;
-	display: flex; justify-content: center; gap: 8px;
+
+	/* ── აქ არის ცვლილება: center-ის მაგივრად ვიყენებთ flex-start-ს ── */
+	display: flex; justify-content: flex-start; gap: 8px;
+
 	padding: 10px 40px;
 	overflow-x: auto; overscroll-behavior: contain; scroll-behavior: smooth;
-	/* ვმალავთ სქროლის ხაზს */
 	scrollbar-width: none; -ms-overflow-style: none;
 	z-index: 2002;
 	opacity: 0; transform: translateY(20px);
