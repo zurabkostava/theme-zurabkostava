@@ -1454,7 +1454,7 @@ body.zk-lb-open { overflow: hidden; }
 .zk-vital-text {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
+	gap: 18px;
 }
 
 .zk-vital-text strong {
@@ -1617,17 +1617,45 @@ body.zk-lb-open { overflow: hidden; }
 	.zk-profile-inner {
 		flex-direction: column-reverse;
 		align-items: center;
-		text-align: center;
 	}
+
+	.zk-profile-content {
+		width: 100%;
+	}
+
+	/* სათაური და სოციალური იკონები იყოს ცენტრში */
 	.zk-bento-header,
-	.zk-social-bar,
-	.zk-vital-text {
+	.zk-social-bar {
 		justify-content: center;
 	}
+
+	/* ოდნავ ვაპატარავებთ სოციალურ ღილაკებს, რომ 5-ივე 1 ხაზზე ჩაეტიოს */
+	.zk-social-bar {
+		gap: 10px;
+	}
+	.zk-social-btn {
+		width: 40px;
+		height: 40px;
+	}
+
+	/* ლისტი ვტოვებთ მარცხნივ, რომ იკონების სიმეტრია არ დაირღვეს */
 	.zk-vitals-list li {
-		justify-content: center;
+		justify-content: flex-start;
+		align-items: flex-start;
+		text-align: left;
+		margin-bottom: 20px;
 	}
+
+	/* ტექსტებს ვალაგებთ ვერტიკალურად (Label ზემოთ, Value ქვემოთ) */
+	.zk-vital-text {
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	/* მობილურზე სათაურის (მაგ: Position) ოდნავ გაფერმკრთალება, რომ მთავარი ტექსტი გამოჩნდეს */
 	.zk-vital-text strong {
 		min-width: auto;
+		color: var(--text-dim);
+		font-size: 0.85rem;
 	}
 }
