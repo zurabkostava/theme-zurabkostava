@@ -802,7 +802,7 @@
             id: "the-last-nocturne",
             date: "2026-03-30",
             displayDate: "30.03.2026",
-            theme: "nocturne", // ემოციური თემა: 'nocturne' ან 'aubade'
+            theme: "nocturne",
             title: "The Last Nocturne",
             subtitle: "From First Piano Album",
             description: `
@@ -810,38 +810,55 @@
                 <p>It’s small. It’s personal. And it means everything to me.</p>
                 <p>This is a short announcement for my first piano album. This is just the first step. More genres, more music, more to come.</p>
             `,
-            mediaType: "youtube", // 'youtube', 'spotify', ან 'none'
-            mediaId: "DXFjN3g_WZw" // მაგ: dQw4w9WgXcQ (URL-ის ბოლო ნაწილი)
+            mediaType: "youtube",
+            mediaId: "YOUR_YOUTUBE_VIDEO_ID",
+
+            // ── ახალი: Spotify ლინკი (თუ ცარიელი დატოვებ "", ღილაკი გაითიშება) ──
+            spotifyUrl: ""
         }
-        // შემდეგი ტრეკი დაემატება აქ, მძიმის მერე...
     ];
 
     // ── 2. დარენდერების ძრავა ──
     function renderTimeline() {
         var container = document.getElementById('zkMusicTimeline');
         if (!container) return;
-        if (container.dataset.rendered === 'true') return; // SPA დაცვა
+        if (container.dataset.rendered === 'true') return;
 
-        // ვიწყებთ მთავარი ღერძის (ხაზის) ხატვას
         var html = '<div class="zk-timeline-line"></div>';
 
         musicData.forEach(function(item) {
-            // Embed ლოგიკა ტიპის მიხედვით
             var embedHtml = '';
             if (item.mediaType === 'youtube' && item.mediaId) {
                 embedHtml = '<div class="zk-timeline-embed youtube"><iframe src="https://www.youtube.com/embed/' + item.mediaId + '?rel=0&modestbranding=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
             } else if (item.mediaType === 'spotify' && item.mediaId) {
-                embedHtml = '<div class="zk-timeline-embed spotify"><iframe src="https://open.spotify.com/embed/track/' + item.mediaId + '" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe></div>';
+                embedHtml = '<div class="zk-timeline-embed spotify"><iframe src="http://open.spotify.com/embed/track/' + item.mediaId + '" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe></div>';
             }
 
-            // დინამიური კლასი თემატიკისთვის (შეგვიძლია ფერები შევუცვალოთ Nocturne/Aubade-ს)
+            // ── კრეატიული Spotify ღილაკის ლოგიკა ──
+            var hasSpotify = !!item.spotifyUrl;
+            var spotifyClass = hasSpotify ? '' : 'is-disabled';
+            var spotifyTag = hasSpotify ? 'a' : 'div';
+            var spotifyHref = hasSpotify ? `href="${item.spotifyUrl}" target="_blank" rel="noopener noreferrer"` : '';
+            var btnText = hasSpotify ? 'Listen on Spotify' : 'Coming to Spotify';
+
+            // ეკვალაიზერის HTML (ანიმაციური ხაზები)
+            var equalizer = `<div class="zk-equalizer"><span class="eq-bar eq-1"></span><span class="eq-bar eq-2"></span><span class="eq-bar eq-3"></span></div>`;
+
+            var spotifyBtnHtml = `
+                <${spotifyTag} class="zk-spotify-btn ${spotifyClass}" ${spotifyHref}>
+                    <svg class="spotify-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.24 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.24 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.6.18-1.2.72-1.381 4.26-1.261 11.28-1.02 15.721 1.621.54.3.72.96.42 1.5-.3.54-.96.72-1.56.36z"/>
+                    </svg>
+                    <span class="btn-text">${btnText}</span>
+                    ${hasSpotify ? equalizer : ''}
+                </${spotifyTag}>
+            `;
+
             var themeClass = item.theme === 'nocturne' ? 'is-nocturne' : 'is-aubade';
 
             html += `
                 <div class="zk-timeline-node ${themeClass}">
-                    <div class="zk-timeline-point">
-                        <div class="zk-point-core"></div>
-                    </div>
+                    <div class="zk-timeline-point"><div class="zk-point-core"></div></div>
                     <div class="zk-timeline-card">
                         <div class="zk-card-header">
                             <span class="zk-timeline-date">${item.displayDate}</span>
@@ -851,6 +868,10 @@
                         <p class="zk-timeline-subtitle">${item.subtitle}</p>
                         <div class="zk-timeline-body">${item.description}</div>
                         ${embedHtml}
+                        
+                        <div class="zk-card-actions">
+                            ${spotifyBtnHtml}
+                        </div>
                     </div>
                 </div>
             `;
@@ -862,7 +883,6 @@
 
     renderTimeline();
 
-    // SPA თავსებადობა (გვერდებს შორის სიარულისას რომ არ დაიკარგოს)
     var viewEl = document.getElementById('view');
     if (viewEl) {
         new MutationObserver(renderTimeline).observe(viewEl, { childList: true });

@@ -1058,6 +1058,79 @@ body.zk-lb-open { overflow: hidden; }
 	width: 100%; height: 100%;
 }
 
+/* ── ბარათის მოქმედებები (ღილაკები) ── */
+.zk-card-actions {
+	margin-top: 24px;
+	display: flex;
+	align-items: center;
+}
+
+/* ── კრეატიული Spotify ღილაკი ── */
+.zk-spotify-btn {
+	display: inline-flex; align-items: center; gap: 10px;
+	padding: 10px 20px;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid var(--hairline-strong);
+	border-radius: 40px;
+	color: var(--text-muted);
+	font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+	text-decoration: none !important;
+	transition: all 0.4s var(--ease);
+	cursor: pointer;
+	overflow: hidden;
+	position: relative;
+}
+
+.spotify-icon {
+	width: 20px; height: 20px;
+	color: #1DB954; /* Spotify Green */
+	transition: transform 0.4s var(--ease);
+}
+
+/* Hover მდგომარეობა - მანათობელი აურა */
+.zk-spotify-btn:hover:not(.is-disabled) {
+	background: rgba(29, 185, 84, 0.08);
+	border-color: rgba(29, 185, 84, 0.4);
+	color: #fff;
+	box-shadow: 0 8px 24px rgba(29, 185, 84, 0.15);
+	transform: translateY(-2px);
+}
+.zk-spotify-btn:hover:not(.is-disabled) .spotify-icon {
+	transform: scale(1.1);
+}
+
+/* ── ანიმაციური ეკვალაიზერი (ჩნდება მხოლოდ Hover-ზე) ── */
+.zk-equalizer {
+	display: flex; align-items: flex-end; gap: 2px;
+	height: 12px; margin-left: 4px;
+	opacity: 0; width: 0;
+	transition: opacity 0.3s ease, width 0.3s ease;
+}
+.zk-spotify-btn:hover:not(.is-disabled) .zk-equalizer {
+	opacity: 1; width: 14px;
+}
+.eq-bar {
+	width: 3px; background: #1DB954; border-radius: 2px;
+	transform-origin: bottom;
+	animation: spotifyEq 1s ease-in-out infinite alternate;
+}
+.eq-1 { height: 60%; animation-delay: 0s; }
+.eq-2 { height: 100%; animation-delay: 0.3s; }
+.eq-3 { height: 40%; animation-delay: 0.6s; }
+
+@keyframes spotifyEq {
+	0% { transform: scaleY(0.3); }
+	100% { transform: scaleY(1); }
+}
+
+/* ── ჭკვიანი Disabled მდგომარეობა ── */
+.zk-spotify-btn.is-disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+	filter: grayscale(100%);
+	background: rgba(255, 255, 255, 0.02);
+}
+
 /* Responsive მობილურისთვის */
 @media (max-width: 600px) {
 	.zk-timeline-wrapper { padding-left: 10px; }
