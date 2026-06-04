@@ -721,6 +721,7 @@ function zk_about_page_shortcode() {
                             <li><strong>Born:</strong> DD.MM.YYYY</li>
                             <li><strong>Base:</strong> Tbilisi, Georgia</li>
                             <li><strong>Current Role:</strong> Creative Lead @ Kostava Creative</li>
+                            <li><strong>Works on:</strong> Web Designer @ EMIS Georgia</li>
                             <li><strong>Archetype:</strong> Composer, Visual Artist, Tech Geek</li>
                         </ul>
                         <div class="zk-social-bar">
