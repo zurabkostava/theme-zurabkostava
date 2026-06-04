@@ -218,7 +218,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	.nav-open .nav-toggle-line:nth-child(3) { top: 50%; transform: translateY(-50%) rotate(-45deg); }
 
 	.primary-nav {
-		position: fixed; inset: 0; z-index: 1001; height: 100vh; height: 100dvh; padding: calc(var(--header-h) + 6vh) var(--gutter) 8vh;
+		position: fixed; inset: 0; z-index: var(--z-overlay); height: 100vh; height: 100dvh; padding: calc(var(--header-h) + 6vh) var(--gutter) 8vh;
 		display: flex; flex-direction: column; justify-content: center;
 		background: rgba(7, 7, 9, 0.85); -webkit-backdrop-filter: blur(28px) saturate(160%); backdrop-filter: blur(28px) saturate(160%);
 		transform: translateX(100%); opacity: 0; visibility: hidden; transition: transform 0.6s var(--ease), opacity 0.6s var(--ease), visibility 0.6s var(--ease);
@@ -539,7 +539,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
 	transform: translateY(-15px)!important;
 	/* ── აი აქ არის ცვლილება: ── */
-	z-index: 900 !important;
+	z-index: 1001 !important;
 }.zk-breadcrumbs a { color: var(--text-dim); transition: color 0.3s var(--ease); text-decoration: none !important; z-index: 1001;}
 .zk-breadcrumbs a:hover { color: var(--text); }
 .zk-breadcrumbs .zk-breadcrumb-separator { color: rgba(255, 255, 255, 0.15); user-select: none; z-index: 1001;}
@@ -669,7 +669,6 @@ html.zk-img-js .zk-post-hero.is-loaded { opacity: 1; }
 	/* ოდნავ დაპატარავება სქროლვისას უფრო ელეგანტურია */
 	transform: translateY(-72px) scale(0.95);
 	padding: 4px 6px;
-	z-index: 900 !important;
 }
 /* ღილაკების სტილი იგივე რჩება */
 .zk-filter-btn {
