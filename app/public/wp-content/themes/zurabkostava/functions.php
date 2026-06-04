@@ -787,47 +787,107 @@ function zk_about_page_shortcode() {
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                             <h3>The Curated Mind</h3>
                         </div>
+
                         <div class="zk-favorites-grid">
+
                             <div class="zk-fav-col">
-                                <h4>🎬 Cinema</h4>
+                                <h4 class="zk-fav-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
+                                    Cinema
+                                </h4>
                                 <ol>
-                                    <li>Interstellar</li>
-                                    <li>Abre los ojos</li>
-                                    <li>Stay</li>
-                                    <li>[Movie 4]</li>
-                                    <li>[Movie 5]</li>
+                                    <li><a href="#" target="_blank">Interstellar</a></li>
+                                    <li><a href="#" target="_blank">Abre los ojos</a></li>
+                                    <li><a href="#" target="_blank">Stay</a></li>
+                                    <li><a href="#" target="_blank">The Truman Show</a></li>
+                                    <li><a href="#" target="_blank">Inception</a></li>
                                 </ol>
                             </div>
+
                             <div class="zk-fav-col">
-                                <h4>📺 Series</h4>
+                                <h4 class="zk-fav-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>
+                                    Series
+                                </h4>
                                 <ol>
-                                    <li>[Series 1]</li>
-                                    <li>[Series 2]</li>
-                                    <li>[Series 3]</li>
-                                    <li>[Series 4]</li>
-                                    <li>[Series 5]</li>
+                                    <li><a href="#" target="_blank">[Series 1]</a></li>
+                                    <li><a href="#" target="_blank">[Series 2]</a></li>
+                                    <li><a href="#" target="_blank">[Series 3]</a></li>
+                                    <li><a href="#" target="_blank">[Series 4]</a></li>
+                                    <li><a href="#" target="_blank">[Series 5]</a></li>
                                 </ol>
                             </div>
+
                             <div class="zk-fav-col">
-                                <h4>🎧 Sound</h4>
+                                <h4 class="zk-fav-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                                    Books
+                                </h4>
                                 <ol>
-                                    <li>[Musician 1]</li>
-                                    <li>[Musician 2]</li>
-                                    <li>[Musician 3]</li>
-                                    <li>[Musician 4]</li>
-                                    <li>[Musician 5]</li>
+                                    <li><a href="#" target="_blank">[Book 1]</a></li>
+                                    <li><a href="#" target="_blank">[Book 2]</a></li>
+                                    <li><a href="#" target="_blank">[Book 3]</a></li>
+                                    <li><a href="#" target="_blank">[Book 4]</a></li>
+                                    <li><a href="#" target="_blank">[Book 5]</a></li>
                                 </ol>
                             </div>
+
                             <div class="zk-fav-col">
-                                <h4>📚 Books</h4>
+                                <h4 class="zk-fav-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                                    Directors
+                                </h4>
                                 <ol>
-                                    <li>[Book 1]</li>
-                                    <li>[Book 2]</li>
-                                    <li>[Book 3]</li>
-                                    <li>[Book 4]</li>
-                                    <li>[Book 5]</li>
+                                    <li><a href="#" target="_blank">Christopher Nolan</a></li>
+                                    <li><a href="#" target="_blank">Denis Villeneuve</a></li>
+                                    <li><a href="#" target="_blank">[Director 3]</a></li>
+                                    <li><a href="#" target="_blank">[Director 4]</a></li>
+                                    <li><a href="#" target="_blank">[Director 5]</a></li>
                                 </ol>
                             </div>
+
+                            <div class="zk-fav-col">
+                                <h4 class="zk-fav-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                    Actors
+                                </h4>
+                                <ol>
+                                    <li><a href="#" target="_blank">Matthew McConaughey</a></li>
+                                    <li><a href="#" target="_blank">[Actor 2]</a></li>
+                                    <li><a href="#" target="_blank">[Actor 3]</a></li>
+                                    <li><a href="#" target="_blank">[Actor 4]</a></li>
+                                    <li><a href="#" target="_blank">[Actor 5]</a></li>
+                                </ol>
+                            </div>
+
+                            <div class="zk-fav-col">
+                                <h4 class="zk-fav-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                                    Artists
+                                </h4>
+                                <ol>
+                                    <li><a href="#" target="_blank">Hans Zimmer</a></li>
+                                    <li><a href="#" target="_blank">Nils Frahm</a></li>
+                                    <li><a href="#" target="_blank">[Artist 3]</a></li>
+                                    <li><a href="#" target="_blank">[Artist 4]</a></li>
+                                    <li><a href="#" target="_blank">[Artist 5]</a></li>
+                                </ol>
+                            </div>
+
+                            <div class="zk-fav-col">
+                                <h4 class="zk-fav-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2z"></path><path d="M3 19a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"></path></svg>
+                                    Songs
+                                </h4>
+                                <ol>
+                                    <li><a href="#" target="_blank">Cornfield Chase</a></li>
+                                    <li><a href="#" target="_blank">Time</a></li>
+                                    <li><a href="#" target="_blank">[Song 3]</a></li>
+                                    <li><a href="#" target="_blank">[Song 4]</a></li>
+                                    <li><a href="#" target="_blank">[Song 5]</a></li>
+                                </ol>
+                            </div>
+
                         </div>
                     </div>
 

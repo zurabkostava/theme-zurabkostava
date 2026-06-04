@@ -1531,9 +1531,28 @@ body.zk-lb-open { overflow: hidden; }
 /* ── 7. Favorites Grid (The Curated Mind) ── */
 .zk-favorites-grid {
 	display: grid;
-	grid-template-columns: repeat(4, 1fr); /* 3-ის ნაცვლად 4 სვეტი */
-	gap: 20px; /* ოდნავ შევამცირეთ დაშორება, რომ 4-ივე კომფორტულად დაეტიოს */
+	/* auto-fit ავტომატურად ანაწილებს სვეტებს ისე, რომ ცარიელი ადგილები შეივსოს */
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 32px 20px;
 }
+
+.zk-fav-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 1rem;
+	color: #fff;
+	margin-bottom: 20px;
+	font-weight: 500;
+}
+
+.zk-fav-title svg {
+	width: 18px;
+	height: 18px;
+	color: var(--text-dim);
+}
+
+
 
 .zk-fav-col h4 {
 	font-size: 1rem;
@@ -1544,10 +1563,9 @@ body.zk-lb-open { overflow: hidden; }
 
 .zk-fav-col ol {
 	margin: 0;
-	padding-left: 20px;
-	color: var(--text-muted);
-	font-size: 0.85rem; /* ტექსტი ოდნავ დავაპატარავეთ 4 სვეტისთვის */
-	line-height: 1.8;
+	padding-left: 22px;
+	font-size: 0.85rem;
+	line-height: 2;
 }
 
 /* პლანშეტებზე (მაგ: iPad) გადაეწყოს 2x2 სვეტად */
@@ -1559,12 +1577,25 @@ body.zk-lb-open { overflow: hidden; }
 }
 
 .zk-fav-col li {
-	margin-bottom: 8px;
+	margin-bottom: 6px;
 }
 
 .zk-fav-col li::marker {
 	color: var(--text-dim);
 	font-weight: 600;
+}
+
+/* ლინკების დიზაინი სიაში */
+.zk-fav-col a {
+	color: var(--text-muted);
+	text-decoration: none;
+	border-bottom: 1px solid transparent;
+	transition: all 0.3s var(--ease);
+}
+
+.zk-fav-col a:hover {
+	color: #fff;
+	border-bottom-color: rgba(255, 255, 255, 0.4);
 }
 
 /* ── 8. Tab 3: Masonry Gallery & Legacy ── */
