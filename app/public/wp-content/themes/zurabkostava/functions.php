@@ -720,8 +720,11 @@ function zk_about_page_shortcode() {
                             <!-- მარცხენა მხარე: ინფორმაცია -->
                             <div class="zk-profile-content">
                                 <div class="zk-bento-header">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                    <h3>Vitals & Connect</h3>
+                                    <div class="zk-header-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                        <h3>Vitals & Connect</h3>
+                                    </div>
+                                    <p class="zk-bento-desc">Zurab Kostava's digital ID, where he objectively looks much better than on his actual passport.</p>
                                 </div>
 
                                 <ul class="zk-vitals-list">
@@ -768,8 +771,11 @@ function zk_about_page_shortcode() {
                     <!-- Box 2: SKILLS -->
                     <div class="zk-bento-box zk-bento-skills zk-col-span-2">
                         <div class="zk-bento-header">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                            <h3>Skills</h3>
+                            <div class="zk-header-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                                <h3>Skills</h3>
+                            </div>
+                            <p class="zk-bento-desc">A brief list of capabilities. This isn't a flex for the portfolio—it's mostly here so he doesn't forget what he can actually do.</p>
                         </div>
                         <div class="zk-tags-container">
                             <span class="zk-tag">Music Production (Ableton, Cubase)</span>
@@ -784,8 +790,11 @@ function zk_about_page_shortcode() {
                     <!-- Box 3: The Curated Mind -->
                     <div class="zk-bento-box zk-bento-favorites zk-col-span-2">
                         <div class="zk-bento-header">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                            <h3>The Curated Mind</h3>
+                            <div class="zk-header-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                <h3>The Curated Mind</h3>
+                            </div>
+                            <p class="zk-bento-desc">Cultural influences. The definitive list that proves his exceptional taste in media (and yes, he is quite proud of it).</p>
                         </div>
 
                         <div class="zk-favorites-grid">
