@@ -442,11 +442,10 @@ function zk_cinematic_gallery() {
             if ( ! empty( $exif_parts ) ) $exif_text = implode( ' • ', $exif_parts );
         }
 
-        // ── აქ არის მთავარი ცვლილება: ვიყენებთ wp_get_attachment_image-ს ──
         $img_attrs = array(
             'data-full' => esc_url( $full_img ),
             'data-exif' => esc_attr( $exif_text ),
-            'class'     => 'zk-grid-photo' // უნიკალური კლასი ჰოვერისთვის
+            'class'     => 'zk-grid-photo'
         );
         $img_html = wp_get_attachment_image( $image_id, 'large', false, $img_attrs );
 
@@ -457,12 +456,7 @@ function zk_cinematic_gallery() {
     wp_reset_postdata();
     $output .= '</div></div>';
 
-    $output .= '<div class="zk-lightbox" id="zkLightbox" aria-hidden="true">';
-    $output .= '<button class="zk-lightbox-close" aria-label="Close">✕</button>';
-    $output .= '<img class="zk-lightbox-img" src="" alt="">';
-    $output .= '<div class="zk-lightbox-exif" id="zkLightboxExif"></div>';
-    $output .= '</div>';
-    // 6. Cinematic Lightbox (გამდიდრებული ისრებით და ნავიგაციით)
+    // 6. Cinematic Lightbox (გამდიდრებული ისრებით და ნავიგაციით - დუბლიკატი ამოღებულია)
     $output .= '<div class="zk-lightbox" id="zkLightbox" aria-hidden="true">';
     $output .= '<button class="zk-lightbox-close" aria-label="Close">✕</button>';
 
