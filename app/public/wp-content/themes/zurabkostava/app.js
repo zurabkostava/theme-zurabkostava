@@ -676,3 +676,4 @@
         new MutationObserver(initGallery).observe(viewEl, { childList: true });
     }
 })();
+
