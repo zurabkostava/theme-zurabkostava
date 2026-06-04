@@ -1037,24 +1037,18 @@ body.zk-lb-open { overflow: hidden; }
 	font-size: 0.9rem; color: var(--text-dim); font-weight: 400;
 	margin-bottom: 24px;
 }
+/* ── ტექსტის რედაქტორის (Rich Text) სტილები ბარათისთვის ── */
 .zk-timeline-body {
 	font-size: 0.95rem;
 	color: var(--text-muted);
 	line-height: 1.7;
 	margin-bottom: 24px;
-
-	/* ── ეს არის მთავარი გასაღები ── */
-	white-space: pre-line;
-}
-/* ── ტექსტის რედაქტორის (Rich Text) სტილები ბარათისთვის ── */
-.zk-timeline-body {
-	font-size: 0.95rem; color: var(--text-muted); line-height: 1.7;
-	margin-bottom: 24px;
+	/* აქედან ამოვიღეთ white-space: pre-line; */
 }
 
 /* აბზაცები და გამოტოვებები */
 .zk-timeline-body p {
-	margin-bottom: 1.2em;
+	margin-bottom: 1em; /* 1.2em-დან ჩამოვიყვანეთ 1em-მდე, რომ ზედმეტი არ იყოს */
 }
 .zk-timeline-body p:last-child {
 	margin-bottom: 0;
