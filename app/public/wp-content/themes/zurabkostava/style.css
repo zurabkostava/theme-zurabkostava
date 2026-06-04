@@ -67,10 +67,12 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 /* ============================================================
    APPLE-STYLE GRADIENT MASK HEADER
    ============================================================ */
+
+
 .site-header {
 	position: fixed;
 	top: 0; left: 0; right: 0;
-	z-index: 90;
+	z-index: 2005 !important;
 	display: flex;
 	align-items: center;
 	height: var(--header-h);
@@ -206,6 +208,12 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
    RESPONSIVE — MOBILE OVERLAY MENU (≤ 900px)
    ============================================================ */
 @media (max-width: 900px) {
+	.site-header {
+		position: fixed;
+	}
+	.nav-open .primary-nav {
+		z-index: 1000 !important;
+	}
 	:root { --header-h: 64px; }
 	.nav-toggle { display: inline-flex; position: relative; z-index: calc(var(--z-overlay) + 1); width: 46px; height: 46px; align-items: center; justify-content: center; margin-right: -10px; }
 	.nav-toggle-box { position: relative; width: 26px; height: 16px; }
