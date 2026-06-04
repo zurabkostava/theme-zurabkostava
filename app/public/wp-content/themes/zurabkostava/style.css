@@ -667,7 +667,7 @@ html.zk-img-js .zk-post-hero.is-loaded { opacity: 1; }
 	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 
 	/* ოდნავ დაპატარავება სქროლვისას უფრო ელეგანტურია */
-	transform: translateY(-8px) scale(0.95);
+	transform: translateY(-15px) scale(0.95);
 	padding: 4px 6px;
 }
 /* ღილაკების სტილი იგივე რჩება */
