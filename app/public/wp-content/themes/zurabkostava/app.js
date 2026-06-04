@@ -837,15 +837,17 @@
                 </${spotifyTag}>
             `;
 
-            var themeClass = item.theme === 'nocturne' ? 'is-nocturne' : 'is-aubade';
+            // ── ჟანრის (Genre) HTML-ის გენერაცია ──
+            // თუ ადმინკაში ჟანრი ჩავწერეთ, გამოაჩენს, თუ არადა დატოვებს ცარიელს
+            var genreHtml = item.genre ? `<span class="zk-timeline-tag">${item.genre}</span>` : '';
 
             html += `
-                <div class="zk-timeline-node ${themeClass}">
+                <div class="zk-timeline-node">
                     <div class="zk-timeline-point"><div class="zk-point-core"></div></div>
                     <div class="zk-timeline-card">
                         <div class="zk-card-header">
                             <span class="zk-timeline-date">${item.displayDate}</span>
-                            <span class="zk-timeline-tag">${item.theme}</span>
+                            ${genreHtml}
                         </div>
                         <h3 class="zk-timeline-title">${item.title}</h3>
                         <p class="zk-timeline-subtitle">${item.subtitle}</p>

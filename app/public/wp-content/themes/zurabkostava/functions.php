@@ -560,7 +560,7 @@ function zk_register_music_timeline_cpt() {
             'labels'             => $labels,
             'public'             => false,
             'show_ui'            => true,
-            'show_in_menu'       => true, // აუცილებელია, რომ მენიუში მუდმივად ჩანდეს
+            'show_in_menu'       => true,
             'menu_icon'          => 'dashicons-format-audio',
             'supports'           => array( 'title', 'editor' ),
             'has_archive'        => false,
@@ -580,7 +580,7 @@ function zk_music_meta_callback( $post ) {
 
     $subtitle    = get_post_meta( $post->ID, '_zk_subtitle', true );
     $date        = get_post_meta( $post->ID, '_zk_display_date', true );
-    $theme       = get_post_meta( $post->ID, '_zk_theme', true );
+    $genre       = get_post_meta( $post->ID, '_zk_genre', true ); // <--- Theme შეიცვალა Genre-თი
     $media_type  = get_post_meta( $post->ID, '_zk_media_type', true );
     $media_id    = get_post_meta( $post->ID, '_zk_media_id', true );
     $spotify_url = get_post_meta( $post->ID, '_zk_spotify_url', true );
@@ -595,11 +595,8 @@ function zk_music_meta_callback( $post ) {
             <input type="text" name="zk_subtitle" value="<?php echo esc_attr( $subtitle ); ?>" style="width:100%; margin-top:5px;" />
         </div>
         <div>
-            <label><strong>Theme</strong></label><br>
-            <select name="zk_theme" style="width:100%; margin-top:5px;">
-                <option value="nocturne" <?php selected( $theme, 'nocturne' ); ?>>Nocturne</option>
-                <option value="aubade" <?php selected( $theme, 'aubade' ); ?>>Aubade</option>
-            </select>
+            <label><strong>Genre / Tag</strong> (e.g. Piano, Ambient, Nocturne)</label><br>
+            <input type="text" name="zk_genre" value="<?php echo esc_attr( $genre ); ?>" style="width:100%; margin-top:5px;" />
         </div>
         <div>
             <label><strong>Media Type</strong></label><br>
@@ -631,7 +628,7 @@ function zk_music_save_meta_data( $post_id ) {
     $fields = array(
             'zk_subtitle'     => '_zk_subtitle',
             'zk_display_date' => '_zk_display_date',
-            'zk_theme'        => '_zk_theme',
+            'zk_genre'        => '_zk_genre', // <--- Theme შეიცვალა Genre-თი
             'zk_media_type'   => '_zk_media_type',
             'zk_media_id'     => '_zk_media_id',
             'zk_spotify_url'  => '_zk_spotify_url',
@@ -664,7 +661,7 @@ function zk_music_timeline_shortcode() {
             $music_data[] = array(
                     'id'          => 'release-' . $post_id,
                     'displayDate' => get_post_meta( $post_id, '_zk_display_date', true ),
-                    'theme'       => get_post_meta( $post_id, '_zk_theme', true ),
+                    'genre'       => get_post_meta( $post_id, '_zk_genre', true ), // <--- აქაც Genre
                     'title'       => get_the_title(),
                     'subtitle'    => get_post_meta( $post_id, '_zk_subtitle', true ),
                     'description' => apply_filters( 'the_content', get_the_content() ),
@@ -683,4 +680,3 @@ function zk_music_timeline_shortcode() {
     return $output;
 }
 add_shortcode( 'zk_music', 'zk_music_timeline_shortcode' );
-
