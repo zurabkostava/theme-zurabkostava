@@ -704,12 +704,13 @@ html.zk-img-js .zk-post-hero.is-loaded { opacity: 1; }
 .page__content .zk-gallery-image-wrap img.zk-grid-photo {
 	width: 100%; height: auto; display: block;
 	border-radius: inherit;
-	transform: scale(1.01); /* hairline zoom keeps edges crisp inside the frame */
-	transition: transform 0.7s var(--ease), filter 0.7s var(--ease);
+	transform: scale(1.01);
+	/* transition-ში ვაერთიანებთ transform, filter და opacity არხებს */
+	transition: transform 0.7s var(--ease), filter 0.7s var(--ease), opacity 0.8s var(--ease) !important;
 }
 .zk-gallery-item:hover .zk-gallery-image-wrap img.zk-grid-photo {
 	transform: scale(1.06);
-	filter: brightness(1.12);
+	filter: brightness(1.12) !important;
 }
 
 /* ── 4. Cinematic Lightbox (Ultra-Smooth Focus Pull) ── */
