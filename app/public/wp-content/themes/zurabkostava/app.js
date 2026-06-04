@@ -490,7 +490,7 @@
 
 
 /* ============================================================
-   CINEMATIC PHOTOGRAPHY GALLERY - LOGIC
+   CINEMATIC PHOTOGRAPHY GALLERY - LOGIC (V2 with Navigation)
    ============================================================ */
 (function() {
     function initGallery() {
@@ -498,81 +498,173 @@
         if (!gallery) return;
 
         var buttons = gallery.querySelectorAll('.zk-filter-btn');
-        var items = gallery.querySelectorAll('.zk-gallery-item');
+        // ვიღებთ ყველა ფოტოს და ვაქცევთ მასივად, რათა ლოგიკამ ადვილად გადაარჩიოს
+        var allItems = Array.from(gallery.querySelectorAll('.zk-gallery-item'));
 
-        // 1. ფილტრაცია (Seamless Masonry Sort)
-        // 1. ფილტრაცია (Snappy & Clean Masonry Sort)
+        // ── მდგომარეობის (State) მართვა ──
+        var currentFilter = 'all';
+        var activeItems = allItems; // თავიდან ყველა ფოტო აქტიურია
+        var currentIndex = 0;
+
+        // Lightbox ელემენტები
+        var lightbox = document.getElementById('zkLightbox');
+        var lightboxImg = lightbox.querySelector('.zk-lightbox-img');
+        var lightboxExif = lightbox.querySelector('.zk-lightbox-exif');
+        var closeBtn = lightbox.querySelector('.zk-lightbox-close');
+        var prevBtn = lightbox.querySelector('.zk-lightbox-prev');
+        var nextBtn = lightbox.querySelector('.zk-lightbox-next');
+        var thumbsContainer = document.getElementById('zkLightboxThumbs');
+
+        // 1. თამბნეილების აწყობა (გამოიძახება ფილტრის შეცვლისას)
+        function buildThumbnails() {
+            thumbsContainer.innerHTML = '';
+            activeItems.forEach(function(item, index) {
+                var img = item.querySelector('img');
+
+                var thumbDiv = document.createElement('div');
+                thumbDiv.className = 'zk-lightbox-thumb-item';
+
+                var thumbImg = document.createElement('img');
+                thumbImg.src = img.src; // იყენებს გრიდის ზომას სისწრაფისთვის
+                thumbImg.loading = 'lazy';
+
+                thumbDiv.appendChild(thumbImg);
+
+                // თამბნეილზე კლიკით პირდაპირ მაგ ფოტოზე გადასვლა
+                thumbDiv.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    goToIndex(index);
+                });
+
+                thumbsContainer.appendChild(thumbDiv);
+            });
+        }
+
+        // საწყისი ჩატვირთვა
+        buildThumbnails();
+
+        // 2. ფილტრაციის ლოგიკა
         buttons.forEach(function(btn) {
             btn.addEventListener('click', function() {
-                if (this.classList.contains('is-active')) return; // თუ ისედაც ეგაა არჩეული, არაფერს ვშვრებით
+                if (this.classList.contains('is-active')) return;
 
-                var filter = this.getAttribute('data-filter');
-
+                currentFilter = this.getAttribute('data-filter');
                 buttons.forEach(function(b) { b.classList.remove('is-active'); });
                 this.classList.add('is-active');
 
-                items.forEach(function(item) {
+                activeItems = []; // ვასუფთავებთ აქტიურ სიას
+
+                allItems.forEach(function(item) {
                     var cat = item.getAttribute('data-category');
-                    var isMatch = (filter === 'all' || cat === filter);
+                    var isMatch = (currentFilter === 'all' || cat === currentFilter);
 
                     if (isMatch) {
-                        // ── გამოჩენა ──
+                        activeItems.push(item); // ვამატებთ ახალ სიაში (ნავიგაციისთვის)
                         if (item.style.display === 'none') {
-                            item.style.display = ''; // ვაბრუნებთ გრიდში
-                            void item.offsetWidth;   // Voodoo Magic: ვაიძულებთ ბრაუზერს მომენტალურად გამოთვალოს სვეტები!
+                            item.style.display = '';
+                            void item.offsetWidth;
                         }
                         item.style.opacity = '1';
                         item.style.transform = 'scale(1)';
                         item.style.pointerEvents = 'auto';
                     } else {
-                        // ── დამალვა ──
                         item.style.opacity = '0';
                         item.style.transform = 'scale(0.9)';
                         item.style.pointerEvents = 'none';
-
-                        // როგორც კი გაქრება (300ms), საერთოდ ვიღებთ ნაკადიდან, რომ სვეტები შეიკრას
                         setTimeout(function() {
                             if (item.style.opacity === '0') {
                                 item.style.display = 'none';
-                                item.style.position = ''; // ვასუფთავებთ ძველ ნაგავს
+                                item.style.position = '';
                             }
                         }, 300);
                     }
                 });
+
+                // ფილტრის შეცვლისთანავე თამბნეილებიც შესაბამისად იცვლება!
+                buildThumbnails();
             });
         });
 
-        // 2. Cinematic Lightbox (გადიდება)
-        var lightbox = document.getElementById('zkLightbox');
-        var lightboxImg = lightbox.querySelector('.zk-lightbox-img');
-        var lightboxExif = lightbox.querySelector('.zk-lightbox-exif');
-        var closeBtn = lightbox.querySelector('.zk-lightbox-close');
+        // 3. ეკრანის განახლება (ფოტოს ცვლილება ლაითბოქსში)
+        function updateLightbox(index) {
+            if (index < 0 || index >= activeItems.length) return;
+            currentIndex = index;
 
-        items.forEach(function(item) {
-            var img = item.querySelector('img');
-            if (!img) return;
+            var targetItem = activeItems[currentIndex];
+            var img = targetItem.querySelector('img');
 
+            // ულამაზესი ფოკუს-პულ გადასვლა ფოტოებს შორის
+            lightboxImg.style.opacity = '0';
+            lightboxImg.style.filter = 'blur(10px)';
+            lightboxImg.style.transform = 'scale(0.95)';
+
+            setTimeout(function() {
+                lightboxImg.src = img.getAttribute('data-full');
+                lightboxExif.textContent = img.getAttribute('data-exif') || '';
+
+                lightboxImg.style.opacity = '1';
+                lightboxImg.style.filter = 'blur(0)';
+                lightboxImg.style.transform = 'scale(1)';
+            }, 300);
+
+            // ვაქტიურებთ შესაბამის თამბნეილს და ვასქროლავთ ცენტრში
+            var thumbs = thumbsContainer.querySelectorAll('.zk-lightbox-thumb-item');
+            thumbs.forEach(function(t, i) {
+                if (i === currentIndex) {
+                    t.classList.add('is-active');
+                    // ეს ხაზი ავტომატურად აცენტრებს არჩეულ თამბნეილს!
+                    t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                } else {
+                    t.classList.remove('is-active');
+                }
+            });
+        }
+
+        // 4. ნავიგაციის ფუნქციები (უსასრულო წრე)
+        function goToIndex(index) { updateLightbox(index); }
+        function nextImage() { goToIndex((currentIndex + 1) % activeItems.length); }
+        function prevImage() { goToIndex((currentIndex - 1 + activeItems.length) % activeItems.length); }
+
+        // ფოტოზე კლიკი გრიდში
+        allItems.forEach(function(item) {
             item.addEventListener('click', function() {
-                var fullSrc = img.getAttribute('data-full');
-                var exif = img.getAttribute('data-exif');
-
-                lightboxImg.src = fullSrc;
-                lightboxExif.textContent = exif || '';
-                lightbox.classList.add('is-open');
+                var idx = activeItems.indexOf(item);
+                if (idx > -1) {
+                    updateLightbox(idx);
+                    lightbox.classList.add('is-open');
+                }
             });
         });
 
+        // ისრებზე კლიკი
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function(e) {
+                e.stopPropagation(); nextImage();
+            });
+        }
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function(e) {
+                e.stopPropagation(); prevImage();
+            });
+        }
+
+        // 5. დახურვა და კლავიატურა
         function closeLightbox() {
             lightbox.classList.remove('is-open');
-            setTimeout(function() { lightboxImg.src = ''; }, 500);
+            setTimeout(function() { lightboxImg.src = ''; }, 600);
         }
 
         closeBtn.addEventListener('click', closeLightbox);
         lightbox.addEventListener('click', function(e) {
             if (e.target === lightbox) closeLightbox();
         });
+
+        // კლავიატურის მხარდაჭერა
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && lightbox.classList.contains('is-open')) closeLightbox();
+            if (!lightbox.classList.contains('is-open')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowRight') nextImage();
+            if (e.key === 'ArrowLeft') prevImage();
         });
     }
 
