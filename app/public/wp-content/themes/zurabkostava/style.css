@@ -1234,6 +1234,7 @@ body.zk-lb-open { overflow: hidden; }
 		/* 0.95-ის ნაცვლად უფრო მეტად ვაპატარავებთ (0.85) */
 		transform: translateY(-28px) scale(0.85) !important;
 		padding: 2px 4px;
+		width: auto;
 	}
 
 	/* თავად ღილაკების ზომასაც ოდნავ ვამცირებთ მობილურისთვის */
@@ -1241,7 +1242,5 @@ body.zk-lb-open { overflow: hidden; }
 		padding: 6px 14px;
 		font-size: 0.7rem;
 	}
-	.zk-gallery-filters{
-		width: auto;
-	}
+
 }
