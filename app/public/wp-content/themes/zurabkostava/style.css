@@ -737,6 +737,168 @@ html.zk-img-js .zk-post-hero.is-loaded { opacity: 1; }
 	transform: translateZ(0);
 	transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
 }
+
+/* ── 2. Image Style & Hover ── */
+.zk-lightbox-trigger {
+	display: block;
+	position: relative;
+	border-radius: 12px;
+	overflow: hidden;
+	border: 1px solid rgba(255, 255, 255, 0.05);
+	transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.zk-lightbox-trigger img {
+	width: 100%;
+	height: auto; /* Masonry-სთვის Auto სიმაღლე */
+	display: block;
+	object-fit: cover;
+	filter: contrast(1.1) grayscale(15%); /* Cinematic Filter */
+	transition: filter 0.6s var(--ease);
+}
+
+/* Hover Overlay (იკონით) */
+.zk-gallery-hover-overlay {
+	position: absolute;
+	top: 0; left: 0; width: 100%; height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex; align-items: center; justify-content: center;
+	opacity: 0;
+	transition: opacity 0.4s var(--ease);
+}
+
+.zk-gallery-hover-overlay svg {
+	width: 32px; height: 32px;
+	color: #fff;
+	transform: scale(0.8);
+	transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Hover Effects */
+.zk-lightbox-trigger:hover {
+	transform: scale(1.02);
+	border-color: rgba(255, 255, 255, 0.15);
+}
+
+.zk-lightbox-trigger:hover img {
+	filter: contrast(1) grayscale(0%);
+}
+
+.zk-lightbox-trigger:hover .zk-gallery-hover-overlay {
+	opacity: 1;
+}
+
+.zk-lightbox-trigger:hover .zk-gallery-hover-overlay svg {
+	transform: scale(1);
+}
+
+/* ── 3. Lightbox (Viewer) Visual ── */
+.zk-lightbox {
+	position: fixed;
+	top: 0; left: 0; width: 100%; height: 100%;
+	z-index: 10000;
+	display: flex; align-items: center; justify-content: center;
+	visibility: hidden;
+	opacity: 0;
+	transition: visibility 0.4s var(--ease), opacity 0.4s var(--ease);
+}
+
+.zk-lightbox.active {
+	visibility: visible;
+	opacity: 1;
+}
+
+/* მინისებური ფონი ბლურით */
+.zk-lightbox-bg {
+	position: absolute;
+	top: 0; left: 0; width: 100%; height: 100%;
+	background: rgba(7, 7, 9, 0.9);
+	-webkit-backdrop-filter: blur(20px);
+	backdrop-filter: blur(20px);
+	cursor: zoom-out;
+}
+
+/* კონტენტის ბლოკი */
+.zk-lightbox-content {
+	position: relative;
+	z-index: 1;
+	max-width: 90%;
+	max-height: 90%;
+	display: flex; align-items: center; justify-content: center;
+}
+
+.zk-lightbox-img {
+	max-width: 100%;
+	max-height: 90vh;
+	border-radius: 12px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	box-shadow: 0 30px 100px rgba(0, 0, 0, 0.6);
+	/* ანიმაცია გახსნისას */
+	transform: scale(0.95);
+	transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.zk-lightbox.active .zk-lightbox-img {
+	transform: scale(1);
+}
+
+/* ნავიგაციის ღილაკები (Glassmorphism) */
+.zk-lightbox-nav {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	color: #fff;
+	width: 60px; height: 60px;
+	border-radius: 50%;
+	display: flex; align-items: center; justify-content: center;
+	cursor: pointer;
+	transition: all 0.3s var(--ease);
+	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: blur(10px);
+	z-index: 10;
+}
+
+.zk-lightbox-nav:hover {
+	background: rgba(255, 255, 255, 0.15);
+	transform: translateY(-50%) scale(1.1);
+}
+
+.zk-lightbox-nav.zk-prev { left: -80px; }
+.zk-lightbox-nav.zk-next { right: -80px; }
+.zk-lightbox-nav svg { width: 24px; height: 24px; }
+
+/* დახურვის ღილაკი */
+.zk-lightbox-close {
+	position: absolute;
+	top: -60px; right: 0;
+	background: none; border: none;
+	color: rgba(255, 255, 255, 0.5);
+	cursor: pointer;
+	transition: color 0.3s var(--ease);
+	padding: 10px;
+	z-index: 10;
+}
+
+.zk-lightbox-close:hover {
+	color: #fff;
+}
+
+.zk-lightbox-close svg { width: 28px; height: 28px; }
+
+/* ── 4. Responsive ── */
+@media (max-width: 900px) {
+	.zk-gallery-grid { column-count: 2; } /* პლანშეტზე 2 სვეტი */
+	.zk-lightbox-nav.zk-prev { left: 20px; } /* ღილაკები შემოგვაქვს შიგნით */
+	.zk-lightbox-nav.zk-next { right: 20px; }
+	.zk-lightbox-nav { width: 50px; height: 50px; background: rgba(0, 0, 0, 0.5); }
+}
+
+@media (max-width: 600px) {
+	.zk-gallery-grid { column-count: 1; } /* მობილურზე 1 სვეტი */
+	.zk-bento-header p { font-size: 0.8rem; }
+}
 @media (max-width: 900px) { .zk-gallery-item { margin-bottom: 16px; } }
 
 /* will-change is applied transiently (only mid-filter, via JS) so large
@@ -1626,54 +1788,6 @@ body.zk-lb-open { overflow: hidden; }
 	border-bottom-color: rgba(255, 255, 255, 0.4);
 }
 
-/* ── 8. Tab 3: Life & Captures (FileBird Integration) ── */
-
-.zk-filebird-gallery-wrapper {
-	margin-top: 20px;
-	position: relative;
-	z-index: 1;
-}
-
-/* FileBird-ის ფოტოების იძულებითი მორგება შენს Cinematic სტილზე */
-.zk-filebird-gallery-wrapper img {
-	border-radius: 12px !important;
-	border: 1px solid rgba(255, 255, 255, 0.05) !important;
-	filter: contrast(1.1) grayscale(15%) !important; /* ოდნავ ჩამქრალი ფერები, კინემატოგრაფიული ეფექტისთვის */
-	transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.5s var(--ease), box-shadow 0.5s var(--ease) !important;
-}
-
-.zk-filebird-gallery-wrapper img:hover {
-	transform: scale(1.02) !important; /* ჰოვერზე ოდნავ მოახლოება */
-	filter: contrast(1) grayscale(0%) !important; /* ორიგინალი ფერების დაბრუნება */
-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
-	z-index: 2;
-}
-
-/* თუ FileBird-ს თავისი Background აქვს, ვაუქმებთ, რომ სუფთა გამოჩნდეს */
-.zk-filebird-gallery-wrapper .filebird-gallery-item {
-	background: transparent !important;
-}
-
-
-/* ── FileBird Custom Grid Items ── */
-.zk-filebird-item img {
-	width: 100%;
-	height: 280px; /* ფოტოების ერთგვაროვანი სიმაღლე */
-	object-fit: cover; /* რომ არ დეფორმირდეს შუაში ამოჭრის */
-	display: block;
-	border-radius: 12px;
-	border: 1px solid rgba(255, 255, 255, 0.05);
-	filter: contrast(1.1) grayscale(15%); /* ოდნავ ჩამქრალი Cinematic ფერი */
-	transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.5s var(--ease), box-shadow 0.5s var(--ease);
-}
-
-.zk-filebird-item img:hover {
-	transform: scale(1.02);
-	filter: contrast(1) grayscale(0%);
-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-	z-index: 2;
-	position: relative;
-}
 
 /* ============================================================
    RESPONSIVE (MEDIA QUERIES)
