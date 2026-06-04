@@ -606,10 +606,7 @@ function zk_music_meta_callback( $post ) {
                 <option value="spotify" <?php selected( $media_type, 'spotify' ); ?>>Spotify</option>
                 <option value="none" <?php selected( $media_type, 'none' ); ?>>None</option>
             </select>
-            <div style="grid-column: 1 / -1;">
-                <label><strong>"See More" URL</strong> (Link to a blog post or external source. Leave empty to hide)</label><br>
-                <input type="url" name="zk_more_url" value="<?php echo esc_url( $more_url ); ?>" style="width:100%; margin-top:5px;" />
-            </div>
+
         </div>
         <div>
             <label><strong>Media ID</strong> (YouTube/Spotify ID)</label><br>
@@ -618,6 +615,10 @@ function zk_music_meta_callback( $post ) {
         <div>
             <label><strong>Spotify Full URL</strong> (Leave empty for disabled button)</label><br>
             <input type="url" name="zk_spotify_url" value="<?php echo esc_url( $spotify_url ); ?>" style="width:100%; margin-top:5px;" />
+        </div>
+        <div style="grid-column: 1 / -1;">
+            <label><strong>"See More" URL</strong> (Link to a blog post or external source. Leave empty to hide)</label><br>
+            <input type="url" name="zk_more_url" value="<?php echo esc_url( $more_url ); ?>" style="width:100%; margin-top:5px;" />
         </div>
     </div>
     <p style="color: #666; font-size: 13px; margin-top: 15px;"><em>Note: The main title and description of the release should be written in the standard WordPress title and text editor above.</em></p>
