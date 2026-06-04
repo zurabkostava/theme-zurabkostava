@@ -742,15 +742,10 @@
                 // 2. ── ანიმაციური სქროლი ──
                 // თუ მომხმარებელი სქროლილია, ავტომატურად ვბრუნდებით გალერეის საწყის წერტილში
                 // 2. ── ანიმაციური სქროლი ──
+                // 2. ── ანიმაციური სქროლი ზედაპირზე (სადაც ჰედერი ჩანს) ──
                 if (window.scrollY > 100) {
-                    // ზუსტი მათემატიკა: ჰედერი(64px) + ბრედკრამბების დამაგრების ადგილი(64px)
-                    var headerOffset = 128;
-
-                    var elementPosition = wrap.getBoundingClientRect().top + window.scrollY;
-                    var offsetPosition = elementPosition - headerOffset;
-
                     window.scrollTo({
-                        top: offsetPosition,
+                        top: 0,
                         behavior: 'smooth'
                     });
                 }
