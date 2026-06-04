@@ -930,6 +930,8 @@ body.zk-lb-open { overflow: hidden; }
 	}
 }
 
+
+
 /* ── მობილური მენიუს გახსნისას ჰედერის პრიორიტეტი ── */
 @media (max-width: 900px) {
 	body.nav-open .site-header {
@@ -943,5 +945,35 @@ body.zk-lb-open { overflow: hidden; }
 	body.nav-open .nav-toggle {
 		position: relative; /* z-index-ისთვის აუცილებელია */
 		z-index: 3000 !important; /* მენიუს 2000-ზე მაღალი */
+	}
+}
+
+/* ── მობილურის მენიუს პუნქტების უნიფიცირება ── */
+@media (max-width: 900px) {
+	/* ყველა ლინკი ერთნაირი სიმაღლის და დაშორების */
+	.dropdown-menu .dropdown-link,
+	.nested-menu .dropdown-link {
+		padding: 10px 0 !important;
+		margin: 0 !important;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	/* სიის ელემენტები ერთ ხაზზე */
+	.dropdown-menu li {
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+
+	/* "Raw"-ის და "KC Blog"-ის გასწორება */
+	.dropdown-menu {
+		padding-left: 0 !important; /* მოვაშორეთ ზედმეტი გაწევა */
+	}
+
+	/* თუ გინდა რომ მესამე დონის მენიუები (რომლებიც არ ჩანს) ოდნავ შეწეული იყოს */
+	.nested-menu {
+		margin-left: 20px !important;
+		border-left: 1px solid var(--hairline-strong);
 	}
 }
