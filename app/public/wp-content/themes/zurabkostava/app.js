@@ -802,10 +802,24 @@
     var musicData = typeof zkDynamicMusicData !== 'undefined' ? zkDynamicMusicData : [];
 
     // ── 2. დარენდერების ძრავა ──
+    // ── 2. დარენდერების ძრავა (SPA Proof) ──
     function renderTimeline() {
         var container = document.getElementById('zkMusicTimeline');
-        if (!container) return;
-        if (container.dataset.rendered === 'true') return;
+
+        // თუ კონტეინერი არ არის, ან უკვე დარენდერებულია — ვჩერდებით
+        if (!container || container.dataset.rendered === 'true') return;
+
+        // ── 1. მონაცემების ამოღება პირდაპირ HTML ატრიბუტიდან ──
+        var rawData = container.getAttribute('data-music-payload');
+        if (!rawData) return;
+
+        var musicData = [];
+        try {
+            musicData = JSON.parse(rawData); // ტექსტს ვაქცევთ უკან JS ობიექტად
+        } catch(e) {
+            console.error("Music Timeline Error: ვერ წავიკითხე მონაცემები", e);
+            return;
+        }
 
         var html = '<div class="zk-timeline-line"></div>';
 
@@ -814,40 +828,33 @@
             if (item.mediaType === 'youtube' && item.mediaId) {
                 embedHtml = '<div class="zk-timeline-embed youtube"><iframe src="https://www.youtube.com/embed/' + item.mediaId + '?rel=0&modestbranding=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
             } else if (item.mediaType === 'spotify' && item.mediaId) {
-                embedHtml = '<div class="zk-timeline-embed spotify"><iframe src="http://open.spotify.com/embed/track/' + item.mediaId + '" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe></div>';
+                embedHtml = '<div class="zk-timeline-embed spotify"><iframe src="https://open.spotify.com/embed/track/' + item.mediaId + '" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe></div>';
             }
 
-            // ── კრეატიული Spotify ღილაკის ლოგიკა ──
             var hasSpotify = !!item.spotifyUrl;
             var spotifyClass = hasSpotify ? '' : 'is-disabled';
             var spotifyTag = hasSpotify ? 'a' : 'div';
             var spotifyHref = hasSpotify ? `href="${item.spotifyUrl}" target="_blank" rel="noopener noreferrer"` : '';
             var btnText = hasSpotify ? 'Listen on Spotify' : 'Coming to Spotify';
-
-            // ეკვალაიზერის HTML (ანიმაციური ხაზები)
             var equalizer = `<div class="zk-equalizer"><span class="eq-bar eq-1"></span><span class="eq-bar eq-2"></span><span class="eq-bar eq-3"></span></div>`;
 
             var spotifyBtnHtml = `
                 <${spotifyTag} class="zk-spotify-btn ${spotifyClass}" ${spotifyHref}>
-                    <svg class="spotify-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.24 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.24 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.6.18-1.2.72-1.381 4.26-1.261 11.28-1.02 15.721 1.621.54.3.72.96.42 1.5-.3.54-.96.72-1.56.36z"/>
-                    </svg>
+                    <svg class="spotify-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.24 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.24 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.6.18-1.2.72-1.381 4.26-1.261 11.28-1.02 15.721 1.621.54.3.72.96.42 1.5-.3.54-.96.72-1.56.36z"/></svg>
                     <span class="btn-text">${btnText}</span>
                     ${hasSpotify ? equalizer : ''}
                 </${spotifyTag}>
             `;
 
-            // ── ჟანრის (Genre) HTML-ის გენერაცია ──
-            // თუ ადმინკაში ჟანრი ჩავწერეთ, გამოაჩენს, თუ არადა დატოვებს ცარიელს
-            var genreHtml = item.genre ? `<span class="zk-timeline-tag">${item.genre}</span>` : '';
             var moreBtnHtml = item.moreUrl ? `
                 <a href="${item.moreUrl}" target="_blank" rel="noopener noreferrer" class="zk-more-btn">
                     See more 
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
             ` : '';
+
+            var genreHtml = item.genre ? `<span class="zk-timeline-tag">${item.genre}</span>` : '';
+
             html += `
                 <div class="zk-timeline-node">
                     <div class="zk-timeline-point"><div class="zk-point-core"></div></div>
@@ -860,8 +867,6 @@
                         <p class="zk-timeline-subtitle">${item.subtitle}</p>
                         <div class="zk-timeline-body">${item.description}</div>
                         ${embedHtml}
-                        
-                        <!-- ღილაკების კონტეინერი -->
                         <div class="zk-card-actions">
                             ${spotifyBtnHtml}
                             ${moreBtnHtml}
@@ -876,6 +881,10 @@
     }
 
     renderTimeline();
+
+    // ეს უზრუნველყოფს, რომ სხვა გვერდიდან გადმოსვლისას მუდმივად შეიმოწმოს და დარენდერდეს
+    var observer = new MutationObserver(renderTimeline);
+    observer.observe(document.body, { childList: true, subtree: true });
 
     var viewEl = document.getElementById('view');
     if (viewEl) {

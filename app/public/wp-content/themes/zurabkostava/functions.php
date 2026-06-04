@@ -682,8 +682,10 @@ function zk_music_timeline_shortcode() {
     }
 
     $json_data = wp_json_encode( $music_data );
-    $output = '<div class="zk-timeline-wrapper" id="zkMusicTimeline"></div>';
-    $output .= "<script>var zkDynamicMusicData = {$json_data};</script>";
+    // მონაცემებს ვაქცევთ HTML-ისთვის უსაფრთხო ტექსტად და ვსვამთ პირდაპირ div-ში
+    $escaped_json = htmlspecialchars( $json_data, ENT_QUOTES, 'UTF-8' );
+
+    $output = '<div class="zk-timeline-wrapper" id="zkMusicTimeline" data-music-payload="' . $escaped_json . '"></div>';
 
     return $output;
 }
