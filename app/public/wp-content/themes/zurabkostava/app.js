@@ -525,7 +525,10 @@
                 thumbDiv.className = 'zk-lightbox-thumb-item';
 
                 var thumbImg = document.createElement('img');
-                thumbImg.src = img.src; // იყენებს გრიდის ზომას სისწრაფისთვის
+
+                // ── ვიღებთ მონაცემს სპეციალური ატრიბუტიდან (გვერდს ვუვლით Lazy Load-ს) ──
+                var thumbUrl = img.getAttribute('data-thumb') || img.getAttribute('data-src') || img.src;
+                thumbImg.src = thumbUrl;
                 thumbImg.loading = 'lazy';
 
                 thumbDiv.appendChild(thumbImg);
