@@ -576,3 +576,96 @@ function zk_register_music_timeline_cpt() {
     register_post_type( 'zk_music_release', $args );
 }
 add_action( 'init', 'zk_register_music_timeline_cpt' );
+
+
+/* ============================================================
+   MUSIC TIMELINE - CUSTOM FIELDS (META BOXES)
+   ============================================================ */
+function zk_music_add_meta_box() {
+    add_meta_box(
+        'zk_music_details',
+        'Release Details',
+        'zk_music_meta_callback',
+        'zk_music_release', // ვამაგრებთ შენს ახალ Music Timeline მენიუზე
+        'normal',
+        'high'
+    );
+}
+add_action( 'add_meta_boxes', 'zk_music_add_meta_box' );
+
+// 1. ველების ვიზუალის აწყობა ადმინკაში
+function zk_music_meta_callback( $post ) {
+    // უსაფრთხოების Nonce
+    wp_nonce_field( 'zk_music_save_meta_data', 'zk_music_meta_nonce' );
+
+    // ვიღებთ ბაზაში შენახულ ძველ მნიშვნელობებს (თუ არსებობს)
+    $subtitle    = get_post_meta( $post->ID, '_zk_subtitle', true );
+    $date        = get_post_meta( $post->ID, '_zk_display_date', true );
+    $theme       = get_post_meta( $post->ID, '_zk_theme', true );
+    $media_type  = get_post_meta( $post->ID, '_zk_media_type', true );
+    $media_id    = get_post_meta( $post->ID, '_zk_media_id', true );
+    $spotify_url = get_post_meta( $post->ID, '_zk_spotify_url', true );
+
+    // მარტივი, სუფთა CSS გრიდი WordPress-ის ედიტორისთვის
+    ?>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
+        <div>
+            <label><strong>Display Date</strong> (e.g. 30.03.2026)</label><br>
+            <input type="text" name="zk_display_date" value="<?php echo esc_attr( $date ); ?>" style="width:100%; margin-top:5px;" />
+        </div>
+        <div>
+            <label><strong>Subtitle</strong></label><br>
+            <input type="text" name="zk_subtitle" value="<?php echo esc_attr( $subtitle ); ?>" style="width:100%; margin-top:5px;" />
+        </div>
+        <div>
+            <label><strong>Theme</strong></label><br>
+            <select name="zk_theme" style="width:100%; margin-top:5px;">
+                <option value="nocturne" <?php selected( $theme, 'nocturne' ); ?>>Nocturne</option>
+                <option value="aubade" <?php selected( $theme, 'aubade' ); ?>>Aubade</option>
+            </select>
+        </div>
+        <div>
+            <label><strong>Media Type</strong></label><br>
+            <select name="zk_media_type" style="width:100%; margin-top:5px;">
+                <option value="youtube" <?php selected( $media_type, 'youtube' ); ?>>YouTube</option>
+                <option value="spotify" <?php selected( $media_type, 'spotify' ); ?>>Spotify</option>
+                <option value="none" <?php selected( $media_type, 'none' ); ?>>None</option>
+            </select>
+        </div>
+        <div>
+            <label><strong>Media ID</strong> (YouTube/Spotify ID)</label><br>
+            <input type="text" name="zk_media_id" value="<?php echo esc_attr( $media_id ); ?>" style="width:100%; margin-top:5px;" />
+        </div>
+        <div>
+            <label><strong>Spotify Full URL</strong> (Leave empty for disabled button)</label><br>
+            <input type="url" name="zk_spotify_url" value="<?php echo esc_url( $spotify_url ); ?>" style="width:100%; margin-top:5px;" />
+        </div>
+    </div>
+    <p style="color: #666; font-size: 13px; margin-top: 15px;"><em>Note: The main title and description of the release should be written in the standard WordPress title and text editor above.</em></p>
+    <?php
+}
+
+// 2. მონაცემების უსაფრთხოდ შენახვა ბაზაში
+function zk_music_save_meta_data( $post_id ) {
+    if ( ! isset( $_POST['zk_music_meta_nonce'] ) || ! wp_verify_nonce( $_POST['zk_music_meta_nonce'], 'zk_music_save_meta_data' ) ) {
+        return;
+    }
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) { return; }
+    if ( ! current_user_can( 'edit_post', $post_id ) ) { return; }
+
+    $fields = array(
+        'zk_subtitle'     => '_zk_subtitle',
+        'zk_display_date' => '_zk_display_date',
+        'zk_theme'        => '_zk_theme',
+        'zk_media_type'   => '_zk_media_type',
+        'zk_media_id'     => '_zk_media_id',
+        'zk_spotify_url'  => '_zk_spotify_url',
+    );
+
+    foreach ( $fields as $post_key => $meta_key ) {
+        if ( isset( $_POST[ $post_key ] ) ) {
+            update_post_meta( $post_id, $meta_key, sanitize_text_field( $_POST[ $post_key ] ) );
+        }
+    }
+}
+add_action( 'save_post', 'zk_music_save_meta_data' );
