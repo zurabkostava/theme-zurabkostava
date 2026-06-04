@@ -370,50 +370,72 @@ add_action( 'init', 'zk_force_enable_excerpts', 999 );
 
 
 /* ============================================================
-   ZURAB KOSTAVA - CINEMATIC PHOTOGRAPHY GALLERY (V2)
+   ZURAB KOSTAVA - CINEMATIC PHOTOGRAPHY GALLERY (V3 - API)
    ============================================================ */
 function zk_cinematic_gallery() {
-    // 1. მოგვაქვს სურათები FileBird-ის ფოლდერის ზუსტი სახელებით (Name)
+    // 0. ვამოწმებთ, მუშაობს თუ არა FileBird-ის შიდა API
+    if ( ! class_exists( '\FileBird\Classes\Tree' ) || ! class_exists( '\FileBird\Classes\Helpers' ) ) {
+        return '<p class="page__content" style="color: #ff5555;">FileBird plugin API is not active.</p>';
+    }
+
+    // 1. ვიღებთ ყველა ფოლდერს FileBird-ის ბაზიდან
+    $all_folders = \FileBird\Classes\Tree::getFolders( null );
+    $target_folders = array('Camera Photography', 'Mobile Photography');
+
+    $valid_attachment_ids = array();
+    $attachment_category_map = array(); // აქ შევინახავთ, რომელი ფოტო რომელ ფოლდერშია
+
+    if ( ! empty( $all_folders ) && ( is_array( $all_folders ) || is_object( $all_folders ) ) ) {
+        foreach ( $all_folders as $folder ) {
+            // FileBird სხვადასხვა ვერსიაში სტრუქტურას ცვლის, ამიტომ თავს ვიზღვევთ (Object ან Array)
+            $folder_name = is_object( $folder ) ? $folder->name : ( isset($folder['name']) ? $folder['name'] : '' );
+            $folder_id   = is_object( $folder ) ? $folder->id   : ( isset($folder['id']) ? $folder['id'] : '' );
+
+            if ( in_array( $folder_name, $target_folders ) && ! empty( $folder_id ) ) {
+                // API-ს ვთხოვთ, მოგვცეს ამ კონკრეტული ფოლდერის სურათების ID-ები
+                $att_ids = \FileBird\Classes\Helpers::getAttachmentIdsByFolderId( $folder_id );
+
+                if ( ! empty( $att_ids ) && is_array( $att_ids ) ) {
+                    // ვქმნით CSS კლასს (მაგ: "Camera Photography" -> "filter-camera")
+                    $prefix = strtolower( explode( ' ', $folder_name )[0] );
+                    $cat_class = 'filter-' . $prefix;
+
+                    foreach ( $att_ids as $id ) {
+                        $valid_attachment_ids[] = $id;
+                        $attachment_category_map[$id] = $cat_class;
+                    }
+                }
+            }
+        }
+    }
+
+    if ( empty( $valid_attachment_ids ) ) {
+        return '<p class="page__content" style="color: #ff5555;">No photos found inside FileBird folders "Camera Photography" or "Mobile Photography".</p>';
+    }
+
+    // 2. ახლა უკვე ვეუბნებით WP-ს: "მომეცი მხოლოდ ეს კონკრეტული ID-ები"
     $args = array(
         'post_type'      => 'attachment',
         'post_status'    => 'inherit',
         'post_mime_type' => 'image',
         'posts_per_page' => -1,
-        'tax_query'      => array(
-            array(
-                'taxonomy' => 'fbv',
-                'field'    => 'name', // ვეძებთ ზუსტი სახელით!
-                'terms'    => array('Camera Photography', 'Mobile Photography'),
-                'operator' => 'IN',
-            ),
-        ),
+        'post__in'       => $valid_attachment_ids,
+        'orderby'        => 'date',
+        'order'          => 'DESC'
     );
 
     $query = new WP_Query( $args );
 
-    // ── DEBUG სისტემა: თუ ვერ იპოვა, გვიჩვენოს რა ფოლდერები არსებობს საერთოდ ──
-    if ( ! $query->have_posts() ) {
-        $terms = get_terms( array( 'taxonomy' => 'fbv', 'hide_empty' => false ) );
-        if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
-            $debug_info = '<br><br><strong>FileBird Folders found in DB:</strong><br>';
-            foreach ( $terms as $term ) {
-                $debug_info .= '- ' . $term->name . ' (Slug: ' . $term->slug . ')<br>';
-            }
-            return '<p class="page__content" style="color: #ff5555;">No photos found with those names. ' . $debug_info . '</p>';
-        }
-        return '<p class="page__content">No photos found. FileBird taxonomy (fbv) is not recognized.</p>';
-    }
-
     $output = '<div class="zk-gallery-wrapper">';
 
-    // 2. ფილტრაციის ტაბები (დროებით სლაგების მაგივრად კლასებს გამოვიყენებთ ფილტრაციისთვის)
+    // 3. ფილტრაციის ტაბები (Apple Style Segmented Control)
     $output .= '<div class="zk-gallery-filters">';
     $output .= '<button class="zk-filter-btn is-active" data-filter="all">All Works</button>';
     $output .= '<button class="zk-filter-btn" data-filter="filter-camera">Camera</button>';
     $output .= '<button class="zk-filter-btn" data-filter="filter-mobile">Mobile</button>';
     $output .= '</div>';
 
-    // 3. უშუალოდ ფოტოების გრიდი
+    // 4. უშუალოდ ფოტოების გრიდი
     $output .= '<div class="zk-gallery-grid" id="zkGalleryGrid">';
 
     while ( $query->have_posts() ) {
@@ -423,19 +445,10 @@ function zk_cinematic_gallery() {
         $grid_img = wp_get_attachment_image_url( $image_id, 'large' );
         $full_img = wp_get_attachment_image_url( $image_id, 'full' );
 
-        // ვიღებთ ტერმინის სახელს, რათა JS-ისთვის ფილტრი შევქმნათ
-        $terms = wp_get_object_terms( $image_id, 'fbv' );
-        $cat_class = 'all';
-        if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
-            $term_name = strtolower( $terms[0]->name );
-            if ( strpos( $term_name, 'camera' ) !== false ) {
-                $cat_class = 'filter-camera';
-            } elseif ( strpos( $term_name, 'mobile' ) !== false ) {
-                $cat_class = 'filter-mobile';
-            }
-        }
+        // ვიღებთ ჩვენ მიერ შენახულ კლასს (filter-mobile ან filter-camera)
+        $cat_class = isset( $attachment_category_map[$image_id] ) ? $attachment_category_map[$image_id] : 'all';
 
-        // ვაგენერირებთ EXIF მონაცემებს (თუ აქვს)
+        // EXIF მონაცემები
         $meta = wp_get_attachment_metadata( $image_id );
         $exif_text = '';
         if ( isset( $meta['image_meta'] ) ) {
@@ -449,8 +462,8 @@ function zk_cinematic_gallery() {
             }
         }
 
-        // ვხატავთ ფოტოს HTML-ს
-        $output .= '<div class="zk-gallery-item" data-category="' . esc_attr( $cat_class ) . '">';
+        // HTML (data-category მიბმულია ფილტრაციისთვის)
+        $output .= '<div class="zk-gallery-item ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '">';
         $output .= '<div class="zk-gallery-image-wrap">';
         $output .= '<img src="' . esc_url( $grid_img ) . '" data-full="' . esc_url( $full_img ) . '" data-exif="' . esc_attr( $exif_text ) . '" alt="Photography by Zurab Kostava" loading="lazy">';
         $output .= '</div></div>';
@@ -458,7 +471,7 @@ function zk_cinematic_gallery() {
     wp_reset_postdata();
     $output .= '</div></div>';
 
-    // 4. Cinematic Lightbox (დამალული)
+    // 5. Cinematic Lightbox (დამალული)
     $output .= '<div class="zk-lightbox" id="zkLightbox" aria-hidden="true">';
     $output .= '<button class="zk-lightbox-close" aria-label="Close">✕</button>';
     $output .= '<img class="zk-lightbox-img" src="" alt="">';
