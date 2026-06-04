@@ -1356,18 +1356,23 @@ body.zk-lb-open { overflow: hidden; }
 }
 
 
-zk-bento-box {
+
+.zk-bento-box {
 	background: rgba(255, 255, 255, 0.02);
 	border: 1px solid var(--hairline);
 	border-radius: 16px;
 	padding: 32px;
-	transition: transform 0.4s var(--ease), border-color 0.4s var(--ease), box-shadow 0.4s var(--ease);
+	/* ── აქ შემოდის ულტრა-რბილი, ელასტიური ანიმაცია (0.6s) ── */
+	transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+	border-color 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+	box-shadow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .zk-bento-box:hover {
 	border-color: rgba(255, 255, 255, 0.1);
-	transform: translateY(-4px);
-	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+	/* 4px-ის ნაცვლად ავწიოთ მხოლოდ 2px-ით და ჩრდილიც დავარბილოთ */
+	transform: translateY(-2px);
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
 }
 
 /* რომ მესამე ბლოკმა სრული სიგანე დაიკავოს */
@@ -1397,45 +1402,57 @@ zk-bento-box {
 	text-transform: uppercase;
 }
 
-/* ── Vitals List (with Icons & Links) ── */
-.zk-vitals-list {
-	list-style: none; /* წერტილების გაქრობა */
-	padding: 0;
-	margin: 0 0 32px 0;
+/* ── Vitals List (წერტილების იძულებითი გათიშვა) ── */
+.zk-vitals-list,
+.zk-vitals-list li {
+	list-style: none !important;
+	list-style-type: none !important;
 }
 
+.zk-vitals-list {
+	padding: 0 !important;
+	margin: 0 0 32px 0 !important;
+}
+
+/* კლავს WordPress-ის თემის მიერ ჩუმად დამატებულ წერტილებს */
+.zk-vitals-list li::before,
+.zk-vitals-list li::after {
+	content: none !important;
+	display: none !important;
+}
 .zk-vitals-list li {
 	display: flex;
-	align-items: flex-start; /* იკონის და ტექსტის გასწორება */
+	align-items: flex-start;
 	gap: 12px;
 	margin-bottom: 16px;
 	font-size: 0.95rem;
 	color: var(--text-muted);
+	padding-left: 0 !important; /* აუქმებს თემის დამატებულ სივრცეს */
 }
-
 /* იკონის სტილი */
+/* იკონის სტილი (იგივე რჩება) */
 .zk-vital-icon {
 	width: 18px;
 	height: 18px;
-	min-width: 18px; /* რომ არ შეიკუმშოს გრძელ ტექსტზე */
+	min-width: 18px;
 	color: var(--text-dim);
-	margin-top: 3px; /* ოდნავ ქვემოთ ჩამოწევა ტექსტის ცენტრში მოსაქცევად */
+	margin-top: 3px;
 }
 
-/* ტექსტის განაწილება სვეტებად */
+/* ტექსტის განაწილება სვეტებად (იგივე რჩება) */
 .zk-vital-text {
 	display: flex;
-	flex-wrap: wrap; /* მობილურზე რომ არ გაიჭედოს */
+	flex-wrap: wrap;
 	gap: 8px;
 }
 
 .zk-vital-text strong {
 	color: #fff;
-	min-width: 90px; /* აიძულებს მარჯვენა ტექსტს ზუსტად ერთ ვერტიკალზე დალაგდეს */
+	min-width: 90px;
 	font-weight: 500;
 }
 
-/* ლინკების ვიზუალი (EMIS, Kostava Creative) */
+/* ლინკების ვიზუალი (იგივე რჩება) */
 .zk-vital-text a {
 	color: #fff;
 	text-decoration: none;
@@ -1447,6 +1464,8 @@ zk-bento-box {
 	color: var(--text-muted);
 	border-bottom-color: #fff;
 }
+
+
 
 /* ── Social Bar ── */
 .zk-social-bar {
