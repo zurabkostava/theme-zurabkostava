@@ -818,6 +818,16 @@ function zk_about_page_shortcode() {
                                     <li>[Musician 5]</li>
                                 </ol>
                             </div>
+                            <div class="zk-fav-col">
+                                <h4>📚 Books</h4>
+                                <ol>
+                                    <li>[Book 1]</li>
+                                    <li>[Book 2]</li>
+                                    <li>[Book 3]</li>
+                                    <li>[Book 4]</li>
+                                    <li>[Book 5]</li>
+                                </ol>
+                            </div>
                         </div>
                     </div>
 
