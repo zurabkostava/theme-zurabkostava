@@ -262,10 +262,19 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	.dropdown-link:hover, .dropdown-link:focus-visible { background: none; padding-left: 0; color: #fff; }
 
 	.nested-menu {
-		margin-left: 14px;
-		border-left: none !important; /* ხაზი გაქრება */
-		padding-left: 10px;           /* დაშორება უფრო დაბალანსებული იქნება */
-		margin-top: 4px;              /* ზემოდანაც დავუმატოთ ოდნავ სივრცე */
+		margin-left: 20px;       /* დაშორება, რომ ტექსტი გასწორდეს ზედა პუნქტთან */
+		padding-left: 14px;      /* შიდა დაშორება */
+		border-left: none;       /* თავიდან ხაზი არ ჩანს */
+		transition: border-color 0.3s ease;
+	}
+	/* ხაზი ჩნდება მხოლოდ მაშინ, როცა მენიუ გახსნილია */
+	.has-nested-dropdown.open > .nested-menu {
+		border-left: 1px solid var(--hairline-strong);
+	}
+	/* ── დაშორებების გასწორება ── */
+	.nested-menu .dropdown-link {
+		padding: 9px 0;          /* იგივე პადინგი რაც ზედა მენიუს აქვს */
+		font-size: 1.1rem;       /* ოდნავ პატარა ტექსტი იერარქიისთვის */
 	}
 	.nested-caret { transform: none; opacity: 0.5; transition: transform 0.3s var(--ease); }
 	.dropdown-link:hover .nested-caret { opacity: 1; }
