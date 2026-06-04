@@ -811,7 +811,7 @@
                 <p>This is a short announcement for my first piano album. This is just the first step. More genres, more music, more to come.</p>
             `,
             mediaType: "youtube",
-            mediaId: "YOUR_YOUTUBE_VIDEO_ID",
+            mediaId: "DXFjN3g_WZw",
 
             // ── ახალი: Spotify ლინკი (თუ ცარიელი დატოვებ "", ღილაკი გაითიშება) ──
             spotifyUrl: ""
