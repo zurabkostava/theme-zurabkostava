@@ -1046,7 +1046,7 @@ function zk_about_page_shortcode() {
                     <?php
                     // აქ იძახებს ჩვენს დაწერილ PHP ფუნქციას.
                     // !მნიშვნელოვანია! რიცხვი 2 უნდა შეცვალო შენი ფოლდერის ნამდვილი ID-ით
-                    echo zk_get_filebird_gallery( 2 );
+                    echo zk_get_filebird_gallery( 5 );
                     ?>
                 </div>
             </div>
