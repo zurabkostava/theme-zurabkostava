@@ -727,6 +727,7 @@ html.zk-img-js .zk-post-hero.is-loaded { opacity: 1; }
 .zk-lightbox.is-open {
 	opacity: 1; visibility: visible; pointer-events: auto;
 	/* გახსნისას visibility მომენტალურად ერთვება */
+	margin-top: 0;
 	transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s;
 }
 /* Lock the page behind the lightbox. Desktop already hides the native scrollbar,
