@@ -492,20 +492,13 @@
 
 
 /* ============================================================
-   CINEMATIC PHOTOGRAPHY GALLERY — LOGIC (V3, leak-free + flash-free)
-   ------------------------------------------------------------
-   • One persistent keydown listener — no per-navigation leaks.
-   • Full-res preload before reveal — the focus-pull never shows a FOUC.
-   • Container-only thumbnail centering — no page-scroll jitter.
-   • Batched, race-safe masonry filtering (single reflow per change).
+   CINEMATIC PHOTOGRAPHY GALLERY — LOGIC (V4, Perfect Sync)
    ============================================================ */
 (function () {
     var REDUCE  = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var current = null; // controller for the gallery in the live DOM (or null)
+    var current = null;
 
-    function delay(ms) {
-        return new Promise(function (r) { ms ? setTimeout(r, ms) : r(); });
-    }
+    function delay(ms) { return new Promise(function (r) { ms ? setTimeout(r, ms) : r(); }); }
     function preload(url) {
         return new Promise(function (resolve) {
             if (!url) { resolve(); return; }
@@ -516,8 +509,6 @@
         });
     }
 
-    /* Bound ONCE — reads whichever gallery is currently live. No re-binding
-       per SPA navigation, so arrow/Escape handlers can never stack up. */
     document.addEventListener('keydown', function (e) {
         if (!current || !current.isOpen()) return;
         if (e.key === 'Escape') { current.close(); }
@@ -527,8 +518,8 @@
 
     function initGallery() {
         var wrap = document.querySelector('.zk-gallery-wrapper');
-        if (!wrap) { current = null; return; }     // navigated away from the gallery
-        if (wrap.dataset.zkReady === '1') return;   // this DOM is already wired
+        if (!wrap) { current = null; return; }
+        if (wrap.dataset.zkReady === '1') return;
         var lightbox = document.getElementById('zkLightbox');
         if (!lightbox) { current = null; return; }
         wrap.dataset.zkReady = '1';
@@ -547,11 +538,10 @@
         var activeItems = allItems.slice();
         var thumbEls    = [];
         var index       = 0;
-        var swapToken   = 0; // cancels superseded image swaps
-        var filterToken = 0; // cancels superseded filter passes
+        var swapToken   = 0;
+        var filterToken = 0;
         var lastFocus   = null;
 
-        /* ---- Thumbnail strip: batched build (one reflow) + delegated clicks ---- */
         function buildThumbnails() {
             var frag = document.createDocumentFragment();
             thumbEls = [];
@@ -571,6 +561,7 @@
             thumbs.innerHTML = '';
             thumbs.appendChild(frag);
         }
+
         thumbs.addEventListener('click', function (e) {
             var cell = e.target.closest('.zk-lightbox-thumb-item');
             if (!cell) return;
@@ -579,43 +570,60 @@
             if (i > -1) show(i);
         });
 
-        function centerThumb(cell) {
+        // ── სინქრონიზაციის ბაგის გასწორება ──
+        function centerThumb(cell, isInitial) {
             if (!cell) return;
-            // Scroll ONLY the strip (CSS scroll-behavior animates it) — never
-            // scrollIntoView, which would also nudge the page behind = jitter.
-            var target = cell.offsetLeft - (thumbs.clientWidth - cell.offsetWidth) / 2;
-            thumbs.scrollLeft = target < 0 ? 0 : target;
+            // ვაძლევთ 50ms დაყოვნებას, რომ ბრაუზერმა მოასწროს CSS-ის დახატვა და გამოთვლა
+            setTimeout(function() {
+                var target = cell.offsetLeft - (thumbs.clientWidth - cell.offsetWidth) / 2;
+                target = target < 0 ? 0 : target;
+
+                if (isInitial) {
+                    // გახსნისას ეგრევე ვსვამთ (smooth-ის გარეშე), რომ ნულიდან არ დაიწყოს სრიალი
+                    var prevBehavior = thumbs.style.scrollBehavior;
+                    thumbs.style.scrollBehavior = 'auto';
+                    thumbs.scrollLeft = target;
+                    // მყისიერად ვუბრუნებთ სმუზ სქროლს შემდგომი კლიკებისთვის
+                    requestAnimationFrame(function() {
+                        thumbs.style.scrollBehavior = prevBehavior;
+                    });
+                } else {
+                    thumbs.scrollLeft = target;
+                }
+            }, 50);
         }
-        function markActiveThumb() {
+
+        function markActiveThumb(isInitial) {
             for (var i = 0; i < thumbEls.length; i++) {
                 thumbEls[i].classList.toggle('is-active', i === index);
             }
-            centerThumb(thumbEls[index]);
+            centerThumb(thumbEls[index], isInitial);
         }
 
-        /* ---- Image swap: preload → focus-pull. No flash; rapid swaps are safe. ---- */
         function show(i, opts) {
             opts = opts || {};
             var n = activeItems.length;
             if (!n) return;
-            index = ((i % n) + n) % n; // infinite wrap, NaN-proof
+            index = ((i % n) + n) % n;
+
+            // ── ვააქტიურებთ თამბნეილს მომენტალურად! ──
+            markActiveThumb(opts.initial);
+
             var img   = activeItems[index].querySelector('img');
             var full  = img.getAttribute('data-full');
             var exif  = img.getAttribute('data-exif') || '';
             var token = ++swapToken;
             var hadImage = lbImg.classList.contains('is-ready');
 
-            lbImg.classList.remove('is-ready'); // begin exit (or stay hidden on open)
+            lbImg.classList.remove('is-ready');
             var waitExit = (hadImage && !opts.initial && !REDUCE) ? 260 : 0;
 
             Promise.all([preload(full), delay(waitExit)]).then(function () {
-                if (token !== swapToken) return; // a newer swap superseded this one
+                if (token !== swapToken) return;
                 lbImg.src = full;
                 lbImg.alt = img.alt || '';
                 lbExif.textContent = exif;
-                markActiveThumb();
-                // Two frames so the new src + exit-state are committed before we
-                // sharpen, guaranteeing the focus-pull animates onto a real frame.
+
                 requestAnimationFrame(function () {
                     requestAnimationFrame(function () {
                         if (token === swapToken) lbImg.classList.add('is-ready');
@@ -626,12 +634,11 @@
         function next() { show(index + 1); }
         function prev() { show(index - 1); }
 
-        /* ---- Open / close ---- */
         function open(i) {
             lastFocus = document.activeElement;
             lightbox.classList.add('is-open');
             lightbox.setAttribute('aria-hidden', 'false');
-            document.body.classList.add('zk-lb-open'); // CSS locks page scroll
+            document.body.classList.add('zk-lb-open');
             show(i, { initial: true });
             if (closeBtn) closeBtn.focus({ preventScroll: true });
         }
@@ -639,8 +646,8 @@
             lightbox.classList.remove('is-open');
             lightbox.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('zk-lb-open');
-            lbImg.classList.remove('is-ready'); // photo eases out with the backdrop
-            swapToken++;                        // cancel any in-flight swap
+            lbImg.classList.remove('is-ready');
+            swapToken++;
             setTimeout(function () {
                 if (!lightbox.classList.contains('is-open')) lbImg.removeAttribute('src');
             }, 600);
@@ -648,7 +655,6 @@
         }
         function isOpen() { return lightbox.classList.contains('is-open'); }
 
-        /* ---- Filtering: class-based, single batched reflow, race-safe ---- */
         function settleHide(item, myToken) {
             var done = false;
             function finish() {
@@ -656,7 +662,6 @@
                 done = true;
                 item.removeEventListener('transitionend', onEnd);
                 clearTimeout(timer);
-                // Only pull it from flow if this pass still stands and it's still hidden.
                 if (myToken === filterToken && item.classList.contains('is-hidden')) {
                     item.style.display = 'none';
                     item.classList.remove('is-animating');
@@ -664,7 +669,7 @@
             }
             function onEnd(e) { if (e.propertyName === 'opacity') finish(); }
             item.addEventListener('transitionend', onEnd);
-            var timer = setTimeout(finish, 650); // fallback if transitionend never fires
+            var timer = setTimeout(finish, 650);
         }
 
         function applyFilter(filter) {
@@ -680,7 +685,7 @@
                     if (hidden) {
                         item.classList.add('is-animating');
                         if (item.style.display === 'none') item.style.display = '';
-                        toShow.push(item); // un-hide together after a single reflow
+                        toShow.push(item);
                     }
                 } else if (!hidden) {
                     item.classList.add('is-animating', 'is-hidden');
@@ -689,7 +694,7 @@
             });
 
             if (toShow.length) {
-                void grid.offsetWidth; // ONE forced reflow commits the hidden state
+                void grid.offsetWidth;
                 requestAnimationFrame(function () {
                     if (myToken !== filterToken) return;
                     toShow.forEach(function (item) { item.classList.remove('is-hidden'); });
@@ -698,14 +703,12 @@
             buildThumbnails();
         }
 
-        // Release the transient compositor hint once a fade-in settles.
         grid.addEventListener('transitionend', function (e) {
             if (e.propertyName !== 'opacity') return;
             var item = e.target.closest('.zk-gallery-item');
             if (item && !item.classList.contains('is-hidden')) item.classList.remove('is-animating');
         });
 
-        /* ---- Wire up ---- */
         buttons.forEach(function (btn) {
             btn.addEventListener('click', function () {
                 if (btn.classList.contains('is-active')) return;
@@ -722,7 +725,7 @@
         grid.addEventListener('click', function (e) {
             var item = e.target.closest('.zk-gallery-item');
             if (!item) return;
-            var i = activeItems.indexOf(item); // -1 for a mid-fade item → ignored
+            var i = activeItems.indexOf(item);
             if (i > -1) open(i);
         });
 
@@ -737,8 +740,6 @@
 
     initGallery();
 
-    // SPA compatibility — re-init after each view swap (idempotent + leak-free).
     var viewEl = document.getElementById('view');
     if (viewEl) new MutationObserver(initGallery).observe(viewEl, { childList: true });
 })();
-
