@@ -542,41 +542,51 @@ add_action( 'delete_attachment', 'zk_flush_gallery_cache' );
 
 
 /* ============================================================
-   MUSIC TIMELINE SHORTCODE
+   MUSIC TIMELINE SHORTCODE (Dynamic JSON Injector)
    ============================================================ */
 function zk_music_timeline_shortcode() {
-    return '<div class="zk-timeline-wrapper" id="zkMusicTimeline"></div>';
+    // 1. მოგვაქვს ყველა რელიზი ბაზიდან (ახლები პირველ რიგში - DESC)
+    $args = array(
+            'post_type'      => 'zk_music_release',
+            'posts_per_page' => -1,
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+    );
+    $query = new WP_Query( $args );
+    $music_data = array();
+
+    if ( $query->have_posts() ) {
+        while ( $query->have_posts() ) {
+            $query->the_post();
+            $post_id = get_the_ID();
+
+            // 2. ვქმნით ზუსტად იმ სტრუქტურას, რასაც ჩვენი JS ელოდება
+            $music_data[] = array(
+                    'id'          => 'release-' . $post_id,
+                    'displayDate' => get_post_meta( $post_id, '_zk_display_date', true ),
+                    'theme'       => get_post_meta( $post_id, '_zk_theme', true ),
+                    'title'       => get_the_title(),
+                    'subtitle'    => get_post_meta( $post_id, '_zk_subtitle', true ),
+                // apply_filters უზრუნველყოფს, რომ ადმინკაში გაკეთებული აბზაცები (Enter) დაცული იყოს
+                    'description' => apply_filters( 'the_content', get_the_content() ),
+                    'mediaType'   => get_post_meta( $post_id, '_zk_media_type', true ),
+                    'mediaId'     => get_post_meta( $post_id, '_zk_media_id', true ),
+                    'spotifyUrl'  => get_post_meta( $post_id, '_zk_spotify_url', true ),
+            );
+        }
+        wp_reset_postdata();
+    }
+
+    // 3. PHP მასივს ვაქცევთ JavaScript-ის JSON ობიექტად
+    $json_data = wp_json_encode( $music_data );
+
+    // 4. ვბეჭდავთ HTML-ს და უხილავად ვატანთ JS ცვლადს
+    $output = '<div class="zk-timeline-wrapper" id="zkMusicTimeline"></div>';
+    $output .= "<script>var zkDynamicMusicData = {$json_data};</script>";
+
+    return $output;
 }
 add_shortcode( 'zk_music', 'zk_music_timeline_shortcode' );
-
-
-/* ============================================================
-   MUSIC TIMELINE - CUSTOM POST TYPE
-   ============================================================ */
-function zk_register_music_timeline_cpt() {
-    $labels = array(
-        'name'               => 'Music Timeline',
-        'singular_name'      => 'Release',
-        'menu_name'          => 'Music Timeline',
-        'add_new'            => 'Add New Release',
-        'add_new_item'       => 'Add New Release',
-        'edit_item'          => 'Edit Release',
-        'all_items'          => 'All Releases',
-    );
-
-    $args = array(
-        'labels'             => $labels,
-        'public'             => false, // არ გვინდა რომ ცალკე გვერდებად იხსნებოდეს
-        'show_ui'            => true,  // ადმინკაში გამოჩნდეს
-        'menu_icon'          => 'dashicons-format-audio',
-        'supports'           => array( 'title', 'editor' ), // გვჭირდება მხოლოდ სათაური და ტექსტი
-        'has_archive'        => false,
-    );
-
-    register_post_type( 'zk_music_release', $args );
-}
-add_action( 'init', 'zk_register_music_timeline_cpt' );
-
 
 /* ============================================================
    MUSIC TIMELINE - CUSTOM FIELDS (META BOXES)

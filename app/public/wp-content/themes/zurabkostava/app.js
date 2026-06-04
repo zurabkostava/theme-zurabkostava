@@ -797,26 +797,9 @@
    ============================================================ */
 (function() {
     // ── 1. შენი მუსიკალური მონაცემთა ბაზა ──
-    var musicData = [
-        {
-            id: "the-last-nocturne",
-            date: "2026-03-30",
-            displayDate: "30.03.2026",
-            theme: "nocturne",
-            title: "The Last Nocturne",
-            subtitle: "From First Piano Album",
-            description: `
-                <p>I’m dropping my first new piece of music: a 2-minute piano composition written in a single day.</p>
-                <p>It’s small. It’s personal. And it means everything to me.</p>
-                <p>This is a short announcement for my first piano album. This is just the first step. More genres, more music, more to come.</p>
-            `,
-            mediaType: "youtube",
-            mediaId: "DXFjN3g_WZw",
-
-            // ── ახალი: Spotify ლინკი (თუ ცარიელი დატოვებ "", ღილაკი გაითიშება) ──
-            spotifyUrl: ""
-        }
-    ];
+    // ── 1. შენი მუსიკალური მონაცემთა ბაზა (ახლა უკვე დინამიური!) ──
+    // ვამოწმებთ, მოგვაწოდა თუ არა PHP-მ მონაცემები, თუ არა — ცარიელ მასივს ვტოვებთ.
+    var musicData = typeof zkDynamicMusicData !== 'undefined' ? zkDynamicMusicData : [];
 
     // ── 2. დარენდერების ძრავა ──
     function renderTimeline() {
