@@ -501,8 +501,11 @@
         var items = gallery.querySelectorAll('.zk-gallery-item');
 
         // 1. ფილტრაცია (Seamless Masonry Sort)
+        // 1. ფილტრაცია (Snappy & Clean Masonry Sort)
         buttons.forEach(function(btn) {
             btn.addEventListener('click', function() {
+                if (this.classList.contains('is-active')) return; // თუ ისედაც ეგაა არჩეული, არაფერს ვშვრებით
+
                 var filter = this.getAttribute('data-filter');
 
                 buttons.forEach(function(b) { b.classList.remove('is-active'); });
@@ -510,19 +513,30 @@
 
                 items.forEach(function(item) {
                     var cat = item.getAttribute('data-category');
-                    if (filter === 'all' || cat === filter) {
-                        item.style.position = 'relative';
+                    var isMatch = (filter === 'all' || cat === filter);
+
+                    if (isMatch) {
+                        // ── გამოჩენა ──
+                        if (item.style.display === 'none') {
+                            item.style.display = ''; // ვაბრუნებთ გრიდში
+                            void item.offsetWidth;   // Voodoo Magic: ვაიძულებთ ბრაუზერს მომენტალურად გამოთვალოს სვეტები!
+                        }
                         item.style.opacity = '1';
                         item.style.transform = 'scale(1)';
                         item.style.pointerEvents = 'auto';
                     } else {
+                        // ── დამალვა ──
                         item.style.opacity = '0';
                         item.style.transform = 'scale(0.9)';
                         item.style.pointerEvents = 'none';
-                        // რათა სივრცე გაათავისუფლოს და სვეტები შეიკრას
+
+                        // როგორც კი გაქრება (300ms), საერთოდ ვიღებთ ნაკადიდან, რომ სვეტები შეიკრას
                         setTimeout(function() {
-                            if (item.style.opacity === '0') item.style.position = 'absolute';
-                        }, 400);
+                            if (item.style.opacity === '0') {
+                                item.style.display = 'none';
+                                item.style.position = ''; // ვასუფთავებთ ძველ ნაგავს
+                            }
+                        }, 300);
                     }
                 });
             });
