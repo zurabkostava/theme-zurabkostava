@@ -1626,32 +1626,33 @@ body.zk-lb-open { overflow: hidden; }
 	border-bottom-color: rgba(255, 255, 255, 0.4);
 }
 
-/* ── 8. Tab 3: Masonry Gallery & Legacy ── */
-.zk-masonry-gallery {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-	gap: 20px;
+/* ── 8. Tab 3: Life & Captures (FileBird Integration) ── */
+
+.zk-filebird-gallery-wrapper {
+	margin-top: 20px;
+	position: relative;
+	z-index: 1;
 }
 
-.zk-img-dummy {
-	width: 100%; height: 200px;
-	background: rgba(255,255,255,0.02);
-	border: 1px dashed var(--hairline-strong);
-	border-radius: 12px;
-	display: flex; align-items: center; justify-content: center;
-	color: var(--text-dim);
-	transition: transform 0.3s var(--ease);
+/* FileBird-ის ფოტოების იძულებითი მორგება შენს Cinematic სტილზე */
+.zk-filebird-gallery-wrapper img {
+	border-radius: 12px !important;
+	border: 1px solid rgba(255, 255, 255, 0.05) !important;
+	filter: contrast(1.1) grayscale(15%) !important; /* ოდნავ ჩამქრალი ფერები, კინემატოგრაფიული ეფექტისთვის */
+	transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.5s var(--ease), box-shadow 0.5s var(--ease) !important;
 }
 
-.zk-img-dummy:hover {
-	transform: scale(1.02);
+.zk-filebird-gallery-wrapper img:hover {
+	transform: scale(1.02) !important; /* ჰოვერზე ოდნავ მოახლოება */
+	filter: contrast(1) grayscale(0%) !important; /* ორიგინალი ფერების დაბრუნება */
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+	z-index: 2;
 }
 
-/* Legacy / Backup Identity Classes (In case needed) */
-.zk-id-name { font-size: 2.5rem; margin-bottom: 5px; font-weight: 600; }
-.zk-id-roles { font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 24px; font-weight: 600; }
-.zk-id-bio { font-size: 1.2rem; color: #fff; line-height: 1.5; margin-bottom: 24px; }
-.zk-image-placeholder { width: 100%; aspect-ratio: 4/5; background: rgba(255,255,255,0.02); border: 1px solid var(--hairline); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); }
+/* თუ FileBird-ს თავისი Background აქვს, ვაუქმებთ, რომ სუფთა გამოჩნდეს */
+.zk-filebird-gallery-wrapper .filebird-gallery-item {
+	background: transparent !important;
+}
 
 /* ============================================================
    RESPONSIVE (MEDIA QUERIES)
