@@ -275,19 +275,202 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .page__title { font-size: clamp(2.4rem, 7vw, 4.6rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.04; margin-bottom: 24px; }
 .page__description { font-size: clamp(1.1rem, 2vw, 1.25rem); font-weight: 300; color: var(--text-muted); max-width: 68ch; margin-top: -12px; margin-bottom: 36px; line-height: 1.6; letter-spacing: 0.01em; }
 
-.page__content { color: var(--text-muted); font-weight: 300; font-size: clamp(1.02rem, 2vw, 1.2rem); }
-.page__content > :first-child { margin-top: 0; }
-.page__content > * + * { margin-top: 1.15em; }
-.page__content > p, .page__content > ul, .page__content > ol, .page__content > blockquote, .page__content > h2, .page__content > h3 { max-width: 68ch; }
-.page__content h2 { margin-top: 1.8em; color: var(--text); font-weight: 600; font-size: clamp(1.4rem, 3vw, 2rem); letter-spacing: -0.01em; line-height: 1.2; }
-.page__content h3 { margin-top: 1.5em; color: var(--text); font-weight: 600; font-size: 1.2rem; }
-.page__content a { color: #fff; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(255, 255, 255, 0.35); transition: text-decoration-color 0.3s var(--ease); }
-.page__content a:hover { text-decoration-color: #fff; }
-.page__content img { border-radius: 14px; margin-top: 1.4em; }
-.page__content ul, .page__content ol { padding-left: 1.3em; }
-.page__content li + li { margin-top: 0.4em; }
-.page__content blockquote { border-left: 2px solid var(--hairline-strong); padding-left: 1.2em; color: var(--text); font-style: italic; }
+/* ============================================================
+   PREMIUM EDITORIAL CONTENT  —  the_content() output
+   Long-form reading experience inside .page__content (single
+   posts & pages). Tuned like a digital magazine: a tight
+   reading measure for text, media that breathes wider.
+   ============================================================ */
+.page__content {
+	/* Layout measures — text stays tight, media breaks out wider */
+	--measure:        68ch;               /* comfortable line length      */
+	--measure-media:  min(100%, 60rem);   /* default figures / video      */
+	--measure-wide:   min(100%, 72rem);   /* .alignwide breakout          */
+
+	color: var(--text-muted);
+	font-weight: 300;
+	font-size: clamp(1.05rem, 0.99rem + 0.4vw, 1.2rem);
+	line-height: 1.78;
+	letter-spacing: 0.012em;
+	overflow-wrap: break-word;            /* long URLs never break layout */
+}
+.page__content::after { content: ""; display: block; clear: both; }  /* contain floats */
+
+/* ── Vertical rhythm (lobotomised-owl baseline) ──────────────── */
+.page__content > * + * { margin-top: 1.4em; }
+.page__content p { text-wrap: pretty; }
+
+/* ── Reading measure — keep running text in a tight column ────── */
+.page__content :is(p, ul, ol, dl, h2, h3, h4, h5, h6, blockquote, pre) { max-width: var(--measure); }
+
+/* ── Headings — breathing room + full contrast ───────────────── */
+.page__content :is(h2, h3, h4) { color: var(--text); font-weight: 600; line-height: 1.22; letter-spacing: -0.015em; text-wrap: balance; }
+.page__content h2 { margin-top: 2.2em; font-size: clamp(1.5rem, 1.12rem + 1.5vw, 2.1rem); }
+.page__content h3 { margin-top: 1.9em; font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.55rem); }
+.page__content h4 { margin-top: 1.6em; font-size: clamp(1.1rem, 1rem + 0.4vw, 1.25rem); letter-spacing: -0.01em; }
+.page__content :is(h2, h3, h4) + * { margin-top: 0.75em; }  /* hug the following text */
+
+/* ── Lead paragraph — subtle editorial stand-first ───────────── */
+.page__content > p:first-of-type { font-size: 1.12em; line-height: 1.62; color: rgba(255, 255, 255, 0.74); }
+
+/* ── Inline links — premium animated underline (never plain blue) */
+.page__content a {
+	color: var(--text);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-decoration-color: var(--text-dim);
+	text-underline-offset: 0.22em;
+	transition: text-decoration-color 0.35s var(--ease), text-underline-offset 0.35s var(--ease);
+}
+.page__content a:hover { text-decoration-color: var(--text); text-underline-offset: 0.3em; }
+
+/* ── Lists — custom muted markers, clean indentation ─────────── */
+.page__content :is(ul, ol) { padding-left: 1.5em; }
+.page__content li + li { margin-top: 0.5em; }
+.page__content li > :is(ul, ol) { margin-top: 0.5em; }
+.page__content ul { list-style: none; }
+.page__content ul > li { position: relative; }
+.page__content ul > li::before {
+	content: ""; position: absolute; left: -1.05em; top: 0.72em;
+	width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim);
+}
+.page__content ol { list-style: decimal; }
+.page__content ol > li::marker { color: var(--text-dim); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* ── Blockquote — cinematic pull-aside ───────────────────────── */
+.page__content blockquote {
+	position: relative;
+	margin: 2.4em 0;
+	padding: clamp(1.1rem, 2.2vw, 1.6rem) clamp(1.3rem, 3vw, 2rem);
+	border-left: 2px solid var(--hairline-strong);
+	border-radius: 0 14px 14px 0;
+	background: rgba(255, 255, 255, 0.025);
+	color: var(--text);
+	font-style: italic;
+	font-weight: 300;
+	font-size: 1.18em;
+	line-height: 1.55;
+	letter-spacing: 0.005em;
+}
+.page__content blockquote > :first-child { margin-top: 0; }
+.page__content blockquote p { max-width: none; }
+.page__content blockquote::before {
+	content: "\201C";                     /* faint watermark quotation mark */
+	position: absolute; top: 0.05em; left: 0.35em;
+	font-size: 3.2em; line-height: 1;
+	color: var(--hairline-strong);
+	pointer-events: none; user-select: none;
+}
+.page__content :is(blockquote cite, blockquote .wp-block-quote__citation) {
+	display: block; margin-top: 1.1em;
+	font-style: normal; font-size: 0.72rem; font-weight: 600;
+	letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim);
+}
+.page__content :is(blockquote cite, blockquote .wp-block-quote__citation)::before { content: "— "; }
+
+/* Pull-quote — centred, hairline-framed, oversized */
+.page__content .wp-block-pullquote {
+	max-width: var(--measure-media);
+	margin: 2.8em 0;
+	padding: clamp(1.6rem, 4vw, 2.6rem) 0;
+	border-top: 1px solid var(--hairline-strong);
+	border-bottom: 1px solid var(--hairline-strong);
+	text-align: center;
+}
+.page__content .wp-block-pullquote blockquote {
+	max-width: none; margin: 0; padding: 0;
+	border: 0; border-radius: 0; background: none;
+	font-size: clamp(1.5rem, 1rem + 2.2vw, 2.2rem); line-height: 1.3;
+}
+.page__content .wp-block-pullquote blockquote::before { content: none; }
+
+/* ── Rich media — images, figures, captions ──────────────────── */
+.page__content :is(img, video) { max-width: 100%; height: auto; border-radius: 14px; }
+.page__content iframe { max-width: 100%; }
+.page__content :is(figure, .wp-block-image, .wp-caption) { max-width: var(--measure-media); margin: 2.6em 0; }
+.page__content :is(.wp-block-image, .wp-caption) { width: -moz-fit-content; width: fit-content; }  /* caption hugs image */
+.page__content :is(figcaption, .wp-caption-text, .wp-element-caption) {
+	margin-top: 0.9em;
+	font-size: 0.72rem; font-weight: 500;
+	letter-spacing: 0.1em; text-transform: uppercase;
+	line-height: 1.5; color: var(--text-dim);
+}
+
+/* Responsive video embeds (YouTube / Vimeo, etc.) */
+.page__content :is(.wp-block-embed, .wp-block-video) { max-width: var(--measure-media); margin: 2.6em 0; }
+.page__content .wp-block-video video { width: 100%; }
+.page__content [class*="wp-embed-aspect"] .wp-block-embed__wrapper { position: relative; overflow: hidden; border-radius: 14px; }
+.page__content [class*="wp-embed-aspect"] .wp-block-embed__wrapper::before { content: ""; display: block; padding-top: 56.25%; }
+.page__content .wp-embed-aspect-4-3 .wp-block-embed__wrapper::before { padding-top: 75%; }
+.page__content .wp-embed-aspect-21-9 .wp-block-embed__wrapper::before { padding-top: 42.85%; }
+.page__content [class*="wp-embed-aspect"] .wp-block-embed__wrapper > iframe { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* Galleries */
+.page__content .wp-block-gallery {
+	display: grid; gap: 12px; margin: 2.6em 0; max-width: var(--measure-media);
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.page__content .wp-block-gallery figure { margin: 0; max-width: none; width: auto; }
+.page__content .wp-block-gallery img { width: 100%; border-radius: 10px; }
+
+/* WordPress alignment — cinematic breakout */
+.page__content .alignwide { max-width: var(--measure-wide); }
+.page__content :is(.alignwide, .alignfull) { width: 100%; }
+.page__content .alignfull { max-width: 100%; }
+.page__content :is(.alignwide, .alignfull) img { width: 100%; }
+.page__content .aligncenter { margin-left: auto; margin-right: auto; }
+.page__content .alignleft  { float: left;  max-width: min(50%, 22rem); margin: 0.4em 2em 1.6em 0; }
+.page__content .alignright { float: right; max-width: min(50%, 22rem); margin: 0.4em 0 1.6em 2em; }
+
+/* ── Code ────────────────────────────────────────────────────── */
 .page__content code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: rgba(255, 255, 255, 0.08); padding: 0.15em 0.4em; border-radius: 6px; font-size: 0.9em; }
+.page__content pre {
+	margin: 2.2em 0; padding: clamp(1rem, 2.5vw, 1.5rem);
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid var(--hairline);
+	border-radius: 12px;
+	overflow-x: auto; -webkit-overflow-scrolling: touch;
+	font-size: 0.86em; line-height: 1.6;
+}
+.page__content pre code { padding: 0; background: none; border-radius: 0; font-size: inherit; }
+
+/* ── Separator / horizontal rule ─────────────────────────────── */
+.page__content :is(hr, .wp-block-separator) { max-width: var(--measure); margin: clamp(2.6rem, 6vw, 4rem) 0; border: 0; height: 1px; background: var(--hairline-strong); }
+.page__content .wp-block-separator.alignwide { max-width: var(--measure-wide); }
+
+/* ── Tables ──────────────────────────────────────────────────── */
+.page__content .wp-block-table { max-width: var(--measure-media); margin: 2.4em 0; overflow-x: auto; }
+.page__content table { width: 100%; max-width: var(--measure-media); border-collapse: collapse; font-size: 0.94em; }
+.page__content :is(th, td) { padding: 0.8em 1em; text-align: left; border-bottom: 1px solid var(--hairline); }
+.page__content th { color: var(--text); font-weight: 600; letter-spacing: 0.02em; }
+.page__content td { color: var(--text-muted); }
+
+/* ── Buttons (wp-block-button) ───────────────────────────────── */
+.page__content .wp-block-button__link {
+	display: inline-block; padding: 12px 26px;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid var(--hairline-strong); border-radius: 30px;
+	color: var(--text); font-size: 0.8rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+	text-decoration: none;
+	transition: background 0.3s var(--ease), border-color 0.3s var(--ease), transform 0.3s var(--ease);
+}
+.page__content .wp-block-button__link:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.28); transform: translateY(-2px); }
+
+/* ── Flow edges — first element flush top, last flush bottom ──── */
+.page__content > :first-child { margin-top: 0; }
+.page__content > :last-child  { margin-bottom: 0; }
+
+/* ── Mobile fine-tuning ──────────────────────────────────────── */
+@media (max-width: 600px) {
+	.page__content { line-height: 1.72; }
+	.page__content > p:first-of-type { font-size: 1.06em; }
+	.page__content h2 { margin-top: 1.8em; }
+	.page__content h3 { margin-top: 1.55em; }
+	.page__content :is(figure, .wp-block-image, .wp-caption, .wp-block-embed, .wp-block-video, .wp-block-gallery, .wp-block-table) { margin: 2em 0; }
+	.page__content blockquote { margin: 2em 0; padding: 1rem 1.15rem; font-size: 1.1em; }
+	.page__content blockquote::before { font-size: 2.6em; }
+	.page__content .alignleft, .page__content .alignright { float: none; max-width: 100%; margin: 2em 0; }
+}
 
 /* ============================================================
    GRID CONTROLS & DROPDOWN SORT
