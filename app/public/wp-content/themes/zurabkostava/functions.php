@@ -538,3 +538,13 @@ function zk_flush_gallery_cache() {
 add_action( 'add_attachment',    'zk_flush_gallery_cache' );
 add_action( 'edit_attachment',   'zk_flush_gallery_cache' );
 add_action( 'delete_attachment', 'zk_flush_gallery_cache' );
+
+
+
+/* ============================================================
+   MUSIC TIMELINE SHORTCODE
+   ============================================================ */
+function zk_music_timeline_shortcode() {
+    return '<div class="zk-timeline-wrapper" id="zkMusicTimeline"></div>';
+}
+add_shortcode( 'zk_music', 'zk_music_timeline_shortcode' );

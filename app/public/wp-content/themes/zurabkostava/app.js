@@ -790,3 +790,81 @@
     var viewEl = document.getElementById('view');
     if (viewEl) new MutationObserver(initGallery).observe(viewEl, { childList: true });
 })();
+
+
+/* ============================================================
+   MUSIC TIMELINE - DATA & LOGIC
+   ============================================================ */
+(function() {
+    // ── 1. შენი მუსიკალური მონაცემთა ბაზა ──
+    var musicData = [
+        {
+            id: "the-last-nocturne",
+            date: "2026-03-30",
+            displayDate: "30.03.2026",
+            theme: "nocturne", // ემოციური თემა: 'nocturne' ან 'aubade'
+            title: "The Last Nocturne",
+            subtitle: "From First Piano Album",
+            description: `
+                <p>I’m dropping my first new piece of music: a 2-minute piano composition written in a single day.</p>
+                <p>It’s small. It’s personal. And it means everything to me.</p>
+                <p>This is a short announcement for my first piano album. This is just the first step. More genres, more music, more to come.</p>
+            `,
+            mediaType: "youtube", // 'youtube', 'spotify', ან 'none'
+            mediaId: "YOUR_YOUTUBE_VIDEO_ID" // მაგ: dQw4w9WgXcQ (URL-ის ბოლო ნაწილი)
+        }
+        // შემდეგი ტრეკი დაემატება აქ, მძიმის მერე...
+    ];
+
+    // ── 2. დარენდერების ძრავა ──
+    function renderTimeline() {
+        var container = document.getElementById('zkMusicTimeline');
+        if (!container) return;
+        if (container.dataset.rendered === 'true') return; // SPA დაცვა
+
+        // ვიწყებთ მთავარი ღერძის (ხაზის) ხატვას
+        var html = '<div class="zk-timeline-line"></div>';
+
+        musicData.forEach(function(item) {
+            // Embed ლოგიკა ტიპის მიხედვით
+            var embedHtml = '';
+            if (item.mediaType === 'youtube' && item.mediaId) {
+                embedHtml = '<div class="zk-timeline-embed youtube"><iframe src="https://www.youtube.com/embed/' + item.mediaId + '?rel=0&modestbranding=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
+            } else if (item.mediaType === 'spotify' && item.mediaId) {
+                embedHtml = '<div class="zk-timeline-embed spotify"><iframe src="https://open.spotify.com/embed/track/' + item.mediaId + '" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe></div>';
+            }
+
+            // დინამიური კლასი თემატიკისთვის (შეგვიძლია ფერები შევუცვალოთ Nocturne/Aubade-ს)
+            var themeClass = item.theme === 'nocturne' ? 'is-nocturne' : 'is-aubade';
+
+            html += `
+                <div class="zk-timeline-node ${themeClass}">
+                    <div class="zk-timeline-point">
+                        <div class="zk-point-core"></div>
+                    </div>
+                    <div class="zk-timeline-card">
+                        <div class="zk-card-header">
+                            <span class="zk-timeline-date">${item.displayDate}</span>
+                            <span class="zk-timeline-tag">${item.theme}</span>
+                        </div>
+                        <h3 class="zk-timeline-title">${item.title}</h3>
+                        <p class="zk-timeline-subtitle">${item.subtitle}</p>
+                        <div class="zk-timeline-body">${item.description}</div>
+                        ${embedHtml}
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        container.dataset.rendered = 'true';
+    }
+
+    renderTimeline();
+
+    // SPA თავსებადობა (გვერდებს შორის სიარულისას რომ არ დაიკარგოს)
+    var viewEl = document.getElementById('view');
+    if (viewEl) {
+        new MutationObserver(renderTimeline).observe(viewEl, { childList: true });
+    }
+})();
