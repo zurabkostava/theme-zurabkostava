@@ -808,6 +808,7 @@ function zk_about_page_shortcode() {
 
                         <div class="zk-favorites-grid">
 
+                            <!-- 1. Cinema -->
                             <div class="zk-fav-col">
                                 <h4 class="zk-fav-title">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
@@ -822,6 +823,7 @@ function zk_about_page_shortcode() {
                                 </ol>
                             </div>
 
+                            <!-- 2. Series -->
                             <div class="zk-fav-col">
                                 <h4 class="zk-fav-title">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>
@@ -836,6 +838,7 @@ function zk_about_page_shortcode() {
                                 </ol>
                             </div>
 
+                            <!-- 3. Books -->
                             <div class="zk-fav-col">
                                 <h4 class="zk-fav-title">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
@@ -850,6 +853,22 @@ function zk_about_page_shortcode() {
                                 </ol>
                             </div>
 
+                            <!-- 4. Writers -->
+                            <div class="zk-fav-col">
+                                <h4 class="zk-fav-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>
+                                    Writers
+                                </h4>
+                                <ol>
+                                    <li><a href="#" target="_blank">[Writer 1]</a></li>
+                                    <li><a href="#" target="_blank">[Writer 2]</a></li>
+                                    <li><a href="#" target="_blank">[Writer 3]</a></li>
+                                    <li><a href="#" target="_blank">[Writer 4]</a></li>
+                                    <li><a href="#" target="_blank">[Writer 5]</a></li>
+                                </ol>
+                            </div>
+
+                            <!-- 5. Directors -->
                             <div class="zk-fav-col">
                                 <h4 class="zk-fav-title">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
@@ -864,6 +883,7 @@ function zk_about_page_shortcode() {
                                 </ol>
                             </div>
 
+                            <!-- 6. Actors -->
                             <div class="zk-fav-col">
                                 <h4 class="zk-fav-title">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
@@ -878,6 +898,7 @@ function zk_about_page_shortcode() {
                                 </ol>
                             </div>
 
+                            <!-- 7. Musical Artists -->
                             <div class="zk-fav-col">
                                 <h4 class="zk-fav-title">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
@@ -892,6 +913,37 @@ function zk_about_page_shortcode() {
                                 </ol>
                             </div>
 
+                            <!-- 8. Musical Bands -->
+                            <div class="zk-fav-col">
+                                <h4 class="zk-fav-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                    Bands
+                                </h4>
+                                <ol>
+                                    <li><a href="#" target="_blank">[Band 1]</a></li>
+                                    <li><a href="#" target="_blank">[Band 2]</a></li>
+                                    <li><a href="#" target="_blank">[Band 3]</a></li>
+                                    <li><a href="#" target="_blank">[Band 4]</a></li>
+                                    <li><a href="#" target="_blank">[Band 5]</a></li>
+                                </ol>
+                            </div>
+
+                            <!-- 9. Albums -->
+                            <div class="zk-fav-col">
+                                <h4 class="zk-fav-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+                                    Albums
+                                </h4>
+                                <ol>
+                                    <li><a href="#" target="_blank">[Album 1]</a></li>
+                                    <li><a href="#" target="_blank">[Album 2]</a></li>
+                                    <li><a href="#" target="_blank">[Album 3]</a></li>
+                                    <li><a href="#" target="_blank">[Album 4]</a></li>
+                                    <li><a href="#" target="_blank">[Album 5]</a></li>
+                                </ol>
+                            </div>
+
+                            <!-- 10. Songs -->
                             <div class="zk-fav-col">
                                 <h4 class="zk-fav-title">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2z"></path><path d="M3 19a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"></path></svg>
@@ -903,6 +955,66 @@ function zk_about_page_shortcode() {
                                     <li><a href="#" target="_blank">[Song 3]</a></li>
                                     <li><a href="#" target="_blank">[Song 4]</a></li>
                                     <li><a href="#" target="_blank">[Song 5]</a></li>
+                                </ol>
+                            </div>
+
+                            <!-- 11. Tech Nerds / Visionaries -->
+                            <div class="zk-fav-col">
+                                <h4 class="zk-fav-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+                                    Tech Nerds
+                                </h4>
+                                <ol>
+                                    <li><a href="#" target="_blank">[Nerd 1]</a></li>
+                                    <li><a href="#" target="_blank">[Nerd 2]</a></li>
+                                    <li><a href="#" target="_blank">[Nerd 3]</a></li>
+                                    <li><a href="#" target="_blank">[Nerd 4]</a></li>
+                                    <li><a href="#" target="_blank">[Nerd 5]</a></li>
+                                </ol>
+                            </div>
+
+                            <!-- 12. Scientists -->
+                            <div class="zk-fav-col">
+                                <h4 class="zk-fav-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(45 12 12)"></ellipse><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-45 12 12)"></ellipse></svg>
+                                    Scientists
+                                </h4>
+                                <ol>
+                                    <li><a href="#" target="_blank">[Scientist 1]</a></li>
+                                    <li><a href="#" target="_blank">[Scientist 2]</a></li>
+                                    <li><a href="#" target="_blank">[Scientist 3]</a></li>
+                                    <li><a href="#" target="_blank">[Scientist 4]</a></li>
+                                    <li><a href="#" target="_blank">[Scientist 5]</a></li>
+                                </ol>
+                            </div>
+
+                            <!-- 13. Athletes -->
+                            <div class="zk-fav-col">
+                                <h4 class="zk-fav-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                                    Athletes
+                                </h4>
+                                <ol>
+                                    <li><a href="#" target="_blank">[Athlete 1]</a></li>
+                                    <li><a href="#" target="_blank">[Athlete 2]</a></li>
+                                    <li><a href="#" target="_blank">[Athlete 3]</a></li>
+                                    <li><a href="#" target="_blank">[Athlete 4]</a></li>
+                                    <li><a href="#" target="_blank">[Athlete 5]</a></li>
+                                </ol>
+                            </div>
+
+                            <!-- 14. Models -->
+                            <div class="zk-fav-col">
+                                <h4 class="zk-fav-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                                    Models
+                                </h4>
+                                <ol>
+                                    <li><a href="#" target="_blank">[Model 1]</a></li>
+                                    <li><a href="#" target="_blank">[Model 2]</a></li>
+                                    <li><a href="#" target="_blank">[Model 3]</a></li>
+                                    <li><a href="#" target="_blank">[Model 4]</a></li>
+                                    <li><a href="#" target="_blank">[Model 5]</a></li>
                                 </ol>
                             </div>
 
