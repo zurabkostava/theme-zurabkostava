@@ -548,3 +548,31 @@ function zk_music_timeline_shortcode() {
     return '<div class="zk-timeline-wrapper" id="zkMusicTimeline"></div>';
 }
 add_shortcode( 'zk_music', 'zk_music_timeline_shortcode' );
+
+
+/* ============================================================
+   MUSIC TIMELINE - CUSTOM POST TYPE
+   ============================================================ */
+function zk_register_music_timeline_cpt() {
+    $labels = array(
+        'name'               => 'Music Timeline',
+        'singular_name'      => 'Release',
+        'menu_name'          => 'Music Timeline',
+        'add_new'            => 'Add New Release',
+        'add_new_item'       => 'Add New Release',
+        'edit_item'          => 'Edit Release',
+        'all_items'          => 'All Releases',
+    );
+
+    $args = array(
+        'labels'             => $labels,
+        'public'             => false, // არ გვინდა რომ ცალკე გვერდებად იხსნებოდეს
+        'show_ui'            => true,  // ადმინკაში გამოჩნდეს
+        'menu_icon'          => 'dashicons-format-audio',
+        'supports'           => array( 'title', 'editor' ), // გვჭირდება მხოლოდ სათაური და ტექსტი
+        'has_archive'        => false,
+    );
+
+    register_post_type( 'zk_music_release', $args );
+}
+add_action( 'init', 'zk_register_music_timeline_cpt' );
