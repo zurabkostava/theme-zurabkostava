@@ -635,29 +635,40 @@ html.zk-img-js .zk-post-hero.is-loaded { opacity: 1; }
    ============================================================ */
 .zk-gallery-wrapper { margin-top: 2rem; }
 
-/* ── 1. Apple-style Segmented Filters (Sticky Glass) ── */
+/* ── 1. Apple-style Segmented Filters (Sticky Glass Capsule) ── */
 .zk-gallery-filters {
-	display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px;
-	margin-bottom: 40px;
+	display: flex; align-items: center; justify-content: center; flex-wrap: nowrap; /* nowrap რომ არ გადავიდეს */
+	gap: 8px; margin-bottom: 40px;
 
-	/* ── Sticky ლოგიკა ── */
+	/* ── Sticky & Sizing ── */
 	position: sticky;
-	top: calc(var(--header-h-scrolled) + 64px); /* ბრედკრამბების ოდნავ ქვემოთ */
+	top: calc(var(--header-h-scrolled) + 64px);
 	z-index: 990;
-	padding: 8px 12px;
+
+	/* სიგანე ზუსტად იმდენი, რამდენიც ღილაკებს სჭირდებათ */
+	width: fit-content;
+	margin-left: auto;
+	margin-right: auto;
+
+	padding: 6px 8px;
 	border-radius: 40px;
 	border: 1px solid transparent;
-	transition: all 0.4s var(--ease);
+
+	/* ანიმაციური გარდასახვა */
+	transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* ── მინის ეფექტი ჩასქროლვისას ── */
+/* ── მინის ეფექტი ჩასქროლვისას (გარდასახვა) ── */
 .zk-gallery-filters.is-stuck {
-	background-color: rgba(16, 16, 20, 0.65);
+	background-color: rgba(16, 16, 20, 0.75);
 	-webkit-backdrop-filter: blur(24px) saturate(160%);
 	backdrop-filter: blur(24px) saturate(160%);
 	border-color: var(--hairline);
-	box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
-	transform: translateY(-8px);
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+	/* ოდნავ დაპატარავება სქროლვისას უფრო ელეგანტურია */
+	transform: translateY(-8px) scale(0.95);
+	padding: 4px 6px;
 }
 /* ღილაკების სტილი იგივე რჩება */
 .zk-filter-btn {
