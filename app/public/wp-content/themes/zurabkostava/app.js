@@ -542,6 +542,7 @@
         var filterToken = 0;
         var lastFocus   = null;
 
+        /* ---- Thumbnail strip: batched build (one reflow) + delegated clicks ---- */
         function buildThumbnails() {
             var frag = document.createDocumentFragment();
             thumbEls = [];
@@ -570,22 +571,19 @@
             if (i > -1) show(i);
         });
 
-        // ── სინქრონიზაციის ბაგის გასწორება ──
+        // ── 1. სინქრონიზაციის გასწორება (50ms დაყოვნება) ──
         function centerThumb(cell, isInitial) {
             if (!cell) return;
-            // ვაძლევთ 50ms დაყოვნებას, რომ ბრაუზერმა მოასწროს CSS-ის დახატვა და გამოთვლა
             setTimeout(function() {
                 var target = cell.offsetLeft - (thumbs.clientWidth - cell.offsetWidth) / 2;
                 target = target < 0 ? 0 : target;
 
                 if (isInitial) {
-                    // გახსნისას ეგრევე ვსვამთ (smooth-ის გარეშე), რომ ნულიდან არ დაიწყოს სრიალი
                     var prevBehavior = thumbs.style.scrollBehavior;
-                    thumbs.style.scrollBehavior = 'auto';
+                    thumbs.style.scrollBehavior = 'auto'; // პირველ გახსნაზე სმუზს ვთიშავთ
                     thumbs.scrollLeft = target;
-                    // მყისიერად ვუბრუნებთ სმუზ სქროლს შემდგომი კლიკებისთვის
                     requestAnimationFrame(function() {
-                        thumbs.style.scrollBehavior = prevBehavior;
+                        thumbs.style.scrollBehavior = prevBehavior; // ვრთავთ უკან
                     });
                 } else {
                     thumbs.scrollLeft = target;
@@ -600,13 +598,14 @@
             centerThumb(thumbEls[index], isInitial);
         }
 
+        /* ---- Image swap: preload → focus-pull. No flash; rapid swaps are safe. ---- */
         function show(i, opts) {
             opts = opts || {};
             var n = activeItems.length;
             if (!n) return;
-            index = ((i % n) + n) % n;
+            index = ((i % n) + n) % n; // infinite wrap, NaN-proof
 
-            // ── ვააქტიურებთ თამბნეილს მომენტალურად! ──
+            // ── 2. აქტიური თამბნეილის მომენტალური მონიშვნა ──
             markActiveThumb(opts.initial);
 
             var img   = activeItems[index].querySelector('img');
@@ -615,11 +614,11 @@
             var token = ++swapToken;
             var hadImage = lbImg.classList.contains('is-ready');
 
-            lbImg.classList.remove('is-ready');
+            lbImg.classList.remove('is-ready'); // begin exit (or stay hidden on open)
             var waitExit = (hadImage && !opts.initial && !REDUCE) ? 260 : 0;
 
             Promise.all([preload(full), delay(waitExit)]).then(function () {
-                if (token !== swapToken) return;
+                if (token !== swapToken) return; // a newer swap superseded this one
                 lbImg.src = full;
                 lbImg.alt = img.alt || '';
                 lbExif.textContent = exif;
@@ -633,7 +632,6 @@
         }
         function next() { show(index + 1); }
         function prev() { show(index - 1); }
-
         function open(i) {
             lastFocus = document.activeElement;
             lightbox.classList.add('is-open');

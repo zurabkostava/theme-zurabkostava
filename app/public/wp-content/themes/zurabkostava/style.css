@@ -844,3 +844,9 @@ body.zk-lb-open { overflow: hidden; }
 	box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
 	transform: scale(1.05);
 }
+
+/* ── ჭკვიანი ცენტრირება ──
+   თუ ფოტოები ცოტაა, ზუსტად ცენტრში დგება. თუ ბევრია და ეკრანს სცდება —
+   ავტომატურად ინაცვლებს მარცხნივ სქროლისთვის! */
+.zk-lightbox-thumb-item:first-child { margin-left: auto; }
+.zk-lightbox-thumb-item:last-child { margin-right: auto; }
