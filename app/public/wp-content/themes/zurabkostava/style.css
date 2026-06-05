@@ -700,21 +700,32 @@ html.zk-img-js .zk-post-hero.is-loaded { opacity: 1; }
 	transform: translateY(-72px) scale(0.95);
 	padding: 4px 6px;
 }
-/* ღილაკების სტილი იგივე რჩება */
+/* ── მოძრავი ღია ფონი (Highlight) ფილტრებისთვის ── */
+.zk-filter-highlight {
+	position: absolute;
+	top: 0; left: 0;
+	background: rgba(255, 255, 255, 0.08);
+	border: 1px solid var(--hairline-strong);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	border-radius: 30px;
+	z-index: 1;
+	pointer-events: none;
+	transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1), height 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
 .zk-filter-btn {
+	position: relative;
+	z-index: 2; /* რომ ტექსტი ფონის ზემოთ იყოს */
 	padding: 8px 20px;
 	border-radius: 30px;
 	font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
 	color: var(--text-muted); background: transparent; border: 1px solid transparent;
-	transition: color 0.35s var(--ease), background-color 0.35s var(--ease), border-color 0.35s var(--ease), box-shadow 0.35s var(--ease), transform 0.2s var(--ease);
+	transition: color 0.35s var(--ease), transform 0.2s var(--ease);
 }
-.zk-filter-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.04); }
+.zk-filter-btn:hover { color: var(--text); }
 .zk-filter-btn:active { transform: scale(0.96); }
 .zk-filter-btn.is-active {
 	color: var(--text);
-	background: rgba(255, 255, 255, 0.08);
-	border-color: var(--hairline-strong);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* ── 2. CSS Masonry Grid ── */

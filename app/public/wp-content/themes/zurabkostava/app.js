@@ -541,9 +541,25 @@
             }, { rootMargin: '-130px 0px 0px 0px' });
             observer.observe(sentinel);
         }
-        var grid     = wrap.querySelector('.zk-gallery-grid');
-        var buttons  = Array.prototype.slice.call(wrap.querySelectorAll('.zk-filter-btn'));
-        var allItems = Array.prototype.slice.call(wrap.querySelectorAll('.zk-gallery-item'));
+        var highlight = wrap.querySelector('.zk-filter-highlight');
+
+        // ფუნქცია, რომელიც მოძრავ ფონს ღილაკის ზომასა და ლოკაციაზე სვამს
+        function setFilterHighlight(btn) {
+            if (!highlight || !btn) return;
+            highlight.style.width = btn.offsetWidth + 'px';
+            highlight.style.height = btn.offsetHeight + 'px';
+            highlight.style.transform = 'translate(' + btn.offsetLeft + 'px, ' + btn.offsetTop + 'px)';
+        }
+
+        // საიტის ჩატვირთვისას ფონის სწორად დასმა
+        var activeBtn = wrap.querySelector('.zk-filter-btn.is-active');
+        if (activeBtn) setTimeout(function() { setFilterHighlight(activeBtn); }, 50);
+
+        // რესაიზის (ან მობილურზე დაპატარავების) დროს რომ პოზიცია არ აირიოს
+        window.addEventListener('resize', function() {
+            var current = wrap.querySelector('.zk-filter-btn.is-active');
+            if (current) setFilterHighlight(current);
+        });
 
         var lbImg    = lightbox.querySelector('.zk-lightbox-img');
         var lbExif   = lightbox.querySelector('.zk-lightbox-exif');
@@ -735,8 +751,9 @@
                 });
                 btn.classList.add('is-active');
                 btn.setAttribute('aria-pressed', 'true');
-
+                setFilterHighlight(btn);
                 // 1. ვუშვებთ ფილტრაციის ლოგიკას
+
                 applyFilter(btn.getAttribute('data-filter'));
 
                 // 2. ── ანიმაციური სქროლი ──
