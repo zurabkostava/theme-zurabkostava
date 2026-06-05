@@ -1051,8 +1051,24 @@ function zk_about_page_shortcode() {
                 </div>
             </div>
 
+        </div><!-- /.zk-tabs-content -->
+
+        <?php
+        /* Cinematic lightbox — rendered OUTSIDE the tab panels on purpose:
+           .zk-tab-panel uses a transform for its slide-in animation, and a
+           transformed ancestor makes this position:fixed overlay resolve
+           against the panel (framed) instead of the viewport. Same markup
+           the photography gallery uses; wired by initGallery() in app.js. */
+        ?>
+        <div class="zk-lightbox" id="zkLightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Photo viewer">
+            <button class="zk-lightbox-close" type="button" aria-label="Close">✕</button>
+            <button class="zk-lightbox-arrow zk-lightbox-prev" type="button" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+            <button class="zk-lightbox-arrow zk-lightbox-next" type="button" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+            <img class="zk-lightbox-img" src="" alt="" decoding="async">
+            <div class="zk-lightbox-exif" id="zkLightboxExif"></div>
+            <div class="zk-lightbox-thumbs" id="zkLightboxThumbs"></div>
         </div>
-    </div>
+    </div><!-- /.zk-about-wrapper -->
 
     <?php return ob_get_clean();
 }
@@ -1061,8 +1077,10 @@ add_shortcode( 'zk_about', 'zk_about_page_shortcode' );
 
 /* ============================================================
    FILEBIRD CUSTOM GALLERY FETCHER (CINEMATIC LIGHTBOX)
-   Emits the SAME markup as [zk_photography] (grid + #zkLightbox),
-   so the shared initGallery() in app.js drives it identically.
+   Emits the same GRID markup as [zk_photography]; the shared
+   initGallery() in app.js drives it identically. The #zkLightbox
+   overlay is rendered separately by [zk_about], OUTSIDE the
+   (transformed) tab panels — see the note at the return below.
    ============================================================ */
 function zk_get_filebird_gallery( $folder_id ) {
     global $wpdb;
@@ -1111,16 +1129,9 @@ function zk_get_filebird_gallery( $folder_id ) {
 
     $output .= '</div></div>';
 
-    // Cinematic lightbox — same markup as zk_cinematic_gallery(); wired by initGallery().
-    $output .= '<div class="zk-lightbox" id="zkLightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Photo viewer">';
-    $output .= '<button class="zk-lightbox-close" type="button" aria-label="Close">✕</button>';
-    $output .= '<button class="zk-lightbox-arrow zk-lightbox-prev" type="button" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg></button>';
-    $output .= '<button class="zk-lightbox-arrow zk-lightbox-next" type="button" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg></button>';
-    $output .= '<img class="zk-lightbox-img" src="" alt="" decoding="async">';
-    $output .= '<div class="zk-lightbox-exif" id="zkLightboxExif"></div>';
-    $output .= '<div class="zk-lightbox-thumbs" id="zkLightboxThumbs"></div>';
-    $output .= '</div>';
-
+    // NOTE: the #zkLightbox overlay is emitted by zk_about_page_shortcode() OUTSIDE the
+    // tab panels — .zk-tab-panel's slide transform would otherwise trap position:fixed,
+    // framing the viewer inside the panel instead of filling the viewport.
     return $output;
 }
 
