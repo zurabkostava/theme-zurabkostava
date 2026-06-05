@@ -1062,18 +1062,17 @@ add_shortcode( 'zk_about', 'zk_about_page_shortcode' );
 /* ============================================================
    FILEBIRD CUSTOM GALLERY FETCHER (LIGHTBOX SUPPORT)
    ============================================================ */
-/* ============================================================
-   FILEBIRD CUSTOM GALLERY FETCHER (PERFORMANCE OPTIMIZED)
-   ============================================================ */
 function zk_get_filebird_gallery( $folder_id ) {
     global $wpdb;
 
+    // FileBird-ის ცხრილი
     $table_name = $wpdb->prefix . 'fbv_attachment_folder';
 
     if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" ) != $table_name ) {
         return '<p style="color:var(--text-dim);">FileBird database table not found.</p>';
     }
 
+    // ვიღებთ ID-ებს
     $attachment_ids = $wpdb->get_col(
             $wpdb->prepare( "SELECT attachment_id FROM $table_name WHERE folder_id = %d ORDER BY attachment_id DESC", intval( $folder_id ) )
     );
@@ -1082,17 +1081,19 @@ function zk_get_filebird_gallery( $folder_id ) {
         return '<p style="color:var(--text-dim);">No photos found in this FileBird folder.</p>';
     }
 
-    // ვიწყებთ გრიდს
-    $output = '<div class="zk-gallery-grid zk-about-lightbox-gallery">';
+    // ── 1. ვიწყებთ Masonry Grid-ს ──
+    $output = '<div class="zk-gallery-grid zk-js-lightbox-gallery">';
 
     foreach ( $attachment_ids as $id ) {
-        // ოპტიმიზაციისთვის Thumbnail-ადაც და დიდ ფოტოდც ვიღებთ 'large' ზომას (თუ ძალიან დიდი არ არის ორიგინალი, 'full'-იც მოსულა)
+        // დიდი ზომა Thumbnail-ისთვის
         $img_thumbnail = wp_get_attachment_image_url( $id, 'large' );
-        $img_full = wp_get_attachment_image_url( $id, 'large' ); // შეცვალე 'full'-ით, თუ ფოტოები წინასწარ კომპრესირებულია
+        // სრული ზომა Lightbox-ისთვის
+        $img_full = wp_get_attachment_image_url( $id, 'full' );
 
         if ( $img_thumbnail && $img_full ) {
             $output .= '<div class="zk-gallery-item">';
-            $output .= '<a href="' . esc_url( $img_full ) . '" class="zk-about-lightbox-trigger">';
+            // ── 2. თითოეულ ფოტოს ვფუთავთ A ტეგში, რომელიც Full-ზე მიუთითებს ──
+            $output .= '<a href="' . esc_url( $img_full ) . '" class="zk-lightbox-trigger">';
             $output .= '<img src="' . esc_url( $img_thumbnail ) . '" alt="Zurab Kostava Capture" loading="lazy" />';
             $output .= '<div class="zk-gallery-hover-overlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div>';
             $output .= '</a>';
@@ -1102,88 +1103,18 @@ function zk_get_filebird_gallery( $folder_id ) {
 
     $output .= '</div>';
 
-    // Lightbox სტრუქტურა
+    // ── 3. ვამატებთ Lightbox-ის HTML სტრუქტურას გვერდის ბოლოში ──
+    // ეს ბლოკი თავიდან დამალულია
     $output .= '
-    <div id="zkAboutLightbox" class="zk-about-lightbox" aria-hidden="true">
-        <div class="zk-about-lightbox-bg"></div>
-        <div class="zk-about-lightbox-content">
-            <img src="" alt="Full size capture" class="zk-about-lightbox-img">
-            <button class="zk-about-lightbox-nav zk-about-prev" aria-label="Previous image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-            <button class="zk-about-lightbox-nav zk-about-next" aria-label="Next image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
-            <button class="zk-about-lightbox-close" aria-label="Close lightbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    <div id="zkLightbox" class="zk-lightbox" aria-hidden="true">
+        <div class="zk-lightbox-bg zk-js-close-lightbox"></div>
+        <div class="zk-lightbox-content">
+            <img src="" alt="Full size capture" class="zk-lightbox-img">
+            <button class="zk-lightbox-nav zk-prev zk-js-prev" aria-label="Previous image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+            <button class="zk-lightbox-nav zk-next zk-js-next" aria-label="Next image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+            <button class="zk-lightbox-close zk-js-close-lightbox" aria-label="Close lightbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
         </div>
     </div>';
-
-    // ინლაინ უსაფრთხო სკრიპტი, რომელიც უზრუნველყოფს 60fps სმუზ ნავიგაციას
-    ob_start();
-    ?>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const lightbox = document.getElementById('zkAboutLightbox');
-            const gallery = document.querySelector('.zk-about-lightbox-gallery');
-            if (!lightbox || !gallery) return;
-
-            const lightboxImg = lightbox.querySelector('.zk-about-lightbox-img');
-            const triggers = gallery.querySelectorAll('.zk-about-lightbox-trigger');
-            const prevBtn = lightbox.querySelector('.zk-about-prev');
-            const nextBtn = lightbox.querySelector('.zk-about-next');
-            const closeBtn = lightbox.querySelector('.zk-about-lightbox-close');
-            const bg = lightbox.querySelector('.zk-about-lightbox-bg');
-
-            const images = Array.from(triggers).map(t => t.getAttribute('href'));
-            let currentIdx = 0;
-
-            function openLightbox(idx) {
-                currentIdx = idx;
-                // უზრუნველყოფს, რომ ბრაუზერმა არ "დაარეფრეშოს" ანიმაცია
-                requestAnimationFrame(() => {
-                    lightboxImg.src = images[currentIdx];
-                    lightbox.classList.add('is-active');
-                    document.body.style.overflow = 'hidden';
-                });
-            }
-
-            function closeLightbox() {
-                lightbox.classList.remove('is-active');
-                document.body.style.overflow = '';
-                setTimeout(() => { lightboxImg.src = ''; }, 300);
-            }
-
-            function navigate(direction) {
-                currentIdx = (currentIdx + direction + images.length) % images.length;
-                lightboxImg.style.opacity = '0';
-
-                // რბილი გადასვლის ეფექტი ფოტოებს შორის
-                setTimeout(() => {
-                    lightboxImg.src = images[currentIdx];
-                    lightboxImg.onload = () => {
-                        lightboxImg.style.opacity = '1';
-                    };
-                }, 150);
-            }
-
-            triggers.forEach((t, i) => {
-                t.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    openLightbox(i);
-                });
-            });
-
-            closeBtn.addEventListener('click', closeLightbox);
-            bg.addEventListener('click', closeLightbox);
-            nextBtn.addEventListener('click', () => navigate(1));
-            prevBtn.addEventListener('click', () => navigate(-1));
-
-            document.addEventListener('keydown', function(e) {
-                if (!lightbox.classList.contains('is-active')) return;
-                if (e.key === 'Escape') closeLightbox();
-                if (e.key === 'ArrowRight') navigate(1);
-                if (e.key === 'ArrowLeft') navigate(-1);
-            });
-        });
-    </script>
-    <?php
-    $output .= ob_get_clean();
 
     return $output;
 }
