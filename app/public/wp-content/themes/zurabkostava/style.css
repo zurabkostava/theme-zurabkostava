@@ -1988,19 +1988,23 @@ body.zk-lb-open { overflow: hidden; }
 	opacity: 1 !important;
 }
 
-/* ვასწორებთ შიდა SVG იკონებს, რომ ზუსტად ცენტრში დაჯდეს */
+/* ── 3. ვასწორებთ შიდა SVG იკონებს და ვაბრუნებთ მარჯვენა ისარს ── */
 .pswp__button svg {
 	width: 24px !important;
 	height: 24px !important;
-	position: absolute !important;
-	top: 50% !important;
-	left: 50% !important;
-	transform: translate(-50%, -50%) !important;
+	position: static !important; /* ვაუქმებთ აბსოლუტურ პოზიციას */
+	top: auto !important;
+	left: auto !important;
+	transform: none !important; /* ვაუქმებთ ჩვენს ძველ ცენტრირებას */
 	fill: #fff !important;
 	pointer-events: none !important;
 	filter: drop-shadow(0 0 0 transparent) !important;
 	margin: 0 !important;
-	padding: 0 !important;
+}
+
+/* PhotoSwipe-ის ორიგინალი "ფრიკის" აღდგენა მარჯვენა ისრისთვის */
+.pswp__button--arrow--right svg {
+	transform: scale(-1, 1) !important;
 }
 
 /* ── 4. კონკრეტული ღილაკების პოზიციები ── */
@@ -2012,17 +2016,17 @@ body.zk-lb-open { overflow: hidden; }
 	right: 24px !important;
 }
 
-/* მარცხენა ისარი */
+/* მარცხენა ისარი უფრო შემოწეული შუაში (80px) */
 .pswp__button--arrow--left {
 	position: absolute !important;
-	left: 40px !important;
+	left: 80px !important;
 	top: calc(50% - 27px) !important;
 }
 
-/* მარჯვენა ისარი */
+/* მარჯვენა ისარი უფრო შემოწეული შუაში (80px) */
 .pswp__button--arrow--right {
 	position: absolute !important;
-	right: 40px !important;
+	right: 80px !important;
 	top: calc(50% - 27px) !important;
 }
 
