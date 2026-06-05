@@ -694,383 +694,217 @@ add_shortcode( 'zk_music', 'zk_music_timeline_shortcode' );
 /* ============================================================
    ABOUT PAGE - DYNAMIC TABS SHORTCODE
    ============================================================ */
+// დამხმარე ფუნქცია ფავორიტების ლისტის დასაგენერირებლად ტექსტური ველიდან
+function zk_render_fav_list($option_key) {
+    $data = get_option($option_key, '');
+    if (empty(trim($data))) {
+        echo '<li><a href="#">[TBD]</a></li>';
+        return;
+    }
+    $lines = explode("\n", $data);
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if (empty($line)) continue;
+        $parts = explode('|', $line);
+        $name = trim($parts[0]);
+        $url = isset($parts[1]) ? trim($parts[1]) : '#';
+        echo '<li><a href="' . esc_url($url) . '" target="_blank">' . esc_html($name) . '</a></li>';
+    }
+}
+
 function zk_about_page_shortcode() {
     ob_start(); ?>
 
     <div class="zk-about-wrapper">
-        <div class="zk-tabs-nav-container">
-            <div class="zk-tabs-nav">
-                <div class="zk-tab-highlight"></div>
-                <button class="zk-tab-btn active" data-target="tab-identity">Identity</button>
-                <button class="zk-tab-btn" data-target="tab-journey">The Journey</button>
-                <button class="zk-tab-btn" data-target="tab-captures">Life & Captures</button>
+    <div class="zk-tabs-nav-container">
+        <div class="zk-tabs-nav">
+            <div class="zk-tab-highlight"></div>
+            <button class="zk-tab-btn active" data-target="tab-identity">Identity</button>
+            <button class="zk-tab-btn" data-target="tab-journey">The Journey</button>
+            <button class="zk-tab-btn" data-target="tab-captures">Life & Captures</button>
+        </div>
+    </div>
+
+    <div class="zk-tabs-content">
+
+        <div class="zk-tab-panel active" id="tab-identity">
+            <div class="zk-identity-dashboard">
+
+                <div class="zk-bento-box zk-bento-profile zk-col-span-2">
+                    <div class="zk-bento-header">
+                        <div class="zk-header-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            <h3>Vitals & Connect</h3>
+                        </div>
+                        <p class="zk-bento-desc">Zurab Kostava's digital ID, where he objectively looks much better than on his actual passport.</p>
+                    </div>
+
+                    <div class="zk-profile-inner">
+                        <div class="zk-profile-content">
+                            <ul class="zk-vitals-list">
+                                <li>
+                                    <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                    <div class="zk-vital-text"><strong>Born:</strong> <span><?php echo esc_html(get_option('zk_vital_born', 'DD.MM.YYYY')); ?></span></div>
+                                </li>
+                                <li>
+                                    <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                                    <div class="zk-vital-text"><strong>Origin:</strong> <span><?php echo esc_html(get_option('zk_vital_origin', 'Ozurgeti, Guria, Georgia')); ?></span></div>
+                                </li>
+                                <li>
+                                    <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                    <div class="zk-vital-text"><strong>Base:</strong> <span><?php echo esc_html(get_option('zk_vital_base', 'Tbilisi, Georgia')); ?></span></div>
+                                </li>
+                                <li>
+                                    <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+                                    <div class="zk-vital-text"><strong>Studio:</strong> <span><?php echo wp_kses_post(get_option('zk_vital_studio', 'Creative Lead @ <a href="https://zurabkostava.com" target="_blank">Kostava Creative</a>')); ?></span></div>
+                                </li>
+                                <li>
+                                    <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                                    <div class="zk-vital-text"><strong>Position:</strong> <span><?php echo wp_kses_post(get_option('zk_vital_position', 'Web Designer @ <a href="https://emis.ge" target="_blank">EMIS Georgia</a>')); ?></span></div>
+                                </li>
+                                <li>
+                                    <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                    <div class="zk-vital-text"><strong>Archetype:</strong> <span><?php echo esc_html(get_option('zk_vital_archetype', 'Composer, Visual Artist, Tech Geek')); ?></span></div>
+                                </li>
+                            </ul>
+
+                            <div class="zk-social-bar">
+                                <a href="<?php echo esc_url(get_option('zk_social_ig', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>
+                                <a href="<?php echo esc_url(get_option('zk_social_x', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+                                <a href="<?php echo esc_url(get_option('zk_social_linkedin', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+                                <a href="<?php echo esc_url(get_option('zk_social_youtube', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg></a>
+                                <a href="<?php echo esc_url(get_option('zk_social_github', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a>
+                            </div>
+                        </div>
+
+                        <div class="zk-profile-photo">
+                            <img src="<?php echo esc_url(get_option('zk_profile_img', 'https://via.placeholder.com/150x200')); ?>" alt="Zurab Kostava" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="zk-bento-box zk-bento-skills zk-col-span-2">
+                    <div class="zk-bento-header">
+                        <div class="zk-header-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                            <h3>Skills</h3>
+                        </div>
+                        <p class="zk-bento-desc">A brief list of capabilities. This isn't a flex for the portfolio—it's mostly here so he doesn't forget what he can actually do.</p>
+                    </div>
+                    <div class="zk-tags-container">
+                        <?php
+                        $skills_raw = get_option('zk_skills', 'Music Production, Cinematography & Color Grading, UI/UX Design, Sound Design, Web Technologies, AI Workflows');
+                        $skills = array_filter(array_map('trim', explode(',', $skills_raw)));
+                        foreach ($skills as $skill) {
+                            echo '<span class="zk-tag">' . esc_html($skill) . '</span>';
+                        }
+                        ?>
+                    </div>
+                </div>
+
+                <div class="zk-bento-box zk-bento-favorites zk-col-span-2">
+                    <div class="zk-bento-header">
+                        <div class="zk-header-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            <h3>The Curated Mind</h3>
+                        </div>
+                        <p class="zk-bento-desc">Cultural influences. The definitive list that proves his exceptional taste in media (and yes, he is quite proud of it).</p>
+                    </div>
+
+                    <div class="zk-favorites-grid">
+                        <div class="zk-fav-col">
+                            <h4 class="zk-fav-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg> Cinema</h4>
+                            <ol><?php zk_render_fav_list('zk_fav_cinema'); ?></ol>
+                        </div>
+                        <div class="zk-fav-col">
+                            <h4 class="zk-fav-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg> Series</h4>
+                            <ol><?php zk_render_fav_list('zk_fav_series'); ?></ol>
+                        </div>
+                        <div class="zk-fav-col">
+                            <h4 class="zk-fav-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> Books</h4>
+                            <ol><?php zk_render_fav_list('zk_fav_books'); ?></ol>
+                        </div>
+                        <div class="zk-fav-col">
+                            <h4 class="zk-fav-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg> Writers</h4>
+                            <ol><?php zk_render_fav_list('zk_fav_writers'); ?></ol>
+                        </div>
+                        <div class="zk-fav-col">
+                            <h4 class="zk-fav-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg> Directors</h4>
+                            <ol><?php zk_render_fav_list('zk_fav_directors'); ?></ol>
+                        </div>
+                        <div class="zk-fav-col">
+                            <h4 class="zk-fav-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Actors</h4>
+                            <ol><?php zk_render_fav_list('zk_fav_actors'); ?></ol>
+                        </div>
+                        <div class="zk-fav-col">
+                            <h4 class="zk-fav-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Artists</h4>
+                            <ol><?php zk_render_fav_list('zk_fav_artists'); ?></ol>
+                        </div>
+                        <div class="zk-fav-col">
+                            <h4 class="zk-fav-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Bands</h4>
+                            <ol><?php zk_render_fav_list('zk_fav_bands'); ?></ol>
+                        </div>
+                        <div class="zk-fav-col">
+                            <h4 class="zk-fav-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg> Albums</h4>
+                            <ol><?php zk_render_fav_list('zk_fav_albums'); ?></ol>
+                        </div>
+                        <div class="zk-fav-col">
+                            <h4 class="zk-fav-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2z"></path><path d="M3 19a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"></path></svg> Songs</h4>
+                            <ol><?php zk_render_fav_list('zk_fav_songs'); ?></ol>
+                        </div>
+                        <div class="zk-fav-col">
+                            <h4 class="zk-fav-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg> Tech Nerds</h4>
+                            <ol><?php zk_render_fav_list('zk_fav_nerds'); ?></ol>
+                        </div>
+                        <div class="zk-fav-col">
+                            <h4 class="zk-fav-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(45 12 12)"></ellipse><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-45 12 12)"></ellipse></svg> Scientists</h4>
+                            <ol><?php zk_render_fav_list('zk_fav_scientists'); ?></ol>
+                        </div>
+                        <div class="zk-fav-col">
+                            <h4 class="zk-fav-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg> Athletes</h4>
+                            <ol><?php zk_render_fav_list('zk_fav_athletes'); ?></ol>
+                        </div>
+                        <div class="zk-fav-col">
+                            <h4 class="zk-fav-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Models</h4>
+                            <ol><?php zk_render_fav_list('zk_fav_models'); ?></ol>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
-        <div class="zk-tabs-content">
-
-            <!-- TAB 1: IDENTITY (Bento Box Dashboard) -->
-            <div class="zk-tab-panel active" id="tab-identity">
-                <div class="zk-identity-dashboard">
-
-                    <!-- Box 1: Vitals & Connect (Full Width with Photo) -->
-                    <!-- Box 1: Vitals & Connect (Full Width with Photo) -->
-                    <div class="zk-bento-box zk-bento-profile zk-col-span-2">
-
-                        <!-- 1. HEADER (გამოტანილია გარეთ, რომ სრულ სიგანეზე გაიშალოს და ხაზი გაავლოს) -->
-                        <div class="zk-bento-header">
-                            <div class="zk-header-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                <h3>Vitals & Connect</h3>
-                            </div>
-                            <p class="zk-bento-desc">Zurab Kostava's digital ID, where he objectively looks much better than on his actual passport.</p>
-                        </div>
-
-                        <!-- 2. CONTENT WRAPPER (ინფორმაცია და ფოტო უკვე ამის შიგნითაა და ზედა კიდით სწორდება) -->
-                        <div class="zk-profile-inner">
-
-                            <!-- მარცხენა მხარე: ინფორმაცია -->
-                            <div class="zk-profile-content">
-                                <ul class="zk-vitals-list">
-                                    <li>
-                                        <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                        <div class="zk-vital-text"><strong>Born:</strong> <span>DD.MM.YYYY</span></div>
-                                    </li>
-                                    <!-- ახალი: Origin / დაბადების ადგილი კომპასის იკონით -->
-                                    <li>
-                                        <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-                                        <div class="zk-vital-text"><strong>Origin:</strong> <span>Ozurgeti, Guria, Georgia</span></div>
-                                    </li>
-                                    <li>
-                                        <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                                        <div class="zk-vital-text"><strong>Base:</strong> <span>Tbilisi, Georgia</span></div>
-                                    </li>
-                                    <li>
-                                        <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
-                                        <div class="zk-vital-text"><strong>Studio:</strong> <span>Creative Lead @ <a href="https://zurabkostava.com" target="_blank">Kostava Creative</a></span></div>
-                                    </li>
-                                    <li>
-                                        <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-                                        <div class="zk-vital-text"><strong>Position:</strong> <span>Web Designer @ <a href="https://emis.ge" target="_blank">EMIS Georgia</a></span></div>
-                                    </li>
-                                    <li>
-                                        <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                        <div class="zk-vital-text"><strong>Archetype:</strong> <span>Composer, Visual Artist, Tech Geek</span></div>
-                                    </li>
-                                </ul>
-
-                                <div class="zk-social-bar">
-                                    <a href="#" class="zk-social-btn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>
-                                    <a href="#" class="zk-social-btn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-                                    <a href="#" class="zk-social-btn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
-                                    <a href="#" class="zk-social-btn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg></a>
-                                    <a href="#" class="zk-social-btn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a>
-                                </div>
-                            </div>
-
-                            <!-- მარჯვენა მხარე: ID ფოტო -->
-                            <div class="zk-profile-photo">
-                                <!-- აქ ჩასვი შენი ფოტოს რეალური URL -->
-                                <img src="https://via.placeholder.com/150x200" alt="Zurab Kostava" />
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- Box 2: SKILLS -->
-                    <div class="zk-bento-box zk-bento-skills zk-col-span-2">
-                        <div class="zk-bento-header">
-                            <div class="zk-header-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                                <h3>Skills</h3>
-                            </div>
-                            <p class="zk-bento-desc">A brief list of capabilities. This isn't a flex for the portfolio—it's mostly here so he doesn't forget what he can actually do.</p>
-                        </div>
-                        <div class="zk-tags-container">
-                            <span class="zk-tag">Music Production (Ableton, Cubase)</span>
-                            <span class="zk-tag">Cinematography & Color Grading</span>
-                            <span class="zk-tag">UI/UX Design (Figma)</span>
-                            <span class="zk-tag">Sound Design</span>
-                            <span class="zk-tag">Web Technologies</span>
-                            <span class="zk-tag">AI Workflows & Generation</span>
-                        </div>
-                    </div>
-
-                    <!-- Box 3: The Curated Mind -->
-                    <div class="zk-bento-box zk-bento-favorites zk-col-span-2">
-                        <div class="zk-bento-header">
-                            <div class="zk-header-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                                <h3>The Curated Mind</h3>
-                            </div>
-                            <p class="zk-bento-desc">Cultural influences. The definitive list that proves his exceptional taste in media (and yes, he is quite proud of it).</p>
-                        </div>
-
-                        <div class="zk-favorites-grid">
-
-                            <!-- 1. Cinema -->
-                            <div class="zk-fav-col">
-                                <h4 class="zk-fav-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
-                                    Cinema
-                                </h4>
-                                <ol>
-                                    <li><a href="#" target="_blank">Interstellar</a></li>
-                                    <li><a href="#" target="_blank">Abre los ojos</a></li>
-                                    <li><a href="#" target="_blank">Stay</a></li>
-                                    <li><a href="#" target="_blank">The Truman Show</a></li>
-                                    <li><a href="#" target="_blank">Inception</a></li>
-                                </ol>
-                            </div>
-
-                            <!-- 2. Series -->
-                            <div class="zk-fav-col">
-                                <h4 class="zk-fav-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>
-                                    Series
-                                </h4>
-                                <ol>
-                                    <li><a href="#" target="_blank">[Series 1]</a></li>
-                                    <li><a href="#" target="_blank">[Series 2]</a></li>
-                                    <li><a href="#" target="_blank">[Series 3]</a></li>
-                                    <li><a href="#" target="_blank">[Series 4]</a></li>
-                                    <li><a href="#" target="_blank">[Series 5]</a></li>
-                                </ol>
-                            </div>
-
-                            <!-- 3. Books -->
-                            <div class="zk-fav-col">
-                                <h4 class="zk-fav-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                                    Books
-                                </h4>
-                                <ol>
-                                    <li><a href="#" target="_blank">[Book 1]</a></li>
-                                    <li><a href="#" target="_blank">[Book 2]</a></li>
-                                    <li><a href="#" target="_blank">[Book 3]</a></li>
-                                    <li><a href="#" target="_blank">[Book 4]</a></li>
-                                    <li><a href="#" target="_blank">[Book 5]</a></li>
-                                </ol>
-                            </div>
-
-                            <!-- 4. Writers -->
-                            <div class="zk-fav-col">
-                                <h4 class="zk-fav-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>
-                                    Writers
-                                </h4>
-                                <ol>
-                                    <li><a href="#" target="_blank">[Writer 1]</a></li>
-                                    <li><a href="#" target="_blank">[Writer 2]</a></li>
-                                    <li><a href="#" target="_blank">[Writer 3]</a></li>
-                                    <li><a href="#" target="_blank">[Writer 4]</a></li>
-                                    <li><a href="#" target="_blank">[Writer 5]</a></li>
-                                </ol>
-                            </div>
-
-                            <!-- 5. Directors -->
-                            <div class="zk-fav-col">
-                                <h4 class="zk-fav-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
-                                    Directors
-                                </h4>
-                                <ol>
-                                    <li><a href="#" target="_blank">Christopher Nolan</a></li>
-                                    <li><a href="#" target="_blank">Denis Villeneuve</a></li>
-                                    <li><a href="#" target="_blank">[Director 3]</a></li>
-                                    <li><a href="#" target="_blank">[Director 4]</a></li>
-                                    <li><a href="#" target="_blank">[Director 5]</a></li>
-                                </ol>
-                            </div>
-
-                            <!-- 6. Actors -->
-                            <div class="zk-fav-col">
-                                <h4 class="zk-fav-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                    Actors
-                                </h4>
-                                <ol>
-                                    <li><a href="#" target="_blank">Matthew McConaughey</a></li>
-                                    <li><a href="#" target="_blank">[Actor 2]</a></li>
-                                    <li><a href="#" target="_blank">[Actor 3]</a></li>
-                                    <li><a href="#" target="_blank">[Actor 4]</a></li>
-                                    <li><a href="#" target="_blank">[Actor 5]</a></li>
-                                </ol>
-                            </div>
-
-                            <!-- 7. Musical Artists -->
-                            <div class="zk-fav-col">
-                                <h4 class="zk-fav-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-                                    Artists
-                                </h4>
-                                <ol>
-                                    <li><a href="#" target="_blank">Hans Zimmer</a></li>
-                                    <li><a href="#" target="_blank">Nils Frahm</a></li>
-                                    <li><a href="#" target="_blank">[Artist 3]</a></li>
-                                    <li><a href="#" target="_blank">[Artist 4]</a></li>
-                                    <li><a href="#" target="_blank">[Artist 5]</a></li>
-                                </ol>
-                            </div>
-
-                            <!-- 8. Musical Bands -->
-                            <div class="zk-fav-col">
-                                <h4 class="zk-fav-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                                    Bands
-                                </h4>
-                                <ol>
-                                    <li><a href="#" target="_blank">[Band 1]</a></li>
-                                    <li><a href="#" target="_blank">[Band 2]</a></li>
-                                    <li><a href="#" target="_blank">[Band 3]</a></li>
-                                    <li><a href="#" target="_blank">[Band 4]</a></li>
-                                    <li><a href="#" target="_blank">[Band 5]</a></li>
-                                </ol>
-                            </div>
-
-                            <!-- 9. Albums -->
-                            <div class="zk-fav-col">
-                                <h4 class="zk-fav-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
-                                    Albums
-                                </h4>
-                                <ol>
-                                    <li><a href="#" target="_blank">[Album 1]</a></li>
-                                    <li><a href="#" target="_blank">[Album 2]</a></li>
-                                    <li><a href="#" target="_blank">[Album 3]</a></li>
-                                    <li><a href="#" target="_blank">[Album 4]</a></li>
-                                    <li><a href="#" target="_blank">[Album 5]</a></li>
-                                </ol>
-                            </div>
-
-                            <!-- 10. Songs -->
-                            <div class="zk-fav-col">
-                                <h4 class="zk-fav-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2z"></path><path d="M3 19a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"></path></svg>
-                                    Songs
-                                </h4>
-                                <ol>
-                                    <li><a href="#" target="_blank">Cornfield Chase</a></li>
-                                    <li><a href="#" target="_blank">Time</a></li>
-                                    <li><a href="#" target="_blank">[Song 3]</a></li>
-                                    <li><a href="#" target="_blank">[Song 4]</a></li>
-                                    <li><a href="#" target="_blank">[Song 5]</a></li>
-                                </ol>
-                            </div>
-
-                            <!-- 11. Tech Nerds / Visionaries -->
-                            <div class="zk-fav-col">
-                                <h4 class="zk-fav-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-                                    Tech Nerds
-                                </h4>
-                                <ol>
-                                    <li><a href="#" target="_blank">[Nerd 1]</a></li>
-                                    <li><a href="#" target="_blank">[Nerd 2]</a></li>
-                                    <li><a href="#" target="_blank">[Nerd 3]</a></li>
-                                    <li><a href="#" target="_blank">[Nerd 4]</a></li>
-                                    <li><a href="#" target="_blank">[Nerd 5]</a></li>
-                                </ol>
-                            </div>
-
-                            <!-- 12. Scientists -->
-                            <div class="zk-fav-col">
-                                <h4 class="zk-fav-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(45 12 12)"></ellipse><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-45 12 12)"></ellipse></svg>
-                                    Scientists
-                                </h4>
-                                <ol>
-                                    <li><a href="#" target="_blank">[Scientist 1]</a></li>
-                                    <li><a href="#" target="_blank">[Scientist 2]</a></li>
-                                    <li><a href="#" target="_blank">[Scientist 3]</a></li>
-                                    <li><a href="#" target="_blank">[Scientist 4]</a></li>
-                                    <li><a href="#" target="_blank">[Scientist 5]</a></li>
-                                </ol>
-                            </div>
-
-                            <!-- 13. Athletes -->
-                            <div class="zk-fav-col">
-                                <h4 class="zk-fav-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
-                                    Athletes
-                                </h4>
-                                <ol>
-                                    <li><a href="#" target="_blank">[Athlete 1]</a></li>
-                                    <li><a href="#" target="_blank">[Athlete 2]</a></li>
-                                    <li><a href="#" target="_blank">[Athlete 3]</a></li>
-                                    <li><a href="#" target="_blank">[Athlete 4]</a></li>
-                                    <li><a href="#" target="_blank">[Athlete 5]</a></li>
-                                </ol>
-                            </div>
-
-                            <!-- 14. Models -->
-                            <div class="zk-fav-col">
-                                <h4 class="zk-fav-title">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                                    Models
-                                </h4>
-                                <ol>
-                                    <li><a href="#" target="_blank">[Model 1]</a></li>
-                                    <li><a href="#" target="_blank">[Model 2]</a></li>
-                                    <li><a href="#" target="_blank">[Model 3]</a></li>
-                                    <li><a href="#" target="_blank">[Model 4]</a></li>
-                                    <li><a href="#" target="_blank">[Model 5]</a></li>
-                                </ol>
-                            </div>
-
-                        </div>
-                    </div>
-
-                </div>
+        <div class="zk-tab-panel" id="tab-journey">
+            <div class="zk-timeline-body">
+                <h3>The Creative Process</h3>
+                <p>This is where you can dive deep into your story. Talk about your connection to music, cinematography, and technology.</p>
+                <p>Explain how you use tools to build nocturnes and aubades, and what inspires your visual projects.</p>
+                <blockquote>"A place for a nice, meaningful quote about your art."</blockquote>
             </div>
-
-            <div class="zk-tab-panel" id="tab-journey">
-                <div class="zk-timeline-body">
-                    <h3>The Creative Process</h3>
-                    <p>This is where you can dive deep into your story. Talk about your connection to music, cinematography, and technology.</p>
-                    <p>Explain how you use tools to build nocturnes and aubades, and what inspires your visual projects.</p>
-                    <blockquote>"A place for a nice, meaningful quote about your art."</blockquote>
-                </div>
-            </div>
-
-            <div class="zk-tab-panel" id="tab-captures">
-                <div class="zk-bento-header" style="margin-bottom: 30px;">
-                    <div class="zk-header-title">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                        <h3>Life & Captures</h3>
-                    </div>
-                    <p class="zk-bento-desc">Behind the scenes. No renders, no code—just real life captured through a lens.</p>
-                </div>
-
-                <div class="zk-filebird-gallery-wrapper">
-                    <?php
-                    // აქ იძახებს ჩვენს დაწერილ PHP ფუნქციას.
-                    // !მნიშვნელოვანია! რიცხვი 2 უნდა შეცვალო შენი ფოლდერის ნამდვილი ID-ით
-                    echo zk_get_filebird_gallery( 5 );
-                    ?>
-                </div>
-            </div>
-
-        </div><!-- /.zk-tabs-content -->
-
-        <?php
-        /* Cinematic lightbox — rendered OUTSIDE the tab panels on purpose:
-           .zk-tab-panel uses a transform for its slide-in animation, and a
-           transformed ancestor makes this position:fixed overlay resolve
-           against the panel (framed) instead of the viewport. Same markup
-           the photography gallery uses; wired by initGallery() in app.js. */
-        ?>
-        <div class="zk-lightbox" id="zkLightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Photo viewer">
-            <button class="zk-lightbox-close" type="button" aria-label="Close">✕</button>
-            <button class="zk-lightbox-arrow zk-lightbox-prev" type="button" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-            <button class="zk-lightbox-arrow zk-lightbox-next" type="button" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
-            <img class="zk-lightbox-img" src="" alt="" decoding="async">
-            <div class="zk-lightbox-exif" id="zkLightboxExif"></div>
-            <div class="zk-lightbox-thumbs" id="zkLightboxThumbs"></div>
         </div>
-    </div><!-- /.zk-about-wrapper -->
 
-    <?php return ob_get_clean();
+        <div class="zk-tab-panel" id="tab-captures">
+            <div class="zk-bento-header" style="margin-bottom: 30px;">
+                <div class="zk-header-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    <h3>Life & Captures</h3>
+                </div>
+                <p class="zk-bento-desc">Behind the scenes. No renders, no code—just real life captured through a lens.</p>
+            </div>
+            <div class="zk-filebird-gallery-wrapper">
+                <?php echo zk_get_filebird_gallery( 5 ); ?>
+            </div>
+        </div>
+
+    </div><div class="zk-lightbox" id="zkLightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Photo viewer">
+        <button class="zk-lightbox-close" type="button" aria-label="Close">✕</button>
+        <button class="zk-lightbox-arrow zk-lightbox-prev" type="button" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+        <button class="zk-lightbox-arrow zk-lightbox-next" type="button" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+        <img class="zk-lightbox-img" src="" alt="" decoding="async">
+        <div class="zk-lightbox-exif" id="zkLightboxExif"></div>
+        <div class="zk-lightbox-thumbs" id="zkLightboxThumbs"></div>
+    </div>
+    </div><?php return ob_get_clean();
 }
 add_shortcode( 'zk_about', 'zk_about_page_shortcode' );
 
@@ -1137,3 +971,81 @@ function zk_get_filebird_gallery( $folder_id ) {
 
 /* Life & Captures now uses the theme's own cinematic lightbox (see
    zk_get_filebird_gallery + initGallery in app.js) — PhotoSwipe removed. */
+
+
+
+/* ============================================================
+   IDENTITY SETTINGS PAGE (Backend UI)
+   ============================================================ */
+function zk_identity_menu() {
+    // ამატებს "Identity" მენიუს შენს WP პანელში, მარცხენა მხარეს
+    add_menu_page('Identity Data', 'Identity', 'manage_options', 'zk-identity', 'zk_identity_page_html', 'dashicons-id', 20);
+}
+add_action('admin_menu', 'zk_identity_menu');
+
+function zk_identity_page_html() {
+    if (!current_user_can('manage_options')) return;
+
+    // შენახვის ლოგიკა
+    if (isset($_POST['zk_identity_nonce']) && wp_verify_nonce($_POST['zk_identity_nonce'], 'zk_save_identity')) {
+        foreach ($_POST as $key => $value) {
+            if (strpos($key, 'zk_vital_') === 0 || strpos($key, 'zk_social_') === 0 || strpos($key, 'zk_fav_') === 0 || $key === 'zk_skills' || $key === 'zk_profile_img') {
+                update_option($key, wp_unslash($value));
+            }
+        }
+        echo '<div class="notice notice-success"><p>Identity data saved successfully!</p></div>';
+    }
+    ?>
+    <div class="wrap">
+        <h1>Identity Settings</h1>
+        <p>მართე შენი Vitals, Skills და The Curated Mind აქედან.</p>
+        <form method="post" action="">
+            <?php wp_nonce_field('zk_save_identity', 'zk_identity_nonce'); ?>
+
+            <h2 class="title" style="margin-top:30px; border-bottom:1px solid #ccc; padding-bottom:10px;">1. Vitals & Connect</h2>
+            <table class="form-table">
+                <tr><th>Profile Photo URL</th><td><input type="text" name="zk_profile_img" value="<?php echo esc_attr(get_option('zk_profile_img', 'https://via.placeholder.com/150x200')); ?>" class="regular-text" /></td></tr>
+                <tr><th>Born</th><td><input type="text" name="zk_vital_born" value="<?php echo esc_attr(get_option('zk_vital_born', 'DD.MM.YYYY')); ?>" class="regular-text" /></td></tr>
+                <tr><th>Origin</th><td><input type="text" name="zk_vital_origin" value="<?php echo esc_attr(get_option('zk_vital_origin', 'Ozurgeti, Guria, Georgia')); ?>" class="regular-text" /></td></tr>
+                <tr><th>Base</th><td><input type="text" name="zk_vital_base" value="<?php echo esc_attr(get_option('zk_vital_base', 'Tbilisi, Georgia')); ?>" class="regular-text" /></td></tr>
+                <tr><th>Studio (HTML დაშვებულია)</th><td><input type="text" name="zk_vital_studio" value="<?php echo esc_attr(get_option('zk_vital_studio', 'Creative Lead @ <a href="https://zurabkostava.com" target="_blank">Kostava Creative</a>')); ?>" class="large-text" /></td></tr>
+                <tr><th>Position (HTML დაშვებულია)</th><td><input type="text" name="zk_vital_position" value="<?php echo esc_attr(get_option('zk_vital_position', 'Web Designer @ <a href="https://emis.ge" target="_blank">EMIS Georgia</a>')); ?>" class="large-text" /></td></tr>
+                <tr><th>Archetype</th><td><input type="text" name="zk_vital_archetype" value="<?php echo esc_attr(get_option('zk_vital_archetype', 'Composer, Visual Artist, Tech Geek')); ?>" class="large-text" /></td></tr>
+            </table>
+
+            <h2 class="title" style="margin-top:30px; border-bottom:1px solid #ccc; padding-bottom:10px;">2. Social Links</h2>
+            <table class="form-table">
+                <tr><th>Instagram URL</th><td><input type="url" name="zk_social_ig" value="<?php echo esc_url(get_option('zk_social_ig', '#')); ?>" class="regular-text" /></td></tr>
+                <tr><th>X (Twitter) URL</th><td><input type="url" name="zk_social_x" value="<?php echo esc_url(get_option('zk_social_x', '#')); ?>" class="regular-text" /></td></tr>
+                <tr><th>LinkedIn URL</th><td><input type="url" name="zk_social_linkedin" value="<?php echo esc_url(get_option('zk_social_linkedin', '#')); ?>" class="regular-text" /></td></tr>
+                <tr><th>YouTube URL</th><td><input type="url" name="zk_social_youtube" value="<?php echo esc_url(get_option('zk_social_youtube', '#')); ?>" class="regular-text" /></td></tr>
+                <tr><th>GitHub URL</th><td><input type="url" name="zk_social_github" value="<?php echo esc_url(get_option('zk_social_github', '#')); ?>" class="regular-text" /></td></tr>
+            </table>
+
+            <h2 class="title" style="margin-top:30px; border-bottom:1px solid #ccc; padding-bottom:10px;">3. Skills (მძიმით გამოყოფილი)</h2>
+            <table class="form-table">
+                <tr><th>Skills</th><td><textarea name="zk_skills" rows="3" class="large-text"><?php echo esc_textarea(get_option('zk_skills', 'Music Production, Cinematography & Color Grading, UI/UX Design (Figma), Sound Design, Web Technologies, AI Workflows & Generation')); ?></textarea></td></tr>
+            </table>
+
+            <h2 class="title" style="margin-top:30px; border-bottom:1px solid #ccc; padding-bottom:10px;">4. The Curated Mind (Favorites)</h2>
+            <p><em>ფორმატი თითოეული ნივთისთვის (ახალ ხაზზე):</em> <code style="background:#e0e0e0; padding:2px 6px;">სათაური | https://ლინკი.com</code></p>
+            <table class="form-table">
+                <?php
+                $fav_cats = [
+                        'zk_fav_cinema' => 'Cinema', 'zk_fav_series' => 'Series', 'zk_fav_books' => 'Books',
+                        'zk_fav_writers' => 'Writers', 'zk_fav_directors' => 'Directors', 'zk_fav_actors' => 'Actors',
+                        'zk_fav_artists' => 'Musical Artists', 'zk_fav_bands' => 'Bands', 'zk_fav_albums' => 'Albums',
+                        'zk_fav_songs' => 'Songs', 'zk_fav_nerds' => 'Tech Nerds', 'zk_fav_scientists' => 'Scientists',
+                        'zk_fav_athletes' => 'Athletes', 'zk_fav_models' => 'Models'
+                ];
+                foreach ($fav_cats as $key => $label) {
+                    echo '<tr><th>' . $label . '</th><td><textarea name="' . $key . '" rows="4" class="large-text">' . esc_textarea(get_option($key)) . '</textarea></td></tr>';
+                }
+                ?>
+            </table>
+
+            <?php submit_button('Save Identity Data'); ?>
+        </form>
+    </div>
+    <?php
+}
