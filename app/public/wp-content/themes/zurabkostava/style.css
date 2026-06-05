@@ -1947,3 +1947,50 @@ body.zk-lb-open { overflow: hidden; }
 @media (max-width: 600px) {
 	.zk-gallery-grid { column-count: 1; } /* მობილურზე 1 სვეტი */
 }
+
+/* ============================================================
+   PHOTOSWIPE CINEMATIC GLASSMORPHISM THEME
+   ============================================================ */
+
+/* 1. მინისებური, დაბლარული ფონი (შავი ფერის ნაცვლად) */
+.pswp__bg {
+	background: rgba(7, 7, 9, 0.85) !important;
+	-webkit-backdrop-filter: blur(20px) !important;
+	backdrop-filter: blur(20px) !important;
+}
+
+/* 2. ზედა პანელის ზედმეტი შავი ფონის გაქრობა */
+.pswp__top-bar {
+	background: transparent !important;
+}
+
+/* 3. ღილაკების (Next, Prev, Close) დახვეწა Apple-ის სტილში */
+.pswp__button--arrow,
+.pswp__button--close,
+.pswp__button--zoom {
+	background-color: rgba(255, 255, 255, 0.05) !important;
+	border: 1px solid rgba(255, 255, 255, 0.1) !important;
+	border-radius: 50% !important;
+	backdrop-filter: blur(10px) !important;
+	margin: 15px !important;
+	width: 50px !important;
+	height: 50px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+	opacity: 0.8 !important;
+}
+
+/* ღილაკზე მაუსის მიტანის (Hover) ეფექტი */
+.pswp__button:hover {
+	background-color: rgba(255, 255, 255, 0.15) !important;
+	opacity: 1 !important;
+	transform: scale(1.1) !important;
+}
+
+/* 4. თავად გახსნილი ფოტოს ვიზუალი (კუთხეების მომრგვალება და ჩრდილი) */
+.pswp__img {
+	border-radius: 12px !important;
+	box-shadow: 0 30px 100px rgba(0, 0, 0, 0.7) !important;
+}
