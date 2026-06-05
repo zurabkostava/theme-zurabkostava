@@ -974,9 +974,7 @@ function zk_get_filebird_gallery( $folder_id ) {
 
 
 
-/* ============================================================
-   IDENTITY SETTINGS PAGE (Backend UI)
-   ============================================================ */
+
 function zk_identity_menu() {
     // ამატებს "Identity" მენიუს შენს WP პანელში, მარცხენა მხარეს
     add_menu_page('Identity Data', 'Identity', 'manage_options', 'zk-identity', 'zk_identity_page_html', 'dashicons-id', 20);
