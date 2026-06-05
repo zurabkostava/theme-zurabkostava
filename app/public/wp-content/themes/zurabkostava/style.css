@@ -1952,15 +1952,14 @@ body.zk-lb-open { overflow: hidden; }
    PHOTOSWIPE CINEMATIC OVERRIDES (GLASSMORPHISM)
    ============================================================ */
 
-/* ── 1. მინისებური ფონი ბლურით (მთლიანი ეკრანის) ── */
+/* ── 1. მინისებური ფონი ბლურით (Backdrop Blur) ── */
 .pswp__bg {
-	background: rgba(7, 7, 9, 0.7) !important; /* ოდნავ გავაღიავეთ, რომ ბლურმა იმუშაოს */
+	background: rgba(7, 7, 9, 0.85) !important; /* მუქი, ოდნავ გამჭვირვალე ფონი */
 	-webkit-backdrop-filter: blur(25px) !important;
 	backdrop-filter: blur(25px) !important;
-	will-change: transform; /* Safari-ზე ბლურის გასააქტიურებლად */
 }
 
-/* ── 2. სურათის კინემატოგრაფიული ჩრდილი ── */
+/* ── 2. სურათის კინემატოგრაფიული ჩრდილი და კუთხეები ── */
 .pswp__img {
 	border-radius: 12px !important;
 	box-shadow: 0 30px 100px rgba(0, 0, 0, 0.8) !important;
@@ -1968,17 +1967,19 @@ body.zk-lb-open { overflow: hidden; }
 
 /* ── 3. საერთო ღილაკების (Glassmorphism) სტილი ── */
 .pswp__button {
-	background: rgba(255, 255, 255, 0.08) !important;
-	border: 1px solid rgba(255, 255, 255, 0.15) !important;
+	background: rgba(255, 255, 255, 0.05) !important;
+	border: 1px solid rgba(255, 255, 255, 0.1) !important;
 	border-radius: 50% !important;
 	width: 54px !important;
 	height: 54px !important;
-	display: block !important; /* Flex-ის ნაცვლად, რადგან SVG-ს აბსოლუტურად ვაცენტრილებთ */
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
 	transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
-	-webkit-backdrop-filter: blur(15px) !important;
-	backdrop-filter: blur(15px) !important;
+	-webkit-backdrop-filter: blur(10px) !important;
+	backdrop-filter: blur(10px) !important;
 	margin: 0 !important;
-	opacity: 0.9 !important;
+	opacity: 0.8 !important;
 }
 
 .pswp__button:hover {
@@ -1987,14 +1988,14 @@ body.zk-lb-open { overflow: hidden; }
 	opacity: 1 !important;
 }
 
-/* ── 4. ტყვიაგაუმტარი გაცენტრილება SVG იკონებისთვის ── */
+/* ვასწორებთ შიდა SVG იკონებს, რომ ზუსტად ცენტრში დაჯდეს */
 .pswp__button svg {
+	width: 24px !important;
+	height: 24px !important;
 	position: absolute !important;
 	top: 50% !important;
 	left: 50% !important;
 	transform: translate(-50%, -50%) !important;
-	width: 22px !important;
-	height: 22px !important;
 	fill: #fff !important;
 	pointer-events: none !important;
 	filter: drop-shadow(0 0 0 transparent) !important;
@@ -2002,31 +2003,36 @@ body.zk-lb-open { overflow: hidden; }
 	padding: 0 !important;
 }
 
-/* ── 5. კონკრეტული ღილაკების პოზიციები ── */
+/* ── 4. კონკრეტული ღილაკების პოზიციები ── */
+
+/* დახურვის (X) ღილაკი ზედა მარჯვენა კუთხეში */
 .pswp__button--close {
 	position: absolute !important;
 	top: 24px !important;
 	right: 24px !important;
 }
 
+/* მარცხენა ისარი */
 .pswp__button--arrow--left {
 	position: absolute !important;
 	left: 40px !important;
 	top: calc(50% - 27px) !important;
 }
 
+/* მარჯვენა ისარი */
 .pswp__button--arrow--right {
 	position: absolute !important;
 	right: 40px !important;
 	top: calc(50% - 27px) !important;
 }
 
-/* ── 6. ზედმეტი დეტალების დამალვა ── */
-.pswp__button--zoom,
-.pswp__icn-shadow {
+/* ── 5. ზედმეტი დეტალების დამალვა ── */
+.pswp__button--zoom, /* ზუმის ღილაკი */
+.pswp__icn-shadow {  /* იკონების სტანდარტული ჩრდილები */
 	display: none !important;
 }
 
+/* ტექსტი (მაგ: 1 / 5) გავხადოთ უფრო დახვეწილი */
 .pswp__counter {
 	color: var(--text-dim) !important;
 	font-family: inherit !important;
@@ -2036,18 +2042,11 @@ body.zk-lb-open { overflow: hidden; }
 	left: 40px !important;
 }
 
-/* ── 7. Responsive მობილურისთვის ── */
+/* ── 6. Responsive მობილურისთვის ── */
 @media (max-width: 768px) {
-	.pswp__button--arrow--left { left: 15px !important; }
-	.pswp__button--arrow--right { right: 15px !important; }
+	.pswp__button--arrow--left { left: 10px !important; }
+	.pswp__button--arrow--right { right: 10px !important; }
 	.pswp__button--close { top: 15px !important; right: 15px !important; }
-
-	.pswp__button {
-		width: 44px !important;
-		height: 44px !important;
-		/* აქ შევასწორეთ მუქი ფონი, რომ ბლური ისევ გამოჩნდეს */
-		background: rgba(255, 255, 255, 0.1) !important;
-		-webkit-backdrop-filter: blur(12px) !important;
-		backdrop-filter: blur(12px) !important;
-	}
+	.pswp__button { width: 44px !important; height: 44px !important; }
+	.pswp__button svg { width: 20px !important; height: 20px !important; }
 }
