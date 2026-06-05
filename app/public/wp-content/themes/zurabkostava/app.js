@@ -407,17 +407,35 @@
         sentinel.style.height = '0px';
         breadcrumbs.parentNode.insertBefore(sentinel, breadcrumbs);
 
-        // ვაკვირდებით, როდის გადაკვეთს ეს სენსორი ჰედერის ხაზს (64px სიმაღლე + 14px დაშორება = 78px)
         var observer = new IntersectionObserver(function(entries) {
             entries.forEach(function(entry) {
-                // თუ სენსორი გასცდა ხაზს (ზემოთ ავიდა), ვრთავთ მინის კაფსულას
-                breadcrumbs.classList.toggle('is-stuck', !entry.isIntersecting);
-            });
-        }, {
-            rootMargin: '-78px 0px 0px 0px'
-        });
+                filters.classList.toggle('is-stuck', !entry.isIntersecting);
 
+                // როცა კაფსულის ზომა (padding) იცვლება სქროლვისას, ჰაილაითის პოზიციას ვაახლებთ
+                var currentBtn = filters.querySelector('.zk-filter-btn.is-active');
+                if (currentBtn && typeof setFilterHighlight === 'function') {
+                    setTimeout(function() { setFilterHighlight(currentBtn); }, 50);
+                }
+            });
+        }, { rootMargin: '-130px 0px 0px 0px' });
         observer.observe(sentinel);
+    }
+    var grid      = wrap.querySelector('.zk-gallery-grid');
+    var buttons   = Array.prototype.slice.call(wrap.querySelectorAll('.zk-filter-btn'));
+    var allItems  = Array.prototype.slice.call(wrap.querySelectorAll('.zk-gallery-item'));
+    var highlight = wrap.querySelector('.zk-filter-highlight'); // <--- დამატებულია
+
+    // მთავარი ფუნქცია ჰაილაითის გასამოძრავებლად
+    function setFilterHighlight(btn) {
+        if (!highlight || !btn) return;
+        highlight.style.width = btn.offsetWidth + 'px';
+        highlight.style.transform = 'translateX(' + btn.offsetLeft + 'px)';
+    }
+
+    // საწყისი პოზიციის დაყენება გვერდის ჩატვირთვისას
+    var initialActiveBtn = wrap.querySelector('.zk-filter-btn.is-active');
+    if (initialActiveBtn) {
+        setTimeout(function() { setFilterHighlight(initialActiveBtn); }, 50);
     }
 
     // ვუშვებთ ეგრევე ჩატვირთვისას
@@ -751,7 +769,10 @@
                 });
                 btn.classList.add('is-active');
                 btn.setAttribute('aria-pressed', 'true');
+
+                // <--- ვამოძრავებთ ჰაილაითს ახალ ღილაკზე --->
                 setFilterHighlight(btn);
+
                 // 1. ვუშვებთ ფილტრაციის ლოგიკას
 
                 applyFilter(btn.getAttribute('data-filter'));

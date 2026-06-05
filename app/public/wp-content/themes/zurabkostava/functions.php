@@ -477,7 +477,7 @@ function zk_cinematic_gallery() {
 
     $output  = '<div class="zk-gallery-wrapper">';
     $output .= '<div class="zk-gallery-filters" role="group" aria-label="Filter photography">';
-    $output .= '<div class="zk-filter-highlight"></div>';
+    $output .= '<div class="zk-filter-highlight"></div>'; // <--- ჩამატებული მოძრავი ფონი
     $output .= '<button class="zk-filter-btn is-active" type="button" data-filter="all" aria-pressed="true">All</button>';
     $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-camera" aria-pressed="false">Camera</button>';
     $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-mobile" aria-pressed="false">Mobile</button>';
