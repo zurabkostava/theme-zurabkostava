@@ -1060,10 +1060,9 @@ add_shortcode( 'zk_about', 'zk_about_page_shortcode' );
 
 
 /* ============================================================
-   FILEBIRD CUSTOM GALLERY FETCHER (LIGHTBOX SUPPORT)
-   ============================================================ */
-/* ============================================================
-   FILEBIRD CUSTOM GALLERY FETCHER (PHOTOSWIPE SUPPORT)
+   FILEBIRD CUSTOM GALLERY FETCHER (CINEMATIC LIGHTBOX)
+   Emits the SAME markup as [zk_photography] (grid + #zkLightbox),
+   so the shared initGallery() in app.js drives it identically.
    ============================================================ */
 function zk_get_filebird_gallery( $folder_id ) {
     global $wpdb;
@@ -1084,49 +1083,46 @@ function zk_get_filebird_gallery( $folder_id ) {
         return '<p style="color:var(--text-dim);">No photos found in this FileBird folder.</p>';
     }
 
-    // ── 1. ვიწყებთ Masonry Grid-ს ──
-    // ვამატებთ ID-ს, რომ JS-მა ადვილად იპოვოს
-    $output = '<div class="zk-gallery-grid zk-js-photoswipe-gallery" id="zkAboutGallery">';
+    // ── Masonry grid — identical structure to the photography gallery. ──
+    $output  = '<div class="zk-gallery-wrapper">';
+    $output .= '<div class="zk-gallery-grid" id="zkAboutGallery">';
 
     foreach ( $attachment_ids as $id ) {
-        $img_thumbnail = wp_get_attachment_image_url( $id, 'large' );
-        $img_full_url = wp_get_attachment_image_url( $id, 'full' );
-
-        // ვიღებთ ორიგინალი ფოტოს ზომებს (width/height) - ეს აუცილებელია PhotoSwipe-ისთვის!
-        $img_meta = wp_get_attachment_metadata( $id );
-        $width = isset($img_meta['width']) ? $img_meta['width'] : '1920';
-        $height = isset($img_meta['height']) ? $img_meta['height'] : '1080';
-
-        if ( $img_thumbnail && $img_full_url ) {
-            $output .= '<div class="zk-gallery-item">';
-            // ── 2. თითოეულ ფოტოს ვფუთავთ A ტეგში PhotoSwipe-ის ატრიბუტებით ──
-            $output .= '<a href="' . esc_url( $img_full_url ) . '" 
-                           class="zk-photoswipe-trigger" 
-                           data-pswp-width="' . esc_attr($width) . '" 
-                           data-pswp-height="' . esc_attr($height) . '" 
-                           target="_blank">';
-            $output .= '<img src="' . esc_url( $img_thumbnail ) . '" alt="Zurab Kostava Capture" loading="lazy" />';
-
-            // Hover Overlay
-            $output .= '<div class="zk-gallery-hover-overlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div>';
-
-            $output .= '</a>';
-            $output .= '</div>';
+        $full_img  = wp_get_attachment_image_url( $id, 'full' );
+        $thumb_img = wp_get_attachment_image_url( $id, 'thumbnail' ); // light strip image
+        if ( ! $full_img ) {
+            continue;
         }
+
+        // Same image contract initGallery() reads: data-full (lightbox), data-thumb (strip).
+        // Life & Captures has no EXIF, so data-exif stays empty.
+        $img_html = wp_get_attachment_image( $id, 'large', false, array(
+            'data-full'  => esc_url( $full_img ),
+            'data-thumb' => esc_url( $thumb_img ? $thumb_img : $full_img ),
+            'data-exif'  => '',
+            'class'      => 'zk-grid-photo',
+            'alt'        => 'Zurab Kostava Capture',
+        ) );
+
+        $output .= '<div class="zk-gallery-item">';
+        $output .= '<div class="zk-gallery-image-wrap">' . $img_html . '</div>';
+        $output .= '</div>';
     }
 
-    $output .= '</div>';
+    $output .= '</div></div>';
 
-    // *** ყურადღება: წინა Lightbox HTML ბლოკი აქედან წავშალეთ! ***
+    // Cinematic lightbox — same markup as zk_cinematic_gallery(); wired by initGallery().
+    $output .= '<div class="zk-lightbox" id="zkLightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Photo viewer">';
+    $output .= '<button class="zk-lightbox-close" type="button" aria-label="Close">✕</button>';
+    $output .= '<button class="zk-lightbox-arrow zk-lightbox-prev" type="button" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg></button>';
+    $output .= '<button class="zk-lightbox-arrow zk-lightbox-next" type="button" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg></button>';
+    $output .= '<img class="zk-lightbox-img" src="" alt="" decoding="async">';
+    $output .= '<div class="zk-lightbox-exif" id="zkLightboxExif"></div>';
+    $output .= '<div class="zk-lightbox-thumbs" id="zkLightboxThumbs"></div>';
+    $output .= '</div>';
 
     return $output;
 }
 
-/* ============================================================
-   ENQUEUE PHOTOSWIPE CSS ONLY
-   ============================================================ */
-function zk_enqueue_photoswipe() {
-    wp_enqueue_style( 'photoswipe-css', 'https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe.min.css', array(), '5.4.2' );
-}
-add_action( 'wp_enqueue_scripts', 'zk_enqueue_photoswipe' );
-add_action( 'wp_footer', 'zk_init_photoswipe_inline', 100 );
+/* Life & Captures now uses the theme's own cinematic lightbox (see
+   zk_get_filebird_gallery + initGallery in app.js) — PhotoSwipe removed. */

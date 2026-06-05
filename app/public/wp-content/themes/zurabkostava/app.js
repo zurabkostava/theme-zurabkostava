@@ -948,57 +948,8 @@
 })();
 
 /* ============================================================
-   ABOUT PAGE - DYNAMIC GALLERY & PHOTOSWIPE INIT
+   ABOUT PAGE — Life & Captures gallery
+   No dedicated logic: it emits the same markup as [zk_photography]
+   (grid + #zkLightbox), so the cinematic gallery IIFE above
+   (initGallery + its #view observer) loads & previews it identically.
    ============================================================ */
-(function() {
-    function initAboutGallery() {
-        const gallery = document.getElementById('zkAboutGallery');
-
-        // თუ გალერეა არ არის, ან უკვე გავუშვით სკრიპტი ამ კონკრეტულ ელემენტზე, ვჩერდებით
-        if (!gallery || gallery.dataset.pswpInit === 'true') return;
-
-        gallery.dataset.pswpInit = 'true';
-
-        // ── 1. Cinematic Staggered Reveal Animation ──
-        const items = gallery.querySelectorAll('.zk-gallery-item');
-        const observer = new IntersectionObserver((entries, obs) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const el = entry.target;
-                    // ვითვლით ინდექსს, რომ ფოტოები ერთდროულად კი არა, რიგ-რიგობით გამოჩნდეს (Stagger)
-                    const index = Array.from(items).indexOf(el);
-
-                    setTimeout(() => {
-                        el.classList.add('zk-reveal');
-                    }, (index % 10) * 80); // 80 მილიწამიანი დაგვიანება თითოეულზე
-
-                    obs.unobserve(el); // გამოჩენის მერე აღარ ვუსმენთ
-                }
-            });
-        }, { threshold: 0.1 });
-
-        items.forEach(item => observer.observe(item));
-
-        // ── 2. PhotoSwipe-ის დინამიური ჩატვირთვა (SPA Bug-ის მკვლელი) ──
-        import('https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe-lightbox.esm.min.js')
-            .then((module) => {
-                const PhotoSwipeLightbox = module.default;
-                const lightbox = new PhotoSwipeLightbox({
-                    gallery: '#zkAboutGallery',
-                    children: '.zk-photoswipe-trigger',
-                    bgOpacity: 0.95,
-                    showHideAnimationType: 'zoom',
-                    pswpModule: () => import('https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe.esm.min.js')
-                });
-                lightbox.init();
-            })
-            .catch(err => console.error("PhotoSwipe ერორი:", err));
-    }
-
-    // ვუშვებთ საიტის ჩატვირთვისას
-    initAboutGallery();
-
-    // ვუსმენთ SPA ნავიგაციას (როცა სხვა გვერდიდან ბრუნდება, თავიდან არენდერებს ლოგიკას)
-    var viewEl = document.getElementById('view') || document.body;
-    new MutationObserver(initAboutGallery).observe(viewEl, { childList: true, subtree: true });
-})();
