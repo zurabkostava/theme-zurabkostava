@@ -769,34 +769,34 @@ function zk_about_page_shortcode() {
                                     </li>
 
                                 </ul>
-
-                                <div class="zk-connect-footer">
-                                    <div class="zk-social-bar">
-                                        <a href="<?php echo esc_url(get_option('zk_social_ig', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>
-                                        <a href="<?php echo esc_url(get_option('zk_social_fb', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
-                                        <a href="<?php echo esc_url(get_option('zk_social_x', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="X (Twitter)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-                                        <a href="<?php echo esc_url(get_option('zk_social_linkedin', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
-                                        <a href="<?php echo esc_url(get_option('zk_social_youtube', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg></a>
-                                        <a href="<?php echo esc_url(get_option('zk_social_spotify', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="Spotify"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.24 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.24 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.6.18-1.2.72-1.381 4.26-1.261 11.28-1.02 15.721 1.621.54.3.72.96.42 1.5-.3.54-.96.72-1.56.36z"/></svg></a>
-                                        <a href="<?php echo esc_url(get_option('zk_social_bandcamp', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="Bandcamp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M0 18.75l7.437-13.5H24l-7.438 13.5H0z"/></svg></a>
-                                        <a href="<?php echo esc_url(get_option('zk_social_medium', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="Medium"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42c1.87 0 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/></svg></a>
-                                    </div>
-                                    <div class="zk-email-bar">
-                                        <span class="zk-email-label">Contact:</span>
-                                        <div class="zk-email-list">
-                                            <a href="mailto:<?php echo esc_attr(get_option('zk_vital_email_1', 'zurab@kostavacreative.com')); ?>" class="zk-email-link">
-                                                <?php echo esc_html(get_option('zk_vital_email_1', 'zurab@kostavacreative.com')); ?>
-                                            </a>
-                                            <a href="mailto:<?php echo esc_attr(get_option('zk_vital_email_2', 'zurabkostava1@gmail.com')); ?>" class="zk-email-link">
-                                                <?php echo esc_html(get_option('zk_vital_email_2', 'zurabkostava1@gmail.com')); ?>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            </div> <!-- /.zk-profile-content-ის დასასრული -->
 
                             <div class="zk-profile-photo">
                                 <img src="<?php echo esc_url(get_option('zk_profile_img', 'https://via.placeholder.com/150x200')); ?>" alt="Zurab Kostava" />
+                            </div>
+                        </div> <!-- /.zk-profile-inner-ის დასასრული -->
+
+                        <div class="zk-connect-footer">
+                            <div class="zk-social-bar">
+                                <a href="<?php echo esc_url(get_option('zk_social_ig', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>
+                                <a href="<?php echo esc_url(get_option('zk_social_fb', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+                                <a href="<?php echo esc_url(get_option('zk_social_x', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="X (Twitter)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+                                <a href="<?php echo esc_url(get_option('zk_social_linkedin', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+                                <a href="<?php echo esc_url(get_option('zk_social_youtube', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg></a>
+                                <a href="<?php echo esc_url(get_option('zk_social_spotify', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="Spotify"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.24 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.24 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.6.18-1.2.72-1.381 4.26-1.261 11.28-1.02 15.721 1.621.54.3.72.96.42 1.5-.3.54-.96.72-1.56.36z"/></svg></a>
+                                <a href="<?php echo esc_url(get_option('zk_social_bandcamp', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="Bandcamp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M0 18.75l7.437-13.5H24l-7.438 13.5H0z"/></svg></a>
+                                <a href="<?php echo esc_url(get_option('zk_social_medium', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="Medium"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42c1.87 0 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/></svg></a>
+                            </div>
+                            <div class="zk-email-bar">
+                                <span class="zk-email-label">Contact:</span>
+                                <div class="zk-email-list">
+                                    <a href="mailto:<?php echo esc_attr(get_option('zk_vital_email_1', 'zurab@kostavacreative.com')); ?>" class="zk-email-link">
+                                        <?php echo esc_html(get_option('zk_vital_email_1', 'zurab@kostavacreative.com')); ?>
+                                    </a>
+                                    <a href="mailto:<?php echo esc_attr(get_option('zk_vital_email_2', 'zurabkostava1@gmail.com')); ?>" class="zk-email-link">
+                                        <?php echo esc_html(get_option('zk_vital_email_2', 'zurabkostava1@gmail.com')); ?>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
