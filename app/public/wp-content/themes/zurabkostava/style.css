@@ -1668,13 +1668,13 @@ body.zk-lb-open { overflow: hidden; }
 /* ── 5. Footer Connect (Social & Emails) ── */
 .zk-connect-footer {
 	display: flex;
-	align-items: center;
+	align-items: flex-end; /* ეს აწებებს ორივე მხარეს სულ ბოლოში */
 	justify-content: space-between;
 	flex-wrap: wrap;
 	gap: 20px;
-	margin-top: 36px; /* დაშორება Vitals სიიდან */
+	margin-top: 36px;
 	padding-top: 24px;
-	border-top: 1px solid var(--hairline-strong); /* დახვეწილი გამყოფი ხაზი */
+	border-top: 1px solid var(--hairline-strong);
 }
 
 .zk-social-bar {
@@ -1685,32 +1685,56 @@ body.zk-lb-open { overflow: hidden; }
 
 .zk-email-bar {
 	display: flex;
-	flex-direction: column;
-	gap: 12px;
 	align-items: flex-start;
+	gap: 14px;
+}
+
+.zk-email-label {
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	color: var(--text-dim);
+	margin-top: 3px; /* ოდნავ ქვემოთ იწევა, რომ მეილებს გაუსწორდეს */
+}
+
+.zk-email-list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
 }
 
 .zk-email-link {
 	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	font-size: 0.8rem;
+	font-size: 0.85rem;
 	font-weight: 500;
 	letter-spacing: 0.05em;
 	color: var(--text-muted);
 	text-decoration: none !important;
-	transition: color 0.3s var(--ease), transform 0.3s var(--ease);
+	position: relative;
+	padding-bottom: 2px;
+	transition: color 0.35s ease;
+}
+
+/* ელეგანტური ანიმაცია ხტუნვის გარეშე */
+.zk-email-link::after {
+	content: "";
+	position: absolute;
+	left: 0; bottom: 0;
+	width: 100%; height: 1px;
+	background: #fff;
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .zk-email-link:hover {
 	color: #fff;
-	transform: translateX(4px);
 }
 
-.zk-email-link svg {
-	width: 16px;
-	height: 16px;
-	opacity: 0.7;
+.zk-email-link:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
 }
 
 .zk-social-btn {
@@ -1882,15 +1906,17 @@ body.zk-lb-open { overflow: hidden; }
 	}
 
 	.zk-email-bar {
+		flex-direction: column;
 		align-items: center;
 		margin-top: 10px;
 		padding-top: 16px;
 		border-top: 1px dashed var(--hairline-strong);
 		width: 100%;
+		gap: 8px;
 	}
 
-	.zk-email-link:hover {
-		transform: none; /* მობილურზე ჰოვერის ანიმაცია არ გვჭირდება */
+	.zk-email-list {
+		align-items: center;
 	}
 
 	/* ოდნავ ვაპატარავებთ სოციალურ ღილაკებს, რომ ყველა 1 ხაზზე ჩაეტიოს */

@@ -782,14 +782,15 @@ function zk_about_page_shortcode() {
                                         <a href="<?php echo esc_url(get_option('zk_social_medium', '#')); ?>" class="zk-social-btn" target="_blank" rel="noopener" aria-label="Medium"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42c1.87 0 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/></svg></a>
                                     </div>
                                     <div class="zk-email-bar">
-                                        <a href="mailto:<?php echo esc_attr(get_option('zk_vital_email_1', 'zurab@kostavacreative.com')); ?>" class="zk-email-link">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                                            <?php echo esc_html(get_option('zk_vital_email_1', 'zurab@kostavacreative.com')); ?>
-                                        </a>
-                                        <a href="mailto:<?php echo esc_attr(get_option('zk_vital_email_2', 'zurabkostava1@gmail.com')); ?>" class="zk-email-link">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                                            <?php echo esc_html(get_option('zk_vital_email_2', 'zurabkostava1@gmail.com')); ?>
-                                        </a>
+                                        <span class="zk-email-label">Contact:</span>
+                                        <div class="zk-email-list">
+                                            <a href="mailto:<?php echo esc_attr(get_option('zk_vital_email_1', 'zurab@kostavacreative.com')); ?>" class="zk-email-link">
+                                                <?php echo esc_html(get_option('zk_vital_email_1', 'zurab@kostavacreative.com')); ?>
+                                            </a>
+                                            <a href="mailto:<?php echo esc_attr(get_option('zk_vital_email_2', 'zurabkostava1@gmail.com')); ?>" class="zk-email-link">
+                                                <?php echo esc_html(get_option('zk_vital_email_2', 'zurabkostava1@gmail.com')); ?>
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
