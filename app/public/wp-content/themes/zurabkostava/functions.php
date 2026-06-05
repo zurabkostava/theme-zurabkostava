@@ -719,7 +719,7 @@ function zk_about_page_shortcode() {
             <div class="zk-tabs-nav">
                 <div class="zk-tab-highlight"></div>
                 <button class="zk-tab-btn active" data-target="tab-identity">Identity</button>
-                <button class="zk-tab-btn" data-target="tab-journey">The Journey</button>
+                <button class="zk-tab-btn" data-target="tab-journey">The Monologue</button>
                 <button class="zk-tab-btn" data-target="tab-captures">Life & Captures</button>
             </div>
         </div>
