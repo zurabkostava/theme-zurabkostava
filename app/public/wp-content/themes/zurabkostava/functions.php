@@ -1062,6 +1062,9 @@ add_shortcode( 'zk_about', 'zk_about_page_shortcode' );
 /* ============================================================
    FILEBIRD CUSTOM GALLERY FETCHER (LIGHTBOX SUPPORT)
    ============================================================ */
+/* ============================================================
+   FILEBIRD CUSTOM GALLERY FETCHER (PHOTOSWIPE SUPPORT)
+   ============================================================ */
 function zk_get_filebird_gallery( $folder_id ) {
     global $wpdb;
 
@@ -1082,20 +1085,31 @@ function zk_get_filebird_gallery( $folder_id ) {
     }
 
     // ── 1. ვიწყებთ Masonry Grid-ს ──
-    $output = '<div class="zk-gallery-grid zk-js-lightbox-gallery">';
+    // ვამატებთ ID-ს, რომ JS-მა ადვილად იპოვოს
+    $output = '<div class="zk-gallery-grid zk-js-photoswipe-gallery" id="zkAboutGallery">';
 
     foreach ( $attachment_ids as $id ) {
-        // დიდი ზომა Thumbnail-ისთვის
         $img_thumbnail = wp_get_attachment_image_url( $id, 'large' );
-        // სრული ზომა Lightbox-ისთვის
-        $img_full = wp_get_attachment_image_url( $id, 'full' );
+        $img_full_url = wp_get_attachment_image_url( $id, 'full' );
 
-        if ( $img_thumbnail && $img_full ) {
+        // ვიღებთ ორიგინალი ფოტოს ზომებს (width/height) - ეს აუცილებელია PhotoSwipe-ისთვის!
+        $img_meta = wp_get_attachment_metadata( $id );
+        $width = isset($img_meta['width']) ? $img_meta['width'] : '1920';
+        $height = isset($img_meta['height']) ? $img_meta['height'] : '1080';
+
+        if ( $img_thumbnail && $img_full_url ) {
             $output .= '<div class="zk-gallery-item">';
-            // ── 2. თითოეულ ფოტოს ვფუთავთ A ტეგში, რომელიც Full-ზე მიუთითებს ──
-            $output .= '<a href="' . esc_url( $img_full ) . '" class="zk-lightbox-trigger">';
+            // ── 2. თითოეულ ფოტოს ვფუთავთ A ტეგში PhotoSwipe-ის ატრიბუტებით ──
+            $output .= '<a href="' . esc_url( $img_full_url ) . '" 
+                           class="zk-photoswipe-trigger" 
+                           data-pswp-width="' . esc_attr($width) . '" 
+                           data-pswp-height="' . esc_attr($height) . '" 
+                           target="_blank">';
             $output .= '<img src="' . esc_url( $img_thumbnail ) . '" alt="Zurab Kostava Capture" loading="lazy" />';
+
+            // Hover Overlay
             $output .= '<div class="zk-gallery-hover-overlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div>';
+
             $output .= '</a>';
             $output .= '</div>';
         }
@@ -1103,18 +1117,54 @@ function zk_get_filebird_gallery( $folder_id ) {
 
     $output .= '</div>';
 
-    // ── 3. ვამატებთ Lightbox-ის HTML სტრუქტურას გვერდის ბოლოში ──
-    // ეს ბლოკი თავიდან დამალულია
-    $output .= '
-    <div id="zkLightbox" class="zk-lightbox" aria-hidden="true">
-        <div class="zk-lightbox-bg zk-js-close-lightbox"></div>
-        <div class="zk-lightbox-content">
-            <img src="" alt="Full size capture" class="zk-lightbox-img">
-            <button class="zk-lightbox-nav zk-prev zk-js-prev" aria-label="Previous image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-            <button class="zk-lightbox-nav zk-next zk-js-next" aria-label="Next image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
-            <button class="zk-lightbox-close zk-js-close-lightbox" aria-label="Close lightbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-        </div>
-    </div>';
+    // *** ყურადღება: წინა Lightbox HTML ბლოკი აქედან წავშალეთ! ***
 
     return $output;
 }
+
+/* ============================================================
+   ENQUEUE PHOTOSWIPE (CDN)
+   ============================================================ */
+function zk_enqueue_photoswipe() {
+    // ჩავრთოთ მხოლოდ About გვერდზე, რომ სხვაგან არ დაამძიმოს
+    if ( is_page('about') ) {
+        // PhotoSwipe Core CSS
+        wp_enqueue_style( 'photoswipe-css', 'https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe.min.css', array(), '5.4.2' );
+
+        // PhotoSwipe Core JS (როგორც Module)
+        wp_enqueue_script( 'photoswipe-js', 'https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe.esm.min.js', array(), '5.4.2', true );
+
+        // Lightbox Initializer JS (როგორც Module)
+        wp_enqueue_script( 'photoswipe-lightbox-js', 'https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe-lightbox.esm.min.js', array(), '5.4.2', true );
+    }
+}
+add_action( 'wp_enqueue_scripts', 'zk_enqueue_photoswipe' );
+
+/* ============================================================
+   INIT PHOTOSWIPE LIGHTBOX (INLINE SCRIPT)
+   ============================================================ */
+function zk_init_photoswipe_inline() {
+    if ( is_page('about') ) {
+        ?>
+        <script type="module">
+            // ვიყენებთ ES მოდულებს იმავე CDN-იდან
+            import PhotoSwipeLightbox from 'https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe-lightbox.esm.min.js';
+
+            const lightbox = new PhotoSwipeLightbox({
+                gallery: '#zkAboutGallery', // ჩვენი გალერეის ID
+                children: '.zk-photoswipe-trigger', // ფოტოების თრიგერები
+
+                // Cinematic ეფექტისთვის
+                bgOpacity: 0.95,
+                showHideAnimationType: 'zoom', // ულტრა-სმუზი ზუმი
+
+                // PhotoSwipe-ის Core მოდული
+                pswpModule: () => import('https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe.esm.min.js')
+            });
+
+            lightbox.init();
+        </script>
+        <?php
+    }
+}
+add_action( 'wp_footer', 'zk_init_photoswipe_inline', 100 );
