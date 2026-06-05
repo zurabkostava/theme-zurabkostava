@@ -1411,8 +1411,8 @@ body.zk-lb-open { overflow: hidden; }
    ABOUT PAGE & TABS STYLING
    ============================================================ */
 .zk-about-wrapper {
-	max-width: 900px;
-	margin: 20px auto;
+	max-width: 1200px;
+	margin: 40px auto;
 	position: relative;
 }
 
