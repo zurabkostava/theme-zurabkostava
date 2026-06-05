@@ -794,6 +794,12 @@ function zk_about_page_shortcode() {
                                 </div>
                             </div>
 
+                            <div class="zk-profile-photo">
+                                <img src="<?php echo esc_url(get_option('zk_profile_img', 'https://via.placeholder.com/150x200')); ?>" alt="Zurab Kostava" />
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Box 2: SKILLS -->
                     <div class="zk-bento-box zk-bento-skills zk-col-span-2">
                         <div class="zk-bento-header">

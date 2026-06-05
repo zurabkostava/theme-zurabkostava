@@ -1665,11 +1665,52 @@ body.zk-lb-open { overflow: hidden; }
 	border-bottom-color: #fff;
 }
 
-/* ── 5. Social Bar ── */
+/* ── 5. Footer Connect (Social & Emails) ── */
+.zk-connect-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 20px;
+	margin-top: 36px; /* დაშორება Vitals სიიდან */
+	padding-top: 24px;
+	border-top: 1px solid var(--hairline-strong); /* დახვეწილი გამყოფი ხაზი */
+}
+
 .zk-social-bar {
 	display: flex;
-	gap: 14px;
+	gap: 10px;
 	flex-wrap: wrap;
+}
+
+.zk-email-bar {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	align-items: flex-start;
+}
+
+.zk-email-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.8rem;
+	font-weight: 500;
+	letter-spacing: 0.05em;
+	color: var(--text-muted);
+	text-decoration: none !important;
+	transition: color 0.3s var(--ease), transform 0.3s var(--ease);
+}
+
+.zk-email-link:hover {
+	color: #fff;
+	transform: translateX(4px);
+}
+
+.zk-email-link svg {
+	width: 16px;
+	height: 16px;
+	opacity: 0.7;
 }
 
 .zk-social-btn {
@@ -1832,13 +1873,34 @@ body.zk-lb-open { overflow: hidden; }
 		justify-content: center;
 	}
 
-	/* ოდნავ ვაპატარავებთ სოციალურ ღილაკებს, რომ 5-ივე 1 ხაზზე ჩაეტიოს */
+	.zk-connect-footer {
+		flex-direction: column;
+		align-items: center;
+		border-top: none;
+		padding-top: 0;
+		margin-top: 20px;
+	}
+
+	.zk-email-bar {
+		align-items: center;
+		margin-top: 10px;
+		padding-top: 16px;
+		border-top: 1px dashed var(--hairline-strong);
+		width: 100%;
+	}
+
+	.zk-email-link:hover {
+		transform: none; /* მობილურზე ჰოვერის ანიმაცია არ გვჭირდება */
+	}
+
+	/* ოდნავ ვაპატარავებთ სოციალურ ღილაკებს, რომ ყველა 1 ხაზზე ჩაეტიოს */
 	.zk-social-bar {
-		gap: 10px;
+		justify-content: center;
+		gap: 8px;
 	}
 	.zk-social-btn {
-		width: 40px;
-		height: 40px;
+		width: 38px;
+		height: 38px;
 	}
 
 	/* ლისტი ვტოვებთ მარცხნივ, რომ იკონების სიმეტრია არ დაირღვეს */
