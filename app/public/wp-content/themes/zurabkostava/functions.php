@@ -895,11 +895,14 @@ function zk_about_page_shortcode() {
             </div>
 
             <div class="zk-tab-panel" id="tab-journey">
-                <div class="zk-timeline-body">
-                    <h3>The Creative Process</h3>
-                    <p>This is where you can dive deep into your story. Talk about your connection to music, cinematography, and technology.</p>
-                    <p>Explain how you use tools to build nocturnes and aubades, and what inspires your visual projects.</p>
-                    <blockquote>"A place for a nice, meaningful quote about your art."</blockquote>
+                <!-- აქ განგებ ვიყენებთ page__content კლასს, რომ შენი დაწერილი ულამაზესი ტიპოგრაფია (style.css-დან) ავტომატურად მოერგოს -->
+                <div class="page__content">
+                    <?php
+                    $monologue = get_option('zk_monologue_content', "<h3>The Monologue</h3>\n<p>This is where you can dive deep into your story.</p>");
+
+                    // apply_filters('the_content', ...) უზრუნველყოფს, რომ ვორდპრესმა სწორად აღიქვას შენი დაწერილი აბზაცები და ვიდეოების/ფოტოების ლინკები
+                    echo apply_filters('the_content', $monologue);
+                    ?>
                 </div>
             </div>
 
@@ -1011,7 +1014,7 @@ function zk_identity_page_html() {
 
     if (isset($_POST['zk_identity_nonce']) && wp_verify_nonce($_POST['zk_identity_nonce'], 'zk_save_identity')) {
         foreach ($_POST as $key => $value) {
-            if (strpos($key, 'zk_vital_') === 0 || strpos($key, 'zk_social_') === 0 || strpos($key, 'zk_fav_') === 0 || strpos($key, 'zk_desc_') === 0 || $key === 'zk_skills' || $key === 'zk_profile_img') {
+            if (strpos($key, 'zk_vital_') === 0 || strpos($key, 'zk_social_') === 0 || strpos($key, 'zk_fav_') === 0 || strpos($key, 'zk_desc_') === 0 || $key === 'zk_skills' || $key === 'zk_profile_img' || $key === 'zk_monologue_content') {
                 update_option($key, wp_unslash($value));
             }
         }
@@ -1078,6 +1081,21 @@ function zk_identity_page_html() {
                 }
                 ?>
             </table>
+
+            <h2 class="title" style="margin-top:30px; border-bottom:1px solid #ccc; padding-bottom:10px;">6. The Monologue</h2>
+            <p>აქ შეგიძლია სრულფასოვანი რედაქტორით ააწყო შენი მონოლოგის ტექსტი. დაამატე აბზაცები, ბმულები ან ციტატები.</p>
+            <div style="background:#fff; margin-bottom:20px; max-width:800px;">
+                <?php
+                $monologue_content = get_option('zk_monologue_content', "<h3>The Creative Process</h3>\n<p>This is where you can dive deep into your story.</p>");
+                // ეს იძახებს WordPress-ის სტანდარტულ ვიზუალურ რედაქტორს
+                wp_editor($monologue_content, 'zk_monologue_content', array(
+                        'textarea_name' => 'zk_monologue_content',
+                        'media_buttons' => true,
+                        'textarea_rows' => 15,
+                        'teeny'         => false
+                ));
+                ?>
+            </div>
 
             <?php submit_button('Save Identity Data'); ?>
         </form>
