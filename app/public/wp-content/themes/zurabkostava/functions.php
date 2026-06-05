@@ -1062,38 +1062,39 @@ add_shortcode( 'zk_about', 'zk_about_page_shortcode' );
 /* ============================================================
    FILEBIRD CUSTOM GALLERY FETCHER (LIGHTBOX SUPPORT)
    ============================================================ */
-/* ============================================================
-   FILEBIRD CUSTOM GALLERY FETCHER (NATIVE PHOTOGRAPHY STYLE)
-   ============================================================ */
 function zk_get_filebird_gallery( $folder_id ) {
     global $wpdb;
 
+    // FileBird-ის ცხრილი
     $table_name = $wpdb->prefix . 'fbv_attachment_folder';
 
     if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" ) != $table_name ) {
         return '<p style="color:var(--text-dim);">FileBird database table not found.</p>';
     }
 
+    // ვიღებთ ID-ებს
     $attachment_ids = $wpdb->get_col(
             $wpdb->prepare( "SELECT attachment_id FROM $table_name WHERE folder_id = %d ORDER BY attachment_id DESC", intval( $folder_id ) )
     );
 
     if ( empty( $attachment_ids ) ) {
-        return '<p style="color:var(--text-dim);">No photos found in this folder.</p>';
+        return '<p style="color:var(--text-dim);">No photos found in this FileBird folder.</p>';
     }
 
-    // ვიყენებთ ზუსტად იმავე კლასებს, რაც photography გვერდზე გაქვს (მაგალითად: zk-masonry-gallery ან მსგავსი)
-    $output = '<div class="zk-gallery-grid">';
+    // ── 1. ვიწყებთ Masonry Grid-ს ──
+    $output = '<div class="zk-gallery-grid zk-js-lightbox-gallery">';
 
     foreach ( $attachment_ids as $id ) {
+        // დიდი ზომა Thumbnail-ისთვის
         $img_thumbnail = wp_get_attachment_image_url( $id, 'large' );
+        // სრული ზომა Lightbox-ისთვის
         $img_full = wp_get_attachment_image_url( $id, 'full' );
 
         if ( $img_thumbnail && $img_full ) {
             $output .= '<div class="zk-gallery-item">';
-            // კლასი შეცვლილია სტანდარტულზე, რომელსაც შენი ძირითადი სკრიპტი კითხულობს
-            $output .= '<a href="' . esc_url( $img_full ) . '" class="zk-photography-trigger">';
-            $output .= '<img src="' . esc_url( $img_thumbnail ) . '" alt="Capture" loading="lazy" />';
+            // ── 2. თითოეულ ფოტოს ვფუთავთ A ტეგში, რომელიც Full-ზე მიუთითებს ──
+            $output .= '<a href="' . esc_url( $img_full ) . '" class="zk-lightbox-trigger">';
+            $output .= '<img src="' . esc_url( $img_thumbnail ) . '" alt="Zurab Kostava Capture" loading="lazy" />';
             $output .= '<div class="zk-gallery-hover-overlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div>';
             $output .= '</a>';
             $output .= '</div>';
@@ -1101,6 +1102,19 @@ function zk_get_filebird_gallery( $folder_id ) {
     }
 
     $output .= '</div>';
+
+    // ── 3. ვამატებთ Lightbox-ის HTML სტრუქტურას გვერდის ბოლოში ──
+    // ეს ბლოკი თავიდან დამალულია
+    $output .= '
+    <div id="zkLightbox" class="zk-lightbox" aria-hidden="true">
+        <div class="zk-lightbox-bg zk-js-close-lightbox"></div>
+        <div class="zk-lightbox-content">
+            <img src="" alt="Full size capture" class="zk-lightbox-img">
+            <button class="zk-lightbox-nav zk-prev zk-js-prev" aria-label="Previous image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+            <button class="zk-lightbox-nav zk-next zk-js-next" aria-label="Next image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+            <button class="zk-lightbox-close zk-js-close-lightbox" aria-label="Close lightbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
+    </div>';
 
     return $output;
 }
