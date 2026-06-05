@@ -906,20 +906,27 @@
         const highlight = nav.querySelector('.zk-tab-highlight');
         const panels = document.querySelectorAll('.zk-tab-panel');
 
+        // საწყისი პოზიციის დაყენება (პირველ ღილაკზე)
         function setHighlight(btn) {
             highlight.style.width = btn.offsetWidth + 'px';
-            highlight.style.transform = `translateX(${btn.offsetLeft - 6}px)`;
+            highlight.style.transform = `translateX(${btn.offsetLeft - 6}px)`; // 6px არის padding
         }
 
+        // ვპოულობთ აქტიურს და ვსვამთ ფონს
         const activeBtn = nav.querySelector('.zk-tab-btn.active');
         if (activeBtn) setHighlight(activeBtn);
 
+        // კლიკის ივენთები
         buttons.forEach(btn => {
             btn.addEventListener('click', function() {
+                // 1. ღილაკების კლასების შეცვლა
                 buttons.forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
+
+                // 2. Highlight-ის გადაადგილება
                 setHighlight(this);
 
+                // 3. პანელების შეცვლა
                 const targetId = this.getAttribute('data-target');
                 panels.forEach(panel => {
                     if (panel.id === targetId) {
@@ -932,6 +939,7 @@
         });
     }
 
+    // SPA თავსებადობა
     initTabs();
     var viewEl = document.getElementById('view');
     if (viewEl) {
@@ -939,107 +947,3 @@
     }
 })();
 
-/* ============================================================
-   ROBUST CINEMATIC VIEWER (SPA & EVENT DELEGATION PROOF)
-   ============================================================ */
-(function() {
-    // 1. გლობალური ცვლადები
-    let currentGalleryImages = [];
-    let currentIndex = 0;
-    const lightboxId = 'zkLightbox';
-
-    // 2. ფუნქცია: ნავიგაცია (შემდეგი/წინა)
-    function showImage(index) {
-        const lightbox = document.getElementById(lightboxId);
-        if (!lightbox) return;
-
-        const lightboxImg = lightbox.querySelector('.zk-lightbox-img');
-        if (!lightboxImg) return;
-
-        // "უსაფრთხო" ინდექსი (modulo)
-        currentIndex = (index + currentGalleryImages.length) % currentGalleryImages.length;
-
-        const imageUrl = currentGalleryImages[currentIndex];
-
-        // ვტვირთავთ ფოტოს
-        lightboxImg.src = imageUrl;
-    }
-
-    // 3. ფუნქცია: დახურვა
-    function closeLightbox() {
-        const lightbox = document.getElementById(lightboxId);
-        if (!lightbox) return;
-
-        lightbox.classList.remove('active');
-        lightbox.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = ''; // სქროლის დაბრუნება
-
-        // ვასუფთავებთ Src-ს, რომ ძველი ფოტო არ გამოჩნდეს შემდეგ გახსნაზე
-        const lightboxImg = lightbox.querySelector('.zk-lightbox-img');
-        if(lightboxImg) lightboxImg.src = '';
-    }
-
-    // 4. EVENT DELEGATION (ერთი მსმენელი მთელ Body-ზე)
-    document.body.addEventListener('click', function(e) {
-        const lightbox = document.getElementById(lightboxId);
-        if (!lightbox) return;
-
-        // ა) თუ დააკლიკეს ფოტოს "ტრიგერს"
-        const trigger = e.target.closest('.zk-lightbox-trigger');
-        if (trigger) {
-            e.preventDefault();
-
-            // ვიპოვოთ გალერეა, რომელშიც ეს ფოტო დევს
-            const parentGallery = trigger.closest('.zk-js-lightbox-gallery');
-            if (!parentGallery) return;
-
-            // შევქმნათ ამ გალერეის ფოტოების ახალი მასივი (იმ წამს არსებული)
-            const triggers = parentGallery.querySelectorAll('.zk-lightbox-trigger');
-            currentGalleryImages = Array.from(triggers).map(trig => trig.getAttribute('href'));
-
-            // ვიპოვოთ ამ ფოტოს ინდექსი მასივში
-            currentIndex = currentGalleryImages.indexOf(trigger.getAttribute('href'));
-
-            // გავხსნათ Lightbox
-            lightbox.classList.add('active');
-            lightbox.setAttribute('aria-hidden', 'false');
-            document.body.style.overflow = 'hidden'; // სქროლის გათიშვა
-
-            // გამოვაჩინოთ ფოტო
-            showImage(currentIndex);
-            return;
-        }
-
-        // ბ) თუ დააკლიკეს დახურვის ღილაკს, ფონს ან navigation-ს
-        if (!lightbox.classList.contains('active')) return; // თუ არ არის აქტიური, ვჩერდებით
-
-        // შემდეგი
-        if (e.target.closest('.zk-js-next')) {
-            showImage(currentIndex + 1);
-            return;
-        }
-
-        // წინა
-        if (e.target.closest('.zk-js-prev')) {
-            showImage(currentIndex - 1);
-            return;
-        }
-
-        // დახურვა (ფონზე ან დახურვის აიქონზე)
-        if (e.target.closest('.zk-js-close-lightbox') || e.target.closest('.zk-lightbox-bg')) {
-            closeLightbox();
-            return;
-        }
-    });
-
-    // 5. კლავიატურის მხარდაჭერა
-    document.addEventListener('keydown', function(e) {
-        const lightbox = document.getElementById(lightboxId);
-        if (!lightbox || !lightbox.classList.contains('active')) return;
-
-        if (e.key === 'Escape') closeLightbox();
-        if (e.key === 'ArrowRight') showImage(currentIndex + 1);
-        if (e.key === 'ArrowLeft') showImage(currentIndex - 1);
-    });
-
-})();
