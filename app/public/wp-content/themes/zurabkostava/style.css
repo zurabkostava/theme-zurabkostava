@@ -804,24 +804,29 @@ html.zk-img-js .zk-post-hero.is-loaded { opacity: 1; }
 }
 
 .zk-lightbox.active {
-	visibility: visible;
 	opacity: 1;
+	visibility: visible;
+	pointer-events: auto; /* რომ ღილაკებმა იმუშაოს */
+}
+
+.zk-lightbox.active .zk-lightbox-img {
+	transform: scale(1);
 }
 
 /* მინისებური ფონი ბლურით */
 .zk-lightbox-bg {
 	position: absolute;
 	top: 0; left: 0; width: 100%; height: 100%;
-	background: rgba(7, 7, 9, 0.9);
-	-webkit-backdrop-filter: blur(20px);
-	backdrop-filter: blur(20px);
+	background: rgba(7, 7, 9, 0.93);
+	-webkit-backdrop-filter: blur(25px);
+	backdrop-filter: blur(25px);
 	cursor: zoom-out;
 }
 
-/* კონტენტის ბლოკი */
+/* კონტენტის ბლოკი (Image & Nav) */
 .zk-lightbox-content {
 	position: relative;
-	z-index: 1;
+	z-index: 2; /* ფონის თავზე */
 	max-width: 90%;
 	max-height: 90%;
 	display: flex; align-items: center; justify-content: center;
@@ -936,17 +941,23 @@ html.zk-img-js .zk-post-hero.is-loaded { opacity: 1; }
 	filter: brightness(1.12) !important;
 }
 
-/* ── 4. Cinematic Lightbox (Ultra-Smooth Focus Pull) ── */
+/* ── 3. Lightbox (Viewer) Visual & Transitions ── */
 .zk-lightbox {
-	position: fixed; inset: 0; z-index: 2000;
-	display: flex; align-items: center; justify-content: center; flex-direction: column;
-	background: rgba(5, 5, 7, 0.6);
-	-webkit-backdrop-filter: blur(35px) saturate(140%);
-	backdrop-filter: blur(35px) saturate(140%);
-	opacity: 0; visibility: hidden; pointer-events: none;
-	/* დახურვისას ვაძლევთ 0.6წმ დაყოვნებას visibility-ს, რომ არ მოიჭრას ანიმაცია */
-	transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.6s;
+	position: fixed;
+	top: 0; left: 0; width: 100%; height: 100%;
+	z-index: 10000;
+	display: flex; align-items: center; justify-content: center;
+	/* ── ტექნიკური: დამალვა ── */
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none; /* რომ დამალულმა ღილაკებმა არ იმუშაოს */
+	/* ურბილესი Cinematic ანიმაცია (FADE IN) */
+	transition: opacity 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+	visibility 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+
+
+
 .zk-lightbox.is-open {
 	opacity: 1; visibility: visible; pointer-events: auto;
 	/* გახსნისას visibility მომენტალურად ერთვება */
@@ -977,17 +988,14 @@ body.zk-lb-open { overflow: hidden; }
 }
 /* ── ფოტოს ანიმაცია (Focus Pull) — JS adds .is-ready after the full-res preload ── */
 .zk-lightbox-img {
-	max-width: 90vw; max-height: 82vh;
+	max-width: 100%;
+	max-height: 90vh; /* რომ სიმაღლეში არ გაიცდეს */
 	border-radius: 12px;
-	box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
-	/* idle / between-swaps: dimmed, softened, slightly pulled back and down */
-	opacity: 0;
-	transform: scale(0.94) translateY(12px);
-	filter: blur(12px);
-	will-change: transform, filter, opacity;
-	transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-	filter 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-	opacity 0.5s ease;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	box-shadow: 0 30px 100px rgba(0, 0, 0, 0.6);
+	/* ანიმაცია გახსნისას */
+	transform: scale(0.96);
+	transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 /* .is-ready is added ONLY after the full-res pixels preload, so the focus-pull
    always resolves onto a real, decoded frame — never a FOUC or a hard pop. */
