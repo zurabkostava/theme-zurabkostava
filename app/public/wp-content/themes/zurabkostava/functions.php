@@ -735,7 +735,7 @@ function zk_about_page_shortcode() {
                         <div class="zk-bento-header">
                             <div class="zk-header-title">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                <h3>Vitals & Connect</h3>
+                                <h3>Digital ID</h3>
                             </div>
                             <p class="zk-bento-desc"><?php echo esc_html(get_option('zk_desc_vitals', "Zurab Kostava's digital ID, where he objectively looks much better than on his actual passport.")); ?></p>
                         </div>
