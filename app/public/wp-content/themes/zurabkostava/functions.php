@@ -767,6 +767,15 @@ function zk_about_page_shortcode() {
                                         <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                                         <div class="zk-vital-text"><strong>Archetype:</strong> <span><?php echo esc_html(get_option('zk_vital_archetype', 'Composer, Visual Artist, Tech Geek')); ?></span></div>
                                     </li>
+                                    <li>
+                                        <svg class="zk-vital-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                        <div class="zk-vital-text"><strong>Contact:</strong>
+                                            <span style="display:flex; flex-direction:column; gap:6px;">
+                                                <a href="mailto:<?php echo esc_attr(get_option('zk_vital_email_1', 'zurab@kostavacreative.com')); ?>"><?php echo esc_html(get_option('zk_vital_email_1', 'zurab@kostavacreative.com')); ?></a>
+                                                <a href="mailto:<?php echo esc_attr(get_option('zk_vital_email_2', 'zurabkostava1@gmail.com')); ?>"><?php echo esc_html(get_option('zk_vital_email_2', 'zurabkostava1@gmail.com')); ?></a>
+                                            </span>
+                                        </div>
+                                    </li>
                                 </ul>
 
                                 <div class="zk-social-bar">
@@ -1024,6 +1033,8 @@ function zk_identity_page_html() {
                 <tr><th>Born</th><td><input type="text" name="zk_vital_born" value="<?php echo esc_attr(get_option('zk_vital_born', 'DD.MM.YYYY')); ?>" class="regular-text" /></td></tr>
                 <tr><th>Origin</th><td><input type="text" name="zk_vital_origin" value="<?php echo esc_attr(get_option('zk_vital_origin', 'Ozurgeti, Guria, Georgia')); ?>" class="regular-text" /></td></tr>
                 <tr><th>Base</th><td><input type="text" name="zk_vital_base" value="<?php echo esc_attr(get_option('zk_vital_base', 'Tbilisi, Georgia')); ?>" class="regular-text" /></td></tr>
+                <tr><th>Email (Primary)</th><td><input type="email" name="zk_vital_email_1" value="<?php echo esc_attr(get_option('zk_vital_email_1', 'zurab@kostavacreative.com')); ?>" class="regular-text" /></td></tr>
+                <tr><th>Email (Secondary)</th><td><input type="email" name="zk_vital_email_2" value="<?php echo esc_attr(get_option('zk_vital_email_2', 'zurabkostava1@gmail.com')); ?>" class="regular-text" /></td></tr>
                 <tr><th>Studio (HTML)</th><td><input type="text" name="zk_vital_studio" value="<?php echo esc_attr(get_option('zk_vital_studio', 'Creative Lead @ <a href="https://zurabkostava.com" target="_blank">Kostava Creative</a>')); ?>" class="large-text" /></td></tr>
                 <tr><th>Position (HTML)</th><td><input type="text" name="zk_vital_position" value="<?php echo esc_attr(get_option('zk_vital_position', 'Web Designer @ <a href="https://emis.ge" target="_blank">EMIS Georgia</a>')); ?>" class="large-text" /></td></tr>
                 <tr><th>Archetype</th><td><input type="text" name="zk_vital_archetype" value="<?php echo esc_attr(get_option('zk_vital_archetype', 'Composer, Visual Artist, Tech Geek')); ?>" class="large-text" /></td></tr>
