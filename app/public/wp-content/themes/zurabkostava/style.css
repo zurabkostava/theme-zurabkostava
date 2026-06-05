@@ -1949,48 +1949,99 @@ body.zk-lb-open { overflow: hidden; }
 }
 
 /* ============================================================
-   PHOTOSWIPE CINEMATIC GLASSMORPHISM THEME
+   PHOTOSWIPE CINEMATIC OVERRIDES (GLASSMORPHISM)
    ============================================================ */
 
-/* 1. მინისებური, დაბლარული ფონი (შავი ფერის ნაცვლად) */
+/* ── 1. მინისებური ფონი ბლურით (Backdrop Blur) ── */
 .pswp__bg {
-	background: rgba(7, 7, 9, 0.85) !important;
-	-webkit-backdrop-filter: blur(20px) !important;
-	backdrop-filter: blur(20px) !important;
+	background: rgba(7, 7, 9, 0.85) !important; /* მუქი, ოდნავ გამჭვირვალე ფონი */
+	-webkit-backdrop-filter: blur(25px) !important;
+	backdrop-filter: blur(25px) !important;
 }
 
-/* 2. ზედა პანელის ზედმეტი შავი ფონის გაქრობა */
-.pswp__top-bar {
-	background: transparent !important;
+/* ── 2. სურათის კინემატოგრაფიული ჩრდილი და კუთხეები ── */
+.pswp__img {
+	border-radius: 12px !important;
+	box-shadow: 0 30px 100px rgba(0, 0, 0, 0.8) !important;
 }
 
-/* 3. ღილაკების (Next, Prev, Close) დახვეწა Apple-ის სტილში */
-.pswp__button--arrow,
-.pswp__button--close,
-.pswp__button--zoom {
-	background-color: rgba(255, 255, 255, 0.05) !important;
+/* ── 3. საერთო ღილაკების (Glassmorphism) სტილი ── */
+.pswp__button {
+	background: rgba(255, 255, 255, 0.05) !important;
 	border: 1px solid rgba(255, 255, 255, 0.1) !important;
 	border-radius: 50% !important;
-	backdrop-filter: blur(10px) !important;
-	margin: 15px !important;
-	width: 50px !important;
-	height: 50px !important;
+	width: 54px !important;
+	height: 54px !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
-	transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+	transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+	-webkit-backdrop-filter: blur(10px) !important;
+	backdrop-filter: blur(10px) !important;
+	margin: 0 !important;
 	opacity: 0.8 !important;
 }
 
-/* ღილაკზე მაუსის მიტანის (Hover) ეფექტი */
 .pswp__button:hover {
-	background-color: rgba(255, 255, 255, 0.15) !important;
-	opacity: 1 !important;
+	background: rgba(255, 255, 255, 0.15) !important;
 	transform: scale(1.1) !important;
+	opacity: 1 !important;
 }
 
-/* 4. თავად გახსნილი ფოტოს ვიზუალი (კუთხეების მომრგვალება და ჩრდილი) */
-.pswp__img {
-	border-radius: 12px !important;
-	box-shadow: 0 30px 100px rgba(0, 0, 0, 0.7) !important;
+/* ვასწორებთ შიდა SVG იკონებს, რომ ზუსტად ცენტრში დაჯდეს */
+.pswp__button svg {
+	width: 24px !important;
+	height: 24px !important;
+	position: static !important; /* PhotoSwipe-ის absolute პოზიციის გაუქმება */
+	fill: #fff !important; /* თეთრი ფერი */
+	pointer-events: none !important;
+	filter: drop-shadow(0 0 0 transparent) !important; /* სტანდარტული ჩრდილის მოკვლა */
+}
+
+/* ── 4. კონკრეტული ღილაკების პოზიციები ── */
+
+/* დახურვის (X) ღილაკი ზედა მარჯვენა კუთხეში */
+.pswp__button--close {
+	position: absolute !important;
+	top: 24px !important;
+	right: 24px !important;
+}
+
+/* მარცხენა ისარი */
+.pswp__button--arrow--left {
+	position: absolute !important;
+	left: 40px !important;
+	top: calc(50% - 27px) !important;
+}
+
+/* მარჯვენა ისარი */
+.pswp__button--arrow--right {
+	position: absolute !important;
+	right: 40px !important;
+	top: calc(50% - 27px) !important;
+}
+
+/* ── 5. ზედმეტი დეტალების დამალვა ── */
+.pswp__button--zoom, /* ზუმის ღილაკი */
+.pswp__icn-shadow {  /* იკონების სტანდარტული ჩრდილები */
+	display: none !important;
+}
+
+/* ტექსტი (მაგ: 1 / 5) გავხადოთ უფრო დახვეწილი */
+.pswp__counter {
+	color: var(--text-dim) !important;
+	font-family: inherit !important;
+	font-size: 0.9rem !important;
+	letter-spacing: 0.05em !important;
+	top: 36px !important;
+	left: 40px !important;
+}
+
+/* ── 6. Responsive მობილურისთვის ── */
+@media (max-width: 768px) {
+	.pswp__button--arrow--left { left: 10px !important; }
+	.pswp__button--arrow--right { right: 10px !important; }
+	.pswp__button--close { top: 15px !important; right: 15px !important; }
+	.pswp__button { width: 44px !important; height: 44px !important; }
+	.pswp__button svg { width: 20px !important; height: 20px !important; }
 }
