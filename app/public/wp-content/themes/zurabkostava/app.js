@@ -542,8 +542,7 @@
         if (!lightbox) { current = null; return; }
         wrap.dataset.zkReady = '1';
 
-
-// ── Sticky Filters სენსორი ──
+        // ── Sticky Filters სენსორი ──
         var filters = wrap.querySelector('.zk-gallery-filters');
         if (filters && !wrap.querySelector('.zk-filter-sentinel')) {
             var sentinel = document.createElement('div');
@@ -555,29 +554,34 @@
             var observer = new IntersectionObserver(function(entries) {
                 entries.forEach(function(entry) {
                     filters.classList.toggle('is-stuck', !entry.isIntersecting);
+
+                    // როცა კაფსულის ზომა (padding) იცვლება სქროლვისას, ჰაილაითის პოზიციას ვაახლებთ
+                    var currentBtn = filters.querySelector('.zk-filter-btn.is-active');
+                    if (currentBtn && typeof setFilterHighlight === 'function') {
+                        setTimeout(function() { setFilterHighlight(currentBtn); }, 50);
+                    }
                 });
             }, { rootMargin: '-130px 0px 0px 0px' });
             observer.observe(sentinel);
         }
-        var highlight = wrap.querySelector('.zk-filter-highlight');
 
-        // ფუნქცია, რომელიც მოძრავ ფონს ღილაკის ზომასა და ლოკაციაზე სვამს
+        var grid      = wrap.querySelector('.zk-gallery-grid');
+        var buttons   = Array.prototype.slice.call(wrap.querySelectorAll('.zk-filter-btn'));
+        var allItems  = Array.prototype.slice.call(wrap.querySelectorAll('.zk-gallery-item'));
+        var highlight = wrap.querySelector('.zk-filter-highlight'); // <--- დამატებულია
+
+        // მთავარი ფუნქცია ჰაილაითის გასამოძრავებლად
         function setFilterHighlight(btn) {
             if (!highlight || !btn) return;
             highlight.style.width = btn.offsetWidth + 'px';
-            highlight.style.height = btn.offsetHeight + 'px';
-            highlight.style.transform = 'translate(' + btn.offsetLeft + 'px, ' + btn.offsetTop + 'px)';
+            highlight.style.transform = 'translateX(' + btn.offsetLeft + 'px)';
         }
 
-        // საიტის ჩატვირთვისას ფონის სწორად დასმა
-        var activeBtn = wrap.querySelector('.zk-filter-btn.is-active');
-        if (activeBtn) setTimeout(function() { setFilterHighlight(activeBtn); }, 50);
-
-        // რესაიზის (ან მობილურზე დაპატარავების) დროს რომ პოზიცია არ აირიოს
-        window.addEventListener('resize', function() {
-            var current = wrap.querySelector('.zk-filter-btn.is-active');
-            if (current) setFilterHighlight(current);
-        });
+        // საწყისი პოზიციის დაყენება გვერდის ჩატვირთვისას
+        var initialActiveBtn = wrap.querySelector('.zk-filter-btn.is-active');
+        if (initialActiveBtn) {
+            setTimeout(function() { setFilterHighlight(initialActiveBtn); }, 50);
+        }
 
         var lbImg    = lightbox.querySelector('.zk-lightbox-img');
         var lbExif   = lightbox.querySelector('.zk-lightbox-exif');
@@ -774,11 +778,8 @@
                 setFilterHighlight(btn);
 
                 // 1. ვუშვებთ ფილტრაციის ლოგიკას
-
                 applyFilter(btn.getAttribute('data-filter'));
 
-                // 2. ── ანიმაციური სქროლი ──
-                // თუ მომხმარებელი სქროლილია, ავტომატურად ვბრუნდებით გალერეის საწყის წერტილში
                 // 2. ── ანიმაციური სქროლი ──
                 // 2. ── ანიმაციური სქროლი ზედაპირზე (სადაც ჰედერი ჩანს) ──
                 if (window.scrollY > 100) {
@@ -828,7 +829,6 @@
     var viewEl = document.getElementById('view');
     if (viewEl) new MutationObserver(initGallery).observe(viewEl, { childList: true });
 })();
-
 
 /* ============================================================
    MUSIC TIMELINE - DATA & LOGIC
