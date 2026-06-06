@@ -3,6 +3,8 @@
 #digital-library-root * {
     font-display: swap !important;
 }
+* { -webkit-tap-highlight-color: rgba(0,0,0,0) !important; -webkit-tap-highlight-color: transparent !important; outline: none !important; }
+a, button, input, select, textarea { -webkit-tap-highlight-color: rgba(0,0,0,0) !important; -webkit-tap-highlight-color: transparent !important; outline: none !important; }
 #digital-library-root *,
 #digital-library-root *::before,
 #digital-library-root *::after {
