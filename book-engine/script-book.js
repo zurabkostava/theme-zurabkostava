@@ -73,22 +73,6 @@
     }
     // 🔥 IMPORTANT: never pushState-switch language when using TranslatePress.
     // Always hard-navigate between /ka/... and /...
-    function forceHardLanguageSwitch() {
-        const btn = document.getElementById("lang-switcher-btn");
-        if (!btn) return;
-        btn.addEventListener("click", function(e) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            const path = location.pathname || "/";
-            const goingToKa = !path.startsWith("/ka/");
-            let nextPath = path;
-            if (goingToKa) nextPath = "/ka" + (path.startsWith("/") ? path : "/" + path);
-            else nextPath = path.replace(/^\/ka(?=\/)/, "") || "/";
-            nextPath = nextPath.replace(/\/{2,}/g, "/");
-            location.href = location.origin + nextPath + location.search + location.hash;
-        }, true);
-    }
-
     function run() {
         if (ran) return;
         ran = true;
@@ -101,7 +85,6 @@
     }
     document.addEventListener("DOMContentLoaded", () => {
         run();
-        forceHardLanguageSwitch();
     });
 })();
 
@@ -369,34 +352,46 @@ document.addEventListener("DOMContentLoaded", async () => {
         langBtn.innerText = currentLanguage.toUpperCase();
         langBtn.style.display = 'block'; // გამოაჩინე მომენტალურად
         langBtn.onclick = () => {
-            // ... (აქ ძველი ლოგიკა რჩება) ...
-            if (FORCED_SLUG) {
-                const origin = window.location.origin;
-                let path = window.location.pathname;
-                if (currentLanguage === 'en') {
-                    if (!path.startsWith('/ka')) path = '/ka' + path;
-                    path = path.replace('//', '/');
-                    window.location.href = origin + path + '';
-                } else {
-                    path = path.replace('/ka', '');
-                    if (path === '') path = '/';
-                    path = path.replace('//', '/');
-                    window.location.href = origin + path;
-                }
+            // Inline language switch + URL update
+            currentLanguage = currentLanguage === 'ka' ? 'en' : 'ka';
+            editorLanguage = currentLanguage;
+            langBtn.innerText = currentLanguage.toUpperCase();
+
+            // Update URL without reloading
+            const origin = window.location.origin;
+            let path = window.location.pathname;
+            if (currentLanguage === 'en') {
+                path = path.replace(/^\/ka(?=\/|$)/, '') || '/';
             } else {
-                currentLanguage = currentLanguage === 'ka' ? 'en' : 'ka';
-                editorLanguage = currentLanguage;
-                langBtn.innerText = currentLanguage.toUpperCase();
-                document.body.classList.remove('loaded');
-                const loader = document.getElementById('book-loader');
-                if (loader) loader.classList.remove('hidden');
-                updateStaticUI();
+                if (!path.startsWith('/ka/')) path = '/ka' + (path.startsWith('/') ? path : '/' + path);
+            }
+            path = path.replace(/\/{2,}/g, '/');
+            window.history.pushState({}, '', origin + path + window.location.search + window.location.hash);
+
+            // Re-render UI inline
+            document.body.classList.remove('loaded');
+            const loader = document.getElementById('book-loader');
+            if (loader) loader.classList.remove('hidden');
+            
+            updateStaticUI();
+            
+            // Check if we are in book mode or library mode
+            if (CURRENT_BOOK_SLUG && typeof renderBook === 'function') {
                 renderBook().then(() => {
                     setTimeout(() => {
                         if (loader) loader.classList.add('hidden');
                         document.body.classList.add('loaded');
                     }, 300);
                 });
+            } else if (!CURRENT_BOOK_SLUG && typeof renderLibrary === 'function') {
+                renderLibrary().then(() => {
+                    setTimeout(() => {
+                        if (loader) loader.classList.add('hidden');
+                        document.body.classList.add('loaded');
+                    }, 300);
+                });
+            } else {
+                window.location.reload(); // fallback
             }
         };
     }
@@ -878,19 +873,31 @@ async function initReaderMode() {
             // 3. UI-ის მომენტალური განახლება
             updateStaticUI();
 
-            // 4. URL-ის შეცვლა
+            // 4. URL-ის შეცვლა INLINE
             const origin = window.location.origin;
             let path = window.location.pathname;
-            if (currentLanguage === 'ka') {
-                if (!path.startsWith('/ka')) path = '/ka' + path;
+            if (currentLanguage === 'en') {
+                path = path.replace(/^\/ka(?=\/|$)/, '') || '/';
             } else {
-                path = path.replace('/ka', '');
+                if (!path.startsWith('/ka/')) path = '/ka' + (path.startsWith('/') ? path : '/' + path);
             }
-            path = path.replace('//', '/');
-            const newUrl = origin + path + window.location.search + window.location.hash;
+            path = path.replace(/\/{2,}/g, '/');
+            window.history.pushState({}, '', origin + path + window.location.search + window.location.hash);
 
-            // ვიყენებთ assign-ს (reload-ისთვის), რომ სუფთად ჩაიტვირთოს ახალი ენა
-            window.location.assign(newUrl);
+            document.body.classList.remove('loaded');
+            const loader = document.getElementById('book-loader');
+            if (loader) loader.classList.remove('hidden');
+
+            if (typeof renderBook === 'function') {
+                renderBook().then(() => {
+                    setTimeout(() => {
+                        if (loader) loader.classList.add('hidden');
+                        document.body.classList.add('loaded');
+                    }, 300);
+                });
+            } else {
+                window.location.reload();
+            }
         };
     }
     // --- DESCRIPTION BUTTON (MEMORY BASED) ---
