@@ -113,7 +113,7 @@
     style.innerHTML = `
         *, html, body, div, span, a, button, input, textarea, .paper, .book-card, .tool-btn {
             -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
-            -webkit-tap-highlight-color: transparent !important;
+            touch-action: manipulation !important;
             outline: none !important;
         }
     `;
