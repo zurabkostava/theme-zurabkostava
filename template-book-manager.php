@@ -1,0 +1,275 @@
+<?php
+/*
+Template Name: Book Manager
+*/
+?>
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">    <title>The Architect - Digital Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.quilljs.com">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;700&family=Merriweather:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link href="<?php echo esc_url( get_template_directory_uri() . '/book-engine/style-book.css' ); ?>" rel="stylesheet">
+
+
+</head>
+<body>
+<div id="digital-library-root">
+    <div id="book-loader" class="hidden">
+        <div class="book-animation">
+            <div class="book-spine"></div>
+            <div class="book-page page-1"></div>
+            <div class="book-page page-2"></div>
+            <div class="book-page page-3"></div>
+        </div>
+    </div>
+    <div id="book-engine-wrapper"></div>
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2 id="sidebar-main-title">სარჩევი</h2>
+            <button id="toggle-btn" class="toggle-btn"><span>&times;</span></button>
+        </div>
+        <ul class="chapter-list" id="chapter-list-ui"></ul>
+        <div class="sidebar-controls">
+            <button class="font-control-btn" id="font-size-minus">−</button>
+            <span class="font-display-label">FONT SIZE</span>
+            <button class="font-control-btn" id="font-size-plus">+</button>
+        </div>
+    </nav>
+    <div id="library-view" class="library-container">
+        <div class="library-header">
+            <h1>MY COLLECTION</h1>
+            <div style="display: flex; gap: 10px;">
+                <button id="admin-login-btn" style="background: #333; color: #fff;">🔒</button>
+                <button id="create-new-book-btn" class="admin-only">+ New Book</button>
+            </div>
+        </div>
+        <div id="books-grid" class="books-grid"></div>
+    </div>
+    <button id="edit-mode-btn" class="admin-only">✎ Edit Book</button>
+    <div class="nav-toolbar">
+        <button id="open-sidebar-btn" class="tool-btn" title="Menu">
+            <span class="material-icons-outlined">menu</span>
+        </button>
+        <button id="go-to-library-icon" class="tool-btn" title="Library">
+            <span class="material-icons-outlined">local_library</span>
+        </button>
+        <button id="lang-switcher-btn" class="tool-btn text-btn">KA</button>
+        <button id="theme-toggle-btn" class="tool-btn" title="Theme">
+            <span class="material-icons-outlined">light_mode</span>
+        </button>
+        <button id="user-auth-btn" class="tool-btn" title="Sign In">
+            <span class="material-icons-outlined">person</span>
+        </button>
+
+        <button id="analytics-btn" class="tool-btn admin-only" title="Statistics" style="display:none;">
+            <span class="material-icons-outlined">bar_chart</span>
+        </button>
+    </div>
+    <main id="main-content">
+        <div class="site-title">
+            <h1 id="site-main-title"></h1>
+            <p id="site-sub-title"></p>
+        </div>
+
+        <div id="measure-container"></div>
+        <div class="book-scene"><div id="book" class="book"></div></div>
+    </main>
+    <div id="editor-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Book Editor</h3><button id="close-modal">&times;</button></div>
+            <div class="modal-body">
+                <div class="pages-manager">
+                    <div class="settings-trigger" id="open-settings-btn">⚙ Book Settings</div>
+                    <div class="manager-header">Chapters</div>
+                    <ul id="editable-pages-list"></ul>
+                    <div class="manager-actions">
+                        <button id="add-page-btn">+ Add Chapter</button>
+                        <button id="reset-book-btn" style="background:#d9534f;">Reset All</button>
+                    </div>
+                </div>
+                <button id="mobile-expand-toggle" class="mobile-only">
+                    <span class="material-icons-outlined">expand_less</span> </button>
+                <div class="editor-area">
+                    <div class="editor-lang-tabs">
+                        <button class="lang-tab active" data-lang="en">ENGLISH</button>
+
+                        <button id="split-view-btn" class="tool-btn split-btn" title="Split View">
+                            <span class="material-icons-outlined">vertical_split</span>
+                        </button>
+                        <button id="sync-scroll-btn" class="tool-btn split-btn" title="Sync Scroll (Smart Align)" style="display: none;">
+                            <span class="material-icons-outlined">sync_alt</span>
+                        </button>
+
+                        <button class="lang-tab" data-lang="ka">GEORGIAN</button>
+                    </div>
+
+                    <div id="editor-loading-overlay" class="hidden">
+                        <div class="editor-spinner"></div>
+                    </div>
+
+                    <div id="editors-wrapper" class="editors-wrapper">
+                        <div class="editor-col" id="col-primary">
+                            <div class="editor-col-label">ENGLISH</div>
+                            <div id="editor-container"></div>
+                        </div>
+
+                        <div class="editor-col" id="col-secondary" style="display:none;">
+                            <div class="editor-col-label">GEORGIAN</div>
+                            <div id="editor-container-dual"></div>
+                        </div>
+                    </div>
+
+                    <div id="settings-form" style="display:none;">
+                        <div class="settings-header-bar">
+                            <h4>Book Configuration</h4>
+                            <button id="close-settings-btn" type="button">&times;</button>
+                        </div>
+                        <div class="settings-scroll-content">
+                            <div class="form-group"><label>Book Title (KA)</label><input type="text" id="input-book-title"></div>
+                            <div class="form-group"><label>Subtitle (KA)</label><input type="text" id="input-book-subtitle"></div>
+                            <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
+                            <div class="form-group"><label>Book Title (EN)</label><input type="text" id="input-book-title-en"></div>
+                            <div class="form-group"><label>Subtitle (EN)</label><input type="text" id="input-book-subtitle-en"></div>
+                            <div class="form-group"><label>Cover Image</label><input type="file" id="input-cover-image" accept="image/*"><div class="image-preview" id="cover-preview"></div><button id="remove-cover-btn" style="margin-top:10px;">Remove</button></div>
+                            <div style="display:flex; gap:10px;"><div class="form-group" style="flex:1;"><label>Genre (KA)</label><input type="text" id="input-book-genre"></div><div class="form-group" style="flex:1;"><label>Genre (EN)</label><input type="text" id="input-book-genre-en"></div></div>
+                            <div class="form-group"><label>Year</label><input type="number" id="input-book-year"></div>
+
+                            <div class="form-group"><label>Synopsis (KA)</label><textarea id="input-book-desc"></textarea></div>
+                            <div class="form-group"><label>Synopsis (EN)</label><textarea id="input-book-desc-en"></textarea></div>
+                        </div>
+                    </div>
+
+                    <div class="editor-footer">
+                        <button id="unpublish-btn" class="secondary-btn" style="margin-right: 10px;">Unpublish</button>
+                        <div id="save-status" style="margin-right: auto; color: #666; font-size: 0.8rem; font-style: italic;"></div>
+                        <button id="discard-draft-btn" class="secondary-btn" style="border-color: #d9534f; color: #d9534f; margin-right: 10px;">Discard Draft</button>
+                        <button id="save-draft-btn" class="secondary-btn">Save Draft</button>
+                        <button id="publish-btn" class="primary-btn">Publish</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="analytics-modal" class="modal-overlay">
+        <div class="modal-content analytics-box">
+            <div class="modal-header">
+                <h3>Reader Analytics</h3>
+                <button id="close-analytics-btn" class="modal-close">&times;</button>
+            </div>
+
+            <div class="modal-body analytics-body">
+                <div class="stat-group main-stat">
+                    <div class="stat-label">Total / Unique Visits</div>
+                    <div id="stat-visits" class="stat-value-large">0 <span class="divider">/</span> 0</div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Reading Time</div>
+                        <div id="stat-time" class="stat-value text-purple">0m</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">Avg. Session Time</div>
+                        <div id="stat-avg" class="stat-value text-blue">0m</div>
+                    </div>
+                </div>
+
+                <div class="last-seen-box">
+                    <div class="stat-label">Last Reader Activity</div>
+                    <div id="stat-last-seen" class="last-seen-value">Never</div>
+                </div>
+
+                <div class="top-readers-box">
+                    <div class="stat-label">Top Active Readers</div>
+                    <div id="top-readers-list" class="readers-list">
+                    </div>
+                </div>
+
+                <p class="stat-note">* Data syncs every 30 seconds of active reading</p>
+
+
+
+                <div class="admin-actions">
+                    <button id="reset-stats-btn" class="btn-reset">
+                        <span class="material-icons-outlined">delete_sweep</span>
+                        Reset Statistics
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="auth-modal" class="glossary-overlay">
+        <div class="glossary-content auth-modal-content notranslate skiptranslate" translate="no" data-no-translation>
+            <div class="glossary-header">
+                <h3 id="auth-modal-title">Sign In</h3>
+                <button id="close-auth-modal" class="glossary-close-btn">&times;</button>
+            </div>
+            <div class="glossary-body auth-body">
+                <div class="form-group" id="auth-name-group" style="display: none !important;">
+                    <label id="auth-name-label">Full Name</label>
+                    <input type="text" id="auth-name" placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label id="auth-email-label">Email Address</label>
+                    <input type="email" id="auth-email" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label id="auth-pass-label">Password</label>
+                    <input type="password" id="auth-password" placeholder="••••••••">
+                </div>
+                <div id="auth-error" class="auth-error-msg"></div>
+
+                <button id="auth-submit-btn" class="primary-btn auth-submit">Sign In</button>
+
+                <div class="auth-divider"><span>ან შედიხართ</span></div>
+                <button id="auth-google-btn" class="oauth-btn">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo">
+                    <span id="auth-google-text">Google - ით გაგრძელება</span>
+                </button>
+
+                <div class="auth-toggle-wrap">
+                    <span id="auth-toggle-text">Don't have an account?</span>
+                    <a href="#" id="auth-toggle-link">Register</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="footnote-editor-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>განმარტება</h3>
+                <button id="close-footnote-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label>სიტყვა:</label>
+                    <input type="text" id="footnote-word-display" disabled>
+                </div>
+                <div>
+
+                    <div class="form-group">
+                        <label style="color: #888; margin-bottom: 5px; display: block;">განმარტება:</label>
+                        <div id="footnote-mini-editor" ></div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button id="delete-footnote-btn">წაშლა</button>
+                    <button id="cancel-footnote-btn">გაუქმება</button>
+                    <button id="save-footnote-btn">შენახვა</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="<?php echo esc_url( get_template_directory_uri() . '/book-engine/script-book.js' ); ?>"></script>
+</body>
+</html>

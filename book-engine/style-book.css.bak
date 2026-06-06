@@ -1,0 +1,6226 @@
+@import url("//cdn.web-fonts.ge/fonts/bpg-arial-caps/css/bpg-arial-caps.min.css");
+
+
+/* ყველა ტექსტს ვეუბნებით, რომ არ დაელოდოს ფონტის ჩატვირთვას */
+#digital-library-root * {
+    font-display: swap !important;
+}
+
+#digital-library-root {
+    --book-width: 600px;
+    --book-height: 80vh;
+    --sidebar-width: 300px;
+
+    --bg-color: #111111;
+    --sidebar-bg: #111111;
+    --sidebar-border: #222;
+    --paper-color: #1c1c1c;
+    --paper-curve: #0a0a0a;
+    --text-color: #a0a0a0;
+    --heading-color: #ffffff;
+    --accent-color: #ffffff;
+    --turn-duration: 0.8s;
+    --ease-paper: cubic-bezier(0.23, 1, 0.32, 1);
+    --p-font-size: 0.95rem;
+
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+
+    /* Fallback ძველი ბრაუზერებისთვის */
+    height: 100vh !important;
+    /* ✅ FIX: Dynamic Viewport Height - ეს აგვარებს ტაბების პრობლემას */
+    height: 100dvh !important;
+
+    min-height: -webkit-fill-available !important;
+
+    padding-top: env(safe-area-inset-top) !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
+    padding-left: env(safe-area-inset-left) !important;
+    padding-right: env(safe-area-inset-right) !important;
+
+    z-index: 99999 !important;
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
+
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+
+    overscroll-behavior: none !important;
+    touch-action: none !important;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#digital-library-root *,
+#digital-library-root *::before,
+#digital-library-root *::after {
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#digital-library-root .ql-editor {
+
+    text-align: left !important;
+
+    hyphens: none !important;
+    -webkit-hyphens: none !important;
+    -ms-hyphens: none !important;
+
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+}
+
+#digital-library-root .ql-editor p,
+#digital-library-root .ql-editor span,
+#digital-library-root .ql-editor li {
+    text-align: left !important;
+    hyphens: none !important;
+}
+
+#digital-library-root .ql-editor .ql-align-center {
+    text-align: center !important;
+}
+
+#digital-library-root .ql-editor .ql-align-right {
+    text-align: right !important;
+}
+#digital-library-root img {
+    -webkit-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+}
+
+
+body.light-mode #digital-library-root {
+    --bg-color: #ccced4; /* ფონი ოდნავ გავამუქეთ კონტრასტისთვის */
+    --sidebar-bg: #e5e5e5;
+    --sidebar-border: #ccc;
+
+    /* 📜 REALISTIC PAPER COLOR */
+    --paper-color: #fdfbf7 !important; /* თბილი, ბუნებრივი ქაღალდი */
+    --paper-curve: #e8e6e1 !important; /* ჩრდილებიც შესაბამისი */
+
+    --text-color: #2b2b2b !important; /* ტექსტი ოდნავ "რბილი" შავი (არა #000) */
+    --heading-color: #1a1a1a !important;
+    --accent-color: #000000;
+}
+
+
+
+body.light-mode #digital-library-root .open-sidebar-btn,
+body.light-mode #digital-library-root #go-to-library-icon .material-icons-outlined,
+body.light-mode #digital-library-root .site-title h1 {
+    color: #333 !important;
+    text-shadow: none !important;
+}
+
+body.light-mode #digital-library-root .page-number {
+    color: #999 !important;
+}
+
+
+
+body.light-mode #digital-library-root .font-display-label {
+    color: #333 !important;
+}
+
+
+
+body.light-mode #digital-library-root .font-control-btn:hover {
+    background: #eee !important;
+}
+
+
+
+#digital-library-root #main-content {
+    flex-grow: 1 !important;
+    background-color: var(--bg-color) !important;
+    margin-left: var(--sidebar-width) !important;
+    height: 100vh !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    transition: margin-left 0.5s var(--ease-paper) !important;
+    perspective: 3500px !important;
+    width: auto !important;
+    opacity: 0 !important;
+}
+
+body.sidebar-closed #digital-library-root #main-content {
+    margin-left: 0 !important;
+}
+
+body.loaded #digital-library-root #main-content,
+body.loaded #digital-library-root .nav-toolbar,
+body.loaded #digital-library-root #edit-mode-btn {
+    opacity: 1 !important;
+}
+
+
+
+
+
+
+
+#digital-library-root .chapter-list::-webkit-scrollbar {
+    display: none !important;
+}
+
+
+
+
+
+
+
+
+
+#digital-library-root .font-display-label {
+    color: #888 !important;
+
+    font-size: 0.9rem !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+}
+
+body:not(.is-admin) #digital-library-root .admin-only {
+    display: none !important;
+}
+
+#digital-library-root #admin-login-btn {
+    font-size: 1.2rem !important;
+    padding: 5px 15px !important;
+    cursor: pointer !important;
+    border: 1px solid #444 !important;
+    border-radius: 4px !important;
+    transition: all 0.3s !important;
+}
+
+body.is-admin #digital-library-root #admin-login-btn {
+    background: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+#digital-library-root .open-sidebar-btn {
+    color: var(--text-color) !important;
+    position: absolute !important;
+    top: 30px !important;
+    font-size: 1.2rem !important;
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    z-index: 1000 !important;
+    opacity: 0.5 !important;
+    transition: opacity 0.2s, left 0.5s !important;
+}
+
+#digital-library-root .open-sidebar-btn:hover {
+    opacity: 1 !important;
+}
+
+#digital-library-root #go-to-library-icon {
+    left: 80px !important;
+    font-size: 1.5rem !important;
+}
+
+#digital-library-root .site-title {
+    position: absolute !important;
+    top: 40px !important;
+    left: 0 !important;
+    width: 100% !important;
+    text-align: center !important;
+    z-index: 2000 !important;
+    pointer-events: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+#digital-library-root .site-title h1 {
+
+    font-size: 1.2rem !important;
+    font-weight: 300 !important;
+    color: #fff !important;
+    text-transform: uppercase !important;
+    letter-spacing: 6px !important;
+    margin: 0 !important;
+    opacity: 0.8 !important;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+}
+
+#digital-library-root .site-title p {
+
+    font-size: 0.7rem !important;
+    color: #666 !important;
+    letter-spacing: 3px !important;
+    margin-top: 8px !important;
+    opacity: 0.6 !important;
+    text-align: center !important;
+}
+
+#digital-library-root .book-scene {
+    width: var(--book-width) !important;
+    height: var(--book-height) !important;
+    margin-top: 60px !important;
+    position: relative !important;
+    transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+
+#digital-library-root .book {
+    width: 100% !important;
+    height: 100% !important;
+    position: relative !important;
+    transform-style: preserve-3d !important;
+    transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+
+@media (min-width: 768px) {
+    #digital-library-root .book {
+        transform: translateX(50%) !important;
+    }
+
+    #digital-library-root .book.closed {
+        transform: translateX(-1%) !important;
+    }
+}
+
+body:not(.is-admin) #digital-library-root #edit-mode-btn {
+    display: none !important;
+}
+
+#digital-library-root .paper {
+    position: absolute !important;
+    width: 100% !important;
+    height: 100% !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform-origin: left center !important;
+    transform-style: preserve-3d !important;
+    transition: transform var(--turn-duration) var(--ease-paper) !important;
+    cursor: pointer !important;
+    border-radius: 2px !important;
+    will-change: transform;
+}
+
+#digital-library-root .paper.flipped {
+    transform: rotateY(-180deg) !important;
+}
+
+#digital-library-root .front,
+#digital-library-root .back {
+    position: absolute !important;
+    width: 100% !important;
+    height: 100% !important;
+    top: 0 !important;
+    left: 0 !important;
+    backface-visibility: hidden !important;
+    background-color: var(--paper-color) !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+#digital-library-root .front {
+    z-index: 2 !important;
+    background: linear-gradient(to right, var(--paper-curve) 0%, var(--paper-color) 8%, var(--paper-color) 100%) !important;
+}
+
+#digital-library-root .back {
+    z-index: 1 !important;
+    transform: rotateY(180deg) !important;
+    background: linear-gradient(to left, var(--paper-curve) 0%, var(--paper-color) 8%, var(--paper-color) 100%) !important;
+}
+
+/* 1. .page-content-დან წავშალეთ counter-reset */
+#digital-library-root .page-content {
+    padding: 3rem 3rem 1rem 3rem !important;
+    height: 100% !important;
+    width: 100% !important;
+    display: block !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+
+    font-size: 0.95rem !important;
+    line-height: 1.6 !important;
+    font-weight: 300 !important;
+    text-align: justify !important;
+    hyphens: auto !important;
+    /* counter-reset ამოღებულია */
+}
+
+#digital-library-root .page-content h2{
+    padding-top: 2rem!important;
+}
+
+#digital-library-root h1 {
+    font-size: 1.8rem !important;
+    font-weight: 500 !important;
+    color: var(--heading-color) !important;
+    letter-spacing: -1px !important;
+    line-height: 1.2 !important;
+    margin-bottom: 1.5rem !important;
+}
+
+#digital-library-root h2 {
+    font-size: 1.3rem !important;
+    font-weight: 500 !important;
+    margin-bottom: 1.5rem !important;
+    color: var(--heading-color) !important;
+    opacity: 0.9 !important;
+}
+
+#digital-library-root .footnote-trigger {
+    position: relative !important;
+    display: inline !important; /* ✅ inline-block შევცვალეთ inline-ით */
+    border-bottom: 2px dotted #a855f7 !important;
+    cursor: pointer !important;
+    z-index: 20 !important;
+    /* transform-style არ გვინდა inline-ზე */
+}
+
+/* 2. აქ ვცვლით content-ის წყაროს */
+#digital-library-root .footnote-trigger::before {
+    /* counter-increment ამოღებულია */
+    content: attr(data-fn-index); /* ✅ ვიღებთ JS-ის მიერ მინიჭებულ რიცხვს */
+
+    position: absolute !important;
+    top: -8px !important;
+    right: -12px !important;
+
+    font-size: 0.65rem !important;
+    font-weight: 800 !important;
+    color: #a855f7 !important;
+
+
+    background: rgba(168, 85, 247, 0.1) !important;
+    padding: 1px 4px !important;
+    border-radius: 3px !important;
+    line-height: 1 !important;
+}
+
+body.light-mode #digital-library-root h2 {
+    color: #000000 !important;
+    opacity: 1 !important;
+    font-weight: 700 !important;
+}
+
+#digital-library-root h3 {
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 2px !important;
+    margin-bottom: 1rem !important;
+    opacity: 0.6 !important;
+}
+
+#digital-library-root p {
+    font-size: var(--p-font-size) !important;
+    line-height: 1.6 !important;
+    color: var(--text-color) !important;
+    margin-bottom: 0.7rem !important;
+    font-weight: 300 !important;
+    text-align: justify !important;
+    hyphens: auto !important;
+}
+
+#digital-library-root blockquote {
+    border-left: 1px solid #444 !important;
+    padding-left: 20px !important;
+    font-style: italic !important;
+    color: #888 !important;
+    margin: 1.5rem 0 !important;
+    font-size: 0.95rem !important;
+}
+
+#digital-library-root .page-number {
+    position: absolute !important;
+    bottom: 1.5rem !important;
+    left: 0 !important;
+    width: 100% !important;
+    text-align: center !important;
+    font-size: 0.85rem !important;
+    color: #666 !important;
+
+    pointer-events: none !important;
+}
+
+#digital-library-root .cover-img {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    border-radius: 2px !important;
+}
+
+#digital-library-root .hardcover-front,
+#digital-library-root .hardcover-back {
+    background-color: var(--bg-color) !important;
+    border: none !important;
+    box-shadow: inset 0 0 0 1px #222 !important;
+}
+
+#digital-library-root .cover-design {
+    border: none !important;
+    margin: 0 !important;
+    justify-content: center !important;
+}
+
+#digital-library-root #measure-container {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: -1000 !important;
+    opacity: 0 !important;
+    width: var(--book-width) !important;
+    height: var(--book-height) !important;
+    padding: 3rem 3rem 4rem 3rem !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+
+}
+
+#digital-library-root #book-loader {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: var(--bg-color) !important;
+    z-index: 999999999 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    transition: opacity 0.4s ease, visibility 0.4s ease !important;
+}
+
+#digital-library-root #book-loader.hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+#digital-library-root .book-animation {
+    position: relative !important;
+    width: 60px !important;
+    height: 40px !important;
+    perspective: 1000px !important;
+}
+
+#digital-library-root .book-spine {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 30px !important;
+    height: 100% !important;
+    border: 2px solid var(--text-color) !important;
+    border-right: none !important;
+    border-radius: 2px 0 0 2px !important;
+    opacity: 0.3 !important;
+}
+
+#digital-library-root .book-page {
+    position: absolute !important;
+    top: 0 !important;
+    left: 28px !important;
+    width: 28px !important;
+    height: 100% !important;
+    border: 2px solid var(--text-color) !important;
+    border-left: 1px solid transparent !important;
+    border-radius: 0 2px 2px 0 !important;
+    transform-origin: left center !important;
+    background: transparent !important;
+}
+
+#digital-library-root .page-1 {
+    animation: flip-page 1.8s infinite ease-in-out !important;
+    animation-delay: 0s !important;
+}
+
+#digital-library-root .page-2 {
+    animation: flip-page 1.8s infinite ease-in-out !important;
+    animation-delay: 0.3s !important;
+}
+
+#digital-library-root .page-3 {
+    animation: flip-page 1.8s infinite ease-in-out !important;
+    animation-delay: 0.6s !important;
+}
+
+@keyframes flip-page {
+    0% {
+        transform: rotateY(0deg);
+        border-color: var(--text-color);
+        opacity: 1;
+    }
+
+    50% {
+        transform: rotateY(-180deg);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: rotateY(-180deg);
+        opacity: 0;
+    }
+}
+
+#digital-library-root .library-container {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: #111 !important;
+    z-index: 500000 !important;
+    display: none !important;
+    flex-direction: column !important;
+    padding: 40px !important;
+    overflow-y: auto !important;
+}
+
+#digital-library-root .library-container.active {
+    display: flex !important;
+}
+
+#digital-library-root .library-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 40px !important;
+    max-width: 1200px !important;
+    width: 100% !important;
+    margin: 0 auto 40px auto !important;
+}
+
+#digital-library-root .library-header h1 {
+
+    color: #fff !important;
+    font-size: 1.5rem !important;
+}
+
+#digital-library-root .books-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+    gap: 40px !important;
+    max-width: 1200px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+}
+
+#digital-library-root .book-card {
+    background: #1a1a1a !important;
+    aspect-ratio: 2/3 !important;
+    cursor: pointer !important;
+    transition: all 0.4s !important;
+    position: relative !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+#digital-library-root .book-card:hover {
+    transform: translateY(-8px) scale(1.02) !important;
+    z-index: 1000 !important;
+}
+
+#digital-library-root .book-card img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+#digital-library-root .no-cover-placeholder {
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #222 !important;
+    color: #444 !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase !important;
+    padding: 10px !important;
+    text-align: center !important;
+}
+
+#digital-library-root .delete-book-btn {
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    width: 30px !important;
+    height: 30px !important;
+    background: rgba(255, 0, 0, 0.8) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0 !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+}
+
+#digital-library-root .book-card:hover .delete-book-btn {
+    opacity: 1 !important;
+}
+
+
+
+/* LIB HOME BUTTON */
+#digital-library-root .lib-home-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    height: 38px !important;
+    min-width: 48px !important;
+    padding: 0 14px !important;
+
+    border-radius: 999px !important;
+    border: 1px solid rgba(168, 85, 247, 0.35) !important;
+    background: rgba(18, 18, 18, 0.55) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+
+    color: #fff !important;
+    font-size: 0.75rem !important;
+    font-weight: 900 !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    text-decoration: none !important;
+
+    opacity: 0.85 !important;
+    transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease, border-color 0.2s ease !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35) !important;
+}
+
+#digital-library-root .lib-home-btn:hover {
+    opacity: 1 !important;
+    transform: translateY(-2px) !important;
+    background: rgba(168, 85, 247, 0.18) !important;
+    border-color: rgba(168, 85, 247, 0.8) !important;
+}
+
+#digital-library-root .lib-home-btn:active {
+    transform: translateY(0) scale(0.98) !important;
+}
+
+/* Light mode */
+body.light-mode #digital-library-root .lib-home-btn {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #4c1d95 !important;
+    border-color: rgba(168, 85, 247, 0.25) !important;
+    box-shadow: 0 8px 20px rgba(168, 85, 247, 0.08) !important;
+}
+
+/* Mobile: ცოტა პატარა, რომ toolbar არ გადაიჭედოს */
+@media (max-width: 768px) {
+    #digital-library-root .lib-home-btn {
+        height: 34px !important;
+        min-width: 44px !important;
+        padding: 0 12px !important;
+        letter-spacing: 1.5px !important;
+    }
+}
+
+
+#digital-library-root .nav-toolbar {
+    position: absolute !important;
+    top: 30px !important;
+
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease !important;
+
+    z-index: 100001 !important;
+    display: flex !important;
+    gap: 15px !important;
+}
+
+body:not(.sidebar-closed) #digital-library-root .nav-toolbar {
+    left: calc(var(--sidebar-width) + 30px) !important;
+}
+
+body.sidebar-closed #digital-library-root .nav-toolbar {
+    left: 30px !important;
+}
+
+#digital-library-root .tool-btn {
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    color: var(--text-color) !important;
+    padding: 8px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0.6 !important;
+}
+
+#digital-library-root .tool-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    opacity: 1 !important;
+    transform: scale(1.1) !important;
+}
+
+body.light-mode #digital-library-root .tool-btn:hover {
+    background: rgba(0, 0, 0, 0.05) !important;
+}
+
+#digital-library-root .text-btn {
+
+    font-weight: bold !important;
+    font-size: 0.9rem !important;
+    border-radius: 4px !important;
+    padding: 5px 10px !important;
+    border: 1px solid var(--text-color) !important;
+}
+
+#digital-library-root .material-icons-outlined {
+    font-size: 24px !important;
+    color: var(--text-color) !important;
+}
+
+#digital-library-root #edit-mode-btn {
+    position: absolute !important;
+    top: 20px !important;
+    right: 80px !important;
+    z-index: 100000 !important;
+    background: #222 !important;
+    color: #fff !important;
+    border: 1px solid #333 !important;
+    padding: 8px 20px !important;
+    border-radius: 30px !important;
+
+    cursor: pointer !important;
+}
+
+#digital-library-root #edit-mode-btn:hover {
+    background: #fff !important;
+    color: #000 !important;
+}
+
+#digital-library-root .modal-overlay {
+    display: none !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.9) !important;
+    z-index: 200000 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    backdrop-filter: blur(5px) !important;
+}
+
+#digital-library-root .modal-overlay.active {
+    display: flex !important;
+}
+
+#digital-library-root .modal-content {
+    width: 95% !important;
+    height: 95vh !important;
+    background: #111 !important;
+    border: 1px solid #333 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8) !important;
+}
+
+#digital-library-root .modal-body {
+    display: flex !important;
+    flex: 1 !important;
+    overflow: hidden !important;
+}
+
+#digital-library-root .pages-manager {
+
+    width: 300px !important;
+    min-width: 300px !important;
+    background: #0e0e0e !important;
+    border-right: 1px solid #222 !important;
+    display: flex !important;
+    flex-direction: column !important;
+
+    padding: 1.5rem !important;
+}
+
+#digital-library-root #editable-pages-list {
+    list-style: none !important;
+    flex: 1 !important;
+    overflow-y: auto !important;
+}
+
+#digital-library-root #editable-pages-list li {
+    display: flex !important;
+    justify-content: space-between !important;
+    padding: 10px !important;
+    border-bottom: 1px solid #1a1a1a !important;
+    color: #666 !important;
+    cursor: pointer !important;
+}
+
+#digital-library-root #editable-pages-list li.selected,
+#digital-library-root #editable-pages-list li:hover {
+    color: #fff !important;
+    background: #1a1a1a !important;
+}
+
+#digital-library-root .editor-area {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    position: relative !important;
+}
+
+#digital-library-root #editor-container {
+    flex: 1 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+#digital-library-root .editor-footer {
+    gap: 10px !important;
+    flex-shrink: 0 !important;
+    height: 70px !important;
+    background: #0a0a0a !important;
+    border-top: 1px solid #222 !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    padding: 0 20px !important;
+
+    z-index: 100 !important;
+    position: relative !important;
+}
+
+#digital-library-root .secondary-btn {
+    padding: 10px 20px !important;
+    background: transparent !important;
+    border: 1px solid #444 !important;
+    color: #888 !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    border-radius: 4px !important;
+    transition: all 0.2s !important;
+}
+
+#digital-library-root .secondary-btn:hover {
+    border-color: #fff !important;
+    color: #fff !important;
+}
+
+#digital-library-root .primary-btn {
+    padding: 10px 25px !important;
+    background: #fff !important;
+    color: #000 !important;
+    border: none !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    border-radius: 4px !important;
+}
+
+#digital-library-root .primary-btn:hover {
+    background: #e0e0e0 !important;
+}
+
+#digital-library-root #save-changes-btn {
+    padding: 10px 25px !important;
+    background: #fff !important;
+    color: #000 !important;
+    border: none !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+}
+
+#digital-library-root .modal-header {
+    background: #161616 !important;
+    border-bottom: 1px solid #333 !important;
+    padding: 15px 25px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+    z-index: 10 !important;
+}
+
+#digital-library-root .modal-header h3 {
+    margin: 0 !important;
+    color: #e0e0e0 !important;
+
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 2px !important;
+
+    border-left: 3px solid #fff !important;
+    padding-left: 15px !important;
+}
+
+#digital-library-root #close-modal {
+    background: transparent !important;
+    border: none !important;
+    color: #666 !important;
+    font-size: 24px !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+#digital-library-root .manager-actions {
+    margin-top: 15px !important;
+    padding-top: 15px !important;
+    border-top: 1px solid #222 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+}
+
+#digital-library-root .manager-actions button {
+    width: 100% !important;
+    padding: 10px !important;
+
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+}
+
+#digital-library-root #add-page-btn {
+    background: transparent !important;
+    border: 1px dashed #444 !important;
+    color: #888 !important;
+}
+
+#digital-library-root #add-page-btn:hover {
+    background: #1f1f1f !important;
+    border-color: #fff !important;
+    border-style: solid !important;
+    color: #fff !important;
+    transform: translateY(-2px) !important;
+}
+
+#digital-library-root #reset-book-btn {
+
+    background: rgba(217, 83, 79, 0.15) !important;
+    border: 1px solid rgba(217, 83, 79, 0.3) !important;
+    color: #d9534f !important;
+    margin-top: 5px !important;
+}
+
+#digital-library-root #reset-book-btn:hover {
+    background: #d9534f !important;
+    color: #fff !important;
+    border-color: #d9534f !important;
+    box-shadow: 0 4px 12px rgba(217, 83, 79, 0.4) !important;
+}
+
+#digital-library-root #close-modal:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+    transform: rotate(90deg) !important;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1) !important;
+}
+
+#digital-library-root #close-modal:active {
+    transform: scale(0.9) rotate(90deg) !important;
+}
+
+#digital-library-root .ql-toolbar.ql-snow {
+    background: #161616 !important;
+    border: none !important;
+    border-bottom: 1px solid #333 !important;
+}
+
+#digital-library-root .ql-container {
+    flex: 1 !important;
+    overflow: hidden !important;
+}
+
+#digital-library-root .ql-container.ql-snow {
+    border: none !important;
+    background: #111 !important;
+}
+
+#digital-library-root .ql-editor {
+    height: 100% !important;
+    overflow-y: auto !important;
+
+    padding: 25px 15px 50px 15px !important;
+
+    color: #c0c0c0 !important;
+
+    font-size: 1rem !important;
+}
+
+#digital-library-root .editor-lang-tabs {
+    display: flex !important;
+    background: #0a0a0a !important;
+    border-bottom: 1px solid #222 !important;
+    position: relative !important;
+    padding: 10px !important;
+    box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+#digital-library-root .lang-tab {
+    flex: 1 !important;
+    background: transparent !important;
+    border: none !important;
+
+    color: #444 !important;
+
+    font-size: 0.85rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    padding: 18px !important;
+    cursor: pointer !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: color 0.3s ease !important;
+}
+
+#digital-library-root .lang-tab::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 3px !important;
+
+    background: linear-gradient(90deg, transparent 0%, #ffffff 50%, transparent 100%) !important;
+
+    transform: scaleX(0) !important;
+    transform-origin: center !important;
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+
+    box-shadow: 0 -2px 10px rgba(255, 255, 255, 0.5) !important;
+    opacity: 0 !important;
+}
+
+#digital-library-root .lang-tab:hover {
+    color: #888 !important;
+    background: linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+}
+
+#digital-library-root .lang-tab.active {
+    color: #ffffff !important;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.6) !important;
+    background: linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+    justify-content: center;
+}
+
+#digital-library-root .lang-tab.active::after {
+    transform: scaleX(1) !important;
+    opacity: 1 !important;
+}
+
+#digital-library-root .lang-tab.active::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 40px !important;
+    height: 1px !important;
+    background: linear-gradient(90deg, transparent, #fff, transparent) !important;
+    box-shadow: 0 1px 5px #fff !important;
+}
+
+
+
+#digital-library-root #settings-form {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+
+    height: calc(100% - 70px) !important;
+    background: #111 !important;
+    z-index: 50 !important;
+    display: none;
+    flex-direction: column !important;
+    border-bottom: 1px solid #222 !important;
+}
+
+#digital-library-root #settings-form.active {
+    display: flex !important;
+}
+
+#digital-library-root .editor-area {
+    position: relative !important;
+}
+
+#digital-library-root #settings-form {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+
+    height: calc(100% - 70px) !important;
+    z-index: 50 !important;
+    background: #111 !important;
+    display: none;
+    flex-direction: column !important;
+    border-bottom: 1px solid #222 !important;
+}
+
+#digital-library-root #settings-form.active {
+    display: flex !important;
+}
+
+#digital-library-root .settings-header-bar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 15px 25px !important;
+    background: #0e0e0e !important;
+    border-bottom: 1px solid #333 !important;
+}
+
+#digital-library-root .settings-header-bar h4 {
+    margin: 0 !important;
+    color: #fff !important;
+
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+}
+
+#digital-library-root #close-settings-btn {
+    background: transparent !important;
+    border: none !important;
+    color: #888 !important;
+    font-size: 24px !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    width: 30px !important;
+    height: 30px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+}
+
+#digital-library-root #close-settings-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+    transform: rotate(90deg) !important;
+}
+
+#digital-library-root .settings-scroll-content {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 25px !important;
+}
+
+#digital-library-root .image-preview {
+    width: 150px !important;
+    height: 200px !important;
+    background: #222 !important;
+    border: 1px dashed #444 !important;
+    margin-top: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.8rem !important;
+    color: #666 !important;
+
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+}
+
+#digital-library-root .form-group {
+    margin-bottom: 1.5rem !important;
+}
+
+#digital-library-root .form-group label {
+    display: block !important;
+    margin-bottom: 0.5rem !important;
+    color: #888 !important;
+}
+
+#digital-library-root .form-group input[type="text"] {
+    width: 100% !important;
+    padding: 10px !important;
+    background: #222 !important;
+    border: 1px solid #333 !important;
+    color: #fff !important;
+    border-radius: 4px !important;
+}
+
+
+
+
+@media (max-width: 768px) {
+
+    html,
+    body {
+        overscroll-behavior-y: none !important;
+        -webkit-overflow-scrolling: auto !important;
+    }
+
+    #digital-library-root {
+
+        touch-action: pan-y !important;
+    }
+
+    #digital-library-root .modal-content {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        border-radius: 0 !important;
+        border: none !important;
+    }
+
+    #digital-library-root .modal-body {
+        flex-direction: column !important;
+        border: none !important;
+    }
+
+    #digital-library-root .pages-manager {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 40vh !important;
+        flex-shrink: 0 !important;
+        border-right: none !important;
+        border-bottom: 1px solid #333 !important;
+        padding: 15px !important;
+        background: #0e0e0e !important;
+        z-index: 50 !important;
+    }
+
+    #digital-library-root #editable-pages-list {
+        display: block !important;
+        min-height: 120px !important;
+        overflow-y: auto !important;
+        flex: 1 !important;
+        background: #000 !important;
+        border: 1px solid #222 !important;
+        margin: 10px 0 !important;
+        padding: 5px !important;
+    }
+
+    #digital-library-root .manager-actions {
+        margin-top: 0 !important;
+        padding-top: 5px !important;
+        border: none !important;
+        flex-shrink: 0 !important;
+    }
+
+    #digital-library-root .editor-area {
+        width: 100% !important;
+        flex: 1 !important;
+        height: auto !important;
+    }
+
+    #digital-library-root .ql-toolbar {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 20 !important;
+        background: #161616 !important;
+    }
+
+    #digital-library-root .ql-editor {
+        padding: 15px !important;
+        padding-bottom: 80px !important;
+        font-size: 1.1rem !important;
+    }
+
+    #digital-library-root #settings-form {
+        height: calc(100% - 60px) !important;
+        z-index: 200 !important;
+    }
+
+    #digital-library-root .editor-footer {
+        height: 60px !important;
+        padding: 5px 15px !important;
+    }
+
+    #digital-library-root .nav-toolbar {
+        position: fixed !important;
+        top: 15px !important;
+        left: 15px !important;
+        gap: 10px !important;
+        z-index: 100001 !important;
+    }
+
+    body:not(.sidebar-closed) #digital-library-root .nav-toolbar,
+    body.sidebar-closed #digital-library-root .nav-toolbar {
+        left: 15px !important;
+    }
+
+    body:not(.sidebar-closed) #digital-library-root .nav-toolbar {
+        left: calc(var(--sidebar-width) + 15px) !important;
+    }
+
+    #digital-library-root #main-content {
+        flex-grow: 1 !important;
+        background-color: var(--bg-color) !important;
+        flex-direction: column !important;
+
+        margin-left: 0 !important;
+        transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        will-change: margin-left !important;
+        padding-top: 15px !important;
+
+        /* ✅ FIX: ქვემოთ ვტოვებთ მეტ ადგილს + Safe Area (აიფონისთვის) */
+        padding-bottom: calc(35px + env(safe-area-inset-bottom)) !important;
+
+        height: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        perspective: 3500px !important;
+        width: auto !important;
+        opacity: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        transition: filter 0.3s ease !important;
+    }
+
+    body:not(.sidebar-closed) #digital-library-root #main-content {
+        filter: blur(3px) brightness(0.7) !important;
+        pointer-events: none !important;
+    }
+
+    #digital-library-root .sidebar {
+        box-shadow: 5px 0 50px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    #digital-library-root .open-sidebar-btn,
+    #digital-library-root #admin-login-btn,
+    #digital-library-root #edit-mode-btn {
+        position: absolute !important;
+        top: 15px !important;
+        z-index: 200000 !important;
+        opacity: 1 !important;
+        padding: 8px 10px !important;
+        border-radius: 6px !important;
+        background: var(--bg-color) !important;
+        border: 1px solid #333 !important;
+    }
+
+    #digital-library-root #admin-login-btn {
+        right: 15px !important;
+        left: auto !important;
+    }
+
+    #digital-library-root #edit-mode-btn {
+        right: 75px !important;
+        left: auto !important;
+        font-size: 0.8rem !important;
+        padding: 8px 15px !important;
+    }
+
+    #digital-library-root #go-to-library-icon {
+        left: 70px !important;
+    }
+
+    #digital-library-root #lang-switcher-btn {
+        left: auto !important;
+        right: 15px !important;
+        top: 20px !important;
+    }
+
+    #digital-library-root .site-title {
+        position: relative !important;
+        top: 0 !important;
+        margin-top: 45px !important;
+        min-height: 70px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-end !important;
+    }
+
+    #digital-library-root .book-scene {
+        flex-grow: 1 !important;
+        height: auto !important;
+        max-height: calc(100% - 60px) !important;
+        width: 100% !important;
+        margin-top: 5px !important;
+    }
+
+    #digital-library-root .book {
+        width: 100% !important;
+        height: 100% !important;
+        position: relative !important;
+        transform-style: preserve-3d !important;
+        transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1) !important;
+
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    #digital-library-root .paper {
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 0 !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        box-shadow: none !important;
+        transform: translate3d(0, 0, 0) !important;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease !important;
+        opacity: 1 !important;
+        background: var(--paper-color) !important;
+        display: block !important;
+    }
+
+    #digital-library-root .paper.flipped {
+        transform: translate3d(-110%, 0, 0) !important;
+        opacity: 0.5 !important;
+        pointer-events: none !important;
+    }
+
+    #digital-library-root .back {
+        display: none !important;
+    }
+
+    #digital-library-root .front {
+        display: block !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    #digital-library-root #measure-container,
+    #digital-library-root .page-content {
+        width: 100% !important;
+        height: 100% !important;
+        padding: 1.5rem 1.2rem 3rem 1.2rem !important;
+        font-size: 1rem !important;
+    }
+
+    #digital-library-root .page-number {
+        bottom: 1.5rem !important;
+    }
+}
+
+body.light-mode #digital-library-root .book {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2) !important;
+}
+
+.trp-floating-switcher {
+    display: none !important;
+}
+
+#digital-library-root #create-new-book-btn {
+
+    background: linear-gradient(135deg, #ffffff 0%, #d6d6d6 100%) !important;
+
+    color: #111111 !important;
+
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+
+    border: none !important;
+    padding: 12px 28px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+}
+
+#digital-library-root #create-new-book-btn:hover {
+    transform: translateY(-2px) !important;
+    background: #ffffff !important;
+
+    box-shadow: 0 10px 25px rgba(255, 255, 255, 0.15) !important;
+}
+
+#digital-library-root #create-new-book-btn:active {
+    transform: translateY(1px) !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5) !important;
+    opacity: 0.9 !important;
+}
+
+body:not(.is-admin) #digital-library-root #create-new-book-btn {
+    display: none !important;
+}
+
+#digital-library-root #open-settings-btn {
+
+    background: #1f1f1f !important;
+    border: 1px solid #333 !important;
+
+    color: #a0a0a0 !important;
+
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    text-align: center !important;
+
+    padding: 12px 15px !important;
+    width: 100% !important;
+    border-radius: 6px !important;
+    margin-bottom: 20px !important;
+    cursor: pointer !important;
+
+    transition: all 0.2s ease-in-out !important;
+
+    border-left: 3px solid #444 !important;
+}
+
+#digital-library-root #open-settings-btn:hover {
+    background: #2a2a2a !important;
+    color: #ffffff !important;
+    border-color: #444 !important;
+    border-left-color: #ffffff !important;
+    transform: translateX(2px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+#digital-library-root #open-settings-btn:active,
+#digital-library-root #open-settings-btn.active {
+    background: #333 !important;
+    color: #fff !important;
+    border-left-color: #007bff !important;
+    transform: translateX(0) !important;
+}
+
+#digital-library-root #mobile-expand-toggle {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+
+    #digital-library-root #mobile-expand-toggle {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        height: 30px !important;
+        background: #1a1a1a !important;
+        border: none !important;
+        border-top: 1px solid #333 !important;
+        border-bottom: 1px solid #333 !important;
+        color: #888 !important;
+        cursor: pointer !important;
+        z-index: 60 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    #digital-library-root #mobile-expand-toggle:hover {
+        background: #222 !important;
+        color: #fff !important;
+    }
+
+    #digital-library-root .modal-body.expanded-mode .pages-manager {
+        display: none !important;
+    }
+
+    #digital-library-root .modal-body.expanded-mode #mobile-expand-toggle .material-icons-outlined {
+        transform: rotate(180deg);
+    }
+
+    #digital-library-root .modal-body.expanded-mode #mobile-expand-toggle {
+        background: #1d252d !important;
+        color: #fff !important;
+        border-color: #202b36 !important;
+    }
+}
+
+#digital-library-root .ql-snow .ql-stroke {
+    stroke: #a0a0a0 !important;
+}
+
+#digital-library-root .ql-snow .ql-fill {
+    fill: #a0a0a0 !important;
+}
+
+#digital-library-root .ql-snow .ql-active .ql-stroke {
+    stroke: #ffffff !important;
+}
+
+#digital-library-root .ql-snow .ql-active .ql-fill {
+    fill: #ffffff !important;
+}
+
+#digital-library-root .ql-snow .ql-picker {
+    color: #a0a0a0 !important;
+}
+
+#digital-library-root .ql-snow .ql-picker-label::before {
+    color: #a0a0a0 !important;
+}
+
+#digital-library-root .ql-snow .ql-picker-options {
+    background-color: #1a1a1a !important;
+    border: 1px solid #333 !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5) !important;
+}
+
+#digital-library-root .ql-snow .ql-picker-item {
+    color: #a0a0a0 !important;
+}
+
+#digital-library-root .ql-snow .ql-picker-item:hover,
+#digital-library-root .ql-snow .ql-picker-item.ql-selected {
+    color: #fff !important;
+    stroke: #fff !important;
+}
+
+#digital-library-root .ql-editor blockquote {
+    border-left: 3px solid #d4af37 !important;
+    padding-left: 15px !important;
+    font-style: italic !important;
+    color: #ccc !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    padding: 10px !important;
+    margin: 10px 0 !important;
+}
+
+#digital-library-root .ql-toolbar button {
+    margin-right: 2px !important;
+}
+
+#digital-library-root .ql-formats {
+    margin-right: 10px !important;
+    border-right: 1px solid #333 !important;
+    padding-right: 10px !important;
+}
+
+#digital-library-root .ql-formats:last-child {
+    border-right: none !important;
+}
+
+#digital-library-root .ql-align-center {
+    text-align: center !important;
+}
+
+#digital-library-root .ql-align-right {
+    text-align: right !important;
+}
+
+#digital-library-root .ql-align-justify {
+    text-align: justify !important;
+}
+
+#digital-library-root .ql-editor ul,
+#digital-library-root .page-content ul,
+#digital-library-root .ql-editor ol,
+#digital-library-root .page-content ol {
+    padding-left: 1.5rem !important;
+    margin-bottom: 1rem !important;
+}
+
+#digital-library-root .ql-editor li,
+#digital-library-root .page-content li {
+    list-style-position: outside !important;
+    margin-bottom: 0.5rem !important;
+}
+
+#digital-library-root .ql-indent-1 {
+    padding-left: 3rem !important;
+}
+
+#digital-library-root .ql-indent-2 {
+    padding-left: 6rem !important;
+}
+
+#digital-library-root .ql-indent-3 {
+    padding-left: 9rem !important;
+}
+
+#digital-library-root strong,
+#digital-library-root b {
+    font-weight: 500 !important;
+    color: #ffffff !important;
+}
+
+#digital-library-root em,
+#digital-library-root i {
+    font-style: italic !important;
+    color: #cccccc !important;
+}
+
+body.light-mode #digital-library-root strong,
+body.light-mode #digital-library-root b {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+body.light-mode #digital-library-root em,
+body.light-mode #digital-library-root i {
+    color: #444444 !important;
+    font-style: italic !important;
+}
+
+#digital-library-root .ql-editor h1 {
+    font-size: 1.8rem !important;
+    margin-bottom: 1rem !important;
+    margin-top: 1rem !important;
+    line-height: 1.2 !important;
+}
+
+#digital-library-root .ql-editor h2 {
+    font-size: 1.4rem !important;
+    margin-bottom: 0.8rem !important;
+    margin-top: 1rem !important;
+}
+
+#digital-library-root .ql-editor h3 {
+    font-size: 1.1rem !important;
+    text-transform: uppercase !important;
+    margin-bottom: 0.5rem !important;
+}
+
+#digital-library-root .ql-editor {
+
+    font-weight: 300 !important;
+    line-height: 1.6 !important;
+}
+
+#digital-library-root .ql-editor img,
+#digital-library-root .page-content img {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    display: block !important;
+    margin: 1rem auto !important;
+    object-fit: contain !important;
+    border-radius: 2px !important;
+}
+
+#digital-library-root .full-page-img-wrapper {
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    margin: -3rem -3rem -1rem -3rem !important;
+
+}
+
+@media (max-width: 768px) {
+    #digital-library-root .full-page-img-wrapper {
+        margin: -2rem -1.5rem -4rem -1.5rem !important;
+    }
+}
+
+#digital-library-root .full-page-img-wrapper img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+    border-radius: 2px !important;
+}
+
+#digital-library-root .visually-hidden,
+#digital-library-root #bot-full-content,
+#digital-library-root #seo-hidden-text {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    border: 0 !important;
+
+    contain: strict !important;
+
+    content-visibility: auto !important;
+
+    white-space: nowrap !important;
+
+    pointer-events: none !important;
+
+    top: 0 !important;
+    left: 0 !important;
+    z-index: -9999 !important;
+}
+
+#digital-library-root .page-content .footnote-trigger {
+    position: relative !important;
+    display: inline-block !important;
+    border-bottom: 2px dotted #a855f7 !important;
+    cursor: pointer !important;
+    z-index: 20 !important;
+    transform-style: preserve-3d !important;
+}
+
+#digital-library-root .page-content .footnote-tooltip {
+
+    position: absolute !important;
+    bottom: 100% !important;
+    left: 50% !important;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 10px !important;
+    margin-bottom: -10px !important;
+
+    transform: translateX(-50%) translateY(-10px) translateZ(150px) !important;
+
+    width: max-content !important;
+    max-width: 360px !important;
+    min-width: 200px !important;
+    max-height: 340px !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    background: #1a1a1a !important;
+    color: #e0e0e0 !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    border: 1px solid #333 !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95) !important;
+
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: auto !important;
+
+    transition: opacity 0.15s ease-out, transform 0.15s ease-out !important;
+    z-index: 999999999999999999 !important;
+}
+
+.footnote-tooltip::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 20px !important;
+    background: transparent !important;
+}
+
+#digital-library-root .page-content .footnote-tooltip.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateX(-50%) translateY(-15px) translateZ(150px) !important;
+    pointer-events: auto !important;
+    z-index: 999999999999999999999999999 !important;
+}
+
+#digital-library-root .page-content .footnote-tooltip::after {
+    content: '' !important;
+    position: absolute !important;
+    top: 100% !important;
+    left: 50% !important;
+    margin-left: -6px !important;
+    border-width: 6px !important;
+    border-style: solid !important;
+    border-color: #1a1a1a transparent transparent transparent !important;
+
+    transform: translateZ(-1px) !important;
+}
+
+#digital-library-root .footnote-title::before {
+    content: none !important; /* ✅ CSS-მა აღარაფერი დაწეროს! */
+    display: none !important;
+}
+
+body.light-mode #digital-library-root .footnote-trigger::before {
+    color: #7c3aed !important;
+    background: rgba(124, 58, 237, 0.1) !important;
+}
+
+#digital-library-root .footnote-title {
+
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 5 !important;
+
+    padding: 12px 14px 8px 14px !important;
+    background: #1a1a1a !important;
+    color: #fff !important;
+    font-weight: 800 !important;
+    font-size: 0.95rem !important;
+    border-bottom: 1px solid #333 !important;
+    display: block !important;
+}
+
+#digital-library-root .footnote-content {
+    padding: 10px 14px 14px 14px !important;
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
+    color: #ccc !important;
+
+    text-align: left !important;
+
+    hyphens: none !important;
+    -webkit-hyphens: none !important;
+    -ms-hyphens: none !important;
+
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+
+    pointer-events: auto !important;
+}
+
+
+#digital-library-root .page-content .footnote-tooltip::-webkit-scrollbar {
+    width: 6px !important;
+}
+
+#digital-library-root .page-content .footnote-tooltip::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 0 8px 8px 0 !important;
+}
+
+#digital-library-root .page-content .footnote-tooltip::-webkit-scrollbar-thumb {
+    background: #444 !important;
+    border-radius: 10px !important;
+}
+
+#digital-library-root .page-content .footnote-tooltip::-webkit-scrollbar-thumb:hover {
+    background: #666 !important;
+}
+
+body.light-mode #digital-library-root .page-content .footnote-tooltip {
+    background: #ffffff !important;
+    color: #333 !important;
+    border-color: #ccc !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.light-mode #digital-library-root .page-content .footnote-tooltip::after {
+    border-color: #ffffff transparent transparent transparent !important;
+}
+
+body.light-mode #digital-library-root .footnote-title {
+    background: #ffffff !important;
+    color: #000 !important;
+    border-bottom-color: #eee !important;
+}
+
+body.light-mode #digital-library-root .footnote-content {
+    color: #444 !important;
+}
+
+body.light-mode #digital-library-root .page-content .footnote-tooltip::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-mode #digital-library-root .page-content .footnote-tooltip::-webkit-scrollbar-thumb {
+    background: #ccc !important;
+}
+
+body.light-mode #digital-library-root .page-content .footnote-tooltip::-webkit-scrollbar-thumb:hover {
+    background: #999 !important;
+}
+
+#digital-library-root #reading-progress-container {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 4px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    z-index: 100002 !important;
+    pointer-events: none !important;
+
+    opacity: 1 !important;
+}
+
+#digital-library-root #reading-progress-bar {
+    height: 100% !important;
+    width: 0%;
+    background: linear-gradient(90deg, #a855f7, #3b82f6) !important;
+    transition: width 0.1s linear !important;
+    position: relative !important;
+}
+
+#digital-library-root #reading-progress-glow {
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+    height: 100% !important;
+    width: 100px !important;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8)) !important;
+    box-shadow: 0 0 10px #3b82f6, 0 0 20px #a855f7 !important;
+    opacity: 0.7 !important;
+}
+
+#digital-library-root #reading-progress-label {
+    position: absolute !important;
+    bottom: 15px !important;
+    right: 0 !important;
+    transform: translateX(50%) !important;
+
+    background: #0e0e0e !important;
+    border: 1px solid #a855f7 !important;
+    color: #fff !important;
+
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    white-space: nowrap !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5) !important;
+    pointer-events: none !important;
+
+    opacity: 0 !important;
+    visibility: hidden !important;
+
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.2s ease !important;
+}
+
+#digital-library-root #reading-progress-container.active #reading-progress-label {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+#digital-library-root #reading-progress-label::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: -5px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    border-width: 5px 5px 0 !important;
+    border-style: solid !important;
+    border-color: #a855f7 transparent transparent transparent !important;
+    transition: left 0.2s ease, transform 0.2s ease !important;
+}
+
+#digital-library-root #reading-progress-label.near-start {
+    transform: translateX(100%) !important;
+}
+
+#digital-library-root #reading-progress-label.near-start::after {
+    left: 0 !important;
+    transform: translateX(0) !important;
+    margin-left: 5px !important;
+}
+
+#digital-library-root #reading-progress-label.near-end {
+    transform: translateX(0) !important;
+}
+
+#digital-library-root #reading-progress-label.near-end::after {
+    left: 100% !important;
+    transform: translateX(-100%) !important;
+    margin-left: -5px !important;
+}
+
+body.light-mode #digital-library-root #reading-progress-label {
+    background: #ffffff !important;
+    color: #000 !important;
+    border-color: #3b82f6 !important;
+}
+
+body.light-mode #digital-library-root #reading-progress-label::after {
+    border-color: #3b82f6 transparent transparent transparent !important;
+}
+
+body.light-mode #footnote-editor-modal .modal-content {
+    background: #ffffff !important;
+    border: 1px solid #ccc !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+}
+
+body.light-mode #footnote-editor-modal h3 {
+    color: #000 !important;
+}
+
+body.light-mode #footnote-editor-modal label {
+    color: #333 !important;
+}
+
+body.light-mode #footnote-word-display {
+    background: #f0f0f0 !important;
+    border-color: #ccc !important;
+    color: #555 !important;
+}
+
+body.light-mode #footnote-content-input {
+    background: #fff !important;
+    border-color: #ccc !important;
+    color: #000 !important;
+}
+
+body.light-mode #cancel-footnote-btn {
+    border-color: #999 !important;
+    color: #666 !important;
+}
+
+body.light-mode #save-footnote-btn {
+    background: #000 !important;
+    color: #fff !important;
+}
+
+#footnote-editor-modal {
+    display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 2147483647 !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(15px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+}
+
+#footnote-editor-modal.active {
+    display: flex !important;
+}
+
+#footnote-editor-modal .modal-content {
+    background: linear-gradient(135deg, rgba(25, 25, 30, 0.95) 0%, rgba(15, 15, 20, 0.98) 100%) !important;
+    width: 100% !important;
+    max-width: 550px !important;
+    border: 1px solid rgba(168, 85, 247, 0.2) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    animation: footnotePop 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes footnotePop {
+    0% {
+        transform: scale(0.95) translateY(20px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+#footnote-editor-modal .modal-header {
+    padding: 24px 28px !important;
+    background: rgba(168, 85, 247, 0.05) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+#footnote-editor-modal .modal-header h3 {
+    margin: 0 !important;
+    color: #fff !important;
+    font-size: 0.9rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 2px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+#footnote-editor-modal #close-footnote-modal {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #888 !important;
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 20px !important;
+    transition: all 0.3s ease !important;
+}
+
+#footnote-editor-modal #close-footnote-modal:hover {
+    background: #d9534f !important;
+    color: #fff !important;
+    transform: rotate(90deg) !important;
+}
+
+#footnote-editor-modal .modal-body {
+    padding: 28px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+}
+
+#footnote-editor-modal label {
+    display: block !important;
+    margin-bottom: 10px !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+}
+
+#footnote-editor-modal #footnote-word-display {
+    background: rgba(255, 255, 255, 0.05) !important; /* ოდნავ უფრო ღია ფონი */
+    border: 1px solid rgba(168, 85, 247, 0.3) !important; /* ბორდერი რომ ჩანდეს */
+    color: #a855f7 !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    padding: 14px 18px !important;
+    border-radius: 14px !important;
+    opacity: 1 !important;
+    cursor: text !important; /* კურსორი ტექსტური გახდეს */
+    transition: all 0.2s ease !important;
+}
+
+#footnote-editor-modal #footnote-word-display:focus {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: #a855f7 !important;
+    outline: none !important;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.2) !important;
+}
+
+/* Light Mode-ისთვის */
+body.light-mode #footnote-editor-modal #footnote-word-display {
+    background: #ffffff !important;
+    border-color: #a855f7 !important;
+    color: #4c1d95 !important;
+}
+
+#footnote-editor-modal .ql-toolbar.ql-snow {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 14px 14px 0 0 !important;
+    padding: 12px !important;
+}
+
+#footnote-editor-modal .ql-container.ql-snow {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top: none !important;
+    border-radius: 0 0 14px 14px !important;
+
+}
+
+#footnote-editor-modal .ql-editor {
+    min-height: 120px !important;
+    max-height: 250px !important;
+    font-size: 0.95rem !important;
+    line-height: 1.6 !important;
+    color: #ccc !important;
+}
+
+#footnote-editor-modal .modal-actions {
+    padding-top: 10px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+}
+
+#footnote-editor-modal .modal-actions button {
+    padding: 12px 24px !important;
+    border-radius: 12px !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: 1px solid transparent !important;
+}
+
+#footnote-editor-modal #delete-footnote-btn {
+    margin-right: auto !important;
+    background: rgba(217, 83, 79, 0.1) !important;
+    color: #d9534f !important;
+    border-color: rgba(217, 83, 79, 0.2) !important;
+}
+
+#footnote-editor-modal #delete-footnote-btn:hover {
+    background: #d9534f !important;
+    color: #fff !important;
+}
+
+#footnote-editor-modal #cancel-footnote-btn {
+    background: transparent !important;
+    color: #888 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+#footnote-editor-modal #cancel-footnote-btn:hover {
+    color: #fff !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+#footnote-editor-modal #save-footnote-btn {
+    background: #a855f7 !important;
+    color: #fff !important;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3) !important;
+}
+
+#footnote-editor-modal #save-footnote-btn:hover {
+    background: #9333ea !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4) !important;
+}
+
+#footnote-editor-modal #save-footnote-btn:active {
+    transform: translateY(0) !important;
+}
+
+body.light-mode #footnote-editor-modal {
+    background: rgba(255, 255, 255, 0.5) !important;
+}
+
+body.light-mode #footnote-editor-modal .modal-content {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border-color: rgba(168, 85, 247, 0.3) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1) !important;
+}
+
+body.light-mode #footnote-editor-modal .modal-header {
+    background: rgba(168, 85, 247, 0.05) !important;
+    border-bottom-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-mode #footnote-editor-modal .modal-header h3,
+body.light-mode #footnote-editor-modal label {
+    color: #333 !important;
+}
+
+body.light-mode #footnote-editor-modal #footnote-word-display {
+    background: #f8f9fa !important;
+    border-color: #ddd !important;
+}
+
+body.light-mode #footnote-editor-modal .ql-editor {
+    color: #222 !important;
+}
+
+body.light-mode #footnote-editor-modal .ql-toolbar.ql-snow,
+body.light-mode #footnote-editor-modal .ql-container.ql-snow {
+    border-color: #ddd !important;
+}
+
+.glossary-overlay,
+.portal-overlay,
+#footnote-editor-modal {
+    display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    z-index: 2147483640 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+    animation: overlayFadeIn 0.3s ease !important;
+}
+
+@keyframes overlayFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+#mobile-footnote-portal {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2147483647 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.portal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.portal-card {
+    position: relative;
+    background: #161616;
+    width: 100%;
+    max-width: 320px;
+    border-radius: 20px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+    animation: portalSpring 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+}
+
+@keyframes portalSpring {
+    from {
+        transform: scale(0.8) translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+#mobile-footnote-portal.closing {
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.portal-header {
+    padding: 18px 20px;
+    background: linear-gradient(to right, rgba(168, 85, 247, 0.1), transparent);
+    border-bottom: 1px solid #222;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.portal-header strong {
+    color: #a855f7;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+.portal-close-btn {
+    background: #222 !important;
+    border: 1px solid #333 !important;
+    color: #fff !important;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.portal-close-btn:active {
+    background: #d9534f !important;
+    transform: scale(0.9);
+}
+
+.portal-body {
+    padding: 20px;
+    color: #ccc;
+    font-size: 1rem;
+    line-height: 1.7;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.portal-footer-hint {
+    padding: 10px;
+    text-align: center;
+    font-size: 0.7rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+body.light-mode .portal-card {
+    background: #fff;
+    color: #333;
+}
+
+body.light-mode .portal-body {
+    color: #444;
+}
+
+body.light-mode .portal-header {
+    background: #f8f9fa;
+}
+
+.active {
+    display: flex !important;
+}
+
+.glossary-content,
+.portal-content,
+#footnote-editor-modal .modal-content {
+    background: linear-gradient(135deg, rgba(20, 20, 25, 0.98) 0%, rgba(15, 15, 20, 0.98) 100%) !important;
+    width: 100% !important;
+    max-width: 580px !important;
+    height: 82vh !important;
+    max-height: 750px !important;
+    border: 1px solid rgba(168, 85, 247, 0.15) !important;
+    border-radius: 24px !important;
+    box-shadow:
+            0 20px 60px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(168, 85, 247, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+
+    /* ✅ FIX: Flexbox-ის სტრუქტურა */
+    display: flex !important;
+    flex-direction: column !important;
+
+    /* ✅ FIX: მშობელი არ სქროლავს! */
+    overflow: hidden !important;
+
+    animation: modalReveal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    position: relative !important;
+}
+
+.glossary-content::before,
+.portal-content::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -50% !important;
+    left: -50% !important;
+    width: 200% !important;
+    height: 200% !important;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.03) 0%, transparent 70%) !important;
+    animation: ambientGlow 8s ease-in-out infinite !important;
+    pointer-events: none !important;
+    z-index: 0 !important;
+}
+
+@keyframes ambientGlow {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(-20px, -20px);
+    }
+}
+
+@keyframes modalReveal {
+    0% {
+        transform: translateY(30px) scale(0.95);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.chapter-label {
+    padding-left: 14px !important;
+}
+
+.glossary-header,
+.portal-header,
+#footnote-editor-modal .modal-header {
+    padding: 24px 28px !important;
+    background: linear-gradient(to bottom, rgba(168, 85, 247, 0.08), transparent) !important;
+    border-bottom: 1px solid rgba(168, 85, 247, 0.1) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    position: relative !important;
+    z-index: 10 !important; /* ზინდექსი ავწიეთ */
+
+    /* ✅ FIX: არასდროს დაპატარავდეს */
+    flex-shrink: 0 !important;
+}
+
+.glossary-header h3 {
+    margin: 0 !important;
+    color: #fff !important;
+    font-size: 0.9rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 3px !important;
+    text-shadow: 0 2px 10px rgba(168, 85, 247, 0.3) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+.glossary-header h3::before {
+    content: '' !important;
+    width: 4px !important;
+    height: 20px !important;
+    background: linear-gradient(to bottom, #a855f7, #7c3aed) !important;
+    border-radius: 2px !important;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.5) !important;
+}
+
+.glossary-close-btn,
+.portal-close,
+#close-footnote-modal {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: #999 !important;
+    font-size: 24px !important;
+    font-weight: 300 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    cursor: pointer !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.glossary-close-btn::before,
+.portal-close::before {
+    content: '' !important;
+    position: absolute !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: radial-gradient(circle, rgba(217, 83, 79, 0.2), transparent) !important;
+    transform: scale(0) !important;
+    transition: transform 0.3s ease !important;
+}
+
+.glossary-close-btn:hover,
+.portal-close:hover {
+    background: rgba(217, 83, 79, 0.15) !important;
+    color: #f4e6ff !important;
+    border-color: rgba(217, 83, 79, 0.4) !important;
+    transform: rotate(90deg) scale(1.08) !important;
+    box-shadow: 0 0 20px rgba(217, 83, 79, 0.3) !important;
+}
+
+.glossary-close-btn:hover::before,
+.portal-close:hover::before {
+    transform: scale(1) !important;
+}
+
+.glossary-close-btn:active,
+.portal-close:active {
+    transform: rotate(90deg) scale(0.95) !important;
+}
+
+.glossary-body {
+    /* ✅ FIX: იკავებს დარჩენილ თავისუფალ ადგილს */
+    flex: 1 !important;
+
+    padding: 20px 24px 24px 24px !important;
+
+    /* ✅ FIX: სქროლი მხოლოდ აქ ჩნდება */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    position: relative !important;
+    z-index: 1 !important;
+    color: #fff !important;
+
+    /* სიმაღლეები აღარ გვჭირდება, flex-ი მიხედავს */
+    max-height: none !important;
+}
+.glossary-chapter-group {
+    margin-bottom: 20px !important;
+    transition: all 0.3s ease !important;
+}
+
+.glossary-chapter-title {
+    cursor: pointer !important;
+    padding: 16px 22px !important;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(124, 58, 237, 0.05)) !important;
+    border-left: 4px solid #a855f7 !important;
+    margin: 0 0 12px 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    color: #a855f7 !important;
+    font-weight: 800 !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    border-radius: 0 12px 12px 0 !important;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    user-select: none !important;
+}
+
+.glossary-chapter-title::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.1), transparent) !important;
+    transition: left 0.5s ease !important;
+}
+
+.glossary-chapter-title:hover::before {
+    left: 100% !important;
+}
+
+.glossary-chapter-title:hover {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(124, 58, 237, 0.08)) !important;
+    border-left-width: 5px !important;
+    padding-left: 21px !important;
+    transform: translateX(3px) !important;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2) !important;
+}
+
+.glossary-chapter-title:active {
+    transform: translateX(1px) scale(0.99) !important;
+}
+
+.chapter-arrow-container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 6px !important;
+    background: rgba(168, 85, 247, 0.1) !important;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.glossary-chapter-title:hover .chapter-arrow {
+    border-color: #c084fc !important;
+    filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.5)) !important;
+}
+
+.chapter-arrow {
+    width: 8px !important;
+    height: 8px !important;
+    border-right: 2.5px solid #a855f7 !important;
+    border-bottom: 2.5px solid #a855f7 !important;
+
+    transform: rotate(45deg) !important;
+
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    margin-bottom: 4px !important;
+}
+
+.glossary-chapter-group.collapsed .chapter-arrow {
+
+    transform: rotate(-45deg) !important;
+
+    margin-bottom: 0 !important;
+    margin-right: 4px !important;
+}
+
+.glossary-chapter-group.collapsed .chapter-arrow-container {
+    background: rgba(168, 85, 247, 0.05) !important;
+}
+
+.glossary-items-container {
+    max-height: 3000px !important;
+    overflow: hidden !important;
+    opacity: 1 !important;
+    transition:
+            max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 0.4s ease,
+            transform 0.4s ease !important;
+    transform: translateY(0) !important;
+}
+
+.glossary-chapter-group.collapsed .glossary-items-container {
+    max-height: 0 !important;
+    opacity: 0 !important;
+    transform: translateY(-10px) !important;
+    pointer-events: none !important;
+}
+
+.glossary-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    padding: 8px 18px !important;
+    margin: 5px 0 !important;
+    border-radius: 10px !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid transparent !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.glossary-item::before {
+    content: '' !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 3px !important;
+    height: 100% !important;
+    background: linear-gradient(to bottom, #a855f7, #7c3aed) !important;
+    transform: scaleY(0) !important;
+    transition: transform 0.3s ease !important;
+}
+
+.glossary-item:hover {
+    background: rgba(168, 85, 247, 0.08) !important;
+    border-color: rgba(168, 85, 247, 0.2) !important;
+    transform: translateX(10px) !important;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15) !important;
+}
+
+.glossary-item:hover::before {
+    transform: scaleY(1) !important;
+}
+
+.glossary-item:active {
+    transform: translateX(8px) scale(0.98) !important;
+}
+
+.glossary-item-number {
+    color: #666 !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    min-width: 32px !important;
+    text-align: center !important;
+    background: rgba(168, 85, 247, 0.08) !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    transition: all 0.25s ease !important;
+}
+
+.glossary-item:hover .glossary-item-number {
+    background: rgba(168, 85, 247, 0.15) !important;
+    color: #a855f7 !important;
+    transform: scale(1.05) !important;
+}
+
+.glossary-item-word {
+    color: #e5e5e5 !important;
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.3px !important;
+    transition: color 0.25s ease !important;
+}
+
+.glossary-item:hover .glossary-item-word {
+    color: #fff !important;
+}
+
+.glossary-body::-webkit-scrollbar,
+.portal-body::-webkit-scrollbar {
+    width: 8px !important;
+}
+
+.glossary-body::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-radius: 10px !important;
+    margin: 10px 0 !important;
+}
+
+.glossary-body::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #a855f7, #7c3aed) !important;
+    border-radius: 10px !important;
+    box-shadow:
+            0 0 10px rgba(168, 85, 247, 0.5),
+            inset 0 0 6px rgba(255, 255, 255, 0.2) !important;
+    transition: all 0.3s ease !important;
+}
+
+.glossary-body::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #b366ff, #8b4ade) !important;
+    box-shadow:
+            0 0 15px rgba(168, 85, 247, 0.7),
+            inset 0 0 8px rgba(255, 255, 255, 0.3) !important;
+}
+
+.portal-content {
+    max-width: 480px !important;
+    min-height: auto !important;
+    height: auto !important;
+    max-height: 85vh !important;
+    padding: 0 !important;
+}
+
+.portal-header {
+    padding: 22px 26px !important;
+    background: linear-gradient(to bottom, rgba(168, 85, 247, 0.1), transparent) !important;
+}
+
+.portal-title {
+    color: #a855f7 !important;
+    font-weight: 800 !important;
+    font-size: 1.1rem !important;
+    letter-spacing: 0.5px !important;
+    text-shadow: 0 2px 8px rgba(168, 85, 247, 0.3) !important;
+    margin: 0 !important;
+}
+
+.portal-body {
+    flex: 1 !important;
+    padding: 26px 28px !important;
+    color: #d4d4d4 !important;
+    line-height: 1.8 !important;
+    font-size: 0.95rem !important;
+
+    overflow-y: auto !important; /* სქროლი აქ */
+    max-height: none !important; /* შეზღუდვა მოვხსენით */
+
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+.portal-body::-webkit-scrollbar {
+    width: 6px !important;
+}
+
+.portal-body::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+.portal-body::-webkit-scrollbar-thumb {
+    background: rgba(168, 85, 247, 0.3) !important;
+    border-radius: 10px !important;
+}
+
+.portal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(168, 85, 247, 0.5) !important;
+}
+
+@media (max-width: 640px) {
+
+    .glossary-content,
+    .portal-content {
+        max-width: 95% !important;
+        height: 90vh !important;
+        border-radius: 20px !important;
+    }
+
+    .glossary-header,
+    .portal-header {
+        padding: 18px 20px !important;
+    }
+
+    .glossary-header h3 {
+        font-size: 0.8rem !important;
+        letter-spacing: 2px !important;
+    }
+
+    .glossary-body {
+        padding: 16px 18px !important;
+    }
+
+    .glossary-chapter-title {
+        padding: 14px 18px !important;
+        font-size: 0.75rem !important;
+    }
+
+    .glossary-item {
+        padding: 11px 14px !important;
+    }
+
+    .portal-body {
+        padding: 22px 24px !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+.glossary-close-btn:focus,
+.portal-close:focus,
+.glossary-chapter-title:focus {
+    outline: 2px solid rgba(168, 85, 247, 0.5) !important;
+    outline-offset: 2px !important;
+}
+
+.glossary-content,
+.portal-content {
+    will-change: transform, opacity !important;
+    transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+}
+
+.glossary-item,
+.glossary-chapter-title {
+    will-change: transform !important;
+    transform: translateZ(0) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+
+    .glossary-content,
+    .portal-content {
+        background: linear-gradient(135deg, rgba(12, 12, 16, 0.98) 0%, rgba(8, 8, 12, 0.98) 100%) !important;
+    }
+}
+
+body.light-mode .glossary-overlay,
+body.light-mode .portal-overlay,
+body.light-mode #footnote-editor-modal {
+    background: rgba(255, 255, 255, 0.45) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+}
+
+body.light-mode .portal-content,
+body.light-mode .glossary-content,
+body.light-mode #footnote-editor-modal .modal-content {
+    background: #ffffff !important;
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 255, 0.98) 100%) !important;
+    border: 1px solid rgba(168, 85, 247, 0.25) !important;
+    box-shadow:
+            0 20px 60px rgba(100, 100, 150, 0.15),
+            0 0 0 1px rgba(168, 85, 247, 0.1) !important;
+}
+
+body.light-mode .portal-header,
+body.light-mode .glossary-header,
+body.light-mode #footnote-editor-modal .modal-header {
+    background: linear-gradient(to bottom, rgba(168, 85, 247, 0.1), rgba(255, 255, 255, 0)) !important;
+    border-bottom: 1px solid rgba(168, 85, 247, 0.2) !important;
+}
+
+body.light-mode .portal-title,
+body.light-mode .glossary-header h3 {
+    color: #674d90 !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .portal-body,
+body.light-mode .glossary-body,
+body.light-mode #footnote-editor-modal .modal-body {
+    background: #ffffff !important;
+    color: #374151 !important;
+}
+
+body.light-mode .portal-close,
+body.light-mode .glossary-close-btn,
+body.light-mode #close-portal-btn {
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: #ad8de4 !important;
+    border: 1px solid rgba(168, 85, 247, 0.1) !important;
+}
+
+body.light-mode .portal-close:hover,
+body.light-mode .glossary-close-btn:hover {
+    background: rgba(217, 83, 79, 0.1) !important;
+    color: #dc2626 !important;
+    border-color: rgba(217, 83, 79, 0.3) !important;
+}
+
+body.light-mode .glossary-chapter-title {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(245, 240, 255, 0.8)) !important;
+    color: #4c1d95 !important;
+    border-left: 4px solid #8b5cf6 !important;
+}
+
+body.light-mode .chapter-arrow-container {
+    background: rgba(168, 85, 247, 0.15) !important;
+}
+
+body.light-mode .glossary-item {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border-bottom: 1px solid rgba(168, 85, 247, 0.05) !important;
+}
+
+body.light-mode .glossary-item:hover {
+    background: rgba(168, 85, 247, 0.08) !important;
+    color: #4c1d95 !important;
+}
+
+body.light-mode .glossary-item:hover .glossary-item-word {
+    color: #5b21b6 !important;
+}
+
+body.light-mode .glossary-item:hover .glossary-item-number {
+    color: #4c1d95 !important;
+    background: rgba(168, 85, 247, 0.2) !important;
+}
+
+body.light-mode .glossary-item:hover::after {
+    color: #5b21b6 !important;
+}
+
+body.light-mode .glossary-item-number {
+    background: rgba(139, 92, 246, 0.1) !important;
+    color: #7c3aed !important;
+}
+
+body.light-mode .glossary-item-word {
+    color: #1f2937 !important;
+}
+
+body.light-mode .glossary-body::-webkit-scrollbar-thumb,
+body.light-mode .portal-body::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #a78bfa, #7c3aed) !important;
+}
+
+body.light-mode .portal-content::before,
+body.light-mode .glossary-content::before {
+    opacity: 0.3 !important;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%) !important;
+}
+
+.lang-portal-btn {
+    overflow: hidden;
+    position: relative;
+}
+
+.lang-portal-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent);
+    transition: 0.5s;
+}
+
+.lang-portal-btn:hover::before {
+    left: 100%;
+}
+
+.lang-portal-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 3px;
+    background: #a855f7;
+    border-radius: 50%;
+    box-shadow: 0 0 5px #a855f7;
+}
+
+.global-header-ui {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    z-index: 9999999 !important;
+    display: block !important;
+    pointer-events: none;
+}
+
+.lang-portal-btn {
+    pointer-events: auto !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: rgba(18, 18, 18, 0.7) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(168, 85, 247, 0.3) !important;
+    color: #fff !important;
+
+    font-size: 0.75rem !important;
+    font-weight: 900 !important;
+    padding: 8px 16px !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    letter-spacing: 1.5px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    transition: all 0.3s ease !important;
+}
+
+.lang-portal-btn:hover {
+    background: rgba(168, 85, 247, 0.2) !important;
+    border-color: #a855f7 !important;
+    transform: translateY(-2px) !important;
+}
+
+body.light-mode .lang-portal-btn {
+    background: rgba(255, 255, 255, 0.8) !important;
+    color: #5b21b6 !important;
+    border-color: rgba(168, 85, 247, 0.2) !important;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.1) !important;
+}
+
+.footnote-tooltip::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 25px !important;
+    background: transparent !important;
+    z-index: -1 !important;
+}
+
+.footnote-trigger {
+    padding-right: 4px !important;
+}
+
+.footnote-trigger::before {
+    pointer-events: none !important;
+}
+
+.footnote-trigger {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -khtml-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    cursor: pointer !important;
+    touch-action: none !important;
+}
+
+#mobile-footnote-portal {
+    position: fixed !important;
+    z-index: 2147483647 !important;
+}
+
+
+/* =========================================
+   GLOBAL TOOLTIP (PORTAL) FIX
+   ========================================= */
+#global-footnote-tooltip {
+    position: fixed !important;
+    z-index: 2147483647 !important;
+    display: none; /* JS აკონტროლებს გამოჩენას */
+    flex-direction: column;
+    width: max-content !important;
+    max-width: 340px !important;
+    min-width: 220px !important;
+    max-height: 380px !important;
+    background: rgba(26, 26, 26, 0.98) !important;
+    backdrop-filter: blur(10px);
+    color: #e0e0e0 !important;
+    border: 1px solid rgba(168, 85, 247, 0.3) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.7) !important;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease !important;
+    pointer-events: auto !important; /* რომ სქროლვა იმუშაოს */
+    overflow: hidden !important;
+}
+
+#global-footnote-tooltip.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important; /* ახლა უკვე შეიძლება სქროლვა */
+}
+
+/* Light Mode მხარდაჭერა */
+body.light-mode #global-footnote-tooltip {
+    background: #ffffff !important;
+    color: #333 !important;
+    border-color: #ccc !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
+}
+
+/* Tooltip კონტენტი */
+#global-footnote-tooltip .footnote-content {
+    padding: 16px 18px !important; /* სუფთა დაშორება გვერდებიდან */
+    font-size: 0.95rem !important;
+    line-height: 1.6 !important;
+    overflow-y: auto !important;
+    color: #ccc !important;
+}
+
+/* Tooltip სათაური */
+#global-footnote-tooltip .footnote-title {
+    padding: 14px 18px !important; /* გაზრდილი დაშორება */
+    background: rgba(168, 85, 247, 0.1) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    font-weight: 800 !important;
+    font-size: 0.95rem !important;
+    color: #fff !important;
+    flex-shrink: 0 !important;
+}
+
+/* Tooltip-ის ინდექსის (რიცხვის) ფერი */
+#global-footnote-tooltip .fn-idx {
+    color: #a855f7 !important;
+    margin-right: 6px !important;
+}
+
+
+
+
+
+
+
+/* =========================================
+   GLOBAL TOOLTIP - LIGHT MODE REFINEMENT
+   ========================================= */
+
+body.light-mode #global-footnote-tooltip {
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(12px);
+    color: #2d3436 !important;
+    border-color: rgba(168, 85, 247, 0.25) !important; /* ნაზი იასამნისფერი ჩარჩო */
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.12), 0 5px 15px rgba(168, 85, 247, 0.05) !important;
+}
+
+/* Light Mode სათაური */
+body.light-mode #global-footnote-tooltip .footnote-title {
+    background: rgba(168, 85, 247, 0.06) !important; /* ძალიან ნაზი ფონი */
+    border-bottom: 1px solid rgba(168, 85, 247, 0.1) !important;
+    color: #1a1a1a !important;
+}
+
+/* Light Mode კონტენტი */
+body.light-mode #global-footnote-tooltip .footnote-content {
+    color: #444 !important;
+}
+
+/* Light Mode ინდექსი (რიცხვი) - ოდნავ მუქი იასამნისფერი კითხვისთვის */
+body.light-mode #global-footnote-tooltip .fn-idx {
+    color: #7c3aed !important;
+}
+
+/* Light Mode სქროლბარის გასწორება (თუ კონტენტი დიდია) */
+body.light-mode #global-footnote-tooltip .footnote-content::-webkit-scrollbar-thumb {
+    background: rgba(168, 85, 247, 0.2) !important;
+}
+
+body.light-mode #global-footnote-tooltip .footnote-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(168, 85, 247, 0.4) !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================
+   CUSTOM SCROLLBAR FOR TOOLTIP
+   ========================================= */
+
+/* 1. სქროლის სიგანე */
+#global-footnote-tooltip .footnote-content::-webkit-scrollbar {
+    width: 6px !important;
+}
+
+/* 2. სქროლის "გზა" (Track) - გამჭვირვალე/მუქი */
+#global-footnote-tooltip .footnote-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-radius: 4px !important;
+    margin: 5px 0 !important; /* ოდნავ დაშორება ზემოდან/ქვემოდან */
+}
+
+/* 3. სქროლის "სახელური" (Thumb) - ნეიტრალური ნაცრისფერი */
+#global-footnote-tooltip .footnote-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-radius: 4px !important;
+    border: 1px solid transparent !important; /* პატარა ჰაერი */
+    background-clip: content-box !important;
+}
+
+/* 4. მაუსის მიტანისას - გააქტიურება (შენი იასამნისფერი) */
+#global-footnote-tooltip .footnote-content::-webkit-scrollbar-thumb:hover {
+    background: #a855f7 !important; /* Accent Color */
+    border: none !important;
+}
+
+/* =========================================
+   LIGHT MODE SCROLLBAR SUPPORT
+   ========================================= */
+
+/* Light Mode Track */
+body.light-mode #global-footnote-tooltip .footnote-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Light Mode Thumb */
+body.light-mode #global-footnote-tooltip .footnote-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Light Mode Hover */
+body.light-mode #global-footnote-tooltip .footnote-content::-webkit-scrollbar-thumb:hover {
+    background: #7c3aed !important; /* Darker Purple for Light Mode */
+}
+
+
+
+/* =========================================
+   SIDEBAR & NAVIGATION (ELITE HIERARCHY EDITION)
+   ========================================= */
+
+#digital-library-root .sidebar {
+    /* STRUCTURE */
+    width: var(--sidebar-width) !important;
+    height: 100% !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    z-index: 100000 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+
+    transform: translateX(0) translateZ(0) !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    will-change: transform !important;
+
+    /* VISUALS */
+
+    background: linear-gradient(to bottom, var(--sidebar-bg) 0%, #0a0a0a 100%) !important;
+    border-right: 1px solid rgba(168, 85, 247, 0.2) !important;
+    box-shadow: 5px 0 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+#digital-library-root .sidebar.collapsed {
+    transform: translateX(-100%) translateZ(0) !important;
+}
+
+#digital-library-root .sidebar-header {
+    padding: 0 20px !important;
+    flex-shrink: 0 !important;
+}
+
+#digital-library-root .sidebar-header h2 {
+    color: var(--heading-color) !important;
+    font-weight: 800 !important;
+    font-size: 0.9rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 2px !important;
+    margin-bottom: 1.5rem !important;
+    margin-top: 2rem !important;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* დეკორატიული ხაზი (რჩება იგივე) */
+#digital-library-root .sidebar-header h2::before {
+    content: '' !important;
+    width: 4px !important;
+    height: 18px !important;
+    background: #a855f7 !important;
+    border-radius: 2px !important;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.6) !important;
+    flex-shrink: 0 !important; /* რომ არ შეიკუმშოს */
+}
+
+#digital-library-root .toggle-btn {
+    display: none !important;
+}
+
+/* --- CHAPTER LIST --- */
+#digital-library-root .chapter-list {
+    list-style: none !important;
+    margin-top: 0 !important;
+    flex: 1 !important;
+    overflow-y: auto !important;
+    min-height: 0 !important;
+    padding-bottom: 100px !important;
+    padding-left: 15px !important;
+    padding-right: 10px !important;
+
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+}
+
+#digital-library-root .chapter-list::-webkit-scrollbar {
+    display: none !important;
+}
+
+#digital-library-root .chapter-list li {
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    color: #888 !important;
+    position: relative !important;
+
+    /* ✅ FIX: !important მოვაშორეთ, რომ JS-მა შეძლოს მისი დამალვა */
+    display: flex;
+    align-items: center !important;
+}
+
+
+
+/* --- H1 (MAIN PARENT) --- */
+#digital-library-root .chapter-list li.toc-h1 {
+    justify-content: space-between !important;
+
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    font-weight: 700 !important;
+    font-size: 0.85rem !important;
+
+    padding: 14px 12px !important;
+    margin-top: 10px !important;
+    margin-bottom: 2px !important;
+
+    border-radius: 8px !important;
+    color: #e0e0e0 !important;
+    border: 1px solid transparent !important;
+}
+
+/* H1 Active / Hover */
+#digital-library-root .chapter-list li.toc-h1:hover,
+#digital-library-root .chapter-list li.toc-h1.active {
+    background: rgba(168, 85, 247, 0.1) !important;
+    border-color: rgba(168, 85, 247, 0.2) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+#digital-library-root .chapter-list li.toc-h1.active {
+    background: linear-gradient(90deg, rgba(168, 85, 247, 0.15), transparent) !important;
+    border-left: 3px solid #a855f7 !important;
+}
+
+#digital-library-root .chapter-list li.toc-h1 span:not(.toc-arrow) {
+    flex: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+body.lang-ka #digital-library-root .chapter-list li.toc-h1 span:not(.toc-arrow) {
+    font-family: 'BPG Arial Caps'!important;
+}
+
+/* --- SUBCHAPTER TREE STRUCTURE --- */
+
+/* ვერტიკალური ხაზი იერარქიისთვის (Tree Guide) */
+#digital-library-root .chapter-list li.toc-h2,
+#digital-library-root .chapter-list li.toc-h3 {
+    border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+    margin-left: 12px !important; /* H1-ის გასწვრივ რომ არ იყოს, ოდნავ შევწიოთ */
+}
+
+/* --- H2 (CHILD) --- */
+#digital-library-root .chapter-list li.toc-h2 {
+    font-size: 0.85rem !important;
+    padding: 8px 10px 8px 15px !important; /* მარცხენა padding ქმნის ჰაერს ხაზსა და ტექსტს შორის */
+    margin-bottom: 1px !important;
+    color: #999 !important;
+    opacity: 0.9 !important;
+}
+
+/* H2 Active / Hover */
+#digital-library-root .chapter-list li.toc-h2:hover,
+#digital-library-root .chapter-list li.toc-h2.active {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-left-color: rgba(168, 85, 247, 0.5) !important; /* აქტიურზე ხაზი ანათებს */
+    border-radius: 0 6px 6px 0 !important;
+}
+
+/* --- H3 (GRANDCHILD) --- */
+#digital-library-root .chapter-list li.toc-h3 {
+    font-size: 0.8rem !important;
+    padding: 6px 10px 6px 25px !important; /* კიდევ უფრო მეტი შეწევა */
+    margin-left: 12px !important; /* ხაზი იგივე დონეზე რჩება, padding სწევს ტექსტს */
+    color: #777 !important;
+}
+
+/* H3 Active / Hover */
+#digital-library-root .chapter-list li.toc-h3:hover,
+#digital-library-root .chapter-list li.toc-h3.active {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-left-color: rgba(168, 85, 247, 0.5) !important;
+    border-radius: 0 6px 6px 0 !important;
+}
+
+/* --- ACTIVE INDICATOR DOTS --- */
+/* პატარა წერტილი აქტიური ქვეთავის წინ */
+#digital-library-root .chapter-list li.toc-h2.active::before,
+#digital-library-root .chapter-list li.toc-h3.active::before {
+    content: '';
+    position: absolute;
+    left: -4px; /* ზუსტად ხაზზე დაჯდეს */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #a855f7;
+    box-shadow: 0 0 8px rgba(168, 85, 247, 0.8);
+    z-index: 2;
+}
+
+/* --- ARROW (EXPANDER) --- */
+#digital-library-root .toc-arrow {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+    color: #555 !important;
+    transition: all 0.2s ease !important;
+    font-size: 18px !important;
+}
+
+#digital-library-root .toc-arrow:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+}
+
+#digital-library-root .chapter-list li.toc-h1.active .toc-arrow {
+    color: #a855f7 !important;
+}
+
+#digital-library-root .toc-arrow.collapsed {
+    transform: rotate(-90deg) !important;
+}
+
+/* --- BOTTOM CONTROLS --- */
+#digital-library-root .sidebar-controls {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    padding: 15px 20px !important;
+    padding-bottom: calc(15px + env(safe-area-inset-bottom)) !important;
+
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    z-index: 1000 !important;
+
+    background: linear-gradient(to top, #0a0a0a, rgba(17, 17, 17, 0.95)) !important;
+    border-top: 1px solid rgba(168, 85, 247, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+#digital-library-root .font-control-btn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 8px !important;
+    font-size: 1.1rem !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s !important;
+}
+
+#digital-library-root .font-control-btn:hover {
+    background: rgba(168, 85, 247, 0.2) !important;
+    border-color: rgba(168, 85, 247, 0.4) !important;
+    color: #a855f7 !important;
+}
+
+#digital-library-root .font-display-label {
+    color: #888 !important;
+
+    font-size: 0.8rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+}
+
+/* --- LIGHT MODE OVERRIDES --- */
+body.light-mode #digital-library-root .sidebar {
+    background: #e2e3e7 !important;
+    border-right: 1px solid #ddd !important;
+    box-shadow: 5px 0 20px rgba(0,0,0,0.05) !important;
+}
+
+body.light-mode #digital-library-root .sidebar-header h2 {
+    color: #000 !important;
+}
+
+body.light-mode #digital-library-root .chapter-list li.toc-h1 {
+    color: #333 !important;
+}
+
+body.light-mode #digital-library-root .chapter-list li.toc-h1:hover,
+body.light-mode #digital-library-root .chapter-list li.toc-h1.active {
+    background: rgba(0,0,0,0.05) !important;
+    border-color: transparent !important;
+    border-left: 3px solid #333 !important;
+    color: #000 !important;
+    box-shadow: none !important;
+}
+
+/* Light mode tree lines */
+body.light-mode #digital-library-root .chapter-list li.toc-h2,
+body.light-mode #digital-library-root .chapter-list li.toc-h3 {
+    border-left-color: rgba(0, 0, 0, 0.1) !important;
+    color: #555 !important;
+}
+
+body.light-mode #digital-library-root .chapter-list li.toc-h2:hover,
+body.light-mode #digital-library-root .chapter-list li.toc-h2.active,
+body.light-mode #digital-library-root .chapter-list li.toc-h3:hover,
+body.light-mode #digital-library-root .chapter-list li.toc-h3.active {
+    background: rgba(0, 0, 0, 0.03) !important;
+    color: #000 !important;
+    border-left-color: #333 !important;
+}
+
+body.light-mode #digital-library-root .chapter-list li.toc-h2.active::before,
+body.light-mode #digital-library-root .chapter-list li.toc-h3.active::before {
+    background: #333 !important;
+    box-shadow: none !important;
+}
+
+body.light-mode #digital-library-root .sidebar-controls {
+    border-top: 1px solid #ddd !important;
+    background: #f0f0f0 !important;
+}
+
+body.light-mode #digital-library-root .font-control-btn {
+    background: #fff !important;
+    color: #000 !important;
+    border: 1px solid #ccc !important;
+}
+
+body.light-mode #digital-library-root .font-control-btn:hover {
+    background: #e0e0e0 !important;
+    color: #000 !important;
+    border-color: #999 !important;
+}
+
+/* =========================================
+   SMOOTH SIDEBAR ANIMATIONS
+   ========================================= */
+
+/* 1. ყველა ელემენტს მივცეთ ტრანზიცია */
+#digital-library-root .chapter-list li {
+    /* ეს პარამეტრები ანიმირდება */
+    max-height: 100px; /* საკმარისი სიმაღლე */
+    opacity: 1;
+    margin-bottom: 1px; /* მცირე დაშორება */
+    padding-top: 8px;
+    padding-bottom: 8px;
+
+    overflow: hidden; /* აუცილებელია სიმაღლის ანიმაციისთვის */
+
+    /* ანიმაციის პარამეტრები */
+    transition:
+            max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 0.3s ease,
+            margin 0.4s ease,
+            padding 0.4s ease,
+            transform 0.4s ease;
+
+    transform-origin: top;
+}
+
+/* 2. დამალული მდგომარეობა (კლასი, რომელსაც JS ადებს) */
+#digital-library-root .chapter-list li.visual-hidden {
+    max-height: 0 !important;
+    opacity: 0 !important;
+
+    /* ვკუმშავთ ყველაფერს */
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border: none !important;
+
+    pointer-events: none !important; /* რომ ხელი არ დაეჭიროს */
+    transform: translateY(-10px); /* ოდნავ ზემოთ ავიდეს გაქრობისას */
+}
+
+/* H1-ები არასდროს დაიმალოს (დაზღვევა) */
+#digital-library-root .chapter-list li.toc-h1.visual-hidden {
+    max-height: 100px !important;
+    opacity: 1 !important;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+    transform: none !important;
+}
+
+
+
+
+/* =========================================
+   SAVE BUTTON FORCE FIX (NUCLEAR OPTION)
+   ========================================= */
+
+html body #digital-library-root #settings-form .save-meta-btn#save-meta-btn {
+    background-color: #a855f7 !important;
+    color: #ffffff !important;
+    border: 1px solid #9333ea !important;
+
+    /* ზომები და ფონტები */
+    padding: 10px 24px !important;
+    border-radius: 6px !important;
+
+    font-size: 0.8rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.5px !important;
+    text-transform: uppercase !important;
+    line-height: 1 !important;
+
+    /* პოზიციონირება */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    text-decoration: none !important;
+
+    /* ეფექტები */
+    cursor: pointer !important;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    outline: none !important;
+}
+
+/* HOVER */
+html body #digital-library-root #settings-form .save-meta-btn#save-meta-btn:hover {
+    background-color: #9333ea !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(168, 85, 247, 0.6) !important;
+}
+
+/* ACTIVE */
+html body #digital-library-root #settings-form .save-meta-btn#save-meta-btn:active {
+    transform: translateY(1px) !important;
+}
+
+/* DISABLED */
+html body #digital-library-root #settings-form .save-meta-btn#save-meta-btn:disabled {
+    background-color: #444 !important;
+    border-color: #555 !important;
+    color: #888 !important;
+    cursor: wait !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+
+/* =========================================
+   CINEMATIC SITE TITLE (ELITE UI)
+   ========================================= */
+
+#digital-library-root .site-title {
+    position: absolute !important;
+    top: 30px !important; /* ოდნავ ავწიეთ, რომ წიგნს არ დააწვეს */
+    left: 0 !important;
+    width: 100% !important;
+    text-align: center !important;
+    z-index: 2000 !important;
+    pointer-events: none !important; /* მაუსი ატაროს, რომ წიგნი გადაიშალოს */
+
+    /* შემოსვლის ანიმაცია */
+    animation: titleFadeIn 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
+    opacity: 0;
+}
+
+@keyframes titleFadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* მთავარი სათაური (წიგნის სახელი) */
+#digital-library-root .site-title h1 {
+    /* ან Merriweather, თუ სერიფი გინდა */
+    font-size: 1.8rem !important; /* გავზარდეთ */
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    text-transform: uppercase !important;
+    letter-spacing: 6px !important; /* განიერი დაშორება - კინემატოგრაფიული */
+    line-height: 1.2 !important;
+    margin: 0 !important;
+
+    /* ✅ ELITE GLOW EFFECT */
+    text-shadow:
+            0 2px 10px rgba(0, 0, 0, 0.8), /* შავი ჩრდილი კითხვისთვის */
+            0 0 30px rgba(168, 85, 247, 0.4) !important; /* იასამნისფერი ნათება */
+
+    transition: all 0.5s ease !important;
+}
+
+/* ქვესათაური (ავტორი) */
+#digital-library-root .site-title p {
+
+    font-size: 0.75rem !important;
+    font-weight: 400 !important;
+    color: rgba(255, 255, 255, 0.7) !important; /* ოდნავ გამჭვირვალე */
+    text-transform: uppercase !important;
+    letter-spacing: 4px !important;
+    margin-top: 8px !important;
+
+    display: inline-block !important;
+    position: relative !important;
+
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9) !important;
+}
+
+/* დეკორატიული ხაზები ავტორის გვერდებზე */
+#digital-library-root .site-title p::before,
+#digital-library-root .site-title p::after {
+    content: '' !important;
+    position: absolute !important;
+    top: 50% !important;
+    width: 20px !important;
+    height: 1px !important;
+    background: rgba(168, 85, 247, 0.5) !important; /* იასამნისფერი ხაზები */
+}
+
+#digital-library-root .site-title p::before { left: -30px !important; }
+#digital-library-root .site-title p::after { right: -30px !important; }
+
+/* =========================================
+   MOBILE HEADER FIX (NO OVERLAP)
+   ========================================= */
+
+@media (max-width: 768px) {
+    /* 1. სათაურის პოზიციონირება მობილურზე */
+    #digital-library-root .site-title {
+        top: 10px !important;      /* ოდნავ ავწიოთ */
+        height: 60px !important;   /* ფიქსირებული სიმაღლე */
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        background: transparent !important; /* რომ ფონი არ ჰქონდეს */
+    }
+
+    #digital-library-root .site-title h1 {
+        font-size: 1.4rem !important; /* ზომა მობილურისთვის */
+        line-height: 1 !important;
+        margin-bottom: 5px !important;
+    }
+
+    #digital-library-root .site-title p {
+        margin-top: 0 !important;
+        font-size: 0.7rem !important;
+    }
+
+    /* 2. წიგნის "ტანის" ჩამოწევა (მთავარი ფიქსი) */
+    #digital-library-root .book-scene {
+        /* აქამდე იყო 5px, რაც იწვევდა გადაფარვას. */
+        /* ვზრდით 90px-მდე, რომ სათაური დაეტიოს */
+        margin-top: 110px !important;
+
+        /* სიმაღლეს ვაკლებთ, რომ სქროლი არ გაფუჭდეს */
+        height: calc(100% - 100px) !important;
+        max-height: none !important;
+    }
+}
+
+/* =========================================
+   LIGHT MODE OVERRIDES (კონტრასტი)
+   ========================================= */
+body.light-mode #digital-library-root .site-title h1 {
+    color: #1a1a1a !important;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.1) !important; /* ნათება მოვხსენით, დავტოვეთ ჩრდილი */
+}
+
+body.light-mode #digital-library-root .site-title p {
+    color: #666 !important;
+    text-shadow: none !important;
+}
+
+body.light-mode #digital-library-root .site-title p::before,
+body.light-mode #digital-library-root .site-title p::after {
+    background: #ccc !important;
+}
+
+
+
+/* =========================================
+   GLOBAL FONT ENGINE: Noto Sans Georgian
+   ========================================= */
+
+:root {
+    --main-font: 'Noto Sans Georgian', Helvetica, Arial, sans-serif;
+}
+
+/* 1. ყველაფერს მივანიჭოთ ერთი ფონტი */
+#digital-library-root,
+#digital-library-root body,
+#digital-library-root h1,
+#digital-library-root h2,
+#digital-library-root h3,
+#digital-library-root h4,
+#digital-library-root h5,
+#digital-library-root h6,
+#digital-library-root p,
+#digital-library-root a,
+#digital-library-root span,
+#digital-library-root li,
+#digital-library-root div,
+#digital-library-root button,
+#digital-library-root input,
+#digital-library-root textarea,
+#digital-library-root label,
+#digital-library-root .site-title h1,
+#digital-library-root .site-title p,
+#digital-library-root .elementor-heading-title,
+#digital-library-root .elementor-widget-text-editor {
+    font-family: var(--main-font) !important;
+}
+
+/* 2. 🛑 ICON PROTECTION - ეს აუცილებელია! */
+/* აიქონებს არ უნდა შეეხოს ჩვენი ფონტი, თორემ კუბიკები იქნება */
+#digital-library-root .material-icons,
+#digital-library-root .material-icons-outlined,
+#digital-library-root .fa,
+#digital-library-root .fas,
+#digital-library-root .fab,
+#digital-library-root .far,
+#digital-library-root .elementor-icon,
+i[class*="icon"], span[class*="icon"] {
+    font-family: 'Material Icons Outlined', 'FontAwesome', sans-serif !important;
+    /* აიქონებს არ სჭირდებათ ბოლდი და აფქერქეისი */
+    font-weight: normal !important;
+    text-transform: none !important;
+    font-style: normal !important;
+}
+
+/* 3. UPPERCASE CLEANUP */
+/* ვშლით ყველა ძველ ჰაკს. მარტივი uppercase რჩება */
+#digital-library-root h1,
+#digital-library-root h2,
+#digital-library-root .site-title h1,
+#digital-library-root .save-meta-btn {
+    text-transform: uppercase !important;
+    font-variant: normal !important; /* ჰაკები გავთიშეთ */
+    font-feature-settings: normal !important;
+}
+
+/* 4. ზომის მცირე კორექცია */
+/* Noto Sans-ი ოდნავ პატარაა, ამიტომ მთლიანობაში 5%-ით ვზრდით */
+#digital-library-root {
+    font-size: 105% !important;
+}
+
+/* =========================================
+   SITE TITLE: FINAL VISUAL MATCH
+   ========================================= */
+
+/* 1. LATIN (ETALON) - ეს არის ჩვენი ორიენტირი */
+#digital-library-root .site-title h1 {
+    font-family: 'Noto Sans Georgian', sans-serif !important;
+    font-size: 1.8rem !important;
+    font-weight: 700 !important;       /* 800-ის ნაცვლად 700 ჯობია Noto-ზე */
+    letter-spacing: 6px !important;
+    text-transform: uppercase !important;
+    line-height: 1.2 !important;
+    margin-bottom: 8px !important;
+}
+
+/* 2. GEORGIAN (TUNED) - ზუსტი გასწორება */
+body.lang-ka #digital-library-root .site-title h1 {
+    /* ფორმა: Small Caps (საუკეთესო ვიზუალი) */
+    font-variant: small-caps !important;
+    font-feature-settings: "smcp" 1 !important;
+    -webkit-font-feature-settings: "smcp" 1 !important;
+
+    /* ზომა: 3.2-დან ჩამოვწიეთ 2.4-ზე. ეს არის იდეალური ბალანსი */
+    font-size: 2.5rem !important;
+
+    /* სისქე: ლათინურ 700-ს უტოლდება ქართული 800/900 */
+    font-weight: 800 !important;
+
+    /* დაშორება: ოდნავ გავზარდეთ 2px-დან 3px-მდე */
+    letter-spacing: 4px !important;
+
+    /* პოზიცია: ფონტი დიდია, ამიტომ ხაზი უნდა შეიკუმშოს */
+    line-height: 0.9 !important;
+
+    /* ვერტიკალური ცენტრირება (რომ ლათინურის ადგილას დაჯდეს) */
+    margin-top: -7px !important;
+    margin-bottom: 12px !important;
+}
+
+/* 3. AUTHOR SUBTITLE BALANCE */
+
+/* Latin Author */
+#digital-library-root .site-title p {
+    font-size: 0.75rem !important;
+    letter-spacing: 2px !important;
+    font-weight: 400 !important;
+    opacity: 0.8 !important;
+    margin-top: 10px!important;
+}
+
+/* =========================================
+   GEORGIAN SITE TITLE (BPG Arial Caps)
+   ========================================= */
+body.lang-ka #digital-library-root .site-title h1{
+    font-family: "BPG Arial Caps", sans-serif !important;
+    font-weight: 700 !important;
+
+    /* რადგან ეს ფონტი ისედაც "Caps"-ია (სულ დიდი ასოებია),
+       წინა small-caps ლოგიკა უნდა გავთიშოთ, რომ არ აირიოს */
+    font-variant: normal !important;
+
+    /* BPG ფონტები ხშირად უფრო განიერია, ამიტომ letter-spacing ოდნავ შევამციროთ */
+    letter-spacing: 2px !important;
+}
+
+body.lang-ka #digital-library-root .site-title p {
+    font-family: "BPG Arial Caps", sans-serif !important;
+    font-weight: 300 !important;
+
+    /* რადგან ეს ფონტი ისედაც "Caps"-ია (სულ დიდი ასოებია),
+       წინა small-caps ლოგიკა უნდა გავთიშოთ, რომ არ აირიოს */
+    font-variant: normal !important;
+
+    /* BPG ფონტები ხშირად უფრო განიერია, ამიტომ letter-spacing ოდნავ შევამციროთ */
+    letter-spacing: 2px !important;
+}
+
+/* ავტორის წარწერის დამატებითი კორექცია (თუ საჭიროა) */
+body.lang-ka #digital-library-root .site-title p {
+    letter-spacing: 2.5px !important;
+    opacity: 0.9 !important; /* BPG ოდნავ წვრილია 500-ზე, ამიტომ გამჭვირვალობა მოვუმატოთ */
+}
+
+/* 4. MOBILE BALANCE */
+@media (max-width: 768px) {
+    #digital-library-root .site-title h1 {
+        font-size: 1.4rem !important; /* Latin Mobile */
+        line-height: 0.6 !important;
+
+    }
+
+    body #digital-library-root .site-title{
+        transform: translateY(9px) !important;
+    }
+
+    body.lang-ka #digital-library-root .site-title h1 {
+        font-size: 1.9rem !important; /* Georgian Mobile - დაკორექტირდა */
+        line-height: 0.2 !important;
+    }
+    body.lang-ka #digital-library-root .site-title{
+        transform: translateY(9px) !important;
+    }
+}
+
+
+/* =========================================
+   SIDEBAR HEADER MATCH (SARCHEVI vs CONTENTS)
+   ========================================= */
+
+/* 1. LATIN (ETALON) - სტანდარტული UI ზომა */
+#digital-library-root .sidebar-header h2 {
+    /* ძირითადი სტილები */
+    color: var(--heading-color) !important;
+    font-weight: 800 !important;
+    font-size: 0.9rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 2px !important;
+    margin-bottom: 1.5rem !important;
+    margin-top: 2rem !important;
+
+    /* 🟢 FLEXBOX განლაგება */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important; /* ყველაფერი მარცხნივ! */
+    gap: 10px !important; /* დაშორება ხაზსა და ტექსტს შორის */
+    width: 100% !important;
+    position: relative !important;
+}
+
+/* 2. GEORGIAN (TUNED) - გაზრდილი ზომა */
+/* GEORGIAN OVERRIDE (თუ გჭირდება სპეციფიკური ზომები) */
+
+
+
+
+
+/* =========================================
+   SITE SUB-TITLE (AUTHOR): FINAL MATCH
+   ========================================= */
+
+/* 1. LATIN (ETALON) */
+#digital-library-root .site-title p {
+    font-family: 'Noto Sans Georgian', sans-serif !important;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 5px !important; /* განიერი დაშორება */
+    text-transform: uppercase !important;
+    opacity: 0.7 !important;
+    line-height: 1 !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================
+   ELITE ANALYTICS MODAL
+   ========================================= */
+
+#digital-library-root .analytics-box {
+    max-width: 1000px!important;
+    max-height: 90vh !important;
+}
+
+#digital-library-root .analytics-body {
+    padding: 30px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 25px !important;
+    overflow-y: auto !important;
+}
+
+/* მთავარი ვიზიტების ბლოკი */
+#digital-library-root .main-stat {
+    background: rgba(168, 85, 247, 0.05) !important;
+    border: 1px solid rgba(168, 85, 247, 0.1) !important;
+    padding: 25px !important;
+    border-radius: 16px !important;
+    text-align: center !important;
+}
+
+#digital-library-root .stat-value-large {
+    font-size: 2.5rem !important;
+    font-weight: 900 !important;
+    color: #fff !important;
+    letter-spacing: -1px !important;
+    margin-top: 10px !important;
+}
+
+#digital-library-root .stat-value-large .divider {
+    color: rgba(255, 255, 255, 0.2) !important;
+    font-weight: 300 !important;
+}
+
+/* სტატისტიკის ბარათები */
+#digital-library-root .stats-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 15px !important;
+}
+
+#digital-library-root .stat-card {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    padding: 20px !important;
+    border-radius: 14px !important;
+    transition: transform 0.3s ease !important;
+}
+
+#digital-library-root .stat-card:hover {
+    transform: translateY(-3px) !important;
+    border-color: rgba(168, 85, 247, 0.2) !important;
+}
+
+#digital-library-root .stat-label {
+    font-size: 0.7rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+    margin-bottom: 8px !important;
+}
+
+#digital-library-root .stat-value {
+    font-size: 1.4rem !important;
+    font-weight: 800 !important;
+}
+
+/* ფერები */
+#digital-library-root .text-purple { color: #a855f7 !important; }
+#digital-library-root .text-blue { color: #3b82f6 !important; }
+
+/* ბოლო ნახვის ბლოკი */
+#digital-library-root .last-seen-box {
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding-top: 20px !important;
+    text-align: left !important;
+}
+
+#digital-library-root .last-seen-value {
+    font-size: 1.1rem !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+}
+
+#digital-library-root .stat-note {
+    font-size: 0.75rem !important;
+    color: rgba(255, 255, 255, 0.3) !important;
+    font-style: italic !important;
+    text-align: center !important;
+}
+
+/* რესეტის ღილაკი */
+#digital-library-root .btn-reset {
+    width: 100% !important;
+    background: rgba(217, 83, 79, 0.1) !important;
+    border: 1px solid rgba(217, 83, 79, 0.2) !important;
+    color: #d9534f !important;
+    padding: 14px !important;
+    border-radius: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    transition: all 0.3s ease !important;
+}
+
+#digital-library-root .btn-reset:hover {
+    background: #d9534f !important;
+    color: #fff !important;
+    box-shadow: 0 10px 20px rgba(217, 83, 79, 0.2) !important;
+}
+
+/* Light Mode მხარდაჭერა */
+#digital-library-root body.light-mode .stat-value-large,
+#digital-library-root body.light-mode .last-seen-value { color: #1a1a1a !important; }
+
+#digital-library-root body.light-mode .stat-label { color: #666 !important; }
+
+#digital-library-root body.light-mode .stat-card,
+#digital-library-root body.light-mode .main-stat {
+    background: rgba(0, 0, 0, 0.03) !important;
+    border-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+#digital-library-root .leaderboard-section {
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding-top: 20px !important;
+}
+
+#digital-library-root .leader-item {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 12px 15px !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-radius: 10px !important;
+    margin-bottom: 8px !important;
+    border: 1px solid transparent !important;
+}
+
+#digital-library-root .leader-item.is-me {
+    border-color: rgba(168, 85, 247, 0.4) !important;
+    background: rgba(168, 85, 247, 0.05) !important;
+}
+
+#digital-library-root .leader-item .rank {
+    font-weight: 900 !important;
+    color: #a855f7 !important;
+    width: 30px !important;
+}
+
+#digital-library-root .leader-item .reader-id {
+    flex: 1 !important;
+    font-family: monospace !important;
+    font-size: 0.85rem !important;
+    color: #ccc !important;
+}
+
+#digital-library-root .leader-item .time {
+    font-weight: 700 !important;
+    color: #fff !important;
+}
+
+/* TOP READERS STYLES */
+#digital-library-root .top-readers-box {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 20px;
+    margin-top: 5px;
+}
+
+#digital-library-root .readers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+#digital-library-root .reader-row {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#digital-library-root .reader-rank {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #666;
+    width: 25px;
+}
+
+#digital-library-root .reader-info {
+    flex-grow: 1;
+}
+
+#digital-library-root .reader-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#digital-library-root .reader-book {
+    font-size: 0.65rem;
+    color: #888;
+    text-transform: uppercase;
+}
+
+#digital-library-root .reader-time {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #a855f7;
+}
+
+/* Status Dot */
+#digital-library-root .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+}
+#digital-library-root .status-dot.online { background-color: #28a745; box-shadow: 0 0 5px #28a745; }
+#digital-library-root .status-dot.offline { background-color: #555; }
+
+#digital-library-root body.light-mode .reader-row { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.05); }
+#digital-library-root body.light-mode .reader-name { color: #333; }
+
+
+/* =========================================
+   DESCRIPTION / SYNOPSIS MODAL STYLES (FINAL FIX)
+   ========================================= */
+
+/* 1. მოდალის კონტეინერი */
+#digital-library-root .desc-modal-content {
+    max-width: 600px !important;
+    width: 90% !important;
+    height: 80vh !important; /* ფიქსირებული სიმაღლე რომ სქროლი გაჩნდეს */
+    max-height: 800px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* 2. ტექსტის ვიზუალი (DARK MODE - DEFAULT) */
+#digital-library-root .description-text {
+    font-size: 1.05rem !important;
+    line-height: 1.8 !important;
+
+    /* ფერი: ღია ნაცრისფერი (კარგად ჩანს შავზე) */
+    color: #e0e0e0 !important;
+
+    padding: 30px 35px !important;
+    text-align: justify !important;
+
+    /* Enter-ების აღქმა */
+    white-space: pre-line !important;
+
+    /* სქროლის ჩართვა */
+    overflow-y: auto !important;
+    flex: 1 !important; /* რომ დარჩენილი ადგილი შეავსოს */
+}
+
+/* 3. LIGHT MODE OVERRIDE (მკაფიო მუქი ფერი) */
+body.light-mode #digital-library-root .description-text {
+    color: #1a1a1a !important; /* თითქმის შავი, რომ თეთრზე კარგად გამოჩნდეს */
+}
+
+/* 4. პირველი ასო (Drop Cap - სტილისთვის) */
+#digital-library-root .description-text::first-letter {
+    font-family: 'Noto Serif Georgian', serif !important;
+    font-size: 3.5rem !important;
+    font-weight: 900 !important;
+    color: #a855f7 !important; /* იასამნისფერი აქცენტი */
+
+    float: left !important;
+    line-height: 0.8 !important;
+    margin-right: 12px !important;
+    margin-top: 5px !important;
+    margin-bottom: -5px !important;
+
+    text-shadow: 0 4px 15px rgba(168, 85, 247, 0.3) !important;
+}
+
+/* 5. SCROLLBAR STYLING (რომ ლამაზი იყოს) */
+#digital-library-root .description-text::-webkit-scrollbar {
+    width: 6px !important;
+}
+#digital-library-root .description-text::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02) !important;
+    margin: 15px 0 !important;
+}
+#digital-library-root .description-text::-webkit-scrollbar-thumb {
+    background: rgba(168, 85, 247, 0.3) !important;
+    border-radius: 10px !important;
+}
+#digital-library-root .description-text::-webkit-scrollbar-thumb:hover {
+    background: rgba(168, 85, 247, 0.6) !important;
+}
+
+/* Light Mode Scrollbar */
+body.light-mode #digital-library-root .description-text::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05) !important;
+}
+body.light-mode #digital-library-root .description-text::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* 6. მობილური ადაპტაცია */
+@media (max-width: 768px) {
+    #digital-library-root .desc-modal-content {
+        width: 95% !important;
+        max-width: 95% !important;
+        height: 85vh !important;
+    }
+
+    #digital-library-root .description-text {
+        font-size: 0.95rem !important;
+        padding: 20px 20px !important;
+    }
+}
+
+/* 7. Z-Index და ღილაკის გამოჩენა */
+#description-modal {
+    z-index: 2147483647 !important;
+}
+#digital-library-root #open-desc-btn {
+    display: flex !important;
+}
+
+
+/* აღწერის ტექსტის ფონტის ოპტიმიზაცია */
+#digital-library-root .description-text {
+    /* ვიყენებთ მხოლოდ Google Font-ს, რომელიც უფრო სწრაფია ვიდრე BPG */
+    font-family: 'Noto Sans Georgian', sans-serif !important;
+    font-display: swap !important;
+}
+
+/* პირველი ასო - აქ არის მთავარი პრობლემა */
+#digital-library-root .description-text::first-letter {
+    /* შევცვალოთ Sans-ით, რომ არ მოითხოვოს ახალი ფაილის (Serif) ჩამოტვირთვა */
+    font-family: 'Noto Sans Georgian', sans-serif !important;
+
+    font-size: 3.5rem !important;
+    font-weight: 800 !important; /* 900-ის ნაცვლად 800 ვცადოთ, რომელიც უკვე ჩატვირთული გვაქვს */
+    color: #a855f7 !important;
+    float: left !important;
+    line-height: 0.8 !important;
+    margin-right: 12px !important;
+    margin-top: 5px !important;
+    margin-bottom: -5px !important;
+}
+
+
+/* =========================================
+   SPLIT VIEW SYSTEM (FINAL FIX)
+   ========================================= */
+
+/* მთავარი კონტეინერი */
+#digital-library-root .editors-wrapper {
+    display: flex !important;
+    flex: 1 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    position: relative !important;
+}
+
+/* სვეტები */
+#digital-library-root .editor-col {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    border-right: 1px solid #333 !important;
+    transition: width 0.3s ease !important;
+}
+
+/* მეორე სვეტის დამალვა (მნიშვნელოვანი!) */
+#digital-library-root .editor-col:last-child {
+    border-right: none !important;
+}
+
+/* სათაურები ედიტორების თავზე (ENGLISH / GEORGIAN) */
+#digital-library-root .editor-col-label {
+    background: #0e0e0e !important;
+    color: #666 !important;
+    font-size: 0.7rem !important;
+    font-weight: 800 !important;
+    text-align: center !important;
+    padding: 8px !important;
+    letter-spacing: 2px !important;
+    border-bottom: 1px solid #222 !important;
+    text-transform: uppercase !important;
+}
+
+/* Split View ღილაკი */
+#digital-library-root .split-btn {
+    margin: 0 15px !important;
+    border: 1px solid #333 !important;
+    border-radius: 6px !important;
+    width: 42px !important;
+    height: 38px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background: #161616 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+#digital-library-root .split-btn:hover {
+    background: #222 !important;
+    color: #fff !important;
+}
+
+#digital-library-root .split-btn.active {
+    background: #a855f7 !important;
+    color: #fff !important;
+    border-color: #a855f7 !important;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.3) !important;
+}
+
+/* Quill-ის ხელსაწყოების პანელის გასწორება Split რეჟიმში */
+#digital-library-root .ql-toolbar {
+    flex-shrink: 0 !important;
+    z-index: 2 !important;
+}
+
+/* მობილურზე Split View-ს გათიშვა (რადგან არ დაეტევა) */
+@media (max-width: 768px) {
+    #digital-library-root #split-view-btn {
+        display: none !important;
+    }
+}
+
+
+
+
+
+/* =========================================
+   GLOBAL HEADER UI CLEANUP
+   ========================================= */
+
+/* ღილაკების კონტეინერი ზედა მარჯვენა კუთხეში */
+.global-header-ui {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    display: flex !important;
+    flex-direction: row !important; /* ღილაკები გვერდიგვერდ */
+    gap: 10px !important; /* დაშორება ღილაკებს შორის */
+    z-index: 1000000 !important;
+    pointer-events: auto !important;
+}
+
+/* ღილაკების ერთიანი სტილი */
+.lang-portal-btn {
+    width: 42px !important;  /* ფიქსირებული სიგანე */
+    height: 42px !important; /* ფიქსირებული სიმაღლე (კვადრატული ფორმა) */
+    padding: 0 !important;   /* პედინგი აღარ გვჭირდება ცენტრირებისთვის */
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    background: rgba(18, 18, 18, 0.6) !important; /* ნახევრად გამჭვირვალე მუქი */
+    backdrop-filter: blur(10px) !important;      /* Glassmorphism ეფექტი */
+    -webkit-backdrop-filter: blur(10px) !important;
+
+    border: 1px solid rgba(168, 85, 247, 0.3) !important; /* ნაზი იასამნისფერი ჩარჩო */
+    border-radius: 10px !important; /* ოდნავ მომრგვალებული კუთხეები */
+
+    color: #fff !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* იკონის ზომა თემის ღილაკში */
+.lang-portal-btn .material-icons-outlined {
+    font-size: 20px !important;
+    display: block !important;
+}
+
+/* Hover ეფექტი - ორივე ღილაკისთვის */
+.lang-portal-btn:hover {
+    background: rgba(168, 85, 247, 0.15) !important;
+    border-color: #a855f7 !important;
+    transform: translateY(-2px) !important; /* ოდნავ აწევა */
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.2) !important;
+    color: #fff !important;
+}
+
+/* Active მდგომარეობა (დაჭერისას) */
+.lang-portal-btn:active {
+    transform: translateY(0) scale(0.95) !important;
+}
+
+/* =========================================
+   LIGHT MODE SUPPORT
+   ========================================= */
+body.light-mode .lang-portal-btn {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border-color: rgba(168, 85, 247, 0.2) !important;
+    color: #5b21b6 !important;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.1) !important;
+}
+
+body.light-mode .lang-portal-btn:hover {
+    background: #fff !important;
+    border-color: #a855f7 !important;
+}
+
+@media (max-width: 768px) {
+    .global-header-ui {
+        top: 10px !important;
+        right: 10px !important;
+    }
+    .lang-portal-btn {
+        width: 38px !important;
+        height: 38px !important;
+    }
+}
+
+/* =========================================
+   UI BUTTONS VISIBILITY FIX (DESKTOP + MOBILE)
+   ========================================= */
+
+/* 1. კომპიუტერზე ყოველთვის წინა პლანზეა და არასდროს ქრება */
+@media (min-width: 769px) {
+    .global-header-ui {
+        z-index: 1000000 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+}
+
+/* 2. მხოლოდ მობილურზე (768px და ქვემოთ) */
+@media (max-width: 768px) {
+    /* როცა საიდბარი ღიაა მობილურზე -> ვმალავთ ღილაკებს */
+    body:not(.sidebar-closed) .global-header-ui {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transition: opacity 0.2s ease !important;
+    }
+
+    /* როცა საიდბარი დაკეტილია მობილურზე -> ვაჩენთ ღილაკებს */
+    body.sidebar-closed .global-header-ui {
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        z-index: 1000000 !important;
+    }
+}
+
+
+/* =========================================
+   SOFT DIFFUSED PAGE INDICATORS (BLURRED)
+   ========================================= */
+
+@media (min-width: 769px) {
+    /* 1. ძირითადი სტილი - დაემატა BLUR და ზომის კორექცია */
+    #digital-library-root .front::after,
+    #digital-library-root .back::after {
+        content: '' !important;
+        position: absolute !important;
+
+        /* 🛠️ FIX: ვერტიკალურად ვზრდით, რომ ბლარი არ მოიჭრას ზემოთ/ქვემოთ */
+        top: -30px !important;
+        height: calc(100% + 60px) !important;
+
+        width: 150px !important; /* ზონა ოდნავ გავზარდეთ */
+        z-index: 10 !important;
+        pointer-events: none !important;
+        opacity: 0 !important;
+
+        /* 🪄 მთავარი ეფექტი: ძლიერი გაბუნდოვნება */
+        filter: blur(20px) !important;
+        /* Safari-სთვის */
+        -webkit-filter: blur(20px) !important;
+
+        /* ტრანზიციები რბილი მოძრაობისთვის */
+        transform: scaleX(0.8) !important;
+        transition:
+                opacity 0.6s ease, /* უფრო ნელი გამოჩენა */
+                transform 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+                filter 0.6s ease !important;
+        will-change: opacity, transform, filter;
+    }
+
+    /* 2. Hover მდგომარეობა (გამოჩენა) */
+    #digital-library-root .front:hover::after,
+    #digital-library-root .back:hover::after {
+        opacity: 1 !important;
+        transform: scaleX(1) !important;
+    }
+
+    /* 3. Active მდგომარეობა (დაჭერა - SOFT PRESS) */
+    #digital-library-root .front:active::after,
+    #digital-library-root .back:active::after {
+        opacity: 1 !important;
+        /* დაჭერისას ბლარს ოდნავ ვამცირებთ, რომ კონტური გამოიკვეთოს */
+        filter: blur(15px) !important;
+        -webkit-filter: blur(15px) !important;
+
+        transition:
+                opacity 0.2s ease,
+                transform 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+                filter 0.2s ease !important;
+    }
+
+    /* --- მარჯვენა კიდე (გრადიენტები გავაძლიერეთ ბლარის კომპენსაციისთვის) --- */
+    #digital-library-root .front::after {
+        right: -10px !important; /* ოდნავ გავიტანეთ გარეთ, რომ ბლარი კარგად დაჯდეს */
+        transform-origin: right center !important;
+        /* უფრო მუქი გრადიენტი, რადგან ბლარი მას გააღიავებს */
+        background: radial-gradient(
+                ellipse at center right,
+                rgba(0, 0, 0, 0.18) 0%,
+                rgba(0, 0, 0, 0.08) 35%,
+                transparent 70%
+        ) !important;
+    }
+
+    #digital-library-root .front:active::after {
+        transform: scaleX(0.85) !important;
+        background: radial-gradient(
+                ellipse at center right,
+                rgba(0, 0, 0, 0.25) 0%, /* კიდევ უფრო მუქი დაჭერისას */
+                rgba(0, 0, 0, 0.12) 40%,
+                transparent 80%
+        ) !important;
+    }
+
+    /* --- მარცხენა კიდე --- */
+    #digital-library-root .back::after {
+        left: -10px !important;
+        transform-origin: left center !important;
+        background: radial-gradient(
+                ellipse at center left,
+                rgba(0, 0, 0, 0.18) 0%,
+                rgba(0, 0, 0, 0.08) 35%,
+                transparent 70%
+        ) !important;
+    }
+
+    #digital-library-root .back:active::after {
+        transform: scaleX(0.85) !important;
+        background: radial-gradient(
+                ellipse at center left,
+                rgba(0, 0, 0, 0.25) 0%,
+                rgba(0, 0, 0, 0.12) 40%,
+                transparent 80%
+        ) !important;
+    }
+}
+
+
+/* =========================================
+   SIDEBAR TOGGLE ALL BUTTON
+   ========================================= */
+
+#digital-library-root .sidebar-toggle-all {
+    margin-left: auto !important; /* ეს აგდებს ღილაკს სულ მარჯვნივ */
+
+    /* დამატებითი ვიზუალი */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 6px !important;
+    color: #666 !important;
+    font-size: 20px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Hover Effect */
+#digital-library-root .sidebar-toggle-all:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #a855f7 !important; /* აქცენტის ფერი */
+    transform: scale(1.1) !important;
+}
+
+/* Active Click Effect */
+#digital-library-root .sidebar-toggle-all:active {
+    transform: scale(0.95) !important;
+}
+
+/* Light Mode */
+body.light-mode #digital-library-root .sidebar-toggle-all {
+    color: #999 !important;
+}
+
+body.light-mode #digital-library-root .sidebar-toggle-all:hover {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    color: #7c3aed !important;
+}
+
+
+
+/* =========================================
+   GEORGIAN SPECIFIC FONTS (BPG Arial Caps)
+   ========================================= */
+
+/* Sidebar Header (სარჩევი) */
+body.lang-ka #digital-library-root #sidebar-main-title {
+    font-family: "BPG Arial Caps", sans-serif !important;
+    font-size: 20px!important;
+
+    /* BPG ფონტები ხანდახან ოდნავ პატარაა ან ზემოთ "გარბის",
+       ამიტომ მცირე კორექციები შეიძლება დაგჭირდეს: */
+    letter-spacing: 1px !important; /* დაშორება ოდნავ შევამცირეთ, რადგან Caps-ია */
+    transform: translateY(2px) !important; /* ოდნავ ქვემოთ ჩამოვწიეთ ოპტიკურად */
+    font-weight: 700 !important; /* სისქე */
+}
+
+/* =========================================
+   GEORGIAN H1 & TOC STYLING (BPG 400)
+   ========================================= */
+
+/* ყველა H1 და სარჩევის მთავარი თავები */
+body.lang-ka #digital-library-root h1,
+body.lang-ka #digital-library-root .site-title h1, /* კონკრეტული დაკონკრეტება */
+body.lang-ka #digital-library-root .toc-h1 {
+    font-family: "BPG Arial Caps", sans-serif !important;
+    font-weight: 400 !important;
+
+    /* რადგან Caps-ია, ოდნავ დაშორება უხდება, რომ არ გადაიტვირთოს */
+    letter-spacing: 1px !important;
+}
+
+
+
+
+/* =========================================
+   STEP 1: REAL BOOK PARAGRAPH STYLE (INDENT)
+   ========================================= */
+
+/* 1. ყველა პარაგრაფის პირველი ხაზის შეწევა */
+/*#digital-library-root p {*/
+/*text-indent: 0.5rem !important;  კლასიკური ზომა (დაახლოებით 2-3 ასო) */
+
+/* ⚠️ მნიშვნელოვანი: როცა შეწევას ვიყენებთ, ქვედა დაშორება უნდა გაქრეს,
+   რომ ტექსტი შეკრული და მთლიანი იყოს, როგორც წიგნში
+margin-bottom: 0.3rem !important;
+}
+
+/* 2. ტიპოგრაფიული წესი: სათაურის შემდეგ პირველი აბზაცი არ იწევა! */
+/* ეს ქმნის პროფესიონალურ, "დაკაბადონებულ" ვიზუალს */
+/*#digital-library-root h1 + p,*/
+/*#digital-library-root h2 + p,*/
+/*#digital-library-root h3 + p,*/
+/*#digital-library-root h4 + p,*/
+/*#digital-library-root hr + p {*/
+/*    text-indent: 0 !important;*/
+/*}*/
+
+/* 3. დიალოგები (თუ იყენებ "-" ან "—" სიმბოლოს დასაწყისში) */
+/* სურვილისამებრ: დიალოგები შეიძლება ოდნავ მეტად ან ნაკლებად შეიწიოს,
+   მაგრამ სტანდარტულად ზედა წესი საკმარისია. */
+
+
+/* ADMIN READER EDIT ICON */
+#digital-library-root .admin-edit-reader-btn {
+    font-size: 14px !important;
+    color: #666 !important;
+    cursor: pointer !important;
+    margin-left: 8px !important;
+    padding: 2px !important;
+    border-radius: 4px !important;
+    transition: all 0.2s ease !important;
+    vertical-align: middle !important;
+    opacity: 0.5 !important;
+}
+
+.admin-edit-reader-btn:hover {
+    color: #a855f7 !important; /* აქცენტის ფერი */
+    background: rgba(255, 255, 255, 0.1) !important;
+    opacity: 1 !important;
+    transform: scale(1.2) !important;
+}
+
+
+/* =========================================
+   H3 NORMALIZATION FIX
+   ========================================= */
+
+#digital-library-root h3,
+#digital-library-root .ql-editor h3 {
+    /* ზომა: ტექსტზე (1rem) ოდნავ დიდი, მაგრამ H2-ზე პატარა */
+    font-size: 1.15rem !important;
+
+    /* სისქე: მკვეთრი ბოლდი */
+    font-weight: 700 !important;
+
+    /* ფერი: იგივე რაც მთავარ სათაურებს (თეთრი/შავი) */
+    color: var(--heading-color) !important;
+    opacity: 1 !important; /* მკრთალი აღარ არის */
+
+    /* სტილი: ნორმალური (დიდი ასოების იძულების გარეშე) */
+    text-transform: none !important;
+    letter-spacing: 0.5px !important;
+
+    /* დაშორებები */
+    margin-top: 1.5rem !important;    /* ზემოდან ჰაერი */
+    margin-bottom: 0.8rem !important; /* ქვემოთ ტექსტთან ახლოს */
+
+    /* ხაზის სიმაღლე */
+    line-height: 1.3 !important;
+}
+
+/* Light Mode-ში ფერის დაზღვევა */
+body.light-mode #digital-library-root h3,
+body.light-mode #digital-library-root .ql-editor h3 {
+    color: #222 !important;
+}
+
+
+
+/* Sync Scroll Button */
+#digital-library-root #sync-scroll-btn {
+    margin-left: 5px !important;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+#digital-library-root #sync-scroll-btn.active {
+    opacity: 1;
+    color: #a855f7 !important; /* იასამნისფერი */
+    border-color: #a855f7 !important;
+    background: rgba(168, 85, 247, 0.1) !important;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+}
+
+/* ანიმაცია სინქრონიზაციის დროს */
+#digital-library-root #sync-scroll-btn.active .material-icons-outlined {
+    animation: spinIcon 10s linear infinite; /* ნელი ტრიალი როცა ჩართულია */
+}
+
+@keyframes spinIcon {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+
+/* =========================================
+   USER AUTH MODAL (PREMIUM UI OVERRIDES)
+   ========================================= */
+
+/* 1. მოდალის კონტეინერის გასწორება */
+#auth-modal .auth-modal-content {
+    max-width: 420px !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: 90vh !important;
+    padding-bottom: 10px !important;
+    margin: auto !important;
+}
+
+/* 2. შიდა სივრცე და განლაგება */
+#auth-modal .auth-body {
+    padding: 30px 40px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    overflow: visible !important;
+}
+
+/* 3. ფორმის ჯგუფები (Labels) */
+#auth-modal .form-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    margin-bottom: 0 !important;
+}
+
+#auth-modal label {
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    text-align: left !important;
+}
+
+/* 4. ინფუთების (ველების) ელიტარული დიზაინი */
+#auth-modal input {
+    width: 100% !important;
+    padding: 14px 16px !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(168, 85, 247, 0.3) !important;
+    border-radius: 10px !important;
+    color: #ffffff !important;
+    font-size: 1rem !important;
+    font-family: inherit !important;
+    transition: all 0.3s ease !important;
+    outline: none !important;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5) !important;
+    box-sizing: border-box !important;
+}
+
+#auth-modal input::placeholder {
+    color: rgba(255, 255, 255, 0.2) !important;
+}
+
+#auth-modal input:focus {
+    background: rgba(168, 85, 247, 0.05) !important;
+    border-color: #a855f7 !important;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15), inset 0 2px 4px rgba(0,0,0,0.5) !important;
+}
+
+/* 🛑 AUTOFILL FIX */
+#auth-modal input:-webkit-autofill,
+#auth-modal input:-webkit-autofill:hover,
+#auth-modal input:-webkit-autofill:focus,
+#auth-modal input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #111111 inset !important;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 5000s ease-in-out 0s !important;
+}
+
+/* 5. მთავარი ღილაკი */
+#auth-modal .auth-submit {
+    width: 100% !important;
+    margin-top: 10px !important;
+    padding: 15px !important;
+    font-size: 0.95rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.5px !important;
+    text-transform: uppercase !important;
+    background: linear-gradient(135deg, #a855f7, #7c3aed) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+#auth-modal .auth-submit:hover {
+    background: linear-gradient(135deg, #b366ff, #8b4ade) !important;
+    box-shadow: 0 8px 25px rgba(168, 85, 247, 0.5) !important;
+    transform: translateY(-2px) !important;
+}
+
+#auth-modal .auth-submit:active {
+    transform: translateY(0) scale(0.98) !important;
+}
+
+/* 6. გადასართველი ტექსტი */
+#auth-modal .auth-toggle-wrap {
+    text-align: center !important;
+    margin-top: 5px !important;
+    font-size: 0.85rem !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+#auth-modal #auth-toggle-link {
+    color: #a855f7 !important;
+    text-decoration: none !important;
+    font-weight: 800 !important;
+    margin-left: 5px !important;
+    transition: all 0.2s !important;
+}
+
+#auth-modal #auth-toggle-link:hover {
+    color: #d8b4fe !important;
+    text-shadow: 0 0 10px rgba(168, 85, 247, 0.5) !important;
+}
+
+/* 7. ერორის შეტყობინება */
+#auth-modal .auth-error-msg {
+    color: #ff6b6b !important;
+    background: rgba(255, 107, 107, 0.1) !important;
+    border: 1px solid rgba(255, 107, 107, 0.3) !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    display: none;
+    margin-top: -5px !important;
+    animation: shakeError 0.4s ease-in-out !important;
+}
+
+@keyframes shakeError {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+}
+
+/* =========================================
+   LIGHT MODE OVERRIDES FOR AUTH MODAL
+   ========================================= */
+body.light-mode #auth-modal label {
+    color: rgba(0, 0, 0, 0.6) !important;
+}
+
+body.light-mode #auth-modal input {
+    background: #f5f5f5 !important;
+    border-color: rgba(168, 85, 247, 0.3) !important;
+    color: #111 !important;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+
+body.light-mode #auth-modal input::placeholder {
+    color: rgba(0, 0, 0, 0.3) !important;
+}
+
+body.light-mode #auth-modal input:focus {
+    background: #fff !important;
+    border-color: #a855f7 !important;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15) !important;
+}
+
+body.light-mode #auth-modal input:-webkit-autofill,
+body.light-mode #auth-modal input:-webkit-autofill:hover,
+body.light-mode #auth-modal input:-webkit-autofill:focus,
+body.light-mode #auth-modal input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+    -webkit-text-fill-color: #000 !important;
+}
+
+body.light-mode #auth-modal .auth-toggle-wrap {
+    color: rgba(0, 0, 0, 0.5) !important;
+}
+
+
+/* =========================================
+   GOOGLE AUTH BUTTON & DIVIDER
+   ========================================= */
+
+#auth-modal .auth-divider {
+    display: flex !important;
+    align-items: center !important;
+    text-align: center !important;
+    margin: 15px 0 10px 0 !important;
+    color: rgba(255, 255, 255, 0.3) !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 2px !important;
+}
+
+#auth-modal .auth-divider::before,
+#auth-modal .auth-divider::after {
+    content: '' !important;
+    flex: 1 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+#auth-modal .auth-divider span {
+    padding: 0 15px !important;
+}
+
+#auth-modal .oauth-btn {
+    width: 100% !important;
+    padding: 12px 15px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+    border-radius: 10px !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2) !important;
+}
+
+/* 🛑 აი ამან გამოიწვია ის გიგანტი ლოგო! ახლა მკაცრად შეზღუდულია */
+#auth-modal .oauth-btn img {
+    width: 24px !important;
+    height: 24px !important;
+    pointer-events: none !important;
+    display: block !important;
+}
+
+#auth-modal .oauth-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-2px) !important;
+}
+
+#auth-modal .oauth-btn:active {
+    transform: translateY(0) scale(0.98) !important;
+}
+
+/* Light Mode Overrides */
+body.light-mode #auth-modal .auth-divider { color: rgba(0, 0, 0, 0.4) !important; }
+body.light-mode #auth-modal .auth-divider::before,
+body.light-mode #auth-modal .auth-divider::after { border-color: rgba(0, 0, 0, 0.1) !important; }
+
+body.light-mode #auth-modal .oauth-btn {
+    background: #fff !important;
+    color: #333 !important;
+    border-color: #ccc !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
+}
+body.light-mode #auth-modal .oauth-btn:hover {
+    background: #f9f9f9 !important;
+    border-color: #999 !important;
+}
+
+
+
+
+
+
+
+/* =========================================
+   SITE TITLE ALIGNMENT OVERRIDE (FIX)
+   ========================================= */
+#digital-library-root .site-title {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    /* ✅ 150px დაშორება იცავს იმისგან, რომ მარცხნივ ღილაკებს არ შეეხოს */
+    padding-left: 150px !important;
+    padding-right: 150px !important;
+    box-sizing: border-box !important;
+    pointer-events: none !important;
+}
+
+#digital-library-root .site-title h1,
+#digital-library-root .site-title p {
+    text-align: center !important;
+    align-self: center !important;
+    width: auto !important;
+    display: inline-block !important;
+}
+
+@media (max-width: 768px) {
+    #digital-library-root .site-title {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+}
+
+
+/* =========================================
+   LOGGED IN AVATAR BUTTON (PILL DESIGN)
+   ========================================= */
+#user-auth-btn.logged-in-avatar {
+    background: rgba(255, 255, 255, 0.05) !important; /* ნაზი გამჭვირვალე ფონი */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15) !important;
+    padding: 5px 5px 5px 18px !important; /* მარცხნივ ტექსტისთვის მეტი სივრცე */
+    min-width: 0 !important;
+    width: auto !important; /* სიგანე ავტომატურად იწელება სახელის მიხედვით */
+    height: 42px !important;
+    border-radius: 30px !important; /* აბის (Pill) ულამაზესი ფორმა */
+    margin-left: 7px !important; /* მარცხენა ღილაკებისგან გამოყოფა */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important; /* დაშორება ტექსტსა და ფოტოს შორის */
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    cursor: pointer !important;
+}
+
+#user-auth-btn.logged-in-avatar:hover {
+    background: rgba(168, 85, 247, 0.1) !important;
+    border-color: rgba(168, 85, 247, 0.3) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 5px 15px rgba(168, 85, 247, 0.25) !important;
+}
+
+#user-auth-btn.logged-in-avatar:active {
+    transform: translateY(0) scale(0.97) !important;
+}
+
+/* 🚀 სახელის ტექსტის დიზაინი */
+#user-auth-btn.logged-in-avatar .user-display-name {
+    color: #fff !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    white-space: nowrap !important;
+    max-width: 130px !important; /* თუ ძალიან გრძელი სახელია (მაგ. მეილი), შეიკვეცოს */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* გუგლის ფოტოს დიზაინი */
+#user-auth-btn.logged-in-avatar .avatar-img {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: 2px solid #a855f7 !important;
+    display: block !important;
+    flex-shrink: 0 !important;
+}
+
+/* ინიციალების დიზაინი (თუ ფოტო არ აქვს) */
+#user-auth-btn.logged-in-avatar .avatar-initials {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #a855f7, #7c3aed) !important;
+    color: #fff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px !important;
+    border: 2px solid rgba(168, 85, 247, 0.4) !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+}
+
+
+/* =========================================
+   MOBILE RESPONSIVENESS FOR AVATAR
+   ========================================= */
+@media (max-width: 768px) {
+    /* 1. ვმალავთ სახელს მობილურზე */
+    #user-auth-btn.logged-in-avatar .user-display-name {
+        display: none !important;
+    }
+
+    /* 2. ღილაკს ვაბრუნებთ იდეალური წრის ფორმაზე */
+    #user-auth-btn.logged-in-avatar {
+        padding: 0 !important;
+        width: 38px !important; /* ზომა მობილურისთვის */
+        height: 38px !important;
+        border-radius: 50% !important;
+        gap: 0 !important;
+        margin-left: 10px !important; /* მარცხენა მხარეს ოდნავ ნაკლები დაშორება */
+    }
+
+    /* 3. ავატარის ზომის მორგება ღილაკზე */
+    #user-auth-btn.logged-in-avatar .avatar-img,
+    #user-auth-btn.logged-in-avatar .avatar-initials {
+        width: 100% !important;
+        height: 100% !important;
+        border: 2px solid #a855f7 !important;
+    }
+}
+
+/* =========================================
+   MOBILE RESPONSIVENESS FOR LIB BUTTON
+   ========================================= */
+@media (max-width: 768px) {
+    /* 1. ვმალავთ ტექსტს (LIB), რომელიც არ არის აიკონი */
+    #lib-home-btn span:not(.material-icons-outlined) {
+        display: none !important;
+    }
+
+    /* 2. ვაშორებთ ზედმეტ სივრცეს აიკონსა და გამქრალ ტექსტს შორის */
+    #lib-home-btn {
+        gap: 0 !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        min-width: unset !important; /* თუ სიგანე ჰქონდა გაწერილი, ვხსნით */
+        width: 38px !important; /* რომ ავატარის ზომას დაემთხვეს და კვადრატული/მრგვალი იყოს */
+        height: 38px !important;
+        justify-content: center !important;
+    }
+}
+
+
+/* =========================================
+   LIGHT MODE OVERRIDES FOR NEW BUTTONS
+   ========================================= */
+
+body.light-mode #main-share-btn,
+body.light-mode #audio-proto-toggle {
+    background: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #dddddd !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-mode #main-share-btn:hover,
+body.light-mode #audio-proto-toggle:hover {
+    background: #f8f8f8 !important;
+    border-color: #a855f7 !important; /* ინარჩუნებს ბრენდულ ფერს hover-ზე */
+    color: #a855f7 !important;
+}
+
+/* 🚀 Profile Pill (User Auth Btn) Light Mode */
+body.light-mode #user-auth-btn.logged-in-avatar {
+    background: #ffffff !important;
+    border: 1px solid #eeeeee !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+body.light-mode #user-auth-btn.logged-in-avatar:hover {
+    background: #fdfaff !important; /* ძალიან ნაზი იასამნისფერი ტონი */
+    border-color: rgba(168, 85, 247, 0.3) !important;
+}
+
+body.light-mode #user-auth-btn.logged-in-avatar .user-display-name {
+    color: #333333 !important; /* ტექსტი ხდება მუქი */
+}
+
+/* 🚀 LIB Button მობილურის ფიქსი Light Mode-ში (თუ ისიც საჭიროა) */
+body.light-mode #lib-home-btn {
+    background: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #dddddd !important;
+}
+
+/* ავატარის ჩარჩო Light Mode-ში ცოტა უფრო რბილი რომ იყოს */
+body.light-mode #user-auth-btn.logged-in-avatar .avatar-img {
+    border: 2px solid #a855f7 !important;
+}
+
+/* =========================================
+   SHARE BUBBLE LIGHT MODE OVERRIDES
+   ========================================= */
+
+body.light-mode #share-bubble {
+    background: #ffffff !important; /* თეთრი ფონი ბუშტისთვის */
+    border: 1px solid #e0e0e0 !important; /* ნაზი ჩარჩო */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important; /* რბილი ჩრდილი */
+}
+
+/* გამყოფი ხაზი */
+body.light-mode #share-bubble .share-divider {
+    background: #eeeeee !important;
+}
+
+/* გაზიარების ღილაკები */
+body.light-mode .share-icon-btn {
+    background: transparent !important; /* ❌ შავი ოთხკუთხედის ჩახსნა */
+    border: none !important;
+    box-shadow: none !important;
+    color: #555555 !important; /* ნაგულისხმევი ფერი იკონებისთვის */
+    transition: all 0.2s ease !important;
+}
+
+body.light-mode .share-icon-btn svg {
+    fill: #555555 !important; /* SVG-ის ნაგულისხმევი ფერი */
+}
+
+/* 🚀 Hover ეფექტები - ორიგინალური ბრენდის ფერები */
+body.light-mode .share-icon-btn:hover {
+    background: #f5f5f5 !important; /* Hover-ის ნაზი ფონი */
+    transform: scale(1.1) !important;
+}
+
+/* Facebook - ლურჯი */
+body.light-mode .share-icon-btn.fb:hover svg { fill: #1877F2 !important; }
+
+/* X (Twitter) - შავი */
+body.light-mode .share-icon-btn.x:hover svg { fill: #000000 !important; }
+
+/* LinkedIn - ცისფერი */
+body.light-mode .share-icon-btn.li:hover svg { fill: #0A66C2 !important; }
+
+/* Copy Link - ბრენდის იასამნისფერი */
+body.light-mode .share-icon-btn.copy:hover { color: #a855f7 !important; }
+
+/* 🚀 ლინკის კოპირების თულთიპი (Tooltip) */
+body.light-mode #copy-tooltip {
+    background: #333333 !important; /* მუქი თულთიპი კონტრასტისთვის */
+    color: #ffffff !important;
+}
+
+/* ============================================================
+   📱 MOBILE "RISING SUN" CORNER BUTTONS (FIX)
+   ============================================================ */
+@media (max-width: 768px) {
+
+    #digital-library-root #reading-progress-container {
+        /* სიგანე, რომ ღილაკებს შორის ჩაეტიოს */
+        width: 80% !important;
+
+        /* ჰორიზონტალური გაცენტრების ფორმულა */
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+
+
+        /* მოვხსნათ გვერდითი დაშორებები, თუ ჰქონდა */
+        margin: 0 !important;
+        right: auto !important;
+    }
+
+    /* 1. გაზიარების კონტეინერი (მარცხენა კუთხე) */
+    #floating-share-container {
+        left: 0 !important;
+        bottom: 0 !important;
+        width: 60px !important;
+        height: 60px !important;
+    }
+
+    #main-share-btn {
+        position: absolute !important;
+        width: 85px !important; /* დიდი წრე */
+        height: 85px !important;
+        left: -35px !important; /* ნახევარი ჩამალული მარცხნივ */
+        bottom: -35px !important; /* ნახევარი ჩამალული ქვემოთ */
+        border-radius: 50% !important;
+        padding: 0 0 25px 25px !important; /* იკონის დაწევა ხილულ მხარეს */
+        background: #0a0a0a !important;
+        border: 2px solid #a855f7 !important;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.4) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* გაზიარების ბუშტის პოზიცია, რომ კუთხიდან ამოვიდეს */
+    #share-bubble {
+        left: 10px !important;
+        bottom: 65px !important;
+        transform-origin: bottom left !important;
+    }
+
+    /* 2. აუდიო ღილაკი (მარჯვენა კუთხე) */
+    #audio-proto-toggle {
+        position: fixed !important;
+        width: 85px !important;
+        height: 85px !important;
+        right: -35px !important; /* ნახევარი ჩამალული მარჯვნივ */
+        bottom: -35px !important; /* ნახევარი ჩამალული ქვემოთ */
+        left: auto !important;
+        border-radius: 50% !important;
+        padding: 0 25px 25px 0 !important; /* იკონის დაწევა ხილულ მხარეს */
+        background: #0a0a0a !important;
+        border: 2px solid #a855f7 !important;
+        color: #fff !important;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.4) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0 !important; /* ტექსტის გაქრობა */
+    }
+
+    #audio-proto-toggle .material-icons-outlined {
+        font-size: 26px !important;
+        margin: 0 !important;
+    }
+
+    /* ეფექტი დაჭერისას */
+    #main-share-btn:active, #audio-proto-toggle:active {
+        transform: scale(0.9) !important;
+        background: #111 !important;
+    }
+}
+
+/* Light Mode-ისთვის ფერების შეცვლა */
+body.light-mode #main-share-btn,
+body.light-mode #audio-proto-toggle {
+    background: #ffffff !important;
+    border-color: #a855f7 !important;
+    color: #333 !important;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1) !important;
+}
+
+
+/* =========================================
+   SHARE BUTTON DESKTOP (PILL STYLE)
+   ========================================= */
+#main-share-btn {
+    width: auto !important; /* სიგანე იზრდება ტექსტის მიხედვით */
+    height: 42px !important;
+    padding: 0 18px !important;
+    border-radius: 30px !important; /* აბის ფორმა */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important; /* დაშორება აიკონსა და ტექსტს შორის */
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+}
+
+/* 🚀 ტექსტის სტილი დესკტოპზე */
+.share-text-label {
+    display: inline-block !important;
+    line-height: 1 !important;
+}
+
+/* =========================================
+   MOBILE OVERRIDE (BACK TO "RISING SUN")
+   ========================================= */
+@media (max-width: 768px) {
+    /* 1. ვმალავთ ტექსტს მობილურზე */
+    #main-share-btn .share-text-label {
+        display: none !important;
+    }
+
+    /* 2. ვაბრუნებთ მრგვალ "მზის" ფორმას */
+    #main-share-btn {
+        width: 85px !important;
+        height: 85px !important;
+        left: -35px !important; /* კუთხეში შეწევა */
+        bottom: -35px !important;
+        padding: 0 0 25px 25px !important; /* აიკონის განთავსება ხილულ კუთხეში */
+        border-radius: 50% !important;
+        position: absolute !important;
+    }
+
+    #main-share-btn .material-icons-outlined {
+        font-size: 24px !important;
+    }
+}
+
+/* ============================================================
+   🎧 AUDIOBOOK BUTTON - COMPLETE MASTER STYLES
+   ============================================================ */
+
+/* 1. საწყისი მდგომარეობა - აბსოლუტურად დამალული */
+#audio-proto-toggle {
+    position: fixed !important;
+    bottom: 30px !important;
+    right: 30px !important;
+    z-index: 9990 !important;
+
+    /* ვიზუალი (Desktop - Pill) */
+    background: #111 !important;
+    color: #fff !important;
+    border: 1px solid #333 !important;
+    border-radius: 30px !important;
+    padding: 10px 22px !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
+
+    /* 🚀 კრიტიკულია ანიმაციისთვის: */
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: translateY(20px) scale(0.9) !important;
+    transition: background 0.3s, border-color 0.3s, color 0.3s, transform 0.3s !important;
+}
+
+/* 2. ანიმაციის გააქტიურება (JS-ით ამ კლასს დავამატებთ) */
+#audio-proto-toggle.animate-in {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: translateY(0) scale(1) !important;
+    /* დესკტოპზე ვიყენებთ რბილ ამოსვლას */
+    animation: audioRevealDesktop 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+}
+
+#audio-proto-toggle:hover {
+    border-color: #a855f7 !important;
+    color: #a855f7 !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.3) !important;
+}
+
+/* 3. მობილურის ვერსია - "ამომავალი მზე" */
+@media (max-width: 768px) {
+    #audio-proto-toggle {
+        width: 85px !important;
+        height: 85px !important;
+        right: -35px !important; /* კუთხეში შეწევა */
+        bottom: -35px !important;
+        left: auto !important;
+        border-radius: 50% !important;
+        padding: 0 25px 25px 0 !important; /* იკონის დაცენტრირება ხილულ კუთხეში */
+        font-size: 0 !important; /* ტექსტის გაქრობა */
+        border: 2px solid #a855f7 !important;
+        background: #0a0a0a !important;
+
+        /* მობილურის საწყისი წერტილი ანიმაციისთვის */
+        transform: translate(30px, 30px) rotate(45deg) !important;
+    }
+
+    #audio-proto-toggle.animate-in {
+        /* მობილურზე ვიყენებთ "ამოსვლის" ანიმაციას */
+        animation: sunRiseAudio 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+    }
+
+    #audio-proto-toggle .material-icons-outlined {
+        font-size: 26px !important;
+        margin: 0 !important;
+    }
+}
+
+/* 4. LIGHT MODE მხარდაჭერა */
+body.light-mode #audio-proto-toggle {
+    background: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #dddddd !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+body.light-mode #audio-proto-toggle:hover {
+    background: #fdfaff !important;
+    border-color: #a855f7 !important;
+}
+
+/* 5. ანიმაციის ლოგიკა (Keyframes) */
+
+/* დესკტოპისთვის */
+@keyframes audioRevealDesktop {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+        filter: blur(5px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+/* მობილურისთვის (ამოსვლა კუთხიდან) */
+@keyframes sunRiseAudio {
+    0% {
+        opacity: 0;
+        transform: translate(40px, 40px) scale(0.5);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+/* ============================================================
+   ☀️ MOBILE ONLY "RISING SUN" ANIMATION
+   ============================================================ */
+@media (max-width: 768px) {
+    /* 1. საწყისი წერტილი (სანამ .animate-in დაემატება) */
+    #audio-proto-toggle {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        /* ღილაკს ვწევთ უფრო ღრმად კუთხეში და ვაპატარავებთ */
+        transform: translate(60px, 60px) scale(0.1) !important;
+        /* ანიმაციის ღერძი გადაგვაქვს ქვედა მარჯვენა კუთხეში */
+        transform-origin: bottom right !important;
+        transition: none !important; /* რომ JS-ის ჩართვამდე არ იციმციმოს */
+    }
+
+    /* 2. ანიმაციის გაშვება */
+    #audio-proto-toggle.animate-in {
+        opacity: 1 !important;
+        visibility: visible !important;
+        animation: mobileSunRise 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+    }
+
+    /* 3. "მზის ამოსვლის" ეფექტი */
+    @keyframes mobileSunRise {
+        0% {
+            opacity: 0;
+            transform: translate(60px, 60px) scale(0.1) rotate(45deg);
+            filter: blur(10px);
+        }
+        60% {
+            /* ოდნავ მეტად ამოდის (Over-bounce ეფექტი) */
+            transform: translate(-40px, -40px) scale(1.05) rotate(0deg);
+            filter: blur(0);
+        }
+        100% {
+            opacity: 1;
+            /* საბოლოო პოზიცია, ნახევრად ჩამალული კუთხეში */
+            transform: translate(-35px, -35px) scale(1) rotate(0deg);
+        }
+    }
+}
+
+
+/* =========================================
+   USER PROFILE DROPDOWN MENU
+   ========================================= */
+/* 🚀 მთავარი ფიქსი: უზრუნველყოფს, რომ შიდა მენიუ არ მოიჭრას */
+
+
+/* თუ ღილაკის მშობელ კონტეინერსაც (მაგ. ნავიგაციის ზოლს) აქვს შეზღუდვა */
+.nav-toolbar,
+.header-actions {
+    overflow: visible !important;
+}
+
+.user-dropdown-menu {
+    position: absolute !important;
+    top: calc(100% + 15px) !important;
+    right: 0 !important;
+    background: rgba(20, 20, 20, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(168, 85, 247, 0.3) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.6) !important;
+    padding: 8px !important;
+    min-width: 160px !important;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-15px) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    z-index: 1000 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    pointer-events: none; /* უხილავ მდგომარეობაში კლიკის დაბლოკვა */
+}
+
+/* 🚀 "უხილავი ხიდი", რომ მაუსის გადატანისას მენიუ არ გაქრეს */
+.user-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 0;
+    right: 0;
+    height: 15px;
+}
+
+/* 🟢 გამოჩენა Hover-ზე (კომპიუტერისთვის) ან კლასით (მობილურისთვის) */
+#user-auth-btn.logged-in-avatar:hover .user-dropdown-menu,
+.user-dropdown-menu.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+}
+
+/* შიდა ღილაკების დიზაინი */
+.dropdown-item {
+    background: transparent !important;
+    border: none !important;
+    color: #ddd !important;
+    padding: 10px 14px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    transition: all 0.2s ease !important;
+    width: 100% !important;
+    font-family: inherit !important;
+}
+
+.dropdown-item .material-icons-outlined {
+    font-size: 18px !important;
+}
+
+/* Logout-ის სპეციალური წითელი ჰოვერი */
+.dropdown-item.logout-item:hover {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #ef4444 !important;
+}
+
+/* 🌓 Light Mode ვერსია მენიუსთვის */
+body.light-mode .user-dropdown-menu {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border-color: rgba(168, 85, 247, 0.2) !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+}
+body.light-mode .dropdown-item { color: #444 !important; }
+body.light-mode .dropdown-item.logout-item:hover { background: #fef2f2 !important; color: #ef4444 !important; }
+
+/* 🚀 აიძულებს ღილაკებს ყოველთვის ყველაზე ზემოთ იყვნენ */
+#floating-share-container,
+#audio-proto-toggle {
+    z-index: 999999 !important;
+}
+
+/* 🚀 ტექსტური Sign In ღილაკის სტილი */
+#user-auth-btn:not(.logged-in-avatar) {
+    padding: 0 18px !important; /* ვზრდით სიგანეს ტექსტისთვის */
+    width: auto !important;     /* ვაუქმებთ ფიქსირებულ სიგანეს, თუ ჰქონდა */
+    min-width: 100px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s ease !important;
+}
+
+/* მობილურზე, რომ ადგილი არ წაიღოს ბევრი, შეგვიძლია მხოლოდ იკონი დავტოვოთ ან ტექსტი დავაპატარავოთ */
+@media (max-width: 480px) {
+    #user-auth-btn:not(.logged-in-avatar) {
+        padding: 0 12px !important;
+        min-width: unset !important;
+    }
+    #user-auth-btn:not(.logged-in-avatar) .auth-btn-text {
+        font-size: 12px !important;
+    }
+}
+
+#auth-name-group {
+    display: none;
+}
+
+/* ============================================================
+   🎧 AUDIO AUTH ALERT MODAL (STRICT OVERRIDE)
+   ============================================================ */
+
+#audio-auth-alert {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.75) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    z-index: 30000 !important; /* ყველაზე მაღალი პრიორიტეტი */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    pointer-events: none !important;
+}
+
+#audio-auth-alert.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
+/* ბარათის დიზაინი */
+.audio-alert-card {
+    background: #111111 !important;
+    border: 1px solid #a855f7 !important;
+    border-radius: 28px !important;
+    padding: 45px 35px !important;
+    width: 92% !important;
+    max-width: 380px !important;
+    text-align: center !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(168, 85, 247, 0.15) !important;
+    transform: translateY(40px) scale(0.92) !important;
+    transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+#audio-auth-alert.active .audio-alert-card {
+    transform: translateY(0) scale(1) !important;
+}
+
+/* იკონის კონტეინერი */
+.audio-alert-icon {
+    width: 75px !important;
+    height: 75px !important;
+    background: rgba(168, 85, 247, 0.12) !important;
+    color: #a855f7 !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto 25px !important;
+    border: 1px solid rgba(168, 85, 247, 0.3) !important;
+}
+
+.audio-alert-icon span {
+    font-size: 38px !important;
+    line-height: 1 !important;
+}
+
+/* ტექსტები */
+.audio-alert-card h3 {
+    color: #ffffff !important;
+    margin: 0 0 15px 0 !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.5px !important;
+    font-family: inherit !important;
+}
+
+.audio-alert-card p {
+    color: #bbbbbb !important;
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+    margin: 0 0 35px 0 !important;
+    font-family: inherit !important;
+}
+
+/* მთავარი ღილაკი */
+.audio-alert-btn {
+    background: #a855f7 !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 16px 30px !important;
+    border-radius: 35px !important;
+    font-weight: 700 !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    width: 100% !important;
+    display: block !important;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3) !important;
+    outline: none !important;
+}
+
+.audio-alert-btn:hover {
+    background: #9333ea !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 25px rgba(168, 85, 247, 0.5) !important;
+}
+
+.audio-alert-btn:active {
+    transform: translateY(-1px) !important;
+}
+
+/* დახურვის ლინკი */
+.audio-alert-close {
+    display: inline-block !important;
+    margin-top: 20px !important;
+    color: #666666 !important;
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    transition: color 0.2s ease !important;
+    outline: none !important;
+}
+
+.audio-alert-close:hover {
+    color: #999999 !important;
+    text-decoration: underline !important;
+}

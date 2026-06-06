@@ -1,0 +1,174 @@
+<?php
+/*
+Template Name: Book Reader
+*/
+?>
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title><?php the_title(); ?> — <?php bloginfo('name'); ?></title>
+
+    <link rel="preconnect" href="https://cblxbanbssnflgyrzhah.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.quilljs.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="//cdn.web-fonts.ge">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,700;1,300&family=Noto+Sans+Georgian:wght@300;400;700;900&family=Noto+Serif+Georgian:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="//cdn.web-fonts.ge/fonts/bpg-arial-caps/css/bpg-arial-caps.min.css">
+
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link href="<?php echo esc_url( get_template_directory_uri() . '/book-engine/style-book.css' ); ?>" rel="stylesheet">
+    <script>
+        (function(){const t=localStorage.getItem('book_theme');if(t==='light'||(t===null&&window.matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light-mode');})();
+    </script>
+    <style>
+        #book-loader{position:fixed;inset:0;background:#111111;z-index:999999999;display:flex;justify-content:center;align-items:center;}
+        html.light-mode #book-loader{background:#ccced4;}
+    </style>
+
+</head>
+
+<body>
+
+<div class="global-header-ui">
+    <button id="theme-toggle-btn" class="lang-portal-btn theme-btn-override" title="Theme">
+        <span class="material-icons-outlined">light_mode</span>
+    </button>
+    <button id="lang-switcher-btn" class="lang-portal-btn"></button>
+    <button id="user-auth-btn" class="lang-portal-btn" title="Sign In">
+        <span class="material-icons-outlined">person</span>
+    </button>
+</div>
+
+<div id="digital-library-root">
+
+    <div id="book-loader">
+        <div class="book-animation">
+            <div class="book-spine"></div>
+            <div class="book-page page-1"></div>
+            <div class="book-page page-2"></div>
+            <div class="book-page page-3"></div>
+        </div>
+    </div>
+
+    <div id="book-engine-wrapper" data-force-slug="<?php echo esc_attr( $post->post_name ); ?>"></div>
+
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2 id="sidebar-main-title">სარჩევი</h2>
+            <button id="toggle-btn" class="toggle-btn"><span>&times;</span></button>
+        </div>
+        <ul class="chapter-list" id="chapter-list-ui"></ul>
+        <div class="sidebar-controls">
+            <button class="font-control-btn" id="font-size-minus">−</button>
+            <span class="font-display-label">FONT SIZE</span>
+            <button class="font-control-btn" id="font-size-plus">+</button>
+        </div>
+    </nav>
+
+    <div class="nav-toolbar">
+        <button id="open-sidebar-btn" class="tool-btn" title="Menu">
+            <span class="material-icons-outlined">menu</span>
+        </button>
+
+        <button id="open-glossary-btn" class="tool-btn" title="განმარტებები">
+            <span class="material-icons-outlined">auto_stories</span>
+        </button>
+
+        <button id="open-desc-btn" class="tool-btn" title="About Book">
+            <span class="material-icons-outlined">info</span>
+        </button>
+
+    </div>
+
+    <main id="main-content">
+        <div class="site-title" translate="no">
+            <h1 id="site-main-title"></h1>
+            <p id="site-sub-title"></p>
+        </div>
+
+
+        <div id="measure-container"></div>
+
+        <div class="book-scene"><div id="book" class="book"></div></div>
+    </main>
+
+    <div id="reading-progress-container">
+        <div id="reading-progress-bar">
+            <div id="reading-progress-glow"></div>
+            <div id="reading-progress-label">0%</div>
+        </div>
+    </div>
+
+</div> <div id="glossary-modal" class="glossary-overlay">
+    <div class="glossary-content">
+        <div class="glossary-header">
+            <h3>წიგნის განმარტებები</h3>
+            <button id="close-glossary-modal" class="glossary-close-btn">&times;</button>
+        </div>
+        <div id="glossary-list" class="glossary-body"></div>
+    </div>
+</div>
+
+<div id="description-modal" class="glossary-overlay">
+    <div class="glossary-content desc-modal-content">
+        <div class="glossary-header">
+            <h3>სინოპსისი</h3>
+            <button id="close-desc-modal" class="glossary-close-btn">&times;</button>
+        </div>
+        <div id="description-body" class="glossary-body description-text"></div>
+    </div>
+</div>
+<div id="auth-modal" class="glossary-overlay">
+    <div class="glossary-content auth-modal-content notranslate skiptranslate" translate="no" data-no-translation>
+        <div class="glossary-header">
+            <h3 id="auth-modal-title">Sign In</h3>
+            <button id="close-auth-modal" class="glossary-close-btn">&times;</button>
+        </div>
+        <div class="glossary-body auth-body">
+            <div class="form-group" id="auth-name-group" style="display: none !important;">
+                <label id="auth-name-label">Full Name</label>
+                <input type="text" id="auth-name" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label id="auth-email-label">Email Address</label>
+                <input type="email" id="auth-email" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label id="auth-pass-label">Password</label>
+                <input type="password" id="auth-password" placeholder="••••••••">
+            </div>
+            <div id="auth-error" class="auth-error-msg"></div>
+
+            <button id="auth-submit-btn" class="primary-btn auth-submit">Sign In</button>
+
+            <div class="auth-divider"><span>ან შედიხართ</span></div>
+            <button id="auth-google-btn" class="oauth-btn">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo">
+                <span id="auth-google-text">Google - ით გაგრძელება</span>
+            </button>
+
+            <div class="auth-toggle-wrap">
+                <span id="auth-toggle-text">Don't have an account?</span>
+                <a href="#" id="auth-toggle-link">Register</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="glossary-portal-popup" class="portal-overlay">
+    <div id="footnote-tooltip" class="footnote-tooltip">
+        <div id="footnote-title" class="footnote-title"></div>
+        <div class="footnote-content" id="footnote-text"></div>
+    </div>
+</div>
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="<?php echo esc_url( get_template_directory_uri() . '/book-engine/script-book.js' ); ?>"></script>
+
+</body>
+</html>
