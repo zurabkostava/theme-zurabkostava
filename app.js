@@ -1,17 +1,29 @@
 /* ============================================================
    ZURAB KOSTAVA - SPA ROUTER & LOGIC
    ============================================================ */
-// ANTI-BLUE HIGHLIGHT (JS LEVEL FIX)
+// ANTI-BLUE HIGHLIGHT (JS LEVEL FIX - INLINE ENFORCEMENT)
 (function() {
+    // 1. Inject global stylesheet
     const style = document.createElement('style');
     style.innerHTML = `
         *, html, body, div, span, a, button, input, textarea, .project-card, .zk-tool-card {
+            -webkit-tap-highlight-color: transparent !important;
             -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
             touch-action: manipulation !important;
             outline: none !important;
         }
     `;
     document.head.appendChild(style);
+
+    // 2. Aggressively force inline styles on touch
+    document.addEventListener('touchstart', function(e) {
+        let el = e.target;
+        while (el && el !== document) {
+            el.style.webkitTapHighlightColor = 'transparent';
+            el.style.setProperty('-webkit-tap-highlight-color', 'transparent', 'important');
+            el = el.parentNode;
+        }
+    }, {passive: true});
 })();
 
 (function () {
