@@ -105,6 +105,21 @@
     });
 })();
 
+// ============================================================
+// ANTI-BLUE HIGHLIGHT (JS LEVEL FIX)
+// ============================================================
+(function() {
+    const style = document.createElement('style');
+    style.innerHTML = `
+        *, html, body, div, span, a, button, input, textarea, .paper, .book-card, .tool-btn {
+            -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
 const supabaseUrl = 'https://cblxbanbssnflgyrzhah.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNibHhiYW5ic3NuZmxneXJ6aGFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2Mzk0NDYsImV4cCI6MjA3OTIxNTQ0Nn0.36w4C_Y8TsTJ2ifORlE5vQu-yMHYCCD-Ebetz8CpQ9A';
 const sbClient = window.supabase.createClient(supabaseUrl, supabaseKey);

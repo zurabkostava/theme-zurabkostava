@@ -1,6 +1,19 @@
 /* ============================================================
    ZURAB KOSTAVA - SPA ROUTER & LOGIC
    ============================================================ */
+// ANTI-BLUE HIGHLIGHT (JS LEVEL FIX)
+(function() {
+    const style = document.createElement('style');
+    style.innerHTML = `
+        *, html, body, div, span, a, button, input, textarea, .project-card, .zk-tool-card {
+            -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
 (function () {
     var ZK   = window.ZK || {};
     var BASE = (function () { try { return new URL(ZK.home).pathname; } catch (e) { return '/'; } })();
