@@ -105,33 +105,6 @@
     });
 })();
 
-// ============================================================
-// ANTI-BLUE HIGHLIGHT (JS LEVEL FIX - INLINE ENFORCEMENT)
-// ============================================================
-(function() {
-    // 1. Inject global stylesheet
-    const style = document.createElement('style');
-    style.innerHTML = `
-        *, html, body, div, span, a, button, input, textarea, .paper, .book-card, .tool-btn {
-            -webkit-tap-highlight-color: transparent !important;
-            -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
-            touch-action: manipulation !important;
-            outline: none !important;
-        }
-    `;
-    document.head.appendChild(style);
-
-    // 2. Aggressively force inline styles on touch
-    document.addEventListener('touchstart', function(e) {
-        let el = e.target;
-        while (el && el !== document) {
-            el.style.webkitTapHighlightColor = 'transparent';
-            el.style.setProperty('-webkit-tap-highlight-color', 'transparent', 'important');
-            el = el.parentNode;
-        }
-    }, {passive: true});
-})();
-
 const supabaseUrl = 'https://cblxbanbssnflgyrzhah.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNibHhiYW5ic3NuZmxneXJ6aGFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2Mzk0NDYsImV4cCI6MjA3OTIxNTQ0Nn0.36w4C_Y8TsTJ2ifORlE5vQu-yMHYCCD-Ebetz8CpQ9A';
 const sbClient = window.supabase.createClient(supabaseUrl, supabaseKey);

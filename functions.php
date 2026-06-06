@@ -67,6 +67,25 @@ function zk_routes() {
     return $routes;
 }
 
+// ============================================================
+// GLOBAL MOBILE UX FIX: KILL ANDROID CHROME TAP HIGHLIGHT
+// ============================================================
+function zk_global_mobile_ux_fix() {
+    ?>
+    <style id="zk-global-mobile-fix">
+        html, body, * {
+            -webkit-tap-highlight-color: transparent !important;
+            -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+        }
+        /* Make sure buttons don't have default focus outlines on touch */
+        a, button, input, select, textarea {
+            outline: none !important;
+        }
+    </style>
+    <?php
+}
+add_action('wp_head', 'zk_global_mobile_ux_fix', 999);
+
 /**
  * SPA Menu Walker.
  * გარდაქმნის WP-ის სტანდარტულ მენიუს შენს Custom SPA HTML სტრუქტურად.

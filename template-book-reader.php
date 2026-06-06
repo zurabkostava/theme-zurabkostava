@@ -28,6 +28,13 @@ Template Name: Book Reader
     <style>
         #book-loader{position:fixed;inset:0;background:#111111;z-index:999999999;display:flex;justify-content:center;align-items:center;}
         html.light-mode #book-loader{background:#ccced4;}
+        html, body, * {
+            -webkit-tap-highlight-color: transparent !important;
+            -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+        }
+        a, button, input, select, textarea {
+            outline: none !important;
+        }
     </style>
 
 </head>

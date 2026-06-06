@@ -17,6 +17,17 @@ Template Name: Book Manager
     <link href="<?php echo esc_url( get_template_directory_uri() . '/book-engine/style-book.css?v=' . filemtime( get_template_directory() . '/book-engine/style-book.css' ) ); ?>" rel="stylesheet">
 
 
+    <style>
+        #book-loader{position:fixed;inset:0;background:#111111;z-index:999999999;display:flex;justify-content:center;align-items:center;}
+        html.light-mode #book-loader{background:#ccced4;}
+        html, body, * {
+            -webkit-tap-highlight-color: transparent !important;
+            -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+        }
+        a, button, input, select, textarea {
+            outline: none !important;
+        }
+    </style>
 </head>
 <body>
 <div id="digital-library-root">
@@ -62,7 +73,6 @@ Template Name: Book Manager
         <button id="lang-switcher-btn" class="tool-btn text-btn">KA</button>
         <button id="theme-toggle-btn" class="tool-btn" title="Theme">
             <span class="material-icons-outlined">light_mode</span>
-        </button>
         <button id="user-auth-btn" class="tool-btn" title="Sign In">
             <span class="material-icons-outlined">person</span>
         </button>
