@@ -21,7 +21,7 @@ Template Name: Book Reader
     <link rel="stylesheet" href="//cdn.web-fonts.ge/fonts/bpg-arial-caps/css/bpg-arial-caps.min.css">
 
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <link href="<?php echo esc_url( get_template_directory_uri() . '/book-engine/style-book.css' ); ?>" rel="stylesheet">
+    <link href="<?php echo esc_url( get_template_directory_uri() . '/book-engine/style-book.css?v=' . filemtime( get_template_directory() . '/book-engine/style-book.css' ) ); ?>" rel="stylesheet">
     <script>
         (function(){const t=localStorage.getItem('book_theme');if(t==='light'||(t===null&&window.matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light-mode');})();
     </script>
@@ -168,7 +168,7 @@ Template Name: Book Reader
 </div>
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="<?php echo esc_url( get_template_directory_uri() . '/book-engine/script-book.js' ); ?>"></script>
+<script src="<?php echo esc_url( get_template_directory_uri() . '/book-engine/script-book.js?v=' . filemtime( get_template_directory() . '/book-engine/script-book.js' ) ); ?>"></script>
 
 </body>
 </html>
