@@ -1497,7 +1497,18 @@ function zk_custom_seo_redirects() {
     }
 
     $request_uri = $_SERVER['REQUEST_URI'];
-    $path = rtrim( parse_url( $request_uri, PHP_URL_PATH ), '/' );
+    // Convert path to lowercase to match exactly regardless of casing (e.g. /Nocturnes/)
+    $path = strtolower( rtrim( parse_url( $request_uri, PHP_URL_PATH ), '/' ) );
+
+    // Strip /ka prefix for exact matches and dynamic routes to avoid double redirects
+    if ( strpos( $path, '/ka/' ) === 0 || $path === '/ka' ) {
+        $clean_path = substr( $path, 3 );
+        if ( $clean_path === false || $clean_path === '' ) {
+            $clean_path = '/';
+        }
+    } else {
+        $clean_path = $path;
+    }
 
     // 1. EXACT MATCH REDIRECTS
     $exact_matches = array(
@@ -1510,26 +1521,23 @@ function zk_custom_seo_redirects() {
         '/paint'       => '/visual/paint/'
     );
 
-    if ( array_key_exists( $path, $exact_matches ) ) {
-        wp_redirect( home_url( $exact_matches[ $path ] ), 301 );
+    if ( array_key_exists( $clean_path, $exact_matches ) ) {
+        wp_redirect( home_url( $exact_matches[ $clean_path ] ), 301 );
         exit;
     }
 
     // 2. DYNAMIC REGEX REDIRECTS
-    // Handle /nocturne-{variable} OR /ka/nocturne-{variable}
-    if ( preg_match( '#^(?:/ka)?/nocturne-([^/]+)$#', $path, $matches ) ) {
+    if ( preg_match( '#^/nocturne-([^/]+)$#', $clean_path, $matches ) ) {
         wp_redirect( home_url( '/blog/raw/nocturnes/nocturne-' . $matches[1] . '/' ), 301 );
         exit;
     }
 
-    // Handle /aubade-{variable} OR /ka/aubade-{variable}
-    if ( preg_match( '#^(?:/ka)?/aubade-([^/]+)$#', $path, $matches ) ) {
+    if ( preg_match( '#^/aubade-([^/]+)$#', $clean_path, $matches ) ) {
         wp_redirect( home_url( '/blog/raw/aubades/aubade-' . $matches[1] . '/' ), 301 );
         exit;
     }
 
     // 3. GLOBAL /ka/ FALLBACK
-    // If it starts with /ka/ or is exactly /ka
     if ( strpos( $path, '/ka/' ) === 0 || $path === '/ka' ) {
         // We replace ^/ka at the start of $request_uri so we preserve query params
         $new_uri = preg_replace( '#^/ka(?=/|$)#', '', $request_uri );
@@ -1540,4 +1548,5 @@ function zk_custom_seo_redirects() {
         exit;
     }
 }
-add_action( 'template_redirect', 'zk_custom_seo_redirects' );
+// Using 'init' instead of 'template_redirect' so it fires before WP query and 404 logic
+add_action( 'init', 'zk_custom_seo_redirects' );
