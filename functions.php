@@ -2042,4 +2042,157 @@ function zk_auto_image_alt_text( $attributes, $attachment ) {
     return $attributes;
 }
 add_filter( 'wp_get_attachment_image_attributes', 'zk_auto_image_alt_text', 10, 2 );
+
+/* ============================================================
+   ZK CUSTOM SEO ENGINE (Stage 5 - GEO & Advanced SEO)
+   ============================================================ */
+
+// 1. GEO Meta Tags (Robots Directives & AI Summary)
+function zk_render_geo_meta_tags() {
+    if ( is_admin() || is_feed() || is_robots() || is_trackback() ) {
+        return;
+    }
+    
+    // Explicit permission for SGE & AI Bots to use max snippets
+    echo "<meta name=\"robots\" content=\"max-snippet:-1, max-image-preview:large, max-video-preview:-1\" />\n";
+
+    // AI Summary (abstract)
+    if ( is_singular() ) {
+        global $post;
+        $ai_summary = get_post_meta( $post->ID, '_zk_geo_ai_summary', true );
+        if ( ! empty( $ai_summary ) ) {
+            echo '<meta name="abstract" content="' . esc_attr( $ai_summary ) . '" />' . "\n";
+        }
+    }
+}
+add_action( 'wp_head', 'zk_render_geo_meta_tags', 1 );
+
+// 2. Auto-Generated Table of Contents (TOC)
+function zk_auto_toc_generator( $content ) {
+    if ( ! is_singular( [ 'post', 'page', 'zk_book' ] ) || empty( $content ) ) {
+        return $content;
+    }
+
+    // Find all <h2> tags
+    preg_match_all( '/<h2(.*?)>(.*?)<\/h2>/i', $content, $matches );
+    
+    if ( ! empty( $matches[2] ) && count( $matches[2] ) > 1 ) { // Only add TOC if more than 1 heading
+        $toc = '<div class="zk-seo-toc" style="background:#111; padding:20px; border-radius:8px; margin-bottom:30px; border: 1px solid #333;">';
+        $toc .= '<strong style="display:block; margin-bottom:10px; font-size:18px;">Table of Contents</strong>';
+        $toc .= '<ul style="margin:0; padding-left:20px; list-style-type:decimal;">';
+        
+        foreach ( $matches[2] as $i => $heading ) {
+            $clean_text = wp_strip_all_tags( $heading );
+            $slug = sanitize_title( $clean_text );
+            if ( empty( $slug ) ) { $slug = 'section-' . $i; }
+            
+            // Add ID to the original heading
+            $original_h2 = $matches[0][$i];
+            $new_h2 = '<h2 id="' . $slug . '"' . $matches[1][$i] . '>' . $matches[2][$i] . '</h2>';
+            $content = str_replace( $original_h2, $new_h2, $content );
+            
+            // Add to TOC list
+            $toc .= '<li style="margin-bottom:5px;"><a href="#' . $slug . '" style="color:#00e6ff; text-decoration:none;">' . esc_html( $clean_text ) . '</a></li>';
+        }
+        
+        $toc .= '</ul></div>';
+        
+        // Insert TOC before the first <h2>
+        $content = preg_replace( '/<h2/', $toc . '<h2', $content, 1 );
+    }
+
+    return $content;
+}
+add_filter( 'the_content', 'zk_auto_toc_generator' );
+
+// 3. GEO Meta Box (AI Summary & FAQ)
+function zk_add_geo_meta_box() {
+    $screens = [ 'post', 'page', 'zk_book' ];
+    foreach ( $screens as $screen ) {
+        add_meta_box(
+            'zk_geo_meta_box',
+            'ZK GEO Settings (AI & FAQ)',
+            'zk_render_geo_meta_box',
+            $screen,
+            'normal',
+            'high'
+        );
+    }
+}
+add_action( 'add_meta_boxes', 'zk_add_geo_meta_box' );
+
+function zk_render_geo_meta_box( $post ) {
+    wp_nonce_field( 'zk_geo_save_meta_box_data', 'zk_geo_meta_box_nonce' );
+    $ai_summary = get_post_meta( $post->ID, '_zk_geo_ai_summary', true );
+    $faq_text   = get_post_meta( $post->ID, '_zk_geo_faq', true );
+    ?>
+    <p>
+        <label for="zk_geo_ai_summary"><strong>AI Summary (Abstract):</strong> (Tell ChatGPT exactly how to summarize this page)</label><br />
+        <textarea id="zk_geo_ai_summary" name="zk_geo_ai_summary" rows="3" style="width:100%; margin-top:5px;"><?php echo esc_textarea( $ai_summary ); ?></textarea>
+    </p>
+    <p style="margin-top:20px;">
+        <label for="zk_geo_faq"><strong>FAQ Schema Generator:</strong> (For Google "People Also Ask")</label><br />
+        <span class="description" style="display:block; margin-bottom:5px;">Format exactly like this:<br/>Q: What is Beta?<br/>A: It is a book.<br/><br/>Q: Next question?<br/>A: Next answer.</span>
+        <textarea id="zk_geo_faq" name="zk_geo_faq" rows="8" style="width:100%; margin-top:5px; font-family:monospace;"><?php echo esc_textarea( $faq_text ); ?></textarea>
+    </p>
+    <?php
+}
+
+function zk_save_geo_meta_box_data( $post_id ) {
+    if ( ! isset( $_POST['zk_geo_meta_box_nonce'] ) || ! wp_verify_nonce( $_POST['zk_geo_meta_box_nonce'], 'zk_geo_save_meta_box_data' ) ) return;
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
+    if ( ! current_user_can( 'edit_post', $post_id ) ) return;
+
+    if ( isset( $_POST['zk_geo_ai_summary'] ) ) {
+        update_post_meta( $post_id, '_zk_geo_ai_summary', sanitize_textarea_field( $_POST['zk_geo_ai_summary'] ) );
+    }
+    if ( isset( $_POST['zk_geo_faq'] ) ) {
+        update_post_meta( $post_id, '_zk_geo_faq', sanitize_textarea_field( $_POST['zk_geo_faq'] ) );
+    }
+}
+add_action( 'save_post', 'zk_save_geo_meta_box_data' );
+
+// 4. Inject FAQ JSON-LD Schema
+function zk_inject_faq_schema() {
+    if ( ! is_singular() ) return;
+    global $post;
+    $faq_text = get_post_meta( $post->ID, '_zk_geo_faq', true );
+    if ( empty( trim( $faq_text ) ) ) return;
+
+    $blocks = explode( "\n\n", str_replace( "\r", "", $faq_text ) );
+    $mainEntity = [];
+
+    foreach ( $blocks as $block ) {
+        $lines = explode( "\n", trim( $block ) );
+        $q = ''; $a = '';
+        foreach ( $lines as $line ) {
+            if ( str_starts_with( $line, 'Q:' ) ) { $q = trim( substr( $line, 2 ) ); }
+            elseif ( str_starts_with( $line, 'A:' ) ) { $a = trim( substr( $line, 2 ) ); }
+        }
+        if ( ! empty( $q ) && ! empty( $a ) ) {
+            $mainEntity[] = [
+                '@type' => 'Question',
+                'name' => esc_attr( $q ),
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text' => esc_attr( $a )
+                ]
+            ];
+        }
+    }
+
+    if ( ! empty( $mainEntity ) ) {
+        $schema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => $mainEntity
+        ];
+        echo "\n<!-- ZK FAQ Schema Engine -->\n";
+        echo "<script type=\"application/ld+json\">\n";
+        echo json_encode( $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
+        echo "\n</script>\n";
+        echo "<!-- /ZK FAQ Schema Engine -->\n";
+    }
+}
+add_action( 'wp_head', 'zk_inject_faq_schema', 3 );
 
