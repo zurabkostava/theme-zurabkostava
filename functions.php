@@ -1717,8 +1717,14 @@ function zk_render_json_ld_schema() {
         '@context' => 'https://schema.org',
         '@type' => 'Person',
         'name' => 'Zurab Kostava',
+        'alternateName' => ['ზურაბ კოსტავა', 'Zurab Kostava', 'Zurab', 'Kostava', 'Zura Kostava'],
         'url' => $site_url,
         'jobTitle' => wp_strip_all_tags(get_option('zk_vital_position', 'Creative Lead')),
+        'knowsAbout' => ['Web Design', 'UI/UX', 'Science Fiction', 'Music Production', 'Literature', 'Art Direction'],
+        'nationality' => [
+            '@type' => 'Country',
+            'name' => 'Georgia'
+        ],
         'image' => $logo_url,
         'sameAs' => $same_as
     ];
@@ -1767,6 +1773,20 @@ function zk_render_json_ld_schema() {
                 '@id' => get_permalink()
             ]
         ];
+
+        // Extract WP Tags and Categories for Keywords
+        $keywords = [];
+        $tags = get_the_tags($post->ID);
+        if ($tags) {
+            foreach($tags as $tag) { $keywords[] = $tag->name; }
+        }
+        $categories = get_the_category($post->ID);
+        if ($categories) {
+            foreach($categories as $cat) { $keywords[] = $cat->name; }
+        }
+        if (!empty($keywords)) {
+            $article_schema['keywords'] = implode(', ', $keywords);
+        }
         
         if ( has_post_thumbnail() ) {
             $article_schema['image'] = get_the_post_thumbnail_url( $post->ID, 'full' );
@@ -1796,6 +1816,7 @@ function zk_render_json_ld_schema() {
         
         if ( ! empty( $genre ) ) {
             $book_schema['genre'] = esc_attr( $genre );
+            $book_schema['keywords'] = esc_attr( $genre ) . ', ' . get_the_title() . ', Book, Zurab Kostava, ზურაბ კოსტავა';
         }
         if ( has_post_thumbnail() ) {
             $book_schema['image'] = get_the_post_thumbnail_url( $post->ID, 'full' );
