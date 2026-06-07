@@ -1549,4 +1549,147 @@ function zk_custom_seo_redirects() {
     }
 }
 // Using 'init' instead of 'template_redirect' so it fires before WP query and 404 logic
-add_action( 'init', 'zk_custom_seo_redirects' );
+add_action( 'init', 'zk_custom_seo_redirects' );
+
+/* ============================================================
+   ZK CUSTOM SEO ENGINE (Stage 1)
+   ============================================================ */
+
+// 1. Add Custom Meta Box
+function zk_seo_add_meta_box() {
+    $screens = array( 'post', 'page', 'zk_book' );
+    foreach ( $screens as $screen ) {
+        add_meta_box(
+            'zk_seo_meta_box',           // Unique ID
+            'ZK Custom SEO Settings',     // Box title
+            'zk_seo_meta_box_html',      // Content callback
+            $screen,                     // Post type
+            'normal',                    // Context
+            'high'                       // Priority
+        );
+    }
+}
+add_action( 'add_meta_boxes', 'zk_seo_add_meta_box' );
+
+function zk_seo_meta_box_html( $post ) {
+    wp_nonce_field( 'zk_seo_save_meta', 'zk_seo_meta_nonce' );
+    $seo_title = get_post_meta( $post->ID, '_zk_seo_title', true );
+    $seo_desc  = get_post_meta( $post->ID, '_zk_seo_description', true );
+    ?>
+    <div style="padding: 10px 0;">
+        <label for="zk_seo_title" style="display:block; font-weight:bold; margin-bottom:5px;">SEO Title</label>
+        <input type="text" id="zk_seo_title" name="zk_seo_title" value="<?php echo esc_attr( $seo_title ); ?>" style="width:100%; max-width:600px; margin-bottom:15px;" placeholder="Leave empty to use post title..." />
+        
+        <label for="zk_seo_description" style="display:block; font-weight:bold; margin-bottom:5px;">SEO Description</label>
+        <textarea id="zk_seo_description" name="zk_seo_description" rows="3" style="width:100%; max-width:600px;" placeholder="Leave empty to use post excerpt or default description..."><?php echo esc_textarea( $seo_desc ); ?></textarea>
+    </div>
+    <?php
+}
+
+// 2. Save Meta Box Data
+function zk_seo_save_meta( $post_id ) {
+    if ( ! isset( $_POST['zk_seo_meta_nonce'] ) || ! wp_verify_nonce( $_POST['zk_seo_meta_nonce'], 'zk_seo_save_meta' ) ) return;
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
+    if ( ! current_user_can( 'edit_post', $post_id ) ) return;
+
+    if ( isset( $_POST['zk_seo_title'] ) ) {
+        update_post_meta( $post_id, '_zk_seo_title', sanitize_text_field( $_POST['zk_seo_title'] ) );
+    }
+    if ( isset( $_POST['zk_seo_description'] ) ) {
+        update_post_meta( $post_id, '_zk_seo_description', sanitize_textarea_field( $_POST['zk_seo_description'] ) );
+    }
+}
+add_action( 'save_post', 'zk_seo_save_meta' );
+
+// 3. Prevent WP Default Title Output & Inject Custom SEO Tags
+// Ensure WP doesn't output its own <title> if theme supports it
+remove_action( 'wp_head', '_wp_render_title_tag', 1 );
+
+function zk_render_seo_meta() {
+    // Determine context
+    $is_single = is_single() || is_page();
+    $obj_id = get_queried_object_id();
+    
+    // Default Fallbacks
+    $site_name = get_bloginfo( 'name' );
+    $site_desc = get_bloginfo( 'description' );
+    
+    $title = $site_name . ( $site_desc ? ' — ' . $site_desc : '' );
+    $desc = $site_desc;
+    $url = home_url( $_SERVER['REQUEST_URI'] );
+    $type = 'website';
+    $img = get_option( 'zk_profile_img', '' ); // Default fallback image from Identity Settings
+
+    // Override for single posts/pages
+    if ( $is_single ) {
+        $type = 'article';
+        
+        // Fetch custom SEO meta
+        $custom_title = get_post_meta( $obj_id, '_zk_seo_title', true );
+        $custom_desc  = get_post_meta( $obj_id, '_zk_seo_description', true );
+        
+        // Title logic
+        if ( ! empty( $custom_title ) ) {
+            $title = $custom_title;
+        } else {
+            $title = get_the_title( $obj_id ) . ' — ' . $site_name;
+        }
+        
+        // Description logic
+        if ( ! empty( $custom_desc ) ) {
+            $desc = $custom_desc;
+        } elseif ( has_excerpt( $obj_id ) ) {
+            $desc = wp_strip_all_tags( get_the_excerpt( $obj_id ) );
+        } else {
+            $post_content = get_post( $obj_id )->post_content;
+            $desc = wp_trim_words( wp_strip_all_tags( $post_content ), 30, '...' );
+        }
+        
+        // Image logic
+        if ( has_post_thumbnail( $obj_id ) ) {
+            $img = get_the_post_thumbnail_url( $obj_id, 'large' );
+        }
+    } elseif ( is_archive() ) {
+        if ( is_category() ) {
+            $title = single_cat_title( '', false ) . ' — ' . $site_name;
+            $desc = wp_strip_all_tags( category_description() ) ?: $desc;
+        } elseif ( is_tag() ) {
+            $title = single_tag_title( '', false ) . ' — ' . $site_name;
+            $desc = wp_strip_all_tags( tag_description() ) ?: $desc;
+        }
+    } elseif ( is_search() ) {
+        $title = 'Search Results for "' . get_search_query() . '" — ' . $site_name;
+    } elseif ( is_404() ) {
+        $title = '404 Not Found — ' . $site_name;
+    }
+
+    // Clean up title and description to prevent HTML breaks
+    $title = esc_attr( wp_strip_all_tags( $title ) );
+    $desc = esc_attr( wp_strip_all_tags( $desc ) );
+
+    // Output Tags
+    echo "\n<!-- ZK Custom SEO Engine -->\n";
+    echo "<title>{$title}</title>\n";
+    if ( ! empty( $desc ) ) {
+        echo "<meta name=\"description\" content=\"{$desc}\" />\n";
+    }
+    
+    // Canonical URL
+    echo "<link rel=\"canonical\" href=\"" . esc_url( $url ) . "\" />\n";
+    
+    // Open Graph
+    echo "<meta property=\"og:title\" content=\"{$title}\" />\n";
+    if ( ! empty( $desc ) ) echo "<meta property=\"og:description\" content=\"{$desc}\" />\n";
+    echo "<meta property=\"og:url\" content=\"" . esc_url( $url ) . "\" />\n";
+    echo "<meta property=\"og:site_name\" content=\"" . esc_attr( $site_name ) . "\" />\n";
+    echo "<meta property=\"og:type\" content=\"{$type}\" />\n";
+    if ( ! empty( $img ) ) echo "<meta property=\"og:image\" content=\"" . esc_url( $img ) . "\" />\n";
+    
+    // Twitter Cards
+    echo "<meta name=\"twitter:card\" content=\"summary_large_image\" />\n";
+    echo "<meta name=\"twitter:title\" content=\"{$title}\" />\n";
+    if ( ! empty( $desc ) ) echo "<meta name=\"twitter:description\" content=\"{$desc}\" />\n";
+    if ( ! empty( $img ) ) echo "<meta name=\"twitter:image\" content=\"" . esc_url( $img ) . "\" />\n";
+    echo "<!-- /ZK Custom SEO Engine -->\n";
+}
+add_action( 'wp_head', 'zk_render_seo_meta', 1 );
