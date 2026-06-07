@@ -1801,6 +1801,21 @@ function zk_render_json_ld_schema() {
             $book_schema['image'] = get_the_post_thumbnail_url( $post->ID, 'full' );
         }
         $schema[] = $book_schema;
+
+    } else {
+        // Fallback for Archives, Tags, Categories, and Custom Routes (like /music/)
+        $schema[] = $person_schema;
+        $schema[] = [
+            '@context' => 'https://schema.org',
+            '@type' => 'WebPage',
+            'name' => get_the_title() ?: $site_name,
+            'url' => home_url( $_SERVER['REQUEST_URI'] ),
+            'publisher' => [
+                '@id' => $site_url . '#person'
+            ]
+        ];
+        $person_schema['@id'] = $site_url . '#person';
+        $schema[0] = $person_schema;
     }
 
     if ( ! empty( $schema ) ) {
