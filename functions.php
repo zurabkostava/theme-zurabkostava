@@ -1818,6 +1818,66 @@ function zk_render_json_ld_schema() {
         $schema[0] = $person_schema;
     }
 
+    // Add BreadcrumbList Schema if not on home page
+    if ( ! is_front_page() && ! is_home() ) {
+        $breadcrumbs = [
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => [
+                [
+                    '@type' => 'ListItem',
+                    'position' => 1,
+                    'name' => 'Home',
+                    'item' => $site_url
+                ]
+            ]
+        ];
+
+        if ( is_singular( 'post' ) ) {
+            $breadcrumbs['itemListElement'][] = [
+                '@type' => 'ListItem',
+                'position' => 2,
+                'name' => 'Blog',
+                'item' => home_url( '/blog/' )
+            ];
+            $breadcrumbs['itemListElement'][] = [
+                '@type' => 'ListItem',
+                'position' => 3,
+                'name' => get_the_title(),
+                'item' => get_permalink()
+            ];
+        } elseif ( is_singular( 'zk_book' ) ) {
+            $breadcrumbs['itemListElement'][] = [
+                '@type' => 'ListItem',
+                'position' => 2,
+                'name' => 'Books',
+                'item' => home_url( '/books/' )
+            ];
+            $breadcrumbs['itemListElement'][] = [
+                '@type' => 'ListItem',
+                'position' => 3,
+                'name' => get_the_title(),
+                'item' => get_permalink()
+            ];
+        } elseif ( is_page() ) {
+            $breadcrumbs['itemListElement'][] = [
+                '@type' => 'ListItem',
+                'position' => 2,
+                'name' => get_the_title(),
+                'item' => get_permalink()
+            ];
+        } else {
+            // General archive / custom route
+            $breadcrumbs['itemListElement'][] = [
+                '@type' => 'ListItem',
+                'position' => 2,
+                'name' => get_the_title() ?: 'Archive',
+                'item' => home_url( $_SERVER['REQUEST_URI'] )
+            ];
+        }
+        $schema[] = $breadcrumbs;
+    }
+
     if ( ! empty( $schema ) ) {
         echo "\n<!-- ZK JSON-LD Schema Engine -->\n";
         echo "<script type=\"application/ld+json\">\n";
