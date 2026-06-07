@@ -1859,6 +1859,15 @@ function zk_seo_rewrite_rules() {
 }
 add_action('init', 'zk_seo_rewrite_rules');
 
+function zk_flush_seo_rules() {
+    if ( ! get_option( 'zk_seo_rules_flushed_v2' ) ) {
+        zk_seo_rewrite_rules();
+        flush_rewrite_rules();
+        update_option( 'zk_seo_rules_flushed_v2', true );
+    }
+}
+add_action( 'init', 'zk_flush_seo_rules', 99 );
+
 function zk_seo_query_vars($vars) {
     $vars[] = 'zk_sitemap';
     $vars[] = 'zk_aitxt';
