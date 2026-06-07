@@ -1851,7 +1851,7 @@ add_filter('wp_sitemaps_enabled', '__return_false');
 
 // 2. Static File Generators (Bypasses NGINX completely and has 0 database overhead)
 function zk_generate_static_seo_files() {
-    // Generate sitemap.xml
+    // Generate wp-sitemap.xml
     $sitemap_content = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     $sitemap_content .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
     
@@ -1887,7 +1887,7 @@ function zk_generate_static_seo_files() {
     $sitemap_content .= '</urlset>';
     
     // Write Sitemap
-    file_put_contents(ABSPATH . 'sitemap.xml', $sitemap_content);
+    file_put_contents(ABSPATH . 'wp-sitemap.xml', $sitemap_content);
 
     // Generate ai.txt
     $name = "Zurab Kostava";
@@ -1938,7 +1938,7 @@ function zk_add_seo_generator_button($wp_admin_bar) {
     if (current_user_can('manage_options')) {
         $args = array(
             'id'    => 'zk_regenerate_seo',
-            'title' => 'Regenerate SEO Files (sitemap.xml / ai.txt)',
+            'title' => 'Regenerate SEO Files (wp-sitemap.xml / ai.txt)',
             'href'  => admin_url('?zk_regenerate_seo=1'),
             'meta'  => array('class' => 'zk-seo-button')
         );
@@ -1960,7 +1960,7 @@ add_action('admin_init', 'zk_trigger_seo_generation');
 function zk_custom_robots_txt($output, $public) {
     $output .= "\nUser-agent: *\n";
     $output .= "Allow: /\n";
-    $output .= "\nSitemap: " . home_url('/sitemap.xml') . "\n";
+    $output .= "\nSitemap: " . home_url('/wp-sitemap.xml') . "\n";
     return $output;
 }
 add_filter('robots_txt', 'zk_custom_robots_txt', 10, 2);
