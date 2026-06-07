@@ -1486,3 +1486,58 @@ function zk_visual_hub_shortcode() {
     return $output;
 }
 add_shortcode( 'zk_visual_hub', 'zk_visual_hub_shortcode' );
+
+/* ============================================================
+   CUSTOM SEO REDIRECTS (Site Architecture Migration)
+   ============================================================ */
+function zk_custom_seo_redirects() {
+    // Execute extremely fast, bail if in WP admin panel
+    if ( is_admin() ) {
+        return;
+    }
+
+    $request_uri = $_SERVER['REQUEST_URI'];
+    $path = rtrim( parse_url( $request_uri, PHP_URL_PATH ), '/' );
+
+    // 1. EXACT MATCH REDIRECTS
+    $exact_matches = array(
+        '/aubades'     => '/blog/raw/aubades/',
+        '/nocturnes'   => '/blog/raw/nocturnes/',
+        '/gallery'     => '/about/',
+        '/photography' => '/visual/photography/',
+        '/video'       => '/visual/video/',
+        '/graphic'     => '/visual/graphic/',
+        '/paint'       => '/visual/paint/'
+    );
+
+    if ( array_key_exists( $path, $exact_matches ) ) {
+        wp_redirect( home_url( $exact_matches[ $path ] ), 301 );
+        exit;
+    }
+
+    // 2. DYNAMIC REGEX REDIRECTS
+    // Handle /nocturne-{variable} OR /ka/nocturne-{variable}
+    if ( preg_match( '#^(?:/ka)?/nocturne-([^/]+)$#', $path, $matches ) ) {
+        wp_redirect( home_url( '/blog/raw/nocturnes/nocturne-' . $matches[1] . '/' ), 301 );
+        exit;
+    }
+
+    // Handle /aubade-{variable} OR /ka/aubade-{variable}
+    if ( preg_match( '#^(?:/ka)?/aubade-([^/]+)$#', $path, $matches ) ) {
+        wp_redirect( home_url( '/blog/raw/aubades/aubade-' . $matches[1] . '/' ), 301 );
+        exit;
+    }
+
+    // 3. GLOBAL /ka/ FALLBACK
+    // If it starts with /ka/ or is exactly /ka
+    if ( strpos( $path, '/ka/' ) === 0 || $path === '/ka' ) {
+        // We replace ^/ka at the start of $request_uri so we preserve query params
+        $new_uri = preg_replace( '#^/ka(?=/|$)#', '', $request_uri );
+        if ( $new_uri === '' ) {
+            $new_uri = '/';
+        }
+        wp_redirect( home_url( $new_uri ), 301 );
+        exit;
+    }
+}
+add_action( 'template_redirect', 'zk_custom_seo_redirects' );
