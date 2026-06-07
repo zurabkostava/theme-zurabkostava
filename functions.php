@@ -1821,10 +1821,146 @@ function zk_render_json_ld_schema() {
     if ( ! empty( $schema ) ) {
         echo "\n<!-- ZK JSON-LD Schema Engine -->\n";
         echo "<script type=\"application/ld+json\">\n";
-        // If there's only one schema object, don't wrap it in an array to be cleaner, though array is technically valid
         echo json_encode( count( $schema ) === 1 ? $schema[0] : $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
         echo "\n</script>\n";
         echo "<!-- /ZK JSON-LD Schema Engine -->\n";
     }
 }
-add_action( 'wp_head', 'zk_render_json_ld_schema', 2 );
+add_action( 'wp_head', 'zk_render_json_ld_schema', 2 );
+
+/* ============================================================
+   ZK CUSTOM SEO ENGINE (Stage 3 - Static Architecture)
+   ============================================================ */
+
+// 1. Extreme Head Cleanup (Zero Bloat)
+function zk_clean_head() {
+    remove_action('wp_head', 'rsd_link');
+    remove_action('wp_head', 'wlwmanifest_link');
+    remove_action('wp_head', 'wp_generator');
+    remove_action('wp_head', 'print_emoji_detection_script', 7);
+    remove_action('wp_print_styles', 'print_emoji_styles');
+    remove_action('wp_head', 'rest_output_link_wp_head', 10);
+    remove_action('wp_head', 'wp_oembed_add_discovery_links', 10);
+    remove_action('template_redirect', 'rest_output_link_header', 11, 0);
+    remove_action('wp_head', 'wp_shortlink_wp_head', 10, 0);
+}
+add_action('init', 'zk_clean_head');
+
+// Disable native WP sitemap
+add_filter('wp_sitemaps_enabled', '__return_false');
+
+// 2. Static File Generators (Bypasses NGINX completely and has 0 database overhead)
+function zk_generate_static_seo_files() {
+    // Generate sitemap.xml
+    $sitemap_content = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $sitemap_content .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    
+    $date = date('c');
+    $custom_routes = ['/', '/music/', '/encrolib/', '/contact/'];
+    foreach ($custom_routes as $route) {
+        $sitemap_content .= "  <url>\n";
+        $sitemap_content .= "    <loc>" . esc_url(home_url($route)) . "</loc>\n";
+        $sitemap_content .= "    <lastmod>{$date}</lastmod>\n";
+        $sitemap_content .= "    <changefreq>weekly</changefreq>\n";
+        $sitemap_content .= "    <priority>" . ($route === '/' ? '1.0' : '0.8') . "</priority>\n";
+        $sitemap_content .= "  </url>\n";
+    }
+
+    $query = new WP_Query([
+        'post_type' => ['post', 'page', 'zk_book'],
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+    ]);
+
+    if ($query->have_posts()) {
+        while ($query->have_posts()) {
+            $query->the_post();
+            $sitemap_content .= "  <url>\n";
+            $sitemap_content .= "    <loc>" . esc_url(get_permalink()) . "</loc>\n";
+            $sitemap_content .= "    <lastmod>" . get_the_modified_date('c') . "</lastmod>\n";
+            $sitemap_content .= "    <changefreq>monthly</changefreq>\n";
+            $sitemap_content .= "    <priority>0.6</priority>\n";
+            $sitemap_content .= "  </url>\n";
+        }
+        wp_reset_postdata();
+    }
+    $sitemap_content .= '</urlset>';
+    
+    // Write Sitemap
+    file_put_contents(ABSPATH . 'sitemap.xml', $sitemap_content);
+
+    // Generate ai.txt
+    $name = "Zurab Kostava";
+    $position = get_option('zk_vital_position', 'Creative Lead');
+    $about = wp_strip_all_tags(get_option('zk_vital_about', ''));
+    
+    $ai_content = "# $name - $position\n\n";
+    $ai_content .= "## About\n$about\n\n";
+    
+    $ai_content .= "## Links\n";
+    $social_keys = ['zk_social_ig', 'zk_social_fb', 'zk_social_x', 'zk_social_linkedin', 'zk_social_youtube', 'zk_social_spotify', 'zk_social_bandcamp', 'zk_social_medium'];
+    foreach ($social_keys as $key) {
+        $url = esc_url(get_option($key, ''));
+        if (!empty($url) && $url !== '#' && strpos($url, 'http') === 0) {
+            $ai_content .= "- $url\n";
+        }
+    }
+    
+    $ai_content .= "\n## Latest Works / Books\n";
+    $query = new WP_Query([
+        'post_type' => 'zk_book',
+        'post_status' => 'publish',
+        'posts_per_page' => 10,
+    ]);
+    if ($query->have_posts()) {
+        while ($query->have_posts()) {
+            $query->the_post();
+            $year = get_post_meta(get_the_ID(), '_zk_book_year', true);
+            $genre = get_post_meta(get_the_ID(), '_zk_book_genre', true);
+            $ai_content .= "- " . get_the_title() . " ($year) [$genre]\n";
+        }
+        wp_reset_postdata();
+    }
+    
+    $ai_content .= "\n## Contact\n";
+    $ai_content .= "- Email: " . get_option('admin_email') . "\n";
+    $ai_content .= "- Website: " . home_url('/') . "\n";
+    
+    // Write ai.txt
+    file_put_contents(ABSPATH . 'ai.txt', $ai_content);
+}
+// Automatically regenerate files when content changes
+add_action('save_post', 'zk_generate_static_seo_files');
+add_action('deleted_post', 'zk_generate_static_seo_files');
+
+// Add a manual trigger button in WP Admin
+function zk_add_seo_generator_button($wp_admin_bar) {
+    if (current_user_can('manage_options')) {
+        $args = array(
+            'id'    => 'zk_regenerate_seo',
+            'title' => 'Regenerate SEO Files (sitemap.xml / ai.txt)',
+            'href'  => admin_url('?zk_regenerate_seo=1'),
+            'meta'  => array('class' => 'zk-seo-button')
+        );
+        $wp_admin_bar->add_node($args);
+    }
+}
+add_action('admin_bar_menu', 'zk_add_seo_generator_button', 999);
+
+function zk_trigger_seo_generation() {
+    if (isset($_GET['zk_regenerate_seo']) && current_user_can('manage_options')) {
+        zk_generate_static_seo_files();
+        wp_redirect(admin_url());
+        exit;
+    }
+}
+add_action('admin_init', 'zk_trigger_seo_generation');
+
+// 3. Override robots.txt
+function zk_custom_robots_txt($output, $public) {
+    $output .= "\nUser-agent: *\n";
+    $output .= "Allow: /\n";
+    $output .= "\nSitemap: " . home_url('/sitemap.xml') . "\n";
+    return $output;
+}
+add_filter('robots_txt', 'zk_custom_robots_txt', 10, 2);
