@@ -1818,8 +1818,6 @@ function zk_render_json_ld_schema() {
         $schema[0] = $person_schema;
     }
 
-    }
-
     if ( ! empty( $schema ) ) {
         echo "\n<!-- ZK JSON-LD Schema Engine -->\n";
         echo "<script type=\"application/ld+json\">\n";
