@@ -1963,4 +1963,155 @@ function zk_custom_robots_txt($output, $public) {
     $output .= "\nSitemap: " . home_url('/wp-sitemap.xml') . "\n";
     return $output;
 }
-add_filter('robots_txt', 'zk_custom_robots_txt', 10, 2);
+add_filter('robots_txt', 'zk_custom_robots_txt', 10, 2);
+
+/* ============================================================
+   ZK CUSTOM SEO ENGINE (Stage 4 - Advanced Meta & Social)
+   ============================================================ */
+
+// 1. Custom SEO Meta Box in WP Admin
+function zk_add_seo_meta_box() {
+    $screens = [ 'post', 'page', 'zk_book' ];
+    foreach ( $screens as $screen ) {
+        add_meta_box(
+            'zk_seo_meta_box',
+            'ZK Custom SEO Settings',
+            'zk_render_seo_meta_box',
+            $screen,
+            'normal',
+            'high'
+        );
+    }
+}
+add_action( 'add_meta_boxes', 'zk_add_seo_meta_box' );
+
+function zk_render_seo_meta_box( $post ) {
+    wp_nonce_field( 'zk_seo_save_meta_box_data', 'zk_seo_meta_box_nonce' );
+    $custom_title = get_post_meta( $post->ID, '_zk_seo_title', true );
+    $custom_desc  = get_post_meta( $post->ID, '_zk_seo_description', true );
+    ?>
+    <p>
+        <label for="zk_seo_title"><strong>Custom SEO Title:</strong> (Leave blank to use default title)</label><br />
+        <input type="text" id="zk_seo_title" name="zk_seo_title" value="<?php echo esc_attr( $custom_title ); ?>" style="width:100%; margin-top:5px;" />
+    </p>
+    <p>
+        <label for="zk_seo_description"><strong>Custom SEO Description:</strong> (Leave blank to auto-generate from content)</label><br />
+        <textarea id="zk_seo_description" name="zk_seo_description" rows="3" style="width:100%; margin-top:5px;"><?php echo esc_textarea( $custom_desc ); ?></textarea>
+    </p>
+    <p class="description">This data will be used for Google search results and when sharing on Facebook/Twitter.</p>
+    <?php
+}
+
+function zk_save_seo_meta_box_data( $post_id ) {
+    if ( ! isset( $_POST['zk_seo_meta_box_nonce'] ) || ! wp_verify_nonce( $_POST['zk_seo_meta_box_nonce'], 'zk_seo_save_meta_box_data' ) ) {
+        return;
+    }
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+        return;
+    }
+    if ( ! current_user_can( 'edit_post', $post_id ) ) {
+        return;
+    }
+    if ( isset( $_POST['zk_seo_title'] ) ) {
+        update_post_meta( $post_id, '_zk_seo_title', sanitize_text_field( $_POST['zk_seo_title'] ) );
+    }
+    if ( isset( $_POST['zk_seo_description'] ) ) {
+        update_post_meta( $post_id, '_zk_seo_description', sanitize_textarea_field( $_POST['zk_seo_description'] ) );
+    }
+}
+add_action( 'save_post', 'zk_save_seo_meta_box_data' );
+
+// 2. Output Advanced Meta Tags (OpenGraph, Twitter, Description, Canonical)
+function zk_render_advanced_meta_tags() {
+    if ( is_admin() || is_feed() || is_robots() || is_trackback() ) {
+        return;
+    }
+
+    global $post;
+    $title = get_bloginfo( 'name' );
+    $description = get_bloginfo( 'description' );
+    $url = home_url( '/' );
+    $image = '';
+
+    if ( is_singular() && $post ) {
+        $url = get_permalink();
+        
+        // Custom Title
+        $custom_title = get_post_meta( $post->ID, '_zk_seo_title', true );
+        if ( ! empty( $custom_title ) ) {
+            $title = $custom_title;
+        } else {
+            $title = get_the_title() . ' - ' . get_bloginfo( 'name' );
+        }
+
+        // Custom Description
+        $custom_desc = get_post_meta( $post->ID, '_zk_seo_description', true );
+        if ( ! empty( $custom_desc ) ) {
+            $description = $custom_desc;
+        } else {
+            if ( ! empty( $post->post_excerpt ) ) {
+                $description = wp_strip_all_tags( $post->post_excerpt );
+            } else {
+                $description = wp_trim_words( wp_strip_all_tags( $post->post_content ), 25 );
+            }
+        }
+
+        // Featured Image
+        if ( has_post_thumbnail( $post->ID ) ) {
+            $image_url = wp_get_attachment_image_src( get_post_thumbnail_id( $post->ID ), 'full' );
+            if ( $image_url ) {
+                $image = $image_url[0];
+            }
+        }
+    }
+
+    $description = str_replace( ["\r", "\n"], ' ', $description );
+
+    echo "\n<!-- ZK Advanced SEO Tags -->\n";
+    // Canonical
+    echo '<link rel="canonical" href="' . esc_url( $url ) . '" />' . "\n";
+    
+    // Standard Meta
+    if ( ! empty( $description ) ) {
+        echo '<meta name="description" content="' . esc_attr( $description ) . '" />' . "\n";
+    }
+
+    // OpenGraph
+    echo '<meta property="og:locale" content="' . esc_attr( get_locale() ) . '" />' . "\n";
+    echo '<meta property="og:type" content="' . ( is_singular() ? 'article' : 'website' ) . '" />' . "\n";
+    echo '<meta property="og:title" content="' . esc_attr( $title ) . '" />' . "\n";
+    echo '<meta property="og:url" content="' . esc_url( $url ) . '" />' . "\n";
+    echo '<meta property="og:site_name" content="' . esc_attr( get_bloginfo( 'name' ) ) . '" />' . "\n";
+    if ( ! empty( $description ) ) {
+        echo '<meta property="og:description" content="' . esc_attr( $description ) . '" />' . "\n";
+    }
+    if ( ! empty( $image ) ) {
+        echo '<meta property="og:image" content="' . esc_url( $image ) . '" />' . "\n";
+    }
+
+    // Twitter Card
+    echo '<meta name="twitter:card" content="summary_large_image" />' . "\n";
+    echo '<meta name="twitter:title" content="' . esc_attr( $title ) . '" />' . "\n";
+    if ( ! empty( $description ) ) {
+        echo '<meta name="twitter:description" content="' . esc_attr( $description ) . '" />' . "\n";
+    }
+    if ( ! empty( $image ) ) {
+        echo '<meta name="twitter:image" content="' . esc_url( $image ) . '" />' . "\n";
+    }
+    echo "<!-- /ZK Advanced SEO Tags -->\n";
+}
+add_action( 'wp_head', 'zk_render_advanced_meta_tags', 1 );
+
+// 3. Image Auto Alt-Text Enforcer
+function zk_auto_image_alt_text( $attributes, $attachment ) {
+    if ( empty( $attributes['alt'] ) ) {
+        // Fallback to attachment title or post title
+        $alt = get_the_title( $attachment->post_parent );
+        if ( empty( $alt ) ) {
+            $alt = get_the_title( $attachment->ID );
+        }
+        $attributes['alt'] = esc_attr( $alt );
+    }
+    return $attributes;
+}
+add_filter( 'wp_get_attachment_image_attributes', 'zk_auto_image_alt_text', 10, 2 );
