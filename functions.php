@@ -1692,4 +1692,124 @@ function zk_render_seo_meta() {
     if ( ! empty( $img ) ) echo "<meta name=\"twitter:image\" content=\"" . esc_url( $img ) . "\" />\n";
     echo "<!-- /ZK Custom SEO Engine -->\n";
 }
-add_action( 'wp_head', 'zk_render_seo_meta', 1 );
+add_action( 'wp_head', 'zk_render_seo_meta', 1 );
+
+// 4. JSON-LD Schema Generator (AI & Google SEO)
+function zk_render_json_ld_schema() {
+    $site_name = get_bloginfo( 'name' );
+    $site_url = home_url( '/' );
+    $logo_url = get_option( 'zk_profile_img', '' );
+    
+    // Build Social Links array
+    $social_keys = ['zk_social_ig', 'zk_social_fb', 'zk_social_x', 'zk_social_linkedin', 'zk_social_youtube', 'zk_social_spotify', 'zk_social_bandcamp', 'zk_social_medium'];
+    $same_as = [];
+    foreach ($social_keys as $key) {
+        $url = esc_url(get_option($key, ''));
+        if (!empty($url) && $url !== '#' && $url !== 'http://#' && $url !== 'https://#') {
+            $same_as[] = $url;
+        }
+    }
+
+    $schema = [];
+
+    // Base Person Schema (always outputting the author entity)
+    $person_schema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Person',
+        'name' => 'Zurab Kostava',
+        'url' => $site_url,
+        'jobTitle' => wp_strip_all_tags(get_option('zk_vital_position', 'Creative Lead')),
+        'image' => $logo_url,
+        'sameAs' => $same_as
+    ];
+
+    if ( is_front_page() || is_home() ) {
+        // Output Person + WebSite on home page
+        $schema[] = $person_schema;
+        $schema[] = [
+            '@context' => 'https://schema.org',
+            '@type' => 'WebSite',
+            'name' => $site_name,
+            'url' => $site_url,
+            'publisher' => [
+                '@id' => $site_url . '#person'
+            ]
+        ];
+        $person_schema['@id'] = $site_url . '#person'; // link them
+        $schema[0] = $person_schema;
+
+    } elseif ( is_singular( 'post' ) || is_page() ) {
+        global $post;
+        $desc = get_post_meta( $post->ID, '_zk_seo_description', true ) ?: wp_trim_words( wp_strip_all_tags( $post->post_content ), 30, '' );
+        
+        $article_schema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Article',
+            'headline' => get_the_title(),
+            'description' => esc_attr( $desc ),
+            'datePublished' => get_the_date( 'c' ),
+            'dateModified' => get_the_modified_date( 'c' ),
+            'author' => [
+                '@type' => 'Person',
+                'name' => 'Zurab Kostava',
+                'url' => $site_url
+            ],
+            'publisher' => [
+                '@type' => 'Person',
+                'name' => 'Zurab Kostava',
+                'logo' => [
+                    '@type' => 'ImageObject',
+                    'url' => $logo_url
+                ]
+            ],
+            'mainEntityOfPage' => [
+                '@type' => 'WebPage',
+                '@id' => get_permalink()
+            ]
+        ];
+        
+        if ( has_post_thumbnail() ) {
+            $article_schema['image'] = get_the_post_thumbnail_url( $post->ID, 'full' );
+        }
+        $schema[] = $article_schema;
+
+    } elseif ( is_singular( 'zk_book' ) ) {
+        global $post;
+        $year   = get_post_meta( $post->ID, '_zk_book_year', true );
+        $genre  = get_post_meta( $post->ID, '_zk_book_genre', true );
+        $author = get_post_meta( $post->ID, '_zk_book_author', true ) ?: 'Zurab Kostava';
+        $desc   = wp_trim_words( wp_strip_all_tags( $post->post_content ), 50, '' );
+        
+        $book_schema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Book',
+            'name' => get_the_title(),
+            'author' => [
+                '@type' => 'Person',
+                'name' => $author
+            ],
+            'datePublished' => $year,
+            'bookFormat' => 'https://schema.org/EBook',
+            'description' => esc_attr( $desc ),
+            'url' => get_permalink()
+        ];
+        
+        if ( ! empty( $genre ) ) {
+            $book_schema['genre'] = esc_attr( $genre );
+        }
+        if ( has_post_thumbnail() ) {
+            $book_schema['image'] = get_the_post_thumbnail_url( $post->ID, 'full' );
+        }
+        $schema[] = $book_schema;
+    }
+
+    if ( ! empty( $schema ) ) {
+        echo "\n<!-- ZK JSON-LD Schema Engine -->\n";
+        echo "<script type=\"application/ld+json\">\n";
+        // If there's only one schema object, don't wrap it in an array to be cleaner, though array is technically valid
+        echo json_encode( count( $schema ) === 1 ? $schema[0] : $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
+        echo "\n</script>\n";
+        echo "<!-- /ZK JSON-LD Schema Engine -->\n";
+    }
+}
+add_action( 'wp_head', 'zk_render_json_ld_schema', 2 );
