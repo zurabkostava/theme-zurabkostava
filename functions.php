@@ -2339,10 +2339,24 @@ function zk_quick_edit_add_tag_js() {
 
         // Wait for WP to render the inline edit template, then append our form
         var injectInterval = setInterval(function() {
-            var $centerCol = $('#inline-edit .inline-edit-col-center');
-            if ($centerCol.length) {
-                if ($centerCol.find('.zk-custom-tag-adder').length === 0) {
-                    $centerCol.append(formHtml);
+            var $rightCol = $('#inline-edit .inline-edit-col-right');
+            var $tagList = $('#inline-edit ul.post_tag-checklist');
+            if (!$tagList.length) $tagList = $('#inline-edit ul.post_tagchecklist'); // fallback
+            
+            if ($rightCol.length && $tagList.length) {
+                if ($rightCol.find('.zk-custom-tag-adder').length === 0) {
+                    var $tagsTitle = $tagList.prevAll('.inline-edit-categories-label').first();
+                    var $tagsHidden = $tagList.prev('input[type="hidden"]');
+                    
+                    // Create a neat wrapper for the tags in the right column
+                    var $tagsWrapper = $('<div class="inline-edit-col zk-moved-tags"></div>');
+                    $tagsWrapper.append($tagsTitle).append($tagsHidden).append($tagList);
+                    $tagsWrapper.css({ 'margin-top': '20px' });
+                    
+                    // Append the native tags and our custom form
+                    $rightCol.append($tagsWrapper);
+                    $rightCol.append(formHtml);
+                    
                     clearInterval(injectInterval);
                 }
             }
