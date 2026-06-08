@@ -331,7 +331,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
     height: 60vw;
     max-width: 800px;
     max-height: 800px;
-    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255, 42, 133, 0.15) 0%, transparent 70%); /* Cyberpunk Pink */
     top: -20%;
     left: -10%;
 }
@@ -341,7 +341,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
     height: 50vw;
     max-width: 600px;
     max-height: 600px;
-    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, transparent 70%); /* Cyberpunk Cyan */
     bottom: -10%;
     right: -10%;
     animation-delay: -5s;
@@ -395,7 +395,10 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
     line-height: 1.05;
     margin: 0;
     color: #fff;
-    text-shadow: 0 4px 32px rgba(255,255,255,0.1);
+    /* Cyberpunk Mixed Glow */
+    text-shadow: 
+        -6px -6px 24px rgba(255, 42, 133, 0.3), 
+        6px 6px 24px rgba(0, 240, 255, 0.3);
     
     transform: translateY(100%);
     opacity: 0;
