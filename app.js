@@ -120,10 +120,16 @@
             var v   = doc.getElementById('view');
             if (!v) throw new Error('No #view in response');
             var titleEl = doc.querySelector('title');
+            
+            var newHeadTags = Array.prototype.slice.call(doc.head.querySelectorAll('meta[name="description"], meta[property^="og:"], meta[name^="twitter:"], script[type="application/ld+json"]'))
+                .map(function(el) { return el.outerHTML; })
+                .join('\n');
+
             return {
                 html:  v.innerHTML,
                 route: v.getAttribute('data-route') || toRoute(new URL(href, location.origin).pathname),
-                title: titleEl ? titleEl.textContent : document.title
+                title: titleEl ? titleEl.textContent : document.title,
+                headTags: newHeadTags
             };
         });
     }
@@ -150,15 +156,31 @@
             var data = res[0];
             if (!data || data.error) { window.location.href = href; return; }
             if (push) history.pushState({ url: u.href }, '', u.href);
-            viewEl.innerHTML = data.html;
-            viewEl.setAttribute('data-route', data.route);
-            document.title = data.title;
-            viewEl.classList.remove('is-loading');
-            updateChrome(data.route);
-            if (announcer) announcer.textContent = (data.title || 'Page') + ' loaded';
-            scrollTopInstant();
-            viewEl.focus({ preventScroll: true });
-            document.dispatchEvent(new CustomEvent('zk:viewChange'));
+
+            function render() {
+                viewEl.innerHTML = data.html;
+                viewEl.setAttribute('data-route', data.route);
+                document.title = data.title;
+                
+                if (data.headTags !== undefined) {
+                    var oldTags = document.head.querySelectorAll('meta[name="description"], meta[property^="og:"], meta[name^="twitter:"], script[type="application/ld+json"]');
+                    for (var i = 0; i < oldTags.length; i++) oldTags[i].parentNode.removeChild(oldTags[i]);
+                    document.head.insertAdjacentHTML('beforeend', data.headTags);
+                }
+
+                viewEl.classList.remove('is-loading');
+                updateChrome(data.route);
+                if (announcer) announcer.textContent = (data.title || 'Page') + ' loaded';
+                scrollTopInstant();
+                viewEl.focus({ preventScroll: true });
+                document.dispatchEvent(new CustomEvent('zk:viewChange'));
+            }
+
+            if (document.startViewTransition) {
+                document.startViewTransition(render);
+            } else {
+                render();
+            }
         });
     }
 
