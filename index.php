@@ -9,11 +9,26 @@ $zk_site   = get_bloginfo( 'name' );
 
 ob_start(); ?>
 <div class="hero">
-    <p class="hero-eyebrow"><?php echo esc_html( apply_filters( 'zk_hero_eyebrow', 'Portfolio' ) ); ?></p>
-    <h1 class="hero-title"><?php echo esc_html( $zk_site ); ?></h1>
-    <?php if ( get_bloginfo( 'description' ) ) : ?>
-        <p class="hero-sub"><?php echo esc_html( get_bloginfo( 'description' ) ); ?></p>
-    <?php endif; ?>
+    <!-- Ambient Cinematic Background -->
+    <div class="hero-ambient">
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+    </div>
+    
+    <!-- Cinematic Content -->
+    <div class="hero-inner">
+        <div class="hero-eyebrow-wrap">
+            <p class="hero-eyebrow"><?php echo esc_html( apply_filters( 'zk_hero_eyebrow', 'Portfolio' ) ); ?></p>
+        </div>
+        <div class="hero-title-wrap">
+            <h1 class="hero-title"><?php echo esc_html( $zk_site ); ?></h1>
+        </div>
+        <?php if ( get_bloginfo( 'description' ) ) : ?>
+            <div class="hero-sub-wrap">
+                <p class="hero-sub"><?php echo esc_html( get_bloginfo( 'description' ) ); ?></p>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 <?php
 $zk_hero = ob_get_clean();

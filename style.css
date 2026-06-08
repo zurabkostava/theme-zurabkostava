@@ -291,12 +291,135 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .view:focus { outline: none; }
 .view.is-loading { opacity: 0; top: 12px; pointer-events: none; }
 
+/* ============================================================
+   CINEMATIC HERO
+   ============================================================ */
 .hero {
-	min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: var(--header-h) var(--gutter) 10vh; text-align: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    text-align: center;
+    overflow: hidden; /* For ambient orbs */
+    padding: var(--header-h) var(--gutter) 10vh;
 }
-.hero-eyebrow { font-size: 0.78rem; font-weight: 500; letter-spacing: 0.32em; text-transform: uppercase; color: var(--text-dim); }
-.hero-title { font-size: clamp(2.6rem, 9vw, 6rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.02; }
-.hero-sub { max-width: 32ch; color: var(--text-muted); font-weight: 300; font-size: clamp(1rem, 2.2vw, 1.15rem); }
+
+/* Ambient Background */
+.hero-ambient {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.4;
+    animation: orbFloat 14s ease-in-out infinite alternate;
+}
+
+.hero-orb-1 {
+    width: 60vw;
+    height: 60vw;
+    max-width: 800px;
+    max-height: 800px;
+    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+    top: -20%;
+    left: -10%;
+}
+
+.hero-orb-2 {
+    width: 50vw;
+    height: 50vw;
+    max-width: 600px;
+    max-height: 600px;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+    bottom: -10%;
+    right: -10%;
+    animation-delay: -5s;
+    animation-duration: 18s;
+}
+
+@keyframes orbFloat {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(10%, 15%) scale(1.1); }
+}
+
+/* Content Container */
+.hero-inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Staggered Reveal Wrappers */
+.hero-eyebrow-wrap,
+.hero-title-wrap,
+.hero-sub-wrap {
+    overflow: hidden;
+}
+
+/* Text Styles & Animations */
+.hero-eyebrow {
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 0;
+    
+    transform: translateY(100%);
+    opacity: 0;
+    animation: revealUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 0.2s;
+}
+
+.hero-title {
+    font-size: clamp(3rem, 10vw, 7rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin: 0;
+    color: #fff;
+    text-shadow: 0 4px 32px rgba(255,255,255,0.1);
+    
+    transform: translateY(100%);
+    opacity: 0;
+    animation: revealUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 0.4s;
+}
+
+.hero-sub {
+    max-width: 32ch;
+    color: var(--text-muted);
+    font-weight: 300;
+    font-size: clamp(1rem, 2.2vw, 1.25rem);
+    line-height: 1.6;
+    margin: 0;
+    
+    transform: translateY(100%);
+    opacity: 0;
+    animation: revealUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 0.6s;
+}
+
+@keyframes revealUp {
+    0% { transform: translateY(100%); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(0); opacity: 1; }
+}
 
 /* ============================================================
    INNER PAGES & TYPOGRAPHY

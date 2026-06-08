@@ -1254,3 +1254,69 @@
    (grid + #zkLightbox), so the cinematic gallery IIFE above
    (initGallery + its #view observer) loads & previews it identically.
    ============================================================ */
+
+/* ============================================================
+   CINEMATIC HERO PARALLAX
+   ============================================================ */
+(function() {
+    let hero = null;
+    let ambient = null;
+    let inner = null;
+    let rafId = null;
+
+    let mouseX = 0;
+    let mouseY = 0;
+    let currentX = 0;
+    let currentY = 0;
+
+    function initHero() {
+        hero = document.querySelector('.hero');
+        if (!hero) {
+            cancelAnimationFrame(rafId);
+            return;
+        }
+        ambient = hero.querySelector('.hero-ambient');
+        inner = hero.querySelector('.hero-inner');
+        
+        document.addEventListener('mousemove', onMouseMove);
+        animate();
+    }
+
+    function onMouseMove(e) {
+        if (!hero) return;
+        const x = e.clientX / window.innerWidth - 0.5;
+        const y = e.clientY / window.innerHeight - 0.5;
+        
+        mouseX = x * 30; // Max movement in pixels
+        mouseY = y * 30;
+    }
+
+    function animate() {
+        if (!hero) return;
+        
+        // Smooth interpolation
+        currentX += (mouseX - currentX) * 0.1;
+        currentY += (mouseY - currentY) * 0.1;
+
+        if (inner) {
+            inner.style.transform = `translate(${-currentX}px, ${-currentY}px)`;
+        }
+        if (ambient) {
+            ambient.style.transform = `translate(${currentX}px, ${currentY}px) scale(1.05)`;
+        }
+
+        rafId = requestAnimationFrame(animate);
+    }
+
+    function cleanup() {
+        document.removeEventListener('mousemove', onMouseMove);
+        cancelAnimationFrame(rafId);
+        hero = null;
+    }
+
+    initHero();
+    document.addEventListener('zk:viewChange', () => {
+        cleanup();
+        initHero();
+    });
+})();
