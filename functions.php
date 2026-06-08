@@ -2254,4 +2254,17 @@ function zk_auto_internal_linker( $content ) {
     return $content;
 }
 add_filter( 'the_content', 'zk_auto_internal_linker', 20 );
+
+/* ============================================================
+   ZK ADMIN UX ENHANCEMENTS
+   ============================================================ */
+function zk_make_tags_hierarchical() {
+    global $wp_taxonomies;
+    if ( isset( $wp_taxonomies['post_tag'] ) ) {
+        $wp_taxonomies['post_tag']->hierarchical = true;
+        $wp_taxonomies['post_tag']->show_ui = true;
+        $wp_taxonomies['post_tag']->meta_box_cb = 'post_categories_meta_box';
+    }
+}
+add_action( 'init', 'zk_make_tags_hierarchical' );
 
