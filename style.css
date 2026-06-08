@@ -2356,7 +2356,8 @@ body.zk-lb-open { overflow: hidden; }
         transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
     }
 
-    .zk-bottom-nav.is-collapsed {
+    .zk-bottom-nav.is-collapsed,
+    body.nav-open .zk-bottom-nav {
         transform: translateY(120%);
         opacity: 0;
         pointer-events: none;
