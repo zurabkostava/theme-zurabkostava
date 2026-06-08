@@ -746,7 +746,7 @@ function zk_about_page_shortcode() {
                 <div class="zk-tab-highlight"></div>
                 <button class="zk-tab-btn active" data-target="tab-identity">Identity</button>
                 <button class="zk-tab-btn" data-target="tab-journey">Monologue</button>
-                <button class="zk-tab-btn" data-target="tab-captures">Life & Captures</button>
+                <button class="zk-tab-btn" data-target="tab-captures">Gallery</button>
             </div>
         </div>
 
@@ -936,7 +936,7 @@ function zk_about_page_shortcode() {
                 <div class="zk-bento-header" style="margin-bottom: 30px;">
                     <div class="zk-header-title">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                        <h3>Life & Captures</h3>
+                        <h3>Gallery</h3>
                     </div>
                     <p class="zk-bento-desc"><?php echo esc_html(get_option('zk_desc_life', "Behind the scenes. No renders, no code—just real life captured through a lens.")); ?></p>
                 </div>

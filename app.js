@@ -921,14 +921,31 @@
         const highlight = nav.querySelector('.zk-tab-highlight');
         const panels = document.querySelectorAll('.zk-tab-panel');
 
-        // საწყისი პოზიციის დაყენება (პირველ ღილაკზე)
+        // საწყისი პოზიციის დაყენება
         function setHighlight(btn) {
             highlight.style.width = btn.offsetWidth + 'px';
             highlight.style.transform = `translateX(${btn.offsetLeft - 6}px)`; // 6px არის padding
         }
 
+        // ვამოწმებთ URL-ის პარამეტრს (hash)
+        const hash = window.location.hash.replace('#', '');
+        let activeBtn = nav.querySelector('.zk-tab-btn.active');
+        
+        if (hash) {
+            const targetBtn = nav.querySelector(`.zk-tab-btn[data-target="tab-${hash}"]`);
+            if (targetBtn) {
+                activeBtn = targetBtn;
+                buttons.forEach(b => b.classList.remove('active'));
+                activeBtn.classList.add('active');
+                
+                panels.forEach(panel => {
+                    if (panel.id === `tab-${hash}`) panel.classList.add('active');
+                    else panel.classList.remove('active');
+                });
+            }
+        }
+
         // ვპოულობთ აქტიურს და ვსვამთ ფონს
-        const activeBtn = nav.querySelector('.zk-tab-btn.active');
         if (activeBtn) setHighlight(activeBtn);
 
         // კლიკის ივენთები
@@ -950,7 +967,12 @@
                         panel.classList.remove('active');
                     }
                 });
-                // 4. ანიმაციური სქროლი დასაწყისში ტაბის შეცვლისას
+                
+                // 4. URL-ის განახლება ისე, რომ გვერდი არ დარესტარტდეს (SPA-ს სტილში)
+                const newHash = targetId.replace('tab-', '');
+                history.replaceState(null, null, '#' + newHash);
+
+                // 5. ანიმაციური სქროლი დასაწყისში ტაბის შეცვლისას
                 if (window.scrollY > 150) {
                     window.scrollTo({
                         top: 0,
