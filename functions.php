@@ -2267,4 +2267,153 @@ function zk_make_tags_hierarchical() {
     }
 }
 add_action( 'init', 'zk_make_tags_hierarchical' );
+
+/* ============================================================
+   ZK QUICK EDIT ADVANCED TAG ADDER
+   ============================================================ */
+// 1. Output HTML in Quick Edit
+add_action( 'quick_edit_custom_box', 'zk_quick_edit_add_tag_ui', 10, 2 );
+function zk_quick_edit_add_tag_ui( $column_name, $post_type ) {
+    static $zk_tag_ui_added = false;
+    if ( $post_type === 'post' && ! $zk_tag_ui_added && $column_name === 'tags' ) {
+        $zk_tag_ui_added = true;
+        wp_nonce_field( 'zk_add_tag_nonce', 'zk_add_tag_nonce' );
+        ?>
+        <fieldset class="inline-edit-col-center inline-edit-categories" style="width: 100%; border-top: 1px solid #ddd; margin-top: 10px; padding-top: 10px;">
+            <div class="inline-edit-col">
+                <span class="title">Add New Tag</span>
+                <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+                    <label style="flex: 1; min-width: 120px;">
+                        <span class="title" style="margin-bottom:2px;font-size:11px;">Name <span style="color:red">*</span></span>
+                        <input type="text" class="zk-new-tag-name" value="" autocomplete="off" style="width:100%;">
+                    </label>
+                    <label style="flex: 1; min-width: 120px;">
+                        <span class="title" style="margin-bottom:2px;font-size:11px;">Slug (optional)</span>
+                        <input type="text" class="zk-new-tag-slug" value="" autocomplete="off" style="width:100%;">
+                    </label>
+                    <label style="flex: 2; min-width: 200px;">
+                        <span class="title" style="margin-bottom:2px;font-size:11px;">Description (optional)</span>
+                        <input type="text" class="zk-new-tag-desc" value="" autocomplete="off" style="width:100%;">
+                    </label>
+                    <button type="button" class="button button-secondary zk-add-tag-btn" style="margin-bottom: 1px;">Add</button>
+                    <span class="spinner zk-add-tag-spinner" style="float:none; margin: 0 0 5px 0;"></span>
+                </div>
+                <div class="zk-add-tag-feedback" style="color:red; font-size:11px; margin-top:5px; display:none;"></div>
+            </div>
+        </fieldset>
+        <?php
+    }
+}
+
+// 2. Process AJAX Request
+add_action( 'wp_ajax_zk_add_quick_tag', 'zk_ajax_add_quick_tag' );
+function zk_ajax_add_quick_tag() {
+    check_ajax_referer( 'zk_add_tag_nonce', 'nonce' );
+
+    if ( ! current_user_can( 'manage_categories' ) ) {
+        wp_send_json_error( 'Permission denied.' );
+    }
+
+    $name = isset( $_POST['tag_name'] ) ? sanitize_text_field( $_POST['tag_name'] ) : '';
+    $slug = isset( $_POST['tag_slug'] ) ? sanitize_text_field( $_POST['tag_slug'] ) : '';
+    $desc = isset( $_POST['tag_desc'] ) ? sanitize_textarea_field( $_POST['tag_desc'] ) : '';
+
+    if ( empty( $name ) ) {
+        wp_send_json_error( 'Tag name is required.' );
+    }
+
+    $args = [];
+    if ( ! empty( $slug ) ) $args['slug'] = $slug;
+    if ( ! empty( $desc ) ) $args['description'] = $desc;
+
+    $term = wp_insert_term( $name, 'post_tag', $args );
+
+    if ( is_wp_error( $term ) ) {
+        wp_send_json_error( $term->get_error_message() );
+    }
+
+    $term_id = $term['term_id'];
+    $term_obj = get_term( $term_id, 'post_tag' );
+
+    wp_send_json_success( [
+        'term_id' => $term_id,
+        'name'    => $term_obj->name
+    ] );
+}
+
+// 3. Inject JS into admin footer
+add_action( 'admin_print_footer_scripts', 'zk_quick_edit_add_tag_js' );
+function zk_quick_edit_add_tag_js() {
+    $screen = get_current_screen();
+    if ( ! $screen || $screen->base !== 'edit' || $screen->post_type !== 'post' ) return;
+    ?>
+    <script type="text/javascript">
+    jQuery(document).ready(function($) {
+        $('#the-list').on('click', '.zk-add-tag-btn', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var $row = $btn.closest('tr.inline-edit-row');
+            var $nameInput = $row.find('.zk-new-tag-name');
+            var $slugInput = $row.find('.zk-new-tag-slug');
+            var $descInput = $row.find('.zk-new-tag-desc');
+            var $spinner = $row.find('.zk-add-tag-spinner');
+            var $feedback = $row.find('.zk-add-tag-feedback');
+
+            var name = $.trim($nameInput.val());
+            var slug = $.trim($slugInput.val());
+            var desc = $.trim($descInput.val());
+            var nonce = $row.find('#zk_add_tag_nonce').val() || $('#zk_add_tag_nonce').val();
+
+            if ( ! name ) {
+                $feedback.text('Name is required.').show();
+                return;
+            }
+
+            $feedback.hide();
+            $spinner.addClass('is-active');
+            $btn.prop('disabled', true);
+
+            $.post(ajaxurl, {
+                action: 'zk_add_quick_tag',
+                nonce: nonce,
+                tag_name: name,
+                tag_slug: slug,
+                tag_desc: desc
+            }, function(response) {
+                $spinner.removeClass('is-active');
+                $btn.prop('disabled', false);
+
+                if ( response.success ) {
+                    var termId = response.data.term_id;
+                    var termName = response.data.name;
+                    var $ul = $row.find('ul.post_tagchecklist');
+                    
+                    var newLi = $('<li id="post_tag-' + termId + '">' +
+                        '<label class="selectit">' +
+                        '<input value="' + termId + '" type="checkbox" name="tax_input[post_tag][]" id="in-post_tag-' + termId + '" checked="checked"> ' +
+                        termName +
+                        '</label></li>');
+                    
+                    $ul.prepend(newLi);
+                    
+                    $nameInput.val('');
+                    $slugInput.val('');
+                    $descInput.val('');
+                    
+                    $feedback.css('color', 'green').text('Tag added successfully!').show().fadeOut(3000, function() {
+                        $feedback.css('color', 'red');
+                    });
+                } else {
+                    $feedback.text(response.data || 'Error adding tag.').show();
+                }
+            }).fail(function() {
+                $spinner.removeClass('is-active');
+                $btn.prop('disabled', false);
+                $feedback.text('Server error.').show();
+            });
+        });
+    });
+    </script>
+    <?php
+}
 
