@@ -493,7 +493,7 @@
             // The lightbox image reveals itself (preload-gated focus-pull), so it
             // must NOT get .is-loaded here — that rule would override its .is-ready state.
             // Note: .zk-card-img and .zk-hero-img are now native lazy-loaded <img> tags.
-            root.querySelectorAll('.page__content img:not(.zk-lightbox-img), .zk-card-img, .zk-hero-img').forEach(watchImg);
+            root.querySelectorAll('.page__content img:not(.zk-lightbox-img), .zk-card-img, .zk-hero-img, .zk-book-img').forEach(watchImg);
         }
 
         scan(document);

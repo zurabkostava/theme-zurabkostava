@@ -650,10 +650,13 @@ html.zk-img-js .page__content img.is-loaded { opacity: 1; filter: blur(0); }
    .zk-card-img already owns a transform transition; its opacity
    channel was appended there so the hover-zoom keeps working. */
 html.zk-img-js .zk-card-img,
-html.zk-img-js .zk-hero-img { opacity: 0; }
+html.zk-img-js .zk-hero-img,
+html.zk-img-js .zk-book-img { opacity: 0; }
 html.zk-img-js .zk-hero-img { transition: opacity 1s var(--ease); }
+html.zk-img-js .zk-book-img { transition: opacity 0.85s var(--ease); }
 html.zk-img-js .zk-card-img.is-loaded,
-html.zk-img-js .zk-hero-img.is-loaded { opacity: 1; }
+html.zk-img-js .zk-hero-img.is-loaded,
+html.zk-img-js .zk-book-img.is-loaded { opacity: 1; }
 
 /* ============================================================
    REDUCED MOTION
@@ -2055,6 +2058,15 @@ body.zk-lb-open { overflow: hidden; }
 		left: 0; top: 0; bottom: 0; width: 14px;
 		background: linear-gradient(to right, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0.3) 15%, rgba(0,0,0,0.1) 40%, transparent 100%);
 		border-radius: 4px 0 0 4px;
+		z-index: 2;
+	}
+
+	.zk-book-img {
+		position: absolute;
+		top: 0; left: 0; width: 100%; height: 100%;
+		object-fit: cover;
+		border-radius: inherit;
+		z-index: 1;
 	}
 
 	.zk-book-card:hover .zk-book-cover {

@@ -1284,7 +1284,8 @@ function zk_books_shortcode() {
         // --- 3D Cover ---
         $output .= '<div class="zk-book-visual">';
         $output .= '<div class="zk-book-aura" style="background-image: url(' . esc_url( $img_url ) . ');"></div>';
-        $output .= '<div class="zk-book-cover" style="background-image: url(' . esc_url( $img_url ) . ');">';
+        $output .= '<div class="zk-book-cover">';
+        $output .= '<img src="' . esc_url( $img_url ) . '" loading="lazy" decoding="async" alt="Book Cover" class="zk-book-img">';
         $output .= '<div class="zk-book-spine"></div>';
         $output .= '</div></div>';
 
