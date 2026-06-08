@@ -745,7 +745,7 @@ function zk_about_page_shortcode() {
             <div class="zk-tabs-nav">
                 <div class="zk-tab-highlight"></div>
                 <button class="zk-tab-btn active" data-target="tab-identity">Identity</button>
-                <button class="zk-tab-btn" data-target="tab-journey">Monologue</button>
+                <button class="zk-tab-btn" data-target="tab-monologue">Monologue</button>
                 <button class="zk-tab-btn" data-target="tab-gallery">Gallery</button>
             </div>
         </div>
@@ -920,7 +920,7 @@ function zk_about_page_shortcode() {
                 </div>
             </div>
 
-            <div class="zk-tab-panel" id="tab-journey">
+            <div class="zk-tab-panel" id="tab-monologue">
                 <!-- აქ განგებ ვიყენებთ page__content კლასს, რომ შენი დაწერილი ულამაზესი ტიპოგრაფია (style.css-დან) ავტომატურად მოერგოს -->
                 <div class="page__content">
                     <?php
