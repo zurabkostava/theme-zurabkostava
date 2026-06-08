@@ -1930,9 +1930,8 @@ add_action('init', 'zk_clean_head');
 // Disable native WP sitemap
 add_filter('wp_sitemaps_enabled', '__return_false');
 
-// 2. Static File Generators (Bypasses NGINX completely and has 0 database overhead)
-function zk_generate_static_seo_files() {
-    // Generate wp-sitemap.xml
+// 2. Dynamic SEO File Generators (Bypasses File Permissions and NGINX rewrites)
+function zk_generate_sitemap_string() {
     $sitemap_content = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     $sitemap_content .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
     
@@ -1966,11 +1965,10 @@ function zk_generate_static_seo_files() {
         wp_reset_postdata();
     }
     $sitemap_content .= '</urlset>';
-    
-    // Write Sitemap
-    file_put_contents(ABSPATH . 'wp-sitemap.xml', $sitemap_content);
+    return $sitemap_content;
+}
 
-    // Generate ai.txt
+function zk_generate_aitxt_string() {
     $name = "Zurab Kostava";
     $position = get_option('zk_vital_position', 'Creative Lead');
     $about = wp_strip_all_tags(get_option('zk_vital_about', ''));
@@ -2006,36 +2004,25 @@ function zk_generate_static_seo_files() {
     $ai_content .= "\n## Contact\n";
     $ai_content .= "- Email: " . get_option('admin_email') . "\n";
     $ai_content .= "- Website: " . home_url('/') . "\n";
+    return $ai_content;
+}
+
+function zk_serve_dynamic_seo_files() {
+    $uri = $_SERVER['REQUEST_URI'] ?? '';
     
-    // Write ai.txt
-    file_put_contents(ABSPATH . 'ai.txt', $ai_content);
-}
-// Automatically regenerate files when content changes
-add_action('save_post', 'zk_generate_static_seo_files');
-add_action('deleted_post', 'zk_generate_static_seo_files');
-
-// Add a manual trigger button in WP Admin
-function zk_add_seo_generator_button($wp_admin_bar) {
-    if (current_user_can('manage_options')) {
-        $args = array(
-            'id'    => 'zk_regenerate_seo',
-            'title' => 'Regenerate SEO Files (wp-sitemap.xml / ai.txt)',
-            'href'  => admin_url('?zk_regenerate_seo=1'),
-            'meta'  => array('class' => 'zk-seo-button')
-        );
-        $wp_admin_bar->add_node($args);
+    if ( preg_match( '/\/wp-sitemap\.xml$/i', $uri ) ) {
+        header('Content-Type: text/xml; charset=utf-8');
+        echo zk_generate_sitemap_string();
+        exit;
     }
-}
-add_action('admin_bar_menu', 'zk_add_seo_generator_button', 999);
-
-function zk_trigger_seo_generation() {
-    if (isset($_GET['zk_regenerate_seo']) && current_user_can('manage_options')) {
-        zk_generate_static_seo_files();
-        wp_redirect(admin_url());
+    
+    if ( preg_match( '/\/ai\.txt$/i', $uri ) ) {
+        header('Content-Type: text/plain; charset=utf-8');
+        echo zk_generate_aitxt_string();
         exit;
     }
 }
-add_action('admin_init', 'zk_trigger_seo_generation');
+add_action( 'template_redirect', 'zk_serve_dynamic_seo_files', 1 );
 
 // 3. Override robots.txt
 function zk_custom_robots_txt($output, $public) {
