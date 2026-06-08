@@ -733,13 +733,18 @@
                 btn.classList.add('is-active');
                 btn.setAttribute('aria-pressed', 'true');
 
+                var newFilter = btn.getAttribute('data-filter');
                 // 1. ვუშვებთ ფილტრაციის ლოგიკას
-                applyFilter(btn.getAttribute('data-filter'));
+                applyFilter(newFilter);
 
-                // 2. ── ანიმაციური სქროლი ──
-                // თუ მომხმარებელი სქროლილია, ავტომატურად ვბრუნდებით გალერეის საწყის წერტილში
-                // 2. ── ანიმაციური სქროლი ──
-                // 2. ── ანიმაციური სქროლი ზედაპირზე (სადაც ჰედერი ჩანს) ──
+                // 2. URL Hash-ის განახლება
+                if (newFilter === 'all') {
+                    history.replaceState(null, null, window.location.pathname + window.location.search);
+                } else {
+                    history.replaceState(null, null, '#' + newFilter.replace('filter-', ''));
+                }
+
+                // 3. ── ანიმაციური სქროლი ზედაპირზე (სადაც ჰედერი ჩანს) ──
                 if (window.scrollY > 100) {
                     window.scrollTo({
                         top: 0,
@@ -778,7 +783,24 @@
         if (closeBtn) closeBtn.addEventListener('click', close);
         lightbox.addEventListener('click', function (e) { if (e.target === lightbox) close(); });
 
-        buildThumbnails();
+        var hash = window.location.hash.replace('#', '');
+        if (hash === 'camera' || hash === 'mobile') {
+            var targetBtn = wrap.querySelector('.zk-filter-btn[data-filter="filter-' + hash + '"]');
+            if (targetBtn) {
+                buttons.forEach(function (b) {
+                    b.classList.remove('is-active');
+                    b.setAttribute('aria-pressed', 'false');
+                });
+                targetBtn.classList.add('is-active');
+                targetBtn.setAttribute('aria-pressed', 'true');
+                applyFilter('filter-' + hash);
+            } else {
+                buildThumbnails();
+            }
+        } else {
+            buildThumbnails();
+        }
+
         current = { isOpen: isOpen, next: next, prev: prev, close: close };
     }
 
