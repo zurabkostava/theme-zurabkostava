@@ -456,20 +456,23 @@
         var catNames = {};
 
         cards.forEach(function(card) {
-            var catRaw = card.getAttribute('data-category');
-            if (catRaw) {
-                categories.add(catRaw);
-                var displayEl = card.querySelector('.zk-card-category');
-                if (displayEl && !catNames[catRaw]) {
-                    catNames[catRaw] = displayEl.textContent.trim();
-                } else if (!catNames[catRaw]) {
-                    catNames[catRaw] = catRaw.charAt(0).toUpperCase() + catRaw.slice(1);
+            var catEl = card.querySelector('.zk-card-category');
+            if (catEl) {
+                var catText = catEl.textContent.trim();
+                if (catText) {
+                    var catId = catText.toLowerCase();
+                    categories.add(catId);
+                    if (!catNames[catId]) {
+                        catNames[catId] = catText;
+                    }
+                    // Apply it to the card dynamically so applySmartFilters works reliably
+                    card.setAttribute('data-category', catId);
                 }
             }
         });
 
-        // Only create UI if there's more than 1 category (changed to > 0 for debugging)
-        if (categories.size > 0) {
+        // Only create UI if there's more than 1 category
+        if (categories.size > 1) {
             var controls = wrapper.querySelector('.zk-grid-controls');
             if (!controls) return;
 
