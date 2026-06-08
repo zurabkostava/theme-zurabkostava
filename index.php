@@ -185,6 +185,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                         $date = get_the_date( 'M j, Y' );
                         $timestamp = get_the_time( 'U' );
                         $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
+                        ?>
                         <a href="<?php echo esc_url( $link ); ?>" class="zk-grid-card" data-route="<?php echo esc_attr( $path ); ?>" data-time="<?php echo esc_attr( $timestamp ); ?>">
                             <div class="zk-card-image">
                                 <?php if ( $img_url ) : ?>
