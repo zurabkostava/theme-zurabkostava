@@ -2514,4 +2514,38 @@ function zk_dynamic_seo_tags() {
     echo '<script type="application/ld+json">' . wp_json_encode( $schema ) . '</script>' . "\n";
 }
 add_action( 'wp_head', 'zk_dynamic_seo_tags', 1 );
+
+/* ============================================================
+   MOBILE BOTTOM NAVIGATION (App-like UX)
+   ============================================================ */
+function zk_mobile_bottom_nav() {
+    ?>
+    <nav class="zk-bottom-nav" id="zk-bottom-nav">
+        <button id="zk-nav-pull-btn" class="zk-nav-pull-btn" aria-label="Toggle Navigation">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+        </button>
+        <a href="<?php echo home_url('/about/'); ?>" class="zk-bottom-nav-item" data-route="/about/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>About</span>
+        </a>
+        <a href="<?php echo home_url('/books/'); ?>" class="zk-bottom-nav-item" data-route="/books/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            <span>Books</span>
+        </a>
+        <a href="<?php echo home_url('/visual/'); ?>" class="zk-bottom-nav-item" data-route="/visual/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+            <span>Visual</span>
+        </a>
+        <a href="<?php echo home_url('/projects/'); ?>" class="zk-bottom-nav-item" data-route="/projects/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            <span>Projects</span>
+        </a>
+        <button id="zk-mobile-menu-trigger" class="zk-bottom-nav-item" aria-label="Open Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <span>Menu</span>
+        </button>
+    </nav>
+    <?php
+}
+add_action('wp_footer', 'zk_mobile_bottom_nav');
 

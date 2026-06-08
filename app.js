@@ -37,6 +37,26 @@
     toggle.addEventListener('click', function () { setMenu(!body.classList.contains('nav-open')); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setMenu(false); });
 
+    var mobileMenuTrigger = document.getElementById('zk-mobile-menu-trigger');
+    if (mobileMenuTrigger) {
+        mobileMenuTrigger.addEventListener('click', function() { setMenu(!body.classList.contains('nav-open')); });
+    }
+
+    var pullBtn = document.getElementById('zk-nav-pull-btn');
+    var bottomNav = document.getElementById('zk-bottom-nav');
+    if (pullBtn && bottomNav) {
+        pullBtn.addEventListener('click', function() {
+            var isCollapsed = bottomNav.classList.contains('is-collapsed');
+            if (isCollapsed) {
+                bottomNav.classList.remove('is-collapsed');
+                body.classList.remove('nav-collapsed');
+            } else {
+                bottomNav.classList.add('is-collapsed');
+                body.classList.add('nav-collapsed');
+            }
+        });
+    }
+
     dropdowns.forEach(function(dropdown) {
         var trigger = dropdown.children[0];
         if (trigger && trigger.classList.contains('dropdown-trigger')) {
@@ -84,10 +104,40 @@
             el.classList.remove('is-current');
             el.removeAttribute('aria-current');
         });
+        
+        [].slice.call(document.querySelectorAll('.zk-bottom-nav-item')).forEach(function (el) {
+            el.classList.remove('is-active');
+        });
+
         var active = null;
         [].slice.call(nav.querySelectorAll('[data-route]')).forEach(function (el) {
             if (el.getAttribute('data-route') === route) active = el;
         });
+
+        var activeBottom = null;
+        // Check exact match first, or prefix match for sub-pages like /books/some-book/
+        [].slice.call(document.querySelectorAll('.zk-bottom-nav-item[data-route]')).forEach(function (el) {
+            var elRoute = el.getAttribute('data-route');
+            if (elRoute === route) {
+                activeBottom = el;
+            } else if (elRoute !== '/' && route.indexOf(elRoute) === 0) {
+                activeBottom = el; // Partial match for sub-pages
+            }
+        });
+
+        if (activeBottom) activeBottom.classList.add('is-active');
+        
+        var navEl = document.getElementById('zk-bottom-nav');
+        if (navEl) {
+            if (route !== '/') {
+                navEl.classList.add('is-collapsed');
+                body.classList.add('nav-collapsed');
+            } else {
+                navEl.classList.remove('is-collapsed');
+                body.classList.remove('nav-collapsed');
+            }
+        }
+
         if (active) {
             active.classList.add('is-current');
             active.setAttribute('aria-current', 'page');

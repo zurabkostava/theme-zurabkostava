@@ -2326,3 +2326,115 @@ body.zk-lb-open { overflow: hidden; }
 .zk-visual-card:hover .zk-visual-title { transform: translateY(0); }
 .zk-visual-card:hover .zk-visual-desc { transform: translateY(0); opacity: 1; }
 .zk-visual-card:hover .zk-visual-arrow { transform: translate(0, 0) scale(1); opacity: 1; }
+
+/* ============================================================
+   MOBILE BOTTOM NAVIGATION (App-like UX)
+   ============================================================ */
+.zk-bottom-nav {
+    display: none;
+}
+.zk-nav-pull-btn {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .zk-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; width: 100%;
+        height: 70px;
+        background: rgba(10, 10, 12, 0.85);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        backdrop-filter: blur(20px) saturate(180%);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        justify-content: space-around;
+        align-items: center;
+        z-index: 9999;
+        padding-bottom: env(safe-area-inset-bottom);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .zk-bottom-nav.is-collapsed {
+        transform: translateY(100%);
+    }
+
+    .zk-nav-pull-btn {
+        display: flex;
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 64px; height: 20px;
+        background: rgba(10, 10, 12, 0.85);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: none;
+        border-radius: 12px 12px 0 0;
+        color: var(--text-dim);
+        align-items: center;
+        justify-content: center;
+        z-index: -1;
+        cursor: pointer;
+        padding: 0;
+        transition: color 0.3s var(--ease);
+    }
+
+    .zk-nav-pull-btn svg {
+        width: 14px; height: 14px;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Arrow points down when expanded, and normal (up) when collapsed */
+    .zk-bottom-nav:not(.is-collapsed) .zk-nav-pull-btn svg {
+        transform: rotate(180deg);
+    }
+    
+    /* Prevent content from hiding behind the nav */
+    body {
+        padding-bottom: calc(70px + env(safe-area-inset-bottom));
+        transition: padding-bottom 0.4s ease;
+    }
+    
+    body.nav-collapsed {
+        padding-bottom: 0;
+    }
+    
+    .zk-bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        color: var(--text-dim);
+        text-decoration: none !important;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        transition: color 0.3s var(--ease);
+    }
+    
+    .zk-bottom-nav-item svg {
+        width: 22px; height: 22px;
+        stroke-width: 1.5;
+        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    
+    .zk-bottom-nav-item span {
+        font-size: 0.65rem;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+    }
+    
+    .zk-bottom-nav-item.is-active {
+        color: #fff;
+    }
+    
+    .zk-bottom-nav-item.is-active svg {
+        stroke-width: 2.2;
+        transform: translateY(-2px);
+    }
+}
