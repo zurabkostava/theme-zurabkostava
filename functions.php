@@ -2521,10 +2521,6 @@ add_action( 'wp_head', 'zk_dynamic_seo_tags', 1 );
 function zk_mobile_bottom_nav() {
     ?>
     <nav class="zk-bottom-nav" id="zk-bottom-nav">
-        <button id="zk-mobile-menu-trigger" class="zk-bottom-nav-item" aria-label="Open Menu">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            <span>More</span>
-        </button>
         <a href="<?php echo home_url('/music/'); ?>" class="zk-bottom-nav-item" data-route="/music/">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
             <span>Music</span>
@@ -2541,6 +2537,10 @@ function zk_mobile_bottom_nav() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             <span>Blogs</span>
         </a>
+        <button id="zk-mobile-menu-trigger" class="zk-bottom-nav-item" aria-label="Open Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <span>More</span>
+        </button>
     </nav>
     <?php
 }
