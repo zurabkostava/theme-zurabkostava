@@ -1256,7 +1256,7 @@
    ============================================================ */
 
 /* ============================================================
-   CINEMATIC HERO PARALLAX
+   CINEMATIC HERO PARALLAX & STARFIELD
    ============================================================ */
 (function() {
     let hero = null;
@@ -1269,6 +1269,15 @@
     let currentX = 0;
     let currentY = 0;
 
+    // Starfield variables
+    let canvas = null;
+    let ctx = null;
+    let width = 0;
+    let height = 0;
+    const numStars = 800;
+    let stars = [];
+    const baseSpeed = 0.6;
+
     function initHero() {
         hero = document.querySelector('.hero');
         if (!hero) {
@@ -1277,9 +1286,95 @@
         }
         ambient = hero.querySelector('.hero-ambient');
         inner = hero.querySelector('.hero-inner');
+        canvas = document.getElementById('zk-starfield');
         
+        if (canvas) {
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            stars = [];
+            for (let i = 0; i < numStars; i++) {
+                stars.push(newStar(false)); // random z initially
+            }
+            
+            setTimeout(() => {
+                if (canvas) canvas.classList.add('is-active');
+            }, 100);
+        }
+
         document.addEventListener('mousemove', onMouseMove);
         animate();
+    }
+
+    function resizeCanvas() {
+        if (!canvas || !hero) return;
+        width = hero.clientWidth;
+        height = hero.clientHeight;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+    }
+
+    function newStar(resetZ = false) {
+        return {
+            x: (Math.random() - 0.5) * width * 2,
+            y: (Math.random() - 0.5) * height * 2,
+            z: resetZ ? width : Math.random() * width,
+            pz: 0,
+            color: randomStarColor()
+        };
+    }
+
+    function randomStarColor() {
+        const r = Math.random();
+        if (r < 0.15) return 'rgba(200, 220, 255, 0.9)'; // Blueish
+        if (r < 0.3)  return 'rgba(255, 240, 200, 0.9)'; // Yellowish
+        if (r < 0.4)  return 'rgba(255, 180, 200, 0.8)'; // Pinkish
+        return 'rgba(255, 255, 255, 0.8)'; // White
+    }
+
+    function drawStars() {
+        if (!ctx) return;
+        ctx.clearRect(0, 0, width, height);
+        
+        // Shift vanishing point slightly based on parallax for insane 3D depth
+        const cx = width / 2 - currentX * 2;
+        const cy = height / 2 - currentY * 2;
+        
+        // Speed multiplier increases when mouse moves further from center
+        const speedBoost = Math.abs(currentX) * 0.05 + Math.abs(currentY) * 0.05;
+        const speed = baseSpeed + speedBoost;
+        
+        for (let i = 0; i < numStars; i++) {
+            let s = stars[i];
+            s.pz = s.z;
+            s.z -= speed;
+            
+            if (s.z <= 0) {
+                stars[i] = newStar(true);
+                continue;
+            }
+            
+            // 3D Projection
+            let x = (s.x / s.z) * 150 + cx;
+            let y = (s.y / s.z) * 150 + cy;
+            
+            // Previous position for streak (motion blur)
+            let px = (s.x / s.pz) * 150 + cx;
+            let py = (s.y / s.pz) * 150 + cy;
+            
+            // Size scales as it gets closer
+            let r = Math.max(0.1, (1 - s.z / width) * 2.5);
+            
+            ctx.beginPath();
+            ctx.strokeStyle = s.color;
+            ctx.lineWidth = r;
+            ctx.moveTo(px, py);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
     }
 
     function onMouseMove(e) {
@@ -1305,13 +1400,18 @@
             ambient.style.transform = `translate(${currentX}px, ${currentY}px) scale(1.05)`;
         }
 
+        drawStars();
+
         rafId = requestAnimationFrame(animate);
     }
 
     function cleanup() {
         document.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('resize', resizeCanvas);
         cancelAnimationFrame(rafId);
         hero = null;
+        canvas = null;
+        ctx = null;
     }
 
     initHero();

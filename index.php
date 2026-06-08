@@ -11,6 +11,7 @@ ob_start(); ?>
 <div class="hero">
     <!-- Ambient Cinematic Background -->
     <div class="hero-ambient">
+        <canvas id="zk-starfield" class="zk-starfield"></canvas>
         <div class="hero-orb hero-orb-1"></div>
         <div class="hero-orb hero-orb-2"></div>
     </div>
