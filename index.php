@@ -21,7 +21,7 @@ ob_start(); ?>
             <p class="hero-eyebrow"><?php echo esc_html( apply_filters( 'zk_hero_eyebrow', 'Portfolio' ) ); ?></p>
         </div>
         <div class="hero-title-wrap">
-            <h1 class="hero-title"><?php echo esc_html( $zk_site ); ?></h1>
+            <h1 class="hero-title" data-text="<?php echo esc_attr( $zk_site ); ?>"><?php echo esc_html( $zk_site ); ?></h1>
         </div>
         <?php if ( get_bloginfo( 'description' ) ) : ?>
             <div class="hero-sub-wrap">
