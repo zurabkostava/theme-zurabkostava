@@ -2271,41 +2271,7 @@ add_action( 'init', 'zk_make_tags_hierarchical' );
 /* ============================================================
    ZK QUICK EDIT ADVANCED TAG ADDER
    ============================================================ */
-// 1. Output HTML in Quick Edit
-add_action( 'quick_edit_custom_box', 'zk_quick_edit_add_tag_ui', 10, 2 );
-function zk_quick_edit_add_tag_ui( $column_name, $post_type ) {
-    static $zk_tag_ui_added = false;
-    if ( $post_type === 'post' && ! $zk_tag_ui_added && $column_name === 'tags' ) {
-        $zk_tag_ui_added = true;
-        wp_nonce_field( 'zk_add_tag_nonce', 'zk_add_tag_nonce' );
-        ?>
-        <fieldset class="inline-edit-col-center inline-edit-categories" style="width: 100%; border-top: 1px solid #ddd; margin-top: 10px; padding-top: 10px;">
-            <div class="inline-edit-col">
-                <span class="title">Add New Tag</span>
-                <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
-                    <label style="flex: 1; min-width: 120px;">
-                        <span class="title" style="margin-bottom:2px;font-size:11px;">Name <span style="color:red">*</span></span>
-                        <input type="text" class="zk-new-tag-name" value="" autocomplete="off" style="width:100%;">
-                    </label>
-                    <label style="flex: 1; min-width: 120px;">
-                        <span class="title" style="margin-bottom:2px;font-size:11px;">Slug (optional)</span>
-                        <input type="text" class="zk-new-tag-slug" value="" autocomplete="off" style="width:100%;">
-                    </label>
-                    <label style="flex: 2; min-width: 200px;">
-                        <span class="title" style="margin-bottom:2px;font-size:11px;">Description (optional)</span>
-                        <input type="text" class="zk-new-tag-desc" value="" autocomplete="off" style="width:100%;">
-                    </label>
-                    <button type="button" class="button button-secondary zk-add-tag-btn" style="margin-bottom: 1px;">Add</button>
-                    <span class="spinner zk-add-tag-spinner" style="float:none; margin: 0 0 5px 0;"></span>
-                </div>
-                <div class="zk-add-tag-feedback" style="color:red; font-size:11px; margin-top:5px; display:none;"></div>
-            </div>
-        </fieldset>
-        <?php
-    }
-}
-
-// 2. Process AJAX Request
+// 1. Process AJAX Request
 add_action( 'wp_ajax_zk_add_quick_tag', 'zk_ajax_add_quick_tag' );
 function zk_ajax_add_quick_tag() {
     check_ajax_referer( 'zk_add_tag_nonce', 'nonce' );
@@ -2341,7 +2307,7 @@ function zk_ajax_add_quick_tag() {
     ] );
 }
 
-// 3. Inject JS into admin footer
+// 2. Inject JS into admin footer
 add_action( 'admin_print_footer_scripts', 'zk_quick_edit_add_tag_js' );
 function zk_quick_edit_add_tag_js() {
     $screen = get_current_screen();
@@ -2349,6 +2315,52 @@ function zk_quick_edit_add_tag_js() {
     ?>
     <script type="text/javascript">
     jQuery(document).ready(function($) {
+        // Inject the HTML into the hidden Quick Edit template
+        var formHtml = '<fieldset class="inline-edit-col-center zk-custom-tag-adder" style="width: 100%; border-top: 1px solid #ddd; margin-top: 10px; padding-top: 10px;">' +
+            '<div class="inline-edit-col">' +
+                '<span class="title">Add New Tag</span>' +
+                '<div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">' +
+                    '<label style="flex: 1; min-width: 120px;">' +
+                        '<span class="title" style="margin-bottom:2px;font-size:11px;">Name <span style="color:red">*</span></span>' +
+                        '<input type="text" class="zk-new-tag-name" value="" autocomplete="off" style="width:100%;">' +
+                    '</label>' +
+                    '<label style="flex: 1; min-width: 120px;">' +
+                        '<span class="title" style="margin-bottom:2px;font-size:11px;">Slug (optional)</span>' +
+                        '<input type="text" class="zk-new-tag-slug" value="" autocomplete="off" style="width:100%;">' +
+                    '</label>' +
+                    '<label style="flex: 2; min-width: 200px;">' +
+                        '<span class="title" style="margin-bottom:2px;font-size:11px;">Description (optional)</span>' +
+                        '<input type="text" class="zk-new-tag-desc" value="" autocomplete="off" style="width:100%;">' +
+                    '</label>' +
+                    '<button type="button" class="button button-secondary zk-add-tag-btn" style="margin-bottom: 1px;">Add</button>' +
+                    '<span class="spinner zk-add-tag-spinner" style="float:none; margin: 0 0 5px 0;"></span>' +
+                '</div>' +
+                '<div class="zk-add-tag-feedback" style="color:red; font-size:11px; margin-top:5px; display:none;"></div>' +
+            '</div>' +
+        '</fieldset>';
+
+        // Wait for WP to render the inline edit template, then append our form
+        var injectInterval = setInterval(function() {
+            var $tagsList = $('#inline-edit ul.post_tagchecklist');
+            if ($tagsList.length) {
+                var $container = $tagsList.closest('fieldset');
+                if ($container.find('.zk-custom-tag-adder').length === 0) {
+                    $container.append(formHtml);
+                    clearInterval(injectInterval);
+                }
+            } else if ($('#inline-edit').length) {
+                // Fallback if tagchecklist isn't found but template is
+                var $col = $('#inline-edit .inline-edit-col-right');
+                if ($col.length && $col.find('.zk-custom-tag-adder').length === 0) {
+                    $col.append(formHtml);
+                    clearInterval(injectInterval);
+                }
+            }
+        }, 100);
+
+        // Optional: generate nonce dynamically if not present
+        var ajaxNonce = '<?php echo wp_create_nonce("zk_add_tag_nonce"); ?>';
+
         $('#the-list').on('click', '.zk-add-tag-btn', function(e) {
             e.preventDefault();
             var $btn = $(this);
@@ -2362,7 +2374,7 @@ function zk_quick_edit_add_tag_js() {
             var name = $.trim($nameInput.val());
             var slug = $.trim($slugInput.val());
             var desc = $.trim($descInput.val());
-            var nonce = $row.find('#zk_add_tag_nonce').val() || $('#zk_add_tag_nonce').val();
+            var nonce = ajaxNonce;
 
             if ( ! name ) {
                 $feedback.text('Name is required.').show();
