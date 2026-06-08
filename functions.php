@@ -230,11 +230,13 @@ function zk_custom_post_grid( $atts ) {
         $timestamp = get_the_time( 'U' );
 
         $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
-        $bg_style = $img_url ? 'style="background-image: url(' . esc_url( $img_url ) . ');"' : '';
-
         // ქარდს ვუმატებთ data-time ატრიბუტს
         $output .= '<a href="' . esc_url( $link ) . '" class="zk-grid-card" data-route="' . esc_attr( $path ) . '" data-time="' . esc_attr( $timestamp ) . '">';
-        $output .= '<div class="zk-card-image" ' . $bg_style . '></div>';
+        $output .= '<div class="zk-card-image">';
+        if ( $img_url ) {
+            $output .= '<img src="' . esc_url( $img_url ) . '" loading="lazy" decoding="async" alt="' . esc_attr( $title ) . '" class="zk-card-img">';
+        }
+        $output .= '</div>';
         $output .= '<div class="zk-card-content">';
 
         $output .= '<div class="zk-card-meta">';
