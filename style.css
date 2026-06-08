@@ -568,6 +568,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .zk-search-input:focus ~ .zk-search-icon { color: var(--text); opacity: 1; }
 
 .zk-sort-dropdown { position: relative; z-index: 100; }
+@media (max-width: 768px) { .zk-sort-dropdown { display: flex; justify-content: flex-end; } }
 .zk-sort-trigger { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); padding: 9px 12px; border-radius: 8px; transition: color 0.3s var(--ease), background 0.3s var(--ease); }
 .zk-sort-trigger:hover, .zk-sort-dropdown.is-open .zk-sort-trigger { color: var(--text); background: rgba(255, 255, 255, 0.04); }
 .zk-sort-label { color: rgba(255, 255, 255, 0.3); } .zk-sort-current { color: #fff; }
