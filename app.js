@@ -512,6 +512,56 @@
             } else {
                 controls.appendChild(filterWrapper);
             }
+
+            // Mouse drag and vertical wheel scroll functionality
+            var isDown = false;
+            var startX;
+            var scrollLeftInit;
+
+            filterContainer.addEventListener('mousedown', function(e) {
+                isDown = true;
+                filterContainer.style.cursor = 'grabbing';
+                startX = e.pageX - filterContainer.offsetLeft;
+                scrollLeftInit = filterContainer.scrollLeft;
+            });
+            filterContainer.addEventListener('mouseleave', function() {
+                isDown = false;
+                filterContainer.style.cursor = '';
+            });
+            filterContainer.addEventListener('mouseup', function(e) {
+                isDown = false;
+                filterContainer.style.cursor = '';
+                // Prevent accidental click if they actually dragged
+                if (Math.abs(filterContainer.scrollLeft - scrollLeftInit) > 5) {
+                    var pill = e.target.closest('.zk-filter-pill');
+                    if (pill) pill.setAttribute('data-prevent-click', 'true');
+                }
+            });
+            filterContainer.addEventListener('mousemove', function(e) {
+                if (!isDown) return;
+                e.preventDefault();
+                var x = e.pageX - filterContainer.offsetLeft;
+                var walk = (x - startX) * 2;
+                filterContainer.scrollLeft = scrollLeftInit - walk;
+            });
+
+            // Map vertical scroll wheel to horizontal
+            filterContainer.addEventListener('wheel', function(e) {
+                if (e.deltaY !== 0) {
+                    // Only prevent default if we actually have room to scroll horizontally
+                    var maxScroll = filterContainer.scrollWidth - filterContainer.clientWidth;
+                    if (maxScroll > 0) {
+                        // Let users scroll the page vertically if they hit the edge of the horizontal scroll
+                        var isAtLeftEdge = (filterContainer.scrollLeft <= 0 && e.deltaY < 0);
+                        var isAtRightEdge = (filterContainer.scrollLeft >= maxScroll && e.deltaY > 0);
+                        
+                        if (!isAtLeftEdge && !isAtRightEdge) {
+                            e.preventDefault();
+                            filterContainer.scrollLeft += e.deltaY;
+                        }
+                    }
+                }
+            }, { passive: false });
             
             if (hasHashMatch) {
                 setTimeout(function() {
@@ -533,6 +583,12 @@
     document.addEventListener('click', function(e) {
         var filterPill = e.target.closest('.zk-filter-pill');
         if (filterPill) {
+            // Prevent click if we were dragging
+            if (filterPill.hasAttribute('data-prevent-click')) {
+                filterPill.removeAttribute('data-prevent-click');
+                return;
+            }
+
             var wrapper = filterPill.closest('.zk-grid-wrapper');
             wrapper.querySelectorAll('.zk-filter-pill').forEach(function(btn) {
                 btn.classList.remove('is-active');
