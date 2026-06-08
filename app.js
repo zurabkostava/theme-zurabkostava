@@ -468,8 +468,8 @@
             }
         });
 
-        // Only create UI if there's more than 1 category
-        if (categories.size > 1) {
+        // Only create UI if there's more than 1 category (changed to > 0 for debugging)
+        if (categories.size > 0) {
             var controls = wrapper.querySelector('.zk-grid-controls');
             if (!controls) return;
 
