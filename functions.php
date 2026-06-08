@@ -2520,10 +2520,10 @@ add_action( 'wp_head', 'zk_dynamic_seo_tags', 1 );
    ============================================================ */
 function zk_mobile_bottom_nav() {
     ?>
+    <button id="zk-nav-pull-btn" class="zk-nav-pull-btn" aria-label="Toggle Navigation">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+    </button>
     <nav class="zk-bottom-nav" id="zk-bottom-nav">
-        <button id="zk-nav-pull-btn" class="zk-nav-pull-btn" aria-label="Toggle Navigation">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
-        </button>
         <a href="<?php echo home_url('/about/'); ?>" class="zk-bottom-nav-item" data-route="/about/">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             <span>About</span>

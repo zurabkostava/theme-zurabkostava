@@ -49,9 +49,11 @@
             var isCollapsed = bottomNav.classList.contains('is-collapsed');
             if (isCollapsed) {
                 bottomNav.classList.remove('is-collapsed');
+                pullBtn.classList.remove('is-visible');
                 body.classList.remove('nav-collapsed');
             } else {
                 bottomNav.classList.add('is-collapsed');
+                pullBtn.classList.add('is-visible');
                 body.classList.add('nav-collapsed');
             }
         });
@@ -128,12 +130,15 @@
         if (activeBottom) activeBottom.classList.add('is-active');
         
         var navEl = document.getElementById('zk-bottom-nav');
-        if (navEl) {
+        var pullEl = document.getElementById('zk-nav-pull-btn');
+        if (navEl && pullEl) {
             if (route !== '/') {
                 navEl.classList.add('is-collapsed');
+                pullEl.classList.add('is-visible');
                 body.classList.add('nav-collapsed');
             } else {
                 navEl.classList.remove('is-collapsed');
+                pullEl.classList.remove('is-visible');
                 body.classList.remove('nav-collapsed');
             }
         }
