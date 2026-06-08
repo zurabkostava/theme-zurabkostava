@@ -186,7 +186,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                         $timestamp = get_the_time( 'U' );
                         $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
                         ?>
-                        <a href="<?php echo esc_url( $link ); ?>" class="zk-grid-card" data-route="<?php echo esc_attr( $path ); ?>" data-time="<?php echo esc_attr( $timestamp ); ?>">
+                        <a href="<?php echo esc_url( $link ); ?>" class="zk-grid-card" data-route="<?php echo esc_attr( $path ); ?>" data-time="<?php echo esc_attr( $timestamp ); ?>" data-category="<?php echo esc_attr( strtolower( wp_strip_all_tags( $cat_name ) ) ); ?>">
                             <div class="zk-card-image">
                                 <?php if ( $img_url ) : ?>
                                     <img src="<?php echo esc_url( $img_url ); ?>" loading="lazy" decoding="async" alt="<?php echo esc_attr( $title ); ?>" class="zk-card-img">

@@ -413,21 +413,30 @@
         }
     });
 
-    // 3. მყისიერი ძებნისა და ფილტრაციის ლოგიკა (Live Search)
-    document.addEventListener('input', function(e) {
-        var input = e.target.closest('.zk-search-input');
-        if (!input) return;
+    // 3. მყისიერი ძებნისა და ფილტრაციის ლოგიკა (Smart Filtering + Live Search)
+    function applySmartFilters(wrapper) {
+        var query = '';
+        var searchInput = wrapper.querySelector('.zk-search-input');
+        if (searchInput) query = searchInput.value.toLowerCase().trim();
 
-        var wrapper = input.closest('.zk-grid-wrapper');
-        var query = input.value.toLowerCase().trim();
+        var activeFilter = 'all';
+        var activePill = wrapper.querySelector('.zk-filter-pill.is-active');
+        if (activePill) activeFilter = activePill.getAttribute('data-filter');
+
         var cards = wrapper.querySelectorAll('.zk-grid-card');
 
         cards.forEach(function(card) {
-            // ეძებს როგორც სათაურში, ისე კატეგორიის სახელში
-            var title = (card.querySelector('.zk-card-title').textContent || '').toLowerCase();
-            var cat = (card.querySelector('.zk-card-category').textContent || '').toLowerCase();
+            var titleEl = card.querySelector('.zk-card-title');
+            var catEl = card.querySelector('.zk-card-category');
+            
+            var title = titleEl ? titleEl.textContent.toLowerCase() : '';
+            var catText = catEl ? catEl.textContent.toLowerCase() : '';
+            var cardCat = card.getAttribute('data-category') || '';
 
-            if (title.indexOf(query) !== -1 || cat.indexOf(query) !== -1) {
+            var matchesSearch = (title.indexOf(query) !== -1 || catText.indexOf(query) !== -1);
+            var matchesFilter = (activeFilter === 'all' || cardCat === activeFilter);
+
+            if (matchesSearch && matchesFilter) {
                 card.style.display = '';
                 card.style.opacity = '1';
             } else {
@@ -435,17 +444,91 @@
                 card.style.opacity = '0';
             }
         });
+    }
+
+    function initSmartFilters(wrapper) {
+        if (wrapper.querySelector('.zk-category-filters')) return; // Already initialized
+
+        var cards = wrapper.querySelectorAll('.zk-grid-card');
+        if (!cards.length) return;
+
+        var categories = new Set();
+        var catNames = {};
+
+        cards.forEach(function(card) {
+            var catRaw = card.getAttribute('data-category');
+            if (catRaw) {
+                categories.add(catRaw);
+                var displayEl = card.querySelector('.zk-card-category');
+                if (displayEl && !catNames[catRaw]) {
+                    catNames[catRaw] = displayEl.textContent.trim();
+                } else if (!catNames[catRaw]) {
+                    catNames[catRaw] = catRaw.charAt(0).toUpperCase() + catRaw.slice(1);
+                }
+            }
+        });
+
+        // Only create UI if there's more than 1 category
+        if (categories.size > 1) {
+            var controls = wrapper.querySelector('.zk-grid-controls');
+            if (!controls) return;
+
+            var filterContainer = document.createElement('div');
+            filterContainer.className = 'zk-category-filters';
+
+            var allBtn = document.createElement('button');
+            allBtn.className = 'zk-filter-pill is-active';
+            allBtn.setAttribute('data-filter', 'all');
+            allBtn.textContent = 'All';
+            filterContainer.appendChild(allBtn);
+
+            categories.forEach(function(cat) {
+                var btn = document.createElement('button');
+                btn.className = 'zk-filter-pill';
+                btn.setAttribute('data-filter', cat);
+                btn.textContent = catNames[cat] || cat;
+                filterContainer.appendChild(btn);
+            });
+
+            // Insert after search box
+            var searchBox = wrapper.querySelector('.zk-search-box');
+            if (searchBox && searchBox.nextSibling) {
+                controls.insertBefore(filterContainer, searchBox.nextSibling);
+            } else {
+                controls.appendChild(filterContainer);
+            }
+        }
+    }
+
+    document.addEventListener('input', function(e) {
+        var input = e.target.closest('.zk-search-input');
+        if (!input) return;
+        var wrapper = input.closest('.zk-grid-wrapper');
+        applySmartFilters(wrapper);
+    });
+
+    document.addEventListener('click', function(e) {
+        var filterPill = e.target.closest('.zk-filter-pill');
+        if (filterPill) {
+            var wrapper = filterPill.closest('.zk-grid-wrapper');
+            wrapper.querySelectorAll('.zk-filter-pill').forEach(function(btn) {
+                btn.classList.remove('is-active');
+            });
+            filterPill.classList.add('is-active');
+            applySmartFilters(wrapper);
+        }
     });
 
     // 4. მეხსიერების შემოწმება გვერდის ჩატვირთვისას და SPA გადასვლებისას
     function checkMemory() {
         try {
             var savedOrder = localStorage.getItem('zkGridSort');
-            if (savedOrder) {
-                document.querySelectorAll('.zk-grid-wrapper').forEach(function(wrapper) {
+            document.querySelectorAll('.zk-grid-wrapper').forEach(function(wrapper) {
+                initSmartFilters(wrapper);
+                if (savedOrder) {
                     applySort(wrapper, savedOrder, false);
-                });
-            }
+                }
+            });
         } catch(e) {}
     }
 
