@@ -475,30 +475,50 @@
         if (categories.size > 1) {
             var controls = wrapper.querySelector('.zk-grid-controls');
             if (!controls) return;
+            
+            // Layout fixes for controls wrapper
+            controls.style.flexWrap = window.innerWidth <= 768 ? 'wrap' : 'nowrap';
+            window.addEventListener('resize', function() { controls.style.flexWrap = window.innerWidth <= 768 ? 'wrap' : 'nowrap'; });
+
+            var hash = window.location.hash.replace('#', '').toLowerCase();
+            var hasHashMatch = categories.has(hash);
+
+            var filterWrapper = document.createElement('div');
+            filterWrapper.className = 'zk-category-filters-wrapper';
 
             var filterContainer = document.createElement('div');
             filterContainer.className = 'zk-category-filters';
 
             var allBtn = document.createElement('button');
-            allBtn.className = 'zk-filter-pill is-active';
+            allBtn.className = hasHashMatch ? 'zk-filter-pill' : 'zk-filter-pill is-active';
             allBtn.setAttribute('data-filter', 'all');
             allBtn.textContent = 'All';
             filterContainer.appendChild(allBtn);
 
             categories.forEach(function(cat) {
                 var btn = document.createElement('button');
-                btn.className = 'zk-filter-pill';
+                btn.className = (hasHashMatch && hash === cat) ? 'zk-filter-pill is-active' : 'zk-filter-pill';
                 btn.setAttribute('data-filter', cat);
                 btn.textContent = catNames[cat] || cat;
                 filterContainer.appendChild(btn);
             });
 
+            filterWrapper.appendChild(filterContainer);
+
             // Insert after search box
             var searchBox = wrapper.querySelector('.zk-search-box');
             if (searchBox && searchBox.nextSibling) {
-                controls.insertBefore(filterContainer, searchBox.nextSibling);
+                controls.insertBefore(filterWrapper, searchBox.nextSibling);
             } else {
-                controls.appendChild(filterContainer);
+                controls.appendChild(filterWrapper);
+            }
+            
+            if (hasHashMatch) {
+                setTimeout(function() {
+                    var active = filterContainer.querySelector('.is-active');
+                    if (active) active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    applySmartFilters(wrapper);
+                }, 100);
             }
         }
     }
@@ -518,6 +538,23 @@
                 btn.classList.remove('is-active');
             });
             filterPill.classList.add('is-active');
+            
+            var filterId = filterPill.getAttribute('data-filter');
+            if (filterId === 'all') {
+                if (window.history.replaceState) {
+                    window.history.replaceState(null, null, window.location.pathname + window.location.search);
+                } else {
+                    window.location.hash = '';
+                }
+            } else {
+                if (window.history.replaceState) {
+                    window.history.replaceState(null, null, '#' + filterId);
+                } else {
+                    window.location.hash = filterId;
+                }
+            }
+            
+            filterPill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             applySmartFilters(wrapper);
         }
     });
