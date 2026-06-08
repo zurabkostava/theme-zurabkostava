@@ -2361,39 +2361,6 @@ body.zk-lb-open { overflow: hidden; }
         opacity: 0;
         pointer-events: none;
     }
-
-    .zk-nav-pull-btn {
-        display: flex;
-        position: fixed;
-        bottom: 24px;
-        left: 50%;
-        transform: translateX(-50%) translateY(100px);
-        width: 56px; height: 24px;
-        background: rgba(10, 10, 12, 0.75);
-        -webkit-backdrop-filter: blur(24px) saturate(180%);
-        backdrop-filter: blur(24px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
-        color: var(--text-dim);
-        align-items: center;
-        justify-content: center;
-        z-index: 9998;
-        cursor: pointer;
-        padding: 0;
-        opacity: 0;
-        visibility: hidden;
-        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease, visibility 0.4s;
-    }
-
-    .zk-nav-pull-btn svg {
-        width: 14px; height: 14px;
-    }
-
-    .zk-nav-pull-btn.is-visible {
-        transform: translateX(-50%) translateY(0);
-        opacity: 1;
-        visibility: visible;
-    }
     
     /* Prevent content from hiding behind the nav */
     body {

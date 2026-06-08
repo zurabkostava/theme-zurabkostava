@@ -42,22 +42,7 @@
         mobileMenuTrigger.addEventListener('click', function() { setMenu(!body.classList.contains('nav-open')); });
     }
 
-    var pullBtn = document.getElementById('zk-nav-pull-btn');
     var bottomNav = document.getElementById('zk-bottom-nav');
-    if (pullBtn && bottomNav) {
-        pullBtn.addEventListener('click', function() {
-            var isCollapsed = bottomNav.classList.contains('is-collapsed');
-            if (isCollapsed) {
-                bottomNav.classList.remove('is-collapsed');
-                pullBtn.classList.remove('is-visible');
-                body.classList.remove('nav-collapsed');
-            } else {
-                bottomNav.classList.add('is-collapsed');
-                pullBtn.classList.add('is-visible');
-                body.classList.add('nav-collapsed');
-            }
-        });
-    }
 
     dropdowns.forEach(function(dropdown) {
         var trigger = dropdown.children[0];
@@ -130,15 +115,12 @@
         if (activeBottom) activeBottom.classList.add('is-active');
         
         var navEl = document.getElementById('zk-bottom-nav');
-        var pullEl = document.getElementById('zk-nav-pull-btn');
-        if (navEl && pullEl) {
+        if (navEl) {
             if (route !== '/') {
                 navEl.classList.add('is-collapsed');
-                pullEl.classList.add('is-visible');
                 body.classList.add('nav-collapsed');
             } else {
                 navEl.classList.remove('is-collapsed');
-                pullEl.classList.remove('is-visible');
                 body.classList.remove('nav-collapsed');
             }
         }
