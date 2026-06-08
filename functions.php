@@ -2316,43 +2316,33 @@ function zk_quick_edit_add_tag_js() {
     <script type="text/javascript">
     jQuery(document).ready(function($) {
         // Inject the HTML into the hidden Quick Edit template
-        var formHtml = '<fieldset class="inline-edit-col-center zk-custom-tag-adder" style="width: 100%; border-top: 1px solid #ddd; margin-top: 10px; padding-top: 10px;">' +
-            '<div class="inline-edit-col">' +
-                '<span class="title">Add New Tag</span>' +
-                '<div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">' +
-                    '<label style="flex: 1; min-width: 120px;">' +
-                        '<span class="title" style="margin-bottom:2px;font-size:11px;">Name <span style="color:red">*</span></span>' +
-                        '<input type="text" class="zk-new-tag-name" value="" autocomplete="off" style="width:100%;">' +
-                    '</label>' +
-                    '<label style="flex: 1; min-width: 120px;">' +
-                        '<span class="title" style="margin-bottom:2px;font-size:11px;">Slug (optional)</span>' +
-                        '<input type="text" class="zk-new-tag-slug" value="" autocomplete="off" style="width:100%;">' +
-                    '</label>' +
-                    '<label style="flex: 2; min-width: 200px;">' +
-                        '<span class="title" style="margin-bottom:2px;font-size:11px;">Description (optional)</span>' +
-                        '<input type="text" class="zk-new-tag-desc" value="" autocomplete="off" style="width:100%;">' +
-                    '</label>' +
-                    '<button type="button" class="button button-secondary zk-add-tag-btn" style="margin-bottom: 1px;">Add</button>' +
-                    '<span class="spinner zk-add-tag-spinner" style="float:none; margin: 0 0 5px 0;"></span>' +
-                '</div>' +
-                '<div class="zk-add-tag-feedback" style="color:red; font-size:11px; margin-top:5px; display:none;"></div>' +
+        var formHtml = '<div class="zk-custom-tag-adder" style="width: 100%; border-top: 1px solid #444; margin-top: 15px; padding-top: 15px; clear: both;">' +
+            '<span class="title" style="font-weight:600; margin-bottom:8px; display:block;">Add New Tag</span>' +
+            '<div style="display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap;">' +
+                '<label style="flex: 1; min-width: 100px; margin:0;">' +
+                    '<span class="title" style="margin-bottom:4px;font-size:11px;line-height:1;">Name <span style="color:#d63638">*</span></span>' +
+                    '<input type="text" class="zk-new-tag-name" value="" autocomplete="off" style="width:100%; padding: 0 8px; line-height: 2;">' +
+                '</label>' +
+                '<label style="flex: 1; min-width: 100px; margin:0;">' +
+                    '<span class="title" style="margin-bottom:4px;font-size:11px;line-height:1;">Slug (opt)</span>' +
+                    '<input type="text" class="zk-new-tag-slug" value="" autocomplete="off" style="width:100%; padding: 0 8px; line-height: 2;">' +
+                '</label>' +
+                '<label style="flex: 1.5; min-width: 150px; margin:0;">' +
+                    '<span class="title" style="margin-bottom:4px;font-size:11px;line-height:1;">Description (opt)</span>' +
+                    '<input type="text" class="zk-new-tag-desc" value="" autocomplete="off" style="width:100%; padding: 0 8px; line-height: 2;">' +
+                '</label>' +
+                '<button type="button" class="button button-secondary zk-add-tag-btn" style="margin-bottom: 0;">Add</button>' +
+                '<span class="spinner zk-add-tag-spinner" style="float:none; margin: 0 0 5px 0;"></span>' +
             '</div>' +
-        '</fieldset>';
+            '<div class="zk-add-tag-feedback" style="color:#d63638; font-size:11px; margin-top:5px; display:none;"></div>' +
+        '</div>';
 
         // Wait for WP to render the inline edit template, then append our form
         var injectInterval = setInterval(function() {
-            var $tagsList = $('#inline-edit ul.post_tagchecklist');
-            if ($tagsList.length) {
-                var $container = $tagsList.closest('fieldset');
-                if ($container.find('.zk-custom-tag-adder').length === 0) {
-                    $container.append(formHtml);
-                    clearInterval(injectInterval);
-                }
-            } else if ($('#inline-edit').length) {
-                // Fallback if tagchecklist isn't found but template is
-                var $col = $('#inline-edit .inline-edit-col-right');
-                if ($col.length && $col.find('.zk-custom-tag-adder').length === 0) {
-                    $col.append(formHtml);
+            var $centerCol = $('#inline-edit .inline-edit-col-center');
+            if ($centerCol.length) {
+                if ($centerCol.find('.zk-custom-tag-adder').length === 0) {
+                    $centerCol.append(formHtml);
                     clearInterval(injectInterval);
                 }
             }
