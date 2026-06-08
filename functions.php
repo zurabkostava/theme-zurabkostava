@@ -120,19 +120,28 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
         $output .= '<li' . $class_names . '>';
 
         $url = ! empty( $item->url ) ? $item->url : '';
+        // ვამოწმებთ, არის თუ არა ლინკი გარე საიტის (არ შეიცავს შენი საიტის მთავარ მისამართს)
+        $is_external = ( strpos( $url, home_url() ) === false && ( strpos( $url, 'http' ) === 0 || strpos( $url, '//' ) === 0 ) );
+
         $parsed = wp_parse_url( $url );
         $path = isset( $parsed['path'] ) ? rtrim( $parsed['path'], '/' ) : '/';
         if ( empty( $path ) ) $path = '/';
 
         $link_class = ( $depth === 0 ) ? 'nav-link' : 'dropdown-link';
+        if ( $is_external ) {
+            $link_class .= ' no-spa';
+        }
+
         $is_current = in_array( 'current-menu-item', $classes ) || in_array( 'current-page-item', $classes );
         if ( $is_current ) $link_class .= ' is-current';
+
+        $route_attr = $is_external ? '' : ' data-route="' . esc_attr( $path ) . '"';
 
         // ლინკი ჩაშლისთვის (გახდა კლიკებადი)
         if ( $has_children ) {
             $link_class .= ' dropdown-trigger';
             $aria = $is_current ? ' aria-current="page"' : '';
-            $output .= '<a class="' . esc_attr( $link_class ) . '" data-route="' . esc_attr( $path ) . '" href="' . esc_url( $url ) . '" aria-haspopup="true" aria-expanded="false"' . $aria . '>';
+            $output .= '<a class="' . esc_attr( $link_class ) . '"' . $route_attr . ' href="' . esc_url( $url ) . '" aria-haspopup="true" aria-expanded="false"' . $aria . '>';
             $output .= esc_html( $item->title );
 
             // მეორად ჩაშლას ოდნავ სხვა ისარი სჭირდება (მარჯვნივ მიმართული)
@@ -143,14 +152,11 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
             // ჩვეულებრივი ლინკი
             $aria = $is_current ? ' aria-current="page"' : '';
 
-            // ვამოწმებთ, არის თუ არა ლინკი გარე საიტის (არ შეიცავს შენი საიტის მთავარ მისამართს)
-            $is_external = ( strpos( $url, home_url() ) === false && ( strpos( $url, 'http' ) === 0 || strpos( $url, '//' ) === 0 ) );
-            
             // ვითვალისწინებთ WordPress-ის "Open in new tab" პარამეტრს
             $target_attr = ! empty( $item->target ) ? $item->target : ( $is_external ? '_blank' : '' );
             $target_html = ! empty( $target_attr ) ? ' target="' . esc_attr( $target_attr ) . '" rel="noopener noreferrer"' : '';
 
-            $output .= '<a class="' . esc_attr( $link_class ) . '" data-route="' . esc_attr( $path ) . '" href="' . esc_url( $url ) . '"' . $aria . $target_html . '>';
+            $output .= '<a class="' . esc_attr( $link_class ) . '"' . $route_attr . ' href="' . esc_url( $url ) . '"' . $aria . $target_html . '>';
             $output .= esc_html( $item->title );
 
             // თუ გარე ლინკია ან ახალ ტაბში იხსნება, ვამატებთ მინიმალისტურ ისრის იკონს
