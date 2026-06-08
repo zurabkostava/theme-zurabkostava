@@ -1771,6 +1771,10 @@ function zk_render_json_ld_schema() {
             'mainEntityOfPage' => [
                 '@type' => 'WebPage',
                 '@id' => get_permalink()
+            ],
+            'speakable' => [
+                '@type' => 'SpeakableSpecification',
+                'cssSelector' => ['h1', 'h2', 'p']
             ]
         ];
 
@@ -2203,4 +2207,51 @@ function zk_inject_faq_schema() {
     }
 }
 add_action( 'wp_head', 'zk_inject_faq_schema', 3 );
+
+/* ============================================================
+   ZK CUSTOM SEO ENGINE (Stage 7 - Ultimate Technical & AEO)
+   ============================================================ */
+
+// 1. Hreflang Tags (Preparation for multi-language)
+function zk_render_hreflang_tags() {
+    if ( is_admin() || is_feed() || is_robots() ) return;
+    $url = is_singular() ? get_permalink() : home_url( $_SERVER['REQUEST_URI'] );
+    echo "\n<!-- ZK Hreflang Engine -->\n";
+    echo '<link rel="alternate" hreflang="en-US" href="' . esc_url( $url ) . '" />' . "\n";
+    echo '<link rel="alternate" hreflang="x-default" href="' . esc_url( $url ) . '" />' . "\n";
+}
+add_action( 'wp_head', 'zk_render_hreflang_tags', 1 );
+
+// 2. Automated Internal Linking Engine (SEO Powerhouse)
+function zk_auto_internal_linker( $content ) {
+    if ( is_admin() || ! is_singular( 'post' ) || empty( $content ) ) {
+        return $content;
+    }
+
+    // Get all books to auto-link
+    $books = get_posts([
+        'post_type' => 'zk_book',
+        'numberposts' => -1,
+        'post_status' => 'publish'
+    ]);
+
+    if ( empty( $books ) ) return $content;
+
+    foreach ( $books as $book ) {
+        $title = esc_html( $book->post_title );
+        $url = get_permalink( $book->ID );
+        
+        // Regex explanation:
+        // \b : word boundary
+        // (?![^<]*>) : negative lookahead ensuring we are not inside an HTML tag
+        // Limits replacement to 1 per book title
+        $pattern = '/\b(' . preg_quote( $title, '/' ) . ')\b(?![^<]*>)/i';
+        $replacement = '<a href="' . esc_url( $url ) . '" class="zk-auto-link" title="Read more about ' . esc_attr( $title ) . '">$1</a>';
+        
+        $content = preg_replace( $pattern, $replacement, $content, 1 ); 
+    }
+
+    return $content;
+}
+add_filter( 'the_content', 'zk_auto_internal_linker', 20 );
 
