@@ -446,9 +446,19 @@
         function watchImg(img) {
             if (img.dataset.zkFade) return;
             img.dataset.zkFade = '1';
-            if (img.complete && img.naturalWidth > 0) { reveal(img); return; }
+            
+            function triggerReveal() {
+                // Double rAF ensures the browser paints the opacity:0 state before adding .is-loaded
+                requestAnimationFrame(function() {
+                    requestAnimationFrame(function() {
+                        reveal(img);
+                    });
+                });
+            }
+
+            if (img.complete && img.naturalWidth > 0) { triggerReveal(); return; }
             function done() {
-                reveal(img);
+                triggerReveal();
                 img.removeEventListener('load', done);
                 img.removeEventListener('error', done);
             }
