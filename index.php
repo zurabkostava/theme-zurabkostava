@@ -39,8 +39,10 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
     // ვამოწმებთ, აქვს თუ არა პოსტს სურათი (Featured Image)
     $has_image = has_post_thumbnail();
     if ( $has_image ) :
+        $hero_img = esc_url( get_the_post_thumbnail_url( get_the_ID(), 'full' ) );
         ?>
-        <div class="zk-post-hero" style="background-image: url('<?php echo esc_url( get_the_post_thumbnail_url( get_the_ID(), 'full' ) ); ?>');">
+        <div class="zk-post-hero">
+            <img src="<?php echo $hero_img; ?>" fetchpriority="high" loading="eager" decoding="sync" alt="<?php echo esc_attr( get_the_title() ); ?>" class="zk-hero-img">
             <div class="zk-post-hero-gradient"></div>
         </div>
     <?php endif; ?>
@@ -183,10 +185,12 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                         $date = get_the_date( 'M j, Y' );
                         $timestamp = get_the_time( 'U' );
                         $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
-                        $bg_style = $img_url ? 'style="background-image: url(' . esc_url( $img_url ) . ');"' : '';
-                        ?>
                         <a href="<?php echo esc_url( $link ); ?>" class="zk-grid-card" data-route="<?php echo esc_attr( $path ); ?>" data-time="<?php echo esc_attr( $timestamp ); ?>">
-                            <div class="zk-card-image" <?php echo $bg_style; // phpcs:ignore ?>></div>
+                            <div class="zk-card-image">
+                                <?php if ( $img_url ) : ?>
+                                    <img src="<?php echo esc_url( $img_url ); ?>" loading="lazy" decoding="async" alt="<?php echo esc_attr( $title ); ?>" class="zk-card-img">
+                                <?php endif; ?>
+                            </div>
                             <div class="zk-card-content">
                                 <div class="zk-card-meta">
                                     <span class="zk-card-category"><?php echo $cat_name; ?></span>

@@ -456,25 +456,12 @@
             img.addEventListener('error', done); // a broken image must not stay hidden
         }
 
-        /* CSS background-image holder: preload the URL, then reveal. */
-        function watchBg(el) {
-            if (el.dataset.zkFade) return;
-            el.dataset.zkFade = '1';
-            var bg = el.style.backgroundImage || getComputedStyle(el).backgroundImage;
-            var m  = bg && bg.match(/url\(\s*["']?(.*?)["']?\s*\)/);
-            if (!m || !m[1]) { reveal(el); return; } // nothing to wait for
-            var pre = new Image();
-            pre.onload = pre.onerror = function () { reveal(el); };
-            pre.src = m[1];
-            if (pre.complete && pre.naturalWidth > 0) reveal(el); // already cached
-        }
-
         function scan(scope) {
             var root = scope || document;
             // The lightbox image reveals itself (preload-gated focus-pull), so it
             // must NOT get .is-loaded here — that rule would override its .is-ready state.
-            root.querySelectorAll('.page__content img:not(.zk-lightbox-img)').forEach(watchImg);
-            root.querySelectorAll('.zk-card-image, .zk-post-hero').forEach(watchBg);
+            // Note: .zk-card-img and .zk-hero-img are now native lazy-loaded <img> tags.
+            root.querySelectorAll('.page__content img:not(.zk-lightbox-img), .zk-card-img, .zk-hero-img').forEach(watchImg);
         }
 
         scan(document);

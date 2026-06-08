@@ -537,9 +537,10 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 
 .zk-grid-card { position: relative; display: flex; flex-direction: column; border-radius: 16px; overflow: hidden; background: var(--glass-bg); border: 1px solid var(--hairline); text-decoration: none !important; aspect-ratio: 4 / 5; }
 .zk-grid-card:active { transform: scale(0.97) translateZ(0); border-color: rgba(255, 255, 255, 0.25); transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.1s ease; }
-.zk-card-image { flex: 1; background-size: cover; background-position: center; background-color: rgba(255, 255, 255, 0.03); transform: scale(1) translateZ(0); backface-visibility: hidden; will-change: transform; transition: transform 1.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.85s var(--ease); }
-.zk-grid-card:hover .zk-card-image { transform: scale(1.05) translateZ(0); }
-.zk-card-content { position: absolute; bottom: 0; left: 0; width: 100%; padding: 80px 24px 26px; background: linear-gradient(to top, rgba(10, 10, 12, 0.98) 0%, rgba(10, 10, 12, 0.85) 30%, rgba(10, 10, 12, 0.5) 60%, rgba(10, 10, 12, 0.15) 85%, transparent 100%); z-index: 2; }
+.zk-card-image { flex: 1; position: relative; overflow: hidden; background-color: rgba(255, 255, 255, 0.03); }
+.zk-card-img { width: 100%; height: 100%; object-fit: cover; transform: scale(1) translateZ(0); backface-visibility: hidden; will-change: transform; transition: transform 1.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.85s var(--ease); }
+.zk-grid-card:hover .zk-card-img { transform: scale(1.05) translateZ(0); }
+.zk-card-content { position: absolute; bottom: 0; left: 0; width: 100%; padding: 80px 24px 26px; background: linear-gradient(to top, rgba(10, 10, 12, 0.98) 0%, rgba(10, 10, 12, 0.85) 30%, rgba(10, 10, 12, 0.5) 60%, rgba(10, 10, 12, 0.15) 85%, transparent 100%); z-index: 2; pointer-events: none; }
 .zk-card-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; opacity: 0; transform: translateY(6px) translateZ(0); will-change: transform, opacity; transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease; }
 .zk-card-category { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255, 255, 255, 0.85); text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6); }
 .zk-card-meta-separator { width: 3px; height: 3px; border-radius: 50%; background: rgba(255, 255, 255, 0.4); }
@@ -552,7 +553,8 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 /* ============================================================
    SINGLE POST DETAILS (Hero, Breadcrumbs, Tags, Nav)
    ============================================================ */
-.zk-post-hero { position: absolute; top: 0; left: 0; width: 100%; height: 75vh; background-size: cover; background-position: center; z-index: 0; pointer-events: none; }
+.zk-post-hero { position: absolute; top: 0; left: 0; width: 100%; height: 75vh; z-index: 0; pointer-events: none; background-color: var(--bg); overflow: hidden; }
+.zk-hero-img { width: 100%; height: 100%; object-fit: cover; }
 .zk-post-hero-gradient { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(10, 10, 12, 0) 0%, rgba(10, 10, 12, 0.1) 30%, rgba(10, 10, 12, 0.8) 75%, rgba(10, 10, 12, 1) 100%); }
 .page__inner.has-hero { position: relative; padding-top: calc(var(--header-h) + 40vh); }
 
@@ -645,13 +647,13 @@ html.zk-img-js .page__content img.is-loaded { opacity: 1; filter: blur(0); }
 #zkLightboxThumbs .zk-lightbox-thumb-item img { opacity: 1; filter: none; }
 
 /* CSS background-image holders (grid cards & post hero) — soft fade.
-   .zk-card-image already owns a transform transition; its opacity
+   .zk-card-img already owns a transform transition; its opacity
    channel was appended there so the hover-zoom keeps working. */
-html.zk-img-js .zk-card-image,
-html.zk-img-js .zk-post-hero { opacity: 0; }
-html.zk-img-js .zk-post-hero { transition: opacity 1s var(--ease); }
-html.zk-img-js .zk-card-image.is-loaded,
-html.zk-img-js .zk-post-hero.is-loaded { opacity: 1; }
+html.zk-img-js .zk-card-img,
+html.zk-img-js .zk-hero-img { opacity: 0; }
+html.zk-img-js .zk-hero-img { transition: opacity 1s var(--ease); }
+html.zk-img-js .zk-card-img.is-loaded,
+html.zk-img-js .zk-hero-img.is-loaded { opacity: 1; }
 
 /* ============================================================
    REDUCED MOTION
