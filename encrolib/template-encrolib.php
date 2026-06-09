@@ -42,85 +42,167 @@ Template Name: App - Encrolib
             border-color: rgba(255, 255, 255, 0.2);
         }
 
-        /* --- 💎 GLASS UI / MODERN DARK MODE (v11.0) --- */
+        /* --- 💎 ZK PREMIUM UI --- */
         :root {
-            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             --font-mono: 'SF Mono', Consolas, "Courier New", monospace;
+            --bg: #0a0a0c;
+            --glass-bg: rgba(16, 16, 20, 0.72);
+            --hairline: rgba(255, 255, 255, 0.09);
+            --hairline-strong: rgba(255, 255, 255, 0.14);
+            --text: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.62);
+            --text-dim: rgba(255, 255, 255, 0.40);
             --accent-primary: #6200EE;
             --accent-secondary: #007aff;
-            --accent-green: #11998e;
-            --accent-orange: #ff9800;
         }
 
         body {
             font-family: var(--font-main);
-            background: #0f0c29;
-            background: linear-gradient(to right, #24243e, #302b63, #0f0c29);
-            color: #f0f0f0;
+            background: var(--bg);
+            color: var(--text);
             display: flex;
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
             margin: 0;
-            padding: 80px 30px 30px 30px; /* ზედა პადინგი გაიზარდა ღილაკის გამო */
+            padding: 80px 30px 30px 30px;
             box-sizing: border-box;
+            position: relative;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* ... [შენი დანარჩენი CSS სრულად უცვლელი] ... */
-        .container { width: 100%; max-width: none; text-align: center; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); padding: 2rem; }
-        h2 { color: #ffffff; font-weight: 700; font-size: 1.75rem; margin-top: 0; margin-bottom: 2rem; text-shadow: 0 2px 10px rgba(0,0,0,0.4); }
-        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .converter-group { background: rgba(0, 0, 0, 0.2); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 0; }
-        label { display: block; margin-bottom: 0.75rem; font-weight: 500; text-align: left; color: #c0c0c0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        #sentenceInput, #colorsInput, #colorsOutput, #sentenceOutput { width: calc(100% - 24px); padding: 12px; border-radius: 8px; font-size: 1rem; font-family: var(--font-mono); resize: vertical; color: #f0f0f0; background-color: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.2s ease-in-out; }
-        #sentenceInput:focus, #colorsInput:focus, #colorsOutput:focus, #sentenceOutput:focus { outline: none; border-color: rgba(138, 43, 226, 0.7); box-shadow: 0 0 10px rgba(138, 43, 226, 0.5); }
-        #sentenceInput, #sentenceOutput { min-height: 180px; }
-        #colorsInput, #colorsOutput { min-height: 120px; }
-        .copy-group textarea { min-height: 48px; }
-        button, .import-label { color: white; border: none; padding: 14px 20px; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; box-sizing: border-box; transition: all 0.3s ease; text-align: center; }
-        button:not(:disabled):hover, .import-label:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); }
-        button:disabled { background: #555; opacity: 0.6; cursor: not-allowed; }
-        #toColorsButton, #toSentenceButton { background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); }
-        .export-container{ display: flex; flex-direction: row; gap: 8px; flex-wrap: wrap; }
-        button.export-button { background: linear-gradient(90deg, #11998e, #38ef7d); }
-        button.export-jpg-button { background: linear-gradient(90deg, #d38312, #a83279); }
-        button.toggle-swatches { background: #f39c12; color: #1e1e1e; width: auto; display: block; margin: 10px auto 0 auto; padding: 8px 15px; font-size: 0.9rem; }
-        label.import-label { background: linear-gradient(90deg, #ff9800, #ff5722); display: block; }
-        .copy-group { display: flex; align-items: flex-end; gap: 10px; }
+        /* Ambient Orbs */
+        .hero-ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .hero-orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.3; animation: orbFloat 14s ease-in-out infinite alternate; }
+        .hero-orb-1 { width: 60vw; height: 60vw; max-width: 800px; max-height: 800px; background: radial-gradient(circle, rgba(255, 42, 133, 0.12) 0%, transparent 70%); top: -20%; left: -10%; }
+        .hero-orb-2 { width: 50vw; height: 50vw; max-width: 600px; max-height: 600px; background: radial-gradient(circle, rgba(0, 240, 255, 0.12) 0%, transparent 70%); bottom: -10%; right: -10%; animation-delay: -5s; animation-duration: 18s; }
+        @keyframes orbFloat { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(10%, 15%) scale(1.1); } }
+
+        .container { position: relative; z-index: 2; width: 100%; max-width: 1200px; margin: 0 auto; text-align: center; background: var(--glass-bg); backdrop-filter: blur(22px) saturate(170%); -webkit-backdrop-filter: blur(22px) saturate(170%); border-radius: 16px; border: 1px solid var(--hairline); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); padding: 2.5rem; }
+        .encrolib-title {
+            position: relative;
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+            margin: 0 0 2rem 0;
+            color: #fff;
+            text-transform: uppercase;
+            text-shadow: 
+                -4px -4px 16px rgba(255, 42, 133, 0.4), 
+                4px 4px 16px rgba(0, 240, 255, 0.4);
+            animation: glowPulse 4s infinite alternate;
+        }
+        @keyframes glowPulse {
+            0% { text-shadow: -4px -4px 16px rgba(255, 42, 133, 0.4), 4px 4px 16px rgba(0, 240, 255, 0.4); }
+            100% { text-shadow: -6px -6px 24px rgba(255, 42, 133, 0.6), 6px 6px 24px rgba(0, 240, 255, 0.6); }
+        }
+
+        .encrolib-subtitle {
+            font-size: 1rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-top: -1.5rem;
+            margin-bottom: 2.5rem;
+            font-weight: 500;
+        }
+
+        /* DB Status Bar */
+        .enc-tabs-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .enc-tab-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--hairline-strong); color: var(--text-muted); padding: 12px 28px; border-radius: 30px; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; width: auto; margin: 0; }
+        .enc-tab-btn:hover { background: rgba(255, 255, 255, 0.08); color: var(--text); border-color: rgba(255, 255, 255, 0.28); transform: translateY(-2px); }
+        .enc-tab-btn.active { background: rgba(255, 255, 255, 0.1); color: var(--text); border-color: rgba(255, 255, 255, 0.4); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); }
+
+        /* Tabs Content */
+        .enc-tab-panel { display: none; text-align: left; animation: fadeIn 0.4s ease forwards; }
+        .enc-tab-panel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Step Cards */
+        .step-card { background: rgba(255, 255, 255, 0.015); padding: 2rem; border-radius: 12px; border: 1px solid var(--hairline); margin-bottom: 24px; position: relative; }
+        .step-title { margin-top: 0; margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--hairline); padding-bottom: 12px; text-transform: uppercase; letter-spacing: 0.1em; }
+        
+        label { display: block; margin-bottom: 0.75rem; font-weight: 500; text-align: left; color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        
+        /* Inputs */
+        #sentenceInput, #colorsInput, #colorsOutput, #sentenceOutput, #customTitleInput, #customIndexInput, #customProjectInput, #customAuthorInput { width: 100%; padding: 14px 16px; border-radius: 10px; font-size: 0.95rem; font-family: var(--font-mono); resize: vertical; color: var(--text); background-color: rgba(255, 255, 255, 0.02); border: 1px solid var(--hairline); transition: all 0.3s ease; box-sizing: border-box; outline: none; margin-bottom: 15px; }
+        #sentenceInput:focus, #colorsInput:focus, #colorsOutput:focus, #sentenceOutput:focus, #customTitleInput:focus, #customIndexInput:focus, #customProjectInput:focus, #customAuthorInput:focus { border-color: rgba(255, 255, 255, 0.25); background-color: rgba(255, 255, 255, 0.04); box-shadow: 0 0 20px rgba(255, 255, 255, 0.02); }
+        
+        #sentenceInput, #sentenceOutput { min-height: 180px; margin-bottom: 0; }
+        #colorsInput, #colorsOutput { min-height: 120px; margin-bottom: 0; }
+        .copy-group textarea { min-height: 48px; margin: 0; }
+        
+        /* Buttons */
+        button, .import-label { display: inline-flex; justify-content: center; align-items: center; gap: 8px; color: var(--text); background: rgba(255, 255, 255, 0.04); border: 1px solid var(--hairline-strong); padding: 14px 26px; border-radius: 30px; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; text-align: center; width: 100%; margin-top: 15px; box-sizing: border-box; }
+        button:not(:disabled):hover, .import-label:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.28); transform: translateY(-2px); }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        
+        /* Primary Action Buttons */
+        #toColorsButton, #toSentenceButton { background: rgba(98, 0, 238, 0.1); border-color: rgba(98, 0, 238, 0.4); color: #fff; box-shadow: 0 4px 20px rgba(98, 0, 238, 0.15); }
+        #toColorsButton:not(:disabled):hover, #toSentenceButton:not(:disabled):hover { background: rgba(98, 0, 238, 0.2); border-color: rgba(98, 0, 238, 0.6); box-shadow: 0 6px 24px rgba(98, 0, 238, 0.3); }
+        
+        .export-container { display: flex; flex-direction: column; gap: 24px; margin-top: 15px; }
+        .export-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+        .export-grid .input-group { display: flex; flex-direction: column; }
+        .export-grid .input-group label { margin-bottom: 8px; }
+        .export-grid .input-group input { margin-bottom: 0; }
+        .export-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+        .export-actions button { margin-top: 0; border-radius: 12px; font-size: 0.75rem; padding: 12px; }
+        
+        button.toggle-swatches { width: auto; display: block; margin: 15px auto 0 auto; padding: 10px 20px; font-size: 0.75rem; border-radius: 30px; }
+        label.import-label { display: flex; margin-bottom: 0; }
+        
+        .copy-group { display: flex; align-items: stretch; gap: 12px; }
         .copy-group textarea { flex-grow: 1; }
-        #copyHexButton { width: 150px; min-width: 150px; margin: 0; padding: 10px; background: var(--accent-primary); display: flex; justify-content: center; align-items: center; gap: 8px; }
-        #copyHexButton.copied-success { background: #28a745 !important; }
-        #masterKeyStatus { font-size: 1.1rem; font-weight: 600; min-height: 20px; padding: 12px; border-radius: 8px; margin-bottom: 2rem; background-color: rgba(0, 188, 212, 0.1); border: 1px solid rgba(0, 188, 212, 0.5); color: #00bcd4; transition: all 0.3s ease; display: flex; justify-content: space-between; align-items: center; }
-        #statusText { flex-grow: 1; text-align: left; color: inherit; }
-        .switcher-container { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-        .switcher-label { font-size: 0.8rem; color: #c0c0c0; font-weight: 500; }
+        #copyHexButton { width: 140px; min-width: 140px; margin: 0; padding: 0 15px; border-radius: 10px; }
+        #copyHexButton.copied-success { background: rgba(40, 167, 69, 0.15); border-color: rgba(40, 167, 69, 0.5); color: #4ade80; }
+        
+        /* DB Status Bar - Top Right Position */
+        .db-status-bar { position: absolute; top: 24px; right: 24px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin: 0; z-index: 10; }
+        .db-status-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(40, 167, 69, 0.1); color: #28a745; border: 1px solid rgba(40, 167, 69, 0.2); padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.05em; font-family: var(--font-mono, monospace); transition: all 0.3s ease; }
+        .db-status-badge.loading { background: rgba(0, 188, 212, 0.1); color: #00bcd4; border-color: rgba(0, 188, 212, 0.2); }
+        .db-status-badge.error { background: rgba(220, 53, 69, 0.1); color: #dc3545; border-color: rgba(220, 53, 69, 0.2); }
+        .db-status-badge.loaded { background: rgba(255, 255, 255, 0.03); color: var(--text-muted); border-color: var(--hairline-strong); }
+        .subtle-icon-btn { background: rgba(255,255,255,0.03); border: 1px solid var(--hairline-strong); color: var(--text-muted); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; padding: 0; }
+        .subtle-icon-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); transform: rotate(15deg); }
+        .subtle-icon-btn.spin svg { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }        
+        
+        .switcher-container { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .switcher-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
         .load-switcher { position: relative; display: inline-block; width: 44px; height: 24px; }
         .load-switcher input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent-orange); }
-        input:checked + .slider:before { transform: translateX(20px); }
-        #colorSwatchesContainer { display: flex; flex-wrap: wrap; gap: 8px; padding: 15px; border-radius: 8px; min-height: 40px; align-items: flex-start; max-height: 80px; overflow-y: hidden; transition: max-height 0.3s ease-in-out; background-color: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.1); border: 1px solid var(--hairline-strong); transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: var(--text-muted); transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.4); }
+        input:checked + .slider:before { transform: translateX(20px); background-color: #fff; }
+        
+        #colorSwatchesContainer { display: flex; flex-wrap: wrap; gap: 8px; padding: 20px; border-radius: 12px; min-height: 40px; align-items: flex-start; max-height: 85px; overflow-y: hidden; transition: max-height 0.3s ease-in-out; background-color: rgba(255, 255, 255, 0.015); border: 1px solid var(--hairline); }
         #colorSwatchesContainer.expanded { max-height: 1000px; }
-        .color-swatch, .color-swatch-punctuation, .color-swatch-number, .color-swatch-linebreak, .color-swatch-paragraphbreak { flex-shrink: 0; transition: transform 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-        .color-swatch:hover, .color-swatch-punctuation:hover, .color-swatch-number:hover, .color-swatch-linebreak:hover, .color-swatch-paragraphbreak:hover { transform: scale(1.2); z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .color-swatch { width: 35px; height: 35px; border-radius: 6px; }
+        .color-swatch, .color-swatch-punctuation, .color-swatch-number, .color-swatch-linebreak, .color-swatch-paragraphbreak { flex-shrink: 0; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+        .color-swatch:hover, .color-swatch-punctuation:hover, .color-swatch-number:hover, .color-swatch-linebreak:hover, .color-swatch-paragraphbreak:hover { transform: scale(1.2) translateY(-2px); z-index: 10; box-shadow: 0 8px 16px rgba(0,0,0,0.5); }
+        .color-swatch { width: 35px; height: 35px; border-radius: 8px; }
         .color-swatch-punctuation { width: 8.75px; height: 8.75px; border-radius: 50%; margin: 13.125px 0; }
         .color-swatch-number { width: 35px; height: 35px; border-radius: 50%; }
         .color-swatch-linebreak { width: 2px; height: 35px; background-color: #ff4500 !important; border-radius: 1px; }
         .color-swatch-paragraphbreak { width: 5px; height: 35px; background-color: #ff0000 !important; border-radius: 2px; }
-        button.export-overlay-button { background: linear-gradient(90deg, #4a00e0, #8e2de2); }
+        
         @media (max-width: 900px) {
-            body { padding: 80px 15px 15px 15px; }
-            .container { padding: 1.5rem 1rem; }
-            .main-grid { grid-template-columns: 1fr; gap: 20px; }
-            .converter-group { margin-bottom: 20px; }
+            body { padding: 60px 15px 20px 15px; }
+            .container { padding: 4.5rem 1rem 1.5rem 1rem; border-radius: 12px; } /* More top padding for absolute bar */
+            .db-status-bar { top: 16px; right: 16px; }
+            .enc-tabs-nav { gap: 10px; }
+            .enc-tab-btn { width: 100%; text-align: center; }
             .copy-group { flex-direction: column; }
             .copy-group textarea { min-height: 100px; }
-            #copyHexButton { width: 100%; min-width: 100%; margin-top: 10px; }
-            #masterKeyStatus { flex-direction: column; align-items: flex-start; gap: 10px; }
-            .switcher-container { width: 100%; justify-content: space-between; }
+            .enc-tab-btn { width: 100%; text-align: center; }
             .zk-app-back { top: 16px; left: 16px; }
+            .export-grid { grid-template-columns: 1fr; }
+            .export-actions { grid-template-columns: 1fr; }
         }
     </style>
     <script>
@@ -132,79 +214,125 @@ Template Name: App - Encrolib
 </head>
 <body>
 
+<!-- Ambient Orbs from Main Site -->
+<div class="hero-ambient">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+</div>
+
 <a href="<?php echo esc_url(home_url('/')); ?>" class="zk-app-back">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
     Exit App
 </a>
 
 <div class="container">
-    <h2>🎨 Encrypted Nocturnes (Encrolib) 🎨</h2>
-
-    <div id="masterKeyStatus">
-        <span id="statusText">Loading 1.5M+ Database...</span>
-        <div class="switcher-container">
-            <span class="switcher-label">Force Reload:</span>
-            <label class="load-switcher" for="slowLoadToggle" title="Force-reload the database from the server (slower)">
-                <input type="checkbox" id="slowLoadToggle">
-                <span class="slider"></span>
-            </label>
+    <div class="db-status-bar">
+        <div class="db-status-badge loading" id="masterKeyBadge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+            <span id="statusText">Loading DB...</span>
         </div>
+        <button id="forceReloadBtn" class="subtle-icon-btn" title="Force Reload (Bypass Cache)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><polyline points="21 3 21 8 16 8"></polyline></svg>
+        </button>
     </div>
 
-    <div class="main-grid">
-        <div class="converter-group">
-            <label for="sentenceInput">📚 Encode Text:</label>
-            <textarea id="sentenceInput" placeholder="Enter your text..."></textarea>
-            <button id="toColorsButton" disabled>Convert to Colors</button>
+    <h1 class="encrolib-title">EncroLib</h1>
+    <p class="encrolib-subtitle">Where Words Sink In Colors</p>
 
-            <label for="colorSwatchesContainer" style="margin-top:15px;">Color Visualization:</label>
-            <div id="colorSwatchesContainer"></div>
+    <div class="enc-tabs-nav">
+        <button class="enc-tab-btn active" data-tab="tab-encode">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            Encode (Text to Art)
+        </button>
+        <button class="enc-tab-btn" data-tab="tab-decode">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Decode (Art to Text)
+        </button>
+    </div>
 
-            <button id="toggleSwatchesButton" class="toggle-swatches" style="display: none;">▶️ Expand View</button>
-
-            <label for="colorsOutput" style="margin-top:15px;">Color Codes (for export):</label>
-            <div class="copy-group">
-                <textarea id="colorsOutput" readonly></textarea>
-                <button id="copyHexButton" title="Copy Hex Codes">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16" style="flex-shrink: 0;">
-                        <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v12.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-12.5a.5.5 0 0 1 .5-.5h10ZM14 2H4v12h10V2Z"/>
-                        <path d="M2 0a2 2 0 0 0-2 2v12.5a.5.5 0 0 0 .5.5h.5v-1H1v-12a1 1 0 0 1 1-1h10.5a.5.5 0 0 0 0-1H2Z"/>
-                    </svg>
-                    <span>Copy</span>
-                </button>
+    <div class="enc-tabs-content">
+        <!-- ENCODE TAB -->
+        <div class="enc-tab-panel active" id="tab-encode">
+            <div class="step-card">
+                <h3 class="step-title">Step 1: Encode Text</h3>
+                <textarea id="sentenceInput" placeholder="Enter your text..."></textarea>
+                <button id="toColorsButton" disabled>Convert to Colors</button>
             </div>
 
-            <div class="export-container">
-                <label for="customTitleInput" style="margin-top:15px; width: 100%; text-align: left;">Optional Export Title:</label>
-                <input type="text" id="customTitleInput" placeholder="Enter custom subtitle..." style="width: 100%; padding: 12px; border-radius: 8px; font-size: 1rem; font-family: var(--font-mono); color: #f0f0f0; background-color: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 15px; box-sizing: border-box; outline: none; transition: all 0.2s ease-in-out;" onfocus="this.style.borderColor='rgba(138, 43, 226, 0.7)'; this.style.boxShadow='0 0 10px rgba(138, 43, 226, 0.5)';" onblur="this.style.borderColor='rgba(255, 255, 255, 0.1)'; this.style.boxShadow='none';">
-
-                <label for="customIndexInput" style="margin-top:5px; width: 100%; text-align: left;">Artwork Index / Number:</label>
-                <input type="text" id="customIndexInput" placeholder="e.g., NO. 01/100, REF_001, SEQ_01" style="width: 100%; padding: 12px; border-radius: 8px; font-size: 1rem; font-family: var(--font-mono); color: #f0f0f0; background-color: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 15px; box-sizing: border-box; outline: none; transition: all 0.2s ease-in-out;" onfocus="this.style.borderColor='rgba(138, 43, 226, 0.7)'; this.style.boxShadow='0 0 10px rgba(138, 43, 226, 0.5)';" onblur="this.style.borderColor='rgba(255, 255, 255, 0.1)'; this.style.boxShadow='none';">
-
-                <button id="exportSVGButton" class="export-button" disabled>SVG</button>
-                <button id="exportJPGButton" class="export-jpg-button" disabled>JPG</button>
-                <button id="exportSVGOverlayButton" class="export-overlay-button" disabled>SVG (Tinted)</button>
-                <button id="exportJPGOverlayButton" class="export-overlay-button" disabled>JPG (Tinted)</button>
-
-                <button id="exportSlide2Button" onclick="generateAndDownloadSecondSlide()" disabled style="padding: 12px 24px; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: all 0.2s ease-in-out; border: none; font-family: var(--font-mono); background: linear-gradient(135deg, #1d4ed8, #1e3a8a); color: white; box-shadow: 0 4px 15px rgba(29, 78, 216, 0.3);" onmouseover="this.style.opacity=0.9; this.style.transform='translateY(-2px)';" onmouseout="this.style.opacity=1; this.style.transform='translateY(0)';">
-                    Export Slide 2 (Wallpaper)
+            <div class="step-card" id="step2-card" style="display: none;">
+                <h3 class="step-title">Step 2: Visualization & Codes</h3>
+                <label for="colorSwatchesContainer">Color Visualization:</label>
+                <div id="colorSwatchesContainer"></div>
+                <button id="toggleSwatchesButton" class="toggle-swatches" style="display: none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    Expand View
                 </button>
-                <button id="exportSlide3Button" onclick="generateAndDownloadThirdSlide()" disabled style="padding: 12px 24px; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: all 0.2s ease-in-out; border: none; font-family: var(--font-mono); background: linear-gradient(135deg, #8e2de2, #4a00e0); color: white; box-shadow: 0 4px 15px rgba(142, 45, 226, 0.3);" onmouseover="this.style.opacity=0.9; this.style.transform='translateY(-2px)';" onmouseout="this.style.opacity=1; this.style.transform='translateY(0)';" >
-                    Export Slide 3 (Macro Detail)
-                </button>
+
+                <label for="colorsOutput" style="margin-top:15px;">Color Codes (for export):</label>
+                <div class="copy-group">
+                    <textarea id="colorsOutput" readonly></textarea>
+                    <button id="copyHexButton" title="Copy Hex Codes">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16" style="flex-shrink: 0;">
+                            <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v12.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-12.5a.5.5 0 0 1 .5-.5h10ZM14 2H4v12h10V2Z"/>
+                            <path d="M2 0a2 2 0 0 0-2 2v12.5a.5.5 0 0 0 .5.5h.5v-1H1v-12a1 1 0 0 1 1-1h10.5a.5.5 0 0 0 0-1H2Z"/>
+                        </svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="step-card" id="step3-card" style="display: none;">
+                <h3 class="step-title">Step 3: Export Studio</h3>
+                <div class="export-container">
+                    <div class="export-grid">
+                        <div class="input-group">
+                            <label for="customTitleInput">Optional Export Title:</label>
+                            <input type="text" id="customTitleInput" placeholder="Enter custom subtitle...">
+                        </div>
+                        <div class="input-group">
+                            <label for="customIndexInput">Artwork Index / Number:</label>
+                            <input type="text" id="customIndexInput" placeholder="e.g., NO. 01/100, REF_001, SEQ_01">
+                        </div>
+                        <div class="input-group">
+                            <label for="customAuthorInput">Author Name (Bottom Center):</label>
+                            <input type="text" id="customAuthorInput" placeholder="e.g., BY ZURAB KOSTAVA">
+                        </div>
+                        <div class="input-group">
+                            <label for="customProjectInput">Project Name (Bottom Center):</label>
+                            <input type="text" id="customProjectInput" placeholder="e.g., Encrypted Nocturnes">
+                        </div>
+                    </div>
+
+                    <div class="export-actions">
+                        <button id="exportSVGButton" class="export-button" disabled>Export SVG (Vector)</button>
+                        <button id="exportJPGButton" class="export-jpg-button" disabled>Export JPG (Main Cover)</button>
+                        <button id="exportSlide2Button" onclick="generateAndDownloadSecondSlide()" disabled>Export Slide 2 (Wallpaper)</button>
+                        <button id="exportSlide3Button" onclick="generateAndDownloadThirdSlide()" disabled>Export Slide 3 (Macro Detail)</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="converter-group">
-            <label style="text-align: center;">🖍️ Decode Colors:</label>
-            <label for="svgUploader" class="import-label">⬆️ Import SVG</label>
-            <input type="file" id="svgUploader" accept=".svg" style="display: none;">
-            <p style="font-weight: 600; margin: 10px 0 5px 0; color: #bdbdbd;">-- OR --</p>
-            <label for="colorsInput" style="margin-top:5px;">Enter color codes (space-separated):</label>
-            <textarea id="colorsInput" placeholder="#... #... #..."></textarea>
-            <button id="toSentenceButton" disabled>Convert to Text</button>
-            <label for="sentenceOutput" style="margin-top:15px;">Decoded Text:</label>
-            <textarea id="sentenceOutput" readonly></textarea>
+        <!-- DECODE TAB -->
+        <div class="enc-tab-panel" id="tab-decode">
+            <div class="step-card">
+                <h3 class="step-title">Step 1: Source</h3>
+                <label for="svgUploader" class="import-label">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    Import SVG
+                </label>
+                <input type="file" id="svgUploader" accept=".svg" style="display: none;">
+                <p style="font-weight: 600; margin: 15px 0; color: #bdbdbd; text-align: center;">-- OR --</p>
+                <label for="colorsInput">Enter color codes (space-separated):</label>
+                <textarea id="colorsInput" placeholder="#... #... #..."></textarea>
+                <button id="toSentenceButton" disabled>Convert to Text</button>
+            </div>
+            
+            <div class="step-card">
+                <h3 class="step-title">Step 2: Result</h3>
+                <label for="sentenceOutput">Decoded Text:</label>
+                <textarea id="sentenceOutput" readonly></textarea>
+            </div>
         </div>
     </div>
 </div>
@@ -239,9 +367,9 @@ Template Name: App - Encrolib
         const isExpanded = container.classList.toggle('expanded');
 
         if (isExpanded) {
-            button.innerHTML = '◀️ Collapse View';
+            button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg> Collapse View';
         } else {
-            button.innerHTML = '▶️ Expand View';
+            button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg> Expand View';
         }
     }
 
@@ -404,8 +532,6 @@ Template Name: App - Encrolib
 
             document.getElementById('exportSVGButton').disabled = false;
             document.getElementById('exportJPGButton').disabled = false;
-            document.getElementById('exportSVGOverlayButton').disabled = false;
-            document.getElementById('exportJPGOverlayButton').disabled = false;
             if(document.getElementById('exportSlide2Button')) {
                 document.getElementById('exportSlide2Button').disabled = false;
             }
@@ -416,6 +542,8 @@ Template Name: App - Encrolib
 
             convertButton.disabled = false;
             convertButton.innerHTML = 'Convert to Colors';
+            document.getElementById('step2-card').style.display = 'block';
+            document.getElementById('step3-card').style.display = 'block';
 
             setTimeout(() => {
                 if (swatchesContainer.scrollHeight > 80) {
@@ -423,7 +551,7 @@ Template Name: App - Encrolib
                 } else {
                     toggleButton.style.display = 'none';
                     swatchesContainer.classList.remove('expanded');
-                    toggleButton.innerHTML = '▶️ Expand View';
+                    toggleButton.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg> Expand View';
                 }
             }, 50);
 
@@ -851,15 +979,21 @@ Template Name: App - Encrolib
                 ctx.fillText(customTitle.toUpperCase(), cx, 280);
             }
 
-            ctx.font = '400 24px "SF Mono", "Consolas", "Monaco", monospace';
-            ctx.letterSpacing = "6px";
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
-            ctx.fillText('Encrypted Nocturnes', cx, 1090);
+            const customProject = document.getElementById('customProjectInput') ? document.getElementById('customProjectInput').value.trim() : "";
+            if (customProject !== "") {
+                ctx.font = '400 24px "SF Mono", "Consolas", "Monaco", monospace';
+                ctx.letterSpacing = "6px";
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+                ctx.fillText(customProject, cx, 1090);
+            }
 
-            ctx.font = '600 16px "SF Mono", "Consolas", "Monaco", monospace';
-            ctx.letterSpacing = "4px";
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
-            ctx.fillText('BY ZURAB KOSTAVA', cx, 1126);
+            const customAuthor = document.getElementById('customAuthorInput') ? document.getElementById('customAuthorInput').value.trim() : "";
+            if (customAuthor !== "") {
+                ctx.font = '600 16px "SF Mono", "Consolas", "Monaco", monospace';
+                ctx.letterSpacing = "4px";
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+                ctx.fillText(customAuthor.toUpperCase(), cx, 1126);
+            }
 
             if (customIndex !== "") {
                 ctx.font = '400 14px "SF Mono", "Consolas", "Monaco", monospace';
@@ -896,74 +1030,6 @@ Template Name: App - Encrolib
         img.src = svgUrl;
     }
 
-    function generateAndDownloadSVG_Overlay() {
-        const result = generateSVGContent({ color: '#272734', opacity: 0.4 });
-        if (!result) return;
-
-        const blob = new Blob([result.svg], {type: 'image/svg+xml'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `color_translation_tinted_${Date.now()}.svg`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-    function generateAndDownloadJPG_Overlay() {
-        const result = generateSVGContent({ color: '#272734', opacity: 0.4 });
-        if (!result) return;
-
-        const svgData = result.svg;
-        const svgWidth = result.width;
-        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-        const svgUrl = URL.createObjectURL(svgBlob);
-        const img = new Image();
-
-        img.onload = function() {
-            URL.revokeObjectURL(svgUrl);
-            const canvas = document.createElement('canvas');
-            const CANVAS_WIDTH = 1080;
-            const CANVAS_HEIGHT = 1350;
-            canvas.width = CANVAS_WIDTH;
-            canvas.height = CANVAS_HEIGHT;
-            const ctx = canvas.getContext('2d');
-
-            const bgGradient = ctx.createLinearGradient(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-            bgGradient.addColorStop(0, '#060e29');
-            bgGradient.addColorStop(0.5, '#020617');
-            bgGradient.addColorStop(1, '#01030a');
-            ctx.fillStyle = bgGradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            const targetSize = 700;
-            const scale = targetSize / svgWidth;
-            const offsetX = (CANVAS_WIDTH - targetSize) / 2;
-            const offsetY = (CANVAS_HEIGHT - targetSize) / 2;
-
-            ctx.save();
-            ctx.translate(offsetX, offsetY);
-            ctx.scale(scale, scale);
-            ctx.drawImage(img, 0, 0);
-            ctx.restore();
-
-            const jpgUrl = canvas.toDataURL('image/jpeg', 0.95);
-            const a = document.createElement('a');
-            a.href = jpgUrl;
-            a.download = `color_translation_tinted_${Date.now()}.jpg`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        };
-
-        img.onerror = function(err) {
-            console.error("Error converting SVG to Canvas:", err);
-            alert("JPG export failed.");
-        };
-
-        img.src = svgUrl;
-    }
 
     function handleSVGImport(event) {
         const file = event.target.files[0];
@@ -985,20 +1051,23 @@ Template Name: App - Encrolib
         reader.readAsText(file);
     }
 
-    async function loadWordList() {
-        const buttons = document.querySelectorAll('button:not(#copyHexButton)');
+    async function loadWordList(isForceReload = false) {
+        if (isForceReload && typeof isForceReload !== 'boolean') {
+            isForceReload = false; // in case event object is passed
+        }
+        const buttons = document.querySelectorAll('button:not(#copyHexButton):not(.enc-tab-btn):not(#forceReloadBtn)');
         buttons.forEach(button => button.disabled = true);
 
         const statusText = document.getElementById('statusText');
-        const statusBar = document.getElementById('masterKeyStatus');
+        const statusBadge = document.getElementById('masterKeyBadge');
+        const reloadBtn = document.getElementById('forceReloadBtn');
 
-        const isSlowMode = document.getElementById('slowLoadToggle').checked;
+        if(reloadBtn) reloadBtn.classList.add('spin');
 
         let BASE_KEY_URL = '/wp-content/Encrolib/words_monster.txt';
-
         let masterKeyUrl = BASE_KEY_URL;
 
-        if (isSlowMode) {
+        if (isForceReload) {
             const timestamp = new Date().getTime();
             masterKeyUrl = `${BASE_KEY_URL}?v=${timestamp}`;
             console.log('Cache Busting Enabled: Fetching from', masterKeyUrl);
@@ -1008,10 +1077,8 @@ Template Name: App - Encrolib
 
         try {
             wordDatabase = symbols.concat(topEmojis).concat(numbers);
-            statusText.textContent = `Loading ${wordDatabase.length} symbols... Fetching 1.5M words...`;
-            statusBar.style.backgroundColor = 'rgba(0, 188, 212, 0.1)';
-            statusBar.style.borderColor = 'rgba(0, 188, 212, 0.5)';
-            statusBar.style.color = '#00bcd4';
+            statusText.textContent = `Loading DB...`;
+            if (statusBadge) statusBadge.className = 'db-status-badge loading';
 
             const response = await fetch(masterKeyUrl);
 
@@ -1032,10 +1099,8 @@ Template Name: App - Encrolib
             }
             console.log(`Map created with ${wordDatabaseMap.size} entries.`);
 
-            statusText.textContent = `Master Key Loaded! (${wordDatabase.length} entries)`;
-            statusBar.style.backgroundColor = 'rgba(40, 167, 69, 0.1)';
-            statusBar.style.borderColor = 'rgba(40, 167, 69, 0.5)';
-            statusBar.style.color = '#28a745';
+            statusText.textContent = `${wordDatabaseMap.size.toLocaleString()} entries`;
+            if (statusBadge) statusBadge.className = 'db-status-badge loaded';
 
             document.getElementById('toColorsButton').disabled = false;
             document.getElementById('toSentenceButton').disabled = false;
@@ -1043,10 +1108,10 @@ Template Name: App - Encrolib
 
         } catch (error) {
             console.error('Master Key load error:', error);
-            statusText.textContent = `Database load failed. Check Master Key URL. ${error.message}`;
-            statusBar.style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
-            statusBar.style.borderColor = 'rgba(220, 53, 69, 0.5)';
-            statusBar.style.color = '#dc3545';
+            statusText.textContent = `DB Error: ${error.message}`;
+            if (statusBadge) statusBadge.className = 'db-status-badge error';
+        } finally {
+            if(reloadBtn) reloadBtn.classList.remove('spin');
         }
     }
 
@@ -1414,9 +1479,21 @@ Template Name: App - Encrolib
     document.getElementById('svgUploader').addEventListener('change', handleSVGImport);
     document.getElementById('toggleSwatchesButton').addEventListener('click', toggleColorSwatches);
     document.getElementById('copyHexButton').addEventListener('click', copyHexCodes);
-    document.getElementById('exportSVGOverlayButton').addEventListener('click', generateAndDownloadSVG_Overlay);
-    document.getElementById('exportJPGOverlayButton').addEventListener('click', generateAndDownloadJPG_Overlay);
-    document.getElementById('slowLoadToggle').addEventListener('change', loadWordList);
+    document.getElementById('forceReloadBtn').addEventListener('click', () => loadWordList(true));
+
+    // Tabs Logic
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabBtns = document.querySelectorAll('.enc-tab-btn');
+        const tabPanels = document.querySelectorAll('.enc-tab-panel');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabPanels.forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    });
 
     window.addEventListener('load', loadWordList);
 </script>
