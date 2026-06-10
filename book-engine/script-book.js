@@ -76,12 +76,15 @@
     function run() {
         if (ran) return;
         ran = true;
-        // run fast + then re-run a couple of times (without observer)
         protectCriticalUI();
         fastPaintTitleFromCache();
-        setTimeout(protectCriticalUI, 150);
-        setTimeout(protectCriticalUI, 600);
-        setTimeout(protectCriticalUI, 1500);
+        requestAnimationFrame(() => {
+            protectCriticalUI();
+            requestAnimationFrame(() => {
+                protectCriticalUI();
+                setTimeout(protectCriticalUI, 400); // Fallback
+            });
+        });
     }
     document.addEventListener("DOMContentLoaded", () => {
         run();
@@ -101,25 +104,38 @@ function getCachedSession() {
 // 🚀 გლობალური ცვლადი Cloud-პროგრესისთვის
 window.globalUserProgressPercent = null;
 let saveProgressTimeout = null;
+let pendingProgress = null;
 
 // ფუნქცია, რომელიც ფონურ რეჟიმში აგზავნის პროგრესს ბაზაში
 async function syncProgressToDB(percent) {
+    pendingProgress = percent;
     if (saveProgressTimeout) clearTimeout(saveProgressTimeout);
 
     // 1.5 წამიანი დაყოვნება (ფურცვლის დასრულებას ველოდებით, რომ ბაზა არ გადაიტვირთოს)
-    saveProgressTimeout = setTimeout(async () => {
-        const session = await getCachedSession();
-        if (session && CURRENT_BOOK_SLUG) {
-            await sbClient.from('user_progress').upsert({
-                user_id: session.user.id,
-                book_slug: CURRENT_BOOK_SLUG,
-                lang: currentLanguage, // 🚀 ვატანთ მიმდინარე ენას
-                progress_percent: percent,
-                updated_at: new Date()
-            }, { onConflict: 'user_id, book_slug, lang' });
-        }
-    }, 1500);
+    saveProgressTimeout = setTimeout(flushProgress, 1500);
 }
+
+async function flushProgress() {
+    if (pendingProgress === null) return;
+    const session = await getCachedSession();
+    if (session && CURRENT_BOOK_SLUG) {
+        const percentToSave = pendingProgress;
+        pendingProgress = null;
+        await sbClient.from('user_progress').upsert({
+            user_id: session.user.id,
+            book_slug: CURRENT_BOOK_SLUG,
+            lang: currentLanguage, // 🚀 ვატანთ მიმდინარე ენას
+            progress_percent: percentToSave,
+            updated_at: new Date()
+        }, { onConflict: 'user_id, book_slug, lang' });
+    }
+}
+
+window.addEventListener('beforeunload', () => {
+    if (pendingProgress !== null) {
+        flushProgress();
+    }
+});
 
 // 🛑 აუცილებლად დარწმუნდი, რომ ეს მეილი ზუსტად წერია
 const ADMIN_EMAIL = "zurabkostava1@gmail.com";

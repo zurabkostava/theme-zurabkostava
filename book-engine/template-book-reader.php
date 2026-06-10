@@ -17,11 +17,12 @@ Template Name: Book Reader
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="//cdn.web-fonts.ge">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined&display=swap" rel="stylesheet">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,700;1,300&family=Noto+Sans+Georgian:wght@300;400;700;900&family=Noto+Serif+Georgian:wght@400;700;900&display=swap" as="style">
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,700;1,300&family=Noto+Sans+Georgian:wght@300;400;700;900&family=Noto+Serif+Georgian:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="preload" href="//cdn.web-fonts.ge/fonts/bpg-arial-caps/css/bpg-arial-caps.min.css" as="style">
     <link rel="stylesheet" href="//cdn.web-fonts.ge/fonts/bpg-arial-caps/css/bpg-arial-caps.min.css">
 
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <link href="<?php echo esc_url( get_template_directory_uri() . '/book-engine/style-book.css?v=' . filemtime( get_template_directory() . '/book-engine/style-book.css' ) ); ?>" rel="stylesheet">
+    <link href="<?php echo esc_url( get_template_directory_uri() . '/book-engine/style-book.min.css?v=' . filemtime( get_template_directory() . '/book-engine/style-book.min.css' ) ); ?>" rel="stylesheet">
     <script>
         (function(){const t=localStorage.getItem('book_theme');if(t==='light'||(t===null&&window.matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light-mode');})();
     </script>
@@ -173,9 +174,8 @@ Template Name: Book Reader
         <div class="footnote-content" id="footnote-text"></div>
     </div>
 </div>
-<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="<?php echo esc_url( get_template_directory_uri() . '/book-engine/script-book.js?v=' . filemtime( get_template_directory() . '/book-engine/script-book.js' ) ); ?>"></script>
+<script src="<?php echo esc_url( get_template_directory_uri() . '/book-engine/script-book.min.js?v=' . filemtime( get_template_directory() . '/book-engine/script-book.min.js' ) ); ?>"></script>
 
 </body>
 </html>

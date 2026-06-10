@@ -12,9 +12,10 @@ Template Name: Book Manager
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.quilljs.com">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;700&family=Merriweather:ital,wght@0,300;0,700;1,300&display=swap" as="style">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;700&family=Merriweather:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <link href="<?php echo esc_url( get_template_directory_uri() . '/book-engine/style-book.css?v=' . filemtime( get_template_directory() . '/book-engine/style-book.css' ) ); ?>" rel="stylesheet">
+    <link href="<?php echo esc_url( get_template_directory_uri() . '/book-engine/style-book.min.css?v=' . filemtime( get_template_directory() . '/book-engine/style-book.min.css' ) ); ?>" rel="stylesheet">
 
 
     <style>
@@ -280,6 +281,6 @@ Template Name: Book Manager
 </div>
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="<?php echo esc_url( get_template_directory_uri() . '/book-engine/script-book.js?v=' . filemtime( get_template_directory() . '/book-engine/script-book.js' ) ); ?>"></script>
+<script src="<?php echo esc_url( get_template_directory_uri() . '/book-engine/script-book.min.js?v=' . filemtime( get_template_directory() . '/book-engine/script-book.min.js' ) ); ?>"></script>
 </body>
 </html>
