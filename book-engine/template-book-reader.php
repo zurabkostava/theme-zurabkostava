@@ -44,7 +44,9 @@ Template Name: Book Reader
 <?php
 // SEO Pre-render Logic
 $book_slug = $post->post_name;
-$transient_key = 'zk_book_seo_v2_' . md5( $book_slug );
+$current_locale = get_locale();
+$is_georgian = ( strpos( $_SERVER['REQUEST_URI'], '/ka/' ) !== false || strpos( $current_locale, 'ka' ) === 0 );
+$transient_key = 'zk_book_seo_v3_' . md5( $book_slug . '_' . ( $is_georgian ? 'ka' : 'en' ) );
 $seo_content = get_transient( $transient_key );
 
 if ( false === $seo_content ) {
@@ -70,11 +72,14 @@ if ( false === $seo_content ) {
         if ( ! empty( $data ) && isset( $data[0]['chapters'] ) ) {
             $chapters = $data[0]['chapters'];
             foreach ( $chapters as $chapter ) {
-                if ( isset( $chapter['title'] ) ) {
-                    $seo_html .= '<h2>' . esc_html( $chapter['title'] ) . '</h2>';
+                $title_to_use = $is_georgian ? ( isset( $chapter['title'] ) ? $chapter['title'] : '' ) : ( isset( $chapter['title_en'] ) ? $chapter['title_en'] : ( isset( $chapter['title'] ) ? $chapter['title'] : '' ) );
+                $content_to_use = $is_georgian ? ( isset( $chapter['content'] ) ? $chapter['content'] : '' ) : ( isset( $chapter['content_en'] ) ? $chapter['content_en'] : ( isset( $chapter['content'] ) ? $chapter['content'] : '' ) );
+                
+                if ( ! empty( $title_to_use ) ) {
+                    $seo_html .= '<h2>' . esc_html( $title_to_use ) . '</h2>';
                 }
-                if ( isset( $chapter['content'] ) ) {
-                    $seo_html .= $chapter['content']; // Output raw HTML so TranslatePress matches perfectly
+                if ( ! empty( $content_to_use ) ) {
+                    $seo_html .= wp_kses_post( $content_to_use );
                 }
             }
             // Cache for 12 hours
