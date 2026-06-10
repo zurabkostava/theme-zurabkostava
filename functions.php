@@ -1546,8 +1546,8 @@ function zk_custom_seo_redirects() {
         exit;
     }
 
-    // 3. GLOBAL /ka/ FALLBACK
-    if ( strpos( $path, '/ka/' ) === 0 || $path === '/ka' ) {
+    // 3. GLOBAL /ka/ FALLBACK (Except for books)
+    if ( ( strpos( $path, '/ka/' ) === 0 || $path === '/ka' ) && strpos( $path, '/ka/books' ) !== 0 ) {
         // We replace ^/ka at the start of $request_uri so we preserve query params
         $new_uri = preg_replace( '#^/ka(?=/|$)#', '', $request_uri );
         if ( $new_uri === '' ) {
