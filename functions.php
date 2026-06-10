@@ -1560,6 +1560,18 @@ function zk_custom_seo_redirects() {
 // Using 'init' instead of 'template_redirect' so it fires before WP query and 404 logic
 add_action( 'init', 'zk_custom_seo_redirects' );
 
+// Fix 404 for /ka/books/ by manually setting the pagename
+add_action( 'parse_request', function( $wp ) {
+    $request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+    if ( strpos( $request_uri, '/ka/books/' ) === 0 ) {
+        // Strip /ka/ to get the real page path
+        $real_path = preg_replace( '#^/ka/#', '', parse_url( $request_uri, PHP_URL_PATH ) );
+        $real_path = trim( $real_path, '/' );
+        $wp->query_vars['pagename'] = $real_path;
+        $wp->query_vars['error'] = ''; // clear 404 flag if any
+    }
+} );
+
 /* ============================================================
    ZK CUSTOM SEO ENGINE (Stage 1)
    ============================================================ */
