@@ -270,37 +270,35 @@ let footnoteQuill = null; // გლობალური ცვლადი პ�
    QUILL CUSTOM BLOT: FOOTNOTE
 
    ============================ */
-const Inline = Quill.import('blots/inline');
-class FootnoteBlot extends Inline {
-    static create(value) {
-        let node = super.create();
-        node.setAttribute('class', 'footnote-trigger');
-        // Value შეიძლება იყოს ობიექტი {content: "...", title: "..."} ან უბრალოდ სტრინგი
-        if (typeof value === 'object' && value !== null) {
-            node.setAttribute('data-content', value.content);
-            // თუ სათაური მოგვაწოდეს, ვწერთ, თუ არა - ცარიელი რჩება (და მერე ტექსტს აიღებს)
-            if (value.title) node.setAttribute('data-title', value.title);
-        } else {
-            node.setAttribute('data-content', value);
+if (typeof Quill !== 'undefined') {
+    const Inline = Quill.import('blots/inline');
+    class FootnoteBlot extends Inline {
+        static create(value) {
+            let node = super.create();
+            node.setAttribute('class', 'footnote-trigger');
+            if (typeof value === 'object' && value !== null) {
+                node.setAttribute('data-content', value.content);
+                if (value.title) node.setAttribute('data-title', value.title);
+            } else {
+                node.setAttribute('data-content', value);
+            }
+            return node;
         }
-        return node;
-    }
-    static formats(node) {
-        const content = node.getAttribute('data-content');
-        // მხოლოდ ნამდვილი footnote-ები: კლასი + კონტენტი უნდა ჰქონდეს
-        // თუ არა - undefined ვაბრუნებთ, რომ paste-ზე ჩვეულებრივ span-ებს არ ეხუროს ფორმატი
-        if (!content || content === 'null' || !node.classList.contains('footnote-trigger')) {
-            return undefined;
+        static formats(node) {
+            const content = node.getAttribute('data-content');
+            if (!content || content === 'null' || !node.classList.contains('footnote-trigger')) {
+                return undefined;
+            }
+            return {
+                content,
+                title: node.getAttribute('data-title')
+            };
         }
-        return {
-            content,
-            title: node.getAttribute('data-title')
-        };
     }
+    FootnoteBlot.blotName = 'footnote';
+    FootnoteBlot.tagName = 'span';
+    Quill.register(FootnoteBlot);
 }
-FootnoteBlot.blotName = 'footnote';
-FootnoteBlot.tagName = 'span';
-Quill.register(FootnoteBlot);
 
 function debounce(func, timeout = 300) {
     let timer;
