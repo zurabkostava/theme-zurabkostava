@@ -1859,9 +1859,11 @@ function zk_render_json_ld_schema() {
             ]
         ];
         $person_schema['@id'] = $site_url . '#person'; // link them
-        $schema[0] = $person_schema;
+        $schema[0] = $person_schema;    }
+    
+    $is_book_page = is_page() && get_page_template_slug( get_queried_object_id() ) === 'book-engine/template-book-reader.php';
 
-    } elseif ( is_singular( 'post' ) || is_page() ) {
+    if ( is_singular( 'post' ) || ( is_page() && ! $is_book_page ) ) {
         global $post;
         $desc = get_post_meta( $post->ID, '_zk_seo_description', true ) ?: wp_trim_words( wp_strip_all_tags( $post->post_content ), 30, '' );
         
@@ -1914,17 +1916,20 @@ function zk_render_json_ld_schema() {
         }
         $schema[] = $article_schema;
 
-    } elseif ( is_singular( 'zk_book' ) ) {
-        global $post;
-        $year   = get_post_meta( $post->ID, '_zk_book_year', true );
-        $genre  = get_post_meta( $post->ID, '_zk_book_genre', true );
-        $author = get_post_meta( $post->ID, '_zk_book_author', true ) ?: 'Zurab Kostava';
-        $desc   = wp_trim_words( wp_strip_all_tags( $post->post_content ), 50, '' );
+    } elseif ( is_singular( 'zk_book' ) || $is_book_page ) {
+        $target_id = function_exists('zk_get_seo_target_id') ? zk_get_seo_target_id( get_queried_object_id() ) : get_queried_object_id();
+        $year   = get_post_meta( $target_id, '_zk_book_year', true );
+        $genre  = get_post_meta( $target_id, '_zk_book_genre', true );
+        $author = get_post_meta( $target_id, '_zk_book_author', true ) ?: 'Zurab Kostava';
+        $ai_summary = get_post_meta( $target_id, '_zk_geo_ai_summary', true );
+        $seo_desc   = get_post_meta( $target_id, '_zk_seo_description', true );
+        
+        $desc = !empty( $ai_summary ) ? $ai_summary : ( !empty($seo_desc) ? $seo_desc : wp_trim_words( wp_strip_all_tags( get_post($target_id)->post_content ), 50, '' ) );
         
         $book_schema = [
             '@context' => 'https://schema.org',
             '@type' => 'Book',
-            'name' => get_the_title(),
+            'name' => get_the_title( $target_id ),
             'author' => [
                 '@type' => 'Person',
                 'name' => $author
@@ -1937,10 +1942,10 @@ function zk_render_json_ld_schema() {
         
         if ( ! empty( $genre ) ) {
             $book_schema['genre'] = esc_attr( $genre );
-            $book_schema['keywords'] = esc_attr( $genre ) . ', ' . get_the_title() . ', Book, Zurab Kostava, ზურაბ კოსტავა';
+            $book_schema['keywords'] = esc_attr( $genre ) . ', ' . get_the_title($target_id) . ', Book, Zurab Kostava, ზურაბ კოსტავა';
         }
-        if ( has_post_thumbnail() ) {
-            $book_schema['image'] = get_the_post_thumbnail_url( $post->ID, 'full' );
+        if ( has_post_thumbnail( $target_id ) ) {
+            $book_schema['image'] = get_the_post_thumbnail_url( $target_id, 'full' );
         }
         $schema[] = $book_schema;
 
@@ -1988,7 +1993,8 @@ function zk_render_json_ld_schema() {
                 'name' => get_the_title(),
                 'item' => get_permalink()
             ];
-        } elseif ( is_singular( 'zk_book' ) ) {
+        } elseif ( is_singular( 'zk_book' ) || $is_book_page ) {
+            $target_id = function_exists('zk_get_seo_target_id') ? zk_get_seo_target_id( get_queried_object_id() ) : get_queried_object_id();
             $breadcrumbs['itemListElement'][] = [
                 '@type' => 'ListItem',
                 'position' => 2,
@@ -1998,7 +2004,7 @@ function zk_render_json_ld_schema() {
             $breadcrumbs['itemListElement'][] = [
                 '@type' => 'ListItem',
                 'position' => 3,
-                'name' => get_the_title(),
+                'name' => get_the_title( $target_id ),
                 'item' => get_permalink()
             ];
         } elseif ( is_page() ) {
