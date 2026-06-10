@@ -37,10 +37,59 @@ Template Name: Book Reader
             outline: none !important;
         }
     </style>
-
+<?php wp_head(); ?>
 </head>
 
 <body>
+<?php
+// SEO Pre-render Logic
+$book_slug = $post->post_name;
+$transient_key = 'zk_book_seo_' . md5($book_slug);
+$seo_content = get_transient($transient_key);
+
+if ( false === $seo_content ) {
+    $supabase_url = 'https://cblxbanbssnflgyrzhah.supabase.co/rest/v1/book_projects?slug=eq.' . $book_slug . '&select=chapters';
+    $supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNibHhiYW5ic3NuZmxneXJ6aGFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2Mzk0NDYsImV4cCI6MjA3OTIxNTQ0Nn0.36w4C_Y8TsTJ2ifORlE5vQu-yMHYCCD-Ebetz8CpQ9A';
+    
+    $args = array(
+        'headers' => array(
+            'apikey'        => $supabase_key,
+            'Authorization' => 'Bearer ' . $supabase_key,
+            'Accept'        => 'application/json'
+        ),
+        'timeout' => 5
+    );
+    
+    $response = wp_remote_get( $supabase_url, $args );
+    
+    $seo_html = '';
+    if ( ! is_wp_error( $response ) && wp_remote_retrieve_response_code( $response ) === 200 ) {
+        $body = wp_remote_retrieve_body( $response );
+        $data = json_decode( $body, true );
+        
+        if ( ! empty( $data ) && isset( $data[0]['chapters'] ) ) {
+            $chapters = $data[0]['chapters'];
+            foreach ( $chapters as $chapter ) {
+                if ( isset( $chapter['title'] ) ) {
+                    $seo_html .= '<h2>' . esc_html( $chapter['title'] ) . '</h2>';
+                }
+                if ( isset( $chapter['content'] ) ) {
+                    $seo_html .= wp_kses_post( $chapter['content'] );
+                }
+            }
+            // Cache for 12 hours
+            set_transient( $transient_key, $seo_html, 12 * HOUR_IN_SECONDS );
+            $seo_content = $seo_html;
+        }
+    }
+}
+?>
+
+<?php if ( ! empty( $seo_content ) ) : ?>
+<article id="seo-book-content" class="sr-only">
+    <?php echo $seo_content; ?>
+</article>
+<?php endif; ?>
 
 <div class="global-header-ui">
     <button id="theme-toggle-btn" class="lang-portal-btn theme-btn-override" title="Theme">
