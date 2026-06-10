@@ -1314,31 +1314,7 @@ function zk_books_shortcode() {
             )
         );
 
-        // --- Schema Aggregation (FAQ Elements) ---
-        if ( ! empty( trim( $faq_text ) ) ) {
-            $blocks = explode( "\n\n", str_replace( "\r", "", $faq_text ) );
-            foreach ( $blocks as $block ) {
-                $lines = explode( "\n", trim( $block ) );
-                $q = ''; $a = '';
-                foreach ( $lines as $line ) {
-                    if ( strpos( $line, 'Q:' ) === 0 ) {
-                        $q = trim( substr( $line, 2 ) );
-                    } elseif ( strpos( $line, 'A:' ) === 0 ) {
-                        $a = trim( substr( $line, 2 ) );
-                    }
-                }
-                if ( $q && $a ) {
-                    $schema_faq_elements[] = array(
-                        '@type' => 'Question',
-                        'name' => wp_strip_all_tags( $q ),
-                        'acceptedAnswer' => array(
-                            '@type' => 'Answer',
-                            'text' => wp_strip_all_tags( $a )
-                        )
-                    );
-                }
-            }
-        }
+        // --- Schema Aggregation (FAQ Elements - MOVED TO GLOBAL HEADER) ---
         $position++;
 
         $output .= '<div class="zk-book-card">';
@@ -1396,14 +1372,7 @@ function zk_books_shortcode() {
             'itemListElement' => $schema_item_list
         );
     }
-    if ( !empty( $schema_faq_elements ) ) {
-        $graph[] = array(
-            '@context' => 'https://schema.org',
-            '@type' => 'FAQPage',
-            'mainEntity' => $schema_faq_elements
-        );
-    }
-
+    // FAQPage schema removed from here - it is now handled centrally in zk_inject_faq_schema
     if ( !empty( $graph ) ) {
         $output .= "\n" . '<script type="application/ld+json">' . "\n";
         $output .= json_encode( $graph, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT );
@@ -2316,6 +2285,46 @@ function zk_inject_faq_schema() {
                     'text' => esc_attr( $a )
                 ]
             ];
+        }
+    }
+
+    // Merge book FAQs if it's the catalog page
+    $post_obj = get_post();
+    if ( is_page() && $post_obj && has_shortcode( $post_obj->post_content, 'zk_books' ) ) {
+        $books = get_posts( array( 'post_type' => 'zk_book', 'numberposts' => -1 ) );
+        foreach ( $books as $book ) {
+            $b_faq = get_post_meta( $book->ID, '_zk_geo_faq', true );
+            if ( ! empty( trim( $b_faq ) ) ) {
+                $b_blocks = explode( "\n\n", str_replace( "\r", "", $b_faq ) );
+                foreach ( $b_blocks as $block ) {
+                    $lines = explode( "\n", trim( $block ) );
+                    $q = ''; $a = '';
+                    foreach ( $lines as $line ) {
+                        if ( str_starts_with( $line, 'Q:' ) ) { $q = trim( substr( $line, 2 ) ); }
+                        elseif ( str_starts_with( $line, 'A:' ) ) { $a = trim( substr( $line, 2 ) ); }
+                    }
+                    if ( ! empty( $q ) && ! empty( $a ) ) {
+                        // Check for exact duplicates
+                        $is_dup = false;
+                        foreach($mainEntity as $ex) {
+                            if ($ex['name'] === esc_attr($q)) {
+                                $is_dup = true;
+                                break;
+                            }
+                        }
+                        if (!$is_dup) {
+                            $mainEntity[] = [
+                                '@type' => 'Question',
+                                'name' => esc_attr( $q ),
+                                'acceptedAnswer' => [
+                                    '@type' => 'Answer',
+                                    'text' => esc_attr( $a )
+                                ]
+                            ];
+                        }
+                    }
+                }
+            }
         }
     }
 
