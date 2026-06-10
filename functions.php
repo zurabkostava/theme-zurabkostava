@@ -1272,6 +1272,11 @@ function zk_books_shortcode() {
     }
 
     $output = '<div class="zk-books-library">';
+    
+    // SEO Data Aggregation
+    $schema_item_list = array();
+    $schema_faq_elements = array();
+    $position = 1;
 
     while ( $query->have_posts() ) {
         $query->the_post();
@@ -1282,8 +1287,59 @@ function zk_books_shortcode() {
         $genre  = get_post_meta( $id, '_zk_book_genre', true );
         $author = get_post_meta( $id, '_zk_book_author', true ) ?: 'Zurab Kostava'; // ცარიელზე ავტომატურად შენს სახელს ჩაწერს
         $link   = get_post_meta( $id, '_zk_book_link', true );
+        
+        $ai_summary = get_post_meta( $id, '_zk_geo_ai_summary', true );
+        $seo_desc   = get_post_meta( $id, '_zk_seo_description', true );
+        $faq_text   = get_post_meta( $id, '_zk_geo_faq', true );
 
         $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( $id, 'large' ) : 'https://via.placeholder.com/400x600?text=No+Cover';
+        
+        // --- Schema Aggregation (Book Item) ---
+        $desc_schema = !empty( $ai_summary ) ? $ai_summary : ( !empty($seo_desc) ? $seo_desc : wp_strip_all_tags( $desc ) );
+        $schema_item_list[] = array(
+            '@type' => 'ListItem',
+            'position' => $position,
+            'item' => array(
+                '@type' => 'Book',
+                'url' => $link ? $link : get_permalink($id),
+                'name' => wp_strip_all_tags( $title ),
+                'author' => array(
+                    '@type' => 'Person',
+                    'name' => wp_strip_all_tags( $author )
+                ),
+                'datePublished' => wp_strip_all_tags( $year ),
+                'bookFormat' => 'https://schema.org/EBook',
+                'description' => wp_strip_all_tags( $desc_schema ),
+                'image' => $img_url
+            )
+        );
+
+        // --- Schema Aggregation (FAQ Elements) ---
+        if ( ! empty( trim( $faq_text ) ) ) {
+            $blocks = explode( "\n\n", str_replace( "\r", "", $faq_text ) );
+            foreach ( $blocks as $block ) {
+                $lines = explode( "\n", trim( $block ) );
+                $q = ''; $a = '';
+                foreach ( $lines as $line ) {
+                    if ( strpos( $line, 'Q:' ) === 0 ) {
+                        $q = trim( substr( $line, 2 ) );
+                    } elseif ( strpos( $line, 'A:' ) === 0 ) {
+                        $a = trim( substr( $line, 2 ) );
+                    }
+                }
+                if ( $q && $a ) {
+                    $schema_faq_elements[] = array(
+                        '@type' => 'Question',
+                        'name' => wp_strip_all_tags( $q ),
+                        'acceptedAnswer' => array(
+                            '@type' => 'Answer',
+                            'text' => wp_strip_all_tags( $a )
+                        )
+                    );
+                }
+            }
+        }
+        $position++;
 
         $output .= '<div class="zk-book-card">';
 
@@ -1330,6 +1386,29 @@ function zk_books_shortcode() {
 
     wp_reset_postdata();
     $output .= '</div>';
+    
+    // --- Append JSON-LD Schema ---
+    $graph = array();
+    if ( !empty( $schema_item_list ) ) {
+        $graph[] = array(
+            '@context' => 'https://schema.org',
+            '@type' => 'ItemList',
+            'itemListElement' => $schema_item_list
+        );
+    }
+    if ( !empty( $schema_faq_elements ) ) {
+        $graph[] = array(
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => $schema_faq_elements
+        );
+    }
+
+    if ( !empty( $graph ) ) {
+        $output .= "\n" . '<script type="application/ld+json">' . "\n";
+        $output .= json_encode( $graph, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT );
+        $output .= "\n" . '</script>' . "\n";
+    }
 
     return $output;
 }
