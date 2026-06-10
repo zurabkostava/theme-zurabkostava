@@ -1288,14 +1288,13 @@ function zk_books_shortcode() {
         $author = get_post_meta( $id, '_zk_book_author', true ) ?: 'Zurab Kostava'; // ცარიელზე ავტომატურად შენს სახელს ჩაწერს
         $link   = get_post_meta( $id, '_zk_book_link', true );
         
-        $ai_summary = get_post_meta( $id, '_zk_geo_ai_summary', true );
         $seo_desc   = get_post_meta( $id, '_zk_seo_description', true );
         $faq_text   = get_post_meta( $id, '_zk_geo_faq', true );
 
         $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( $id, 'large' ) : 'https://via.placeholder.com/400x600?text=No+Cover';
         
         // --- Schema Aggregation (Book Item) ---
-        $desc_schema = !empty( $ai_summary ) ? $ai_summary : ( !empty($seo_desc) ? $seo_desc : wp_strip_all_tags( $desc ) );
+        $desc_schema = !empty($seo_desc) ? $seo_desc : wp_strip_all_tags( $desc );
         $schema_item_list[] = array(
             '@type' => 'ListItem',
             'position' => $position,
@@ -1921,10 +1920,9 @@ function zk_render_json_ld_schema() {
         $year   = get_post_meta( $target_id, '_zk_book_year', true );
         $genre  = get_post_meta( $target_id, '_zk_book_genre', true );
         $author = get_post_meta( $target_id, '_zk_book_author', true ) ?: 'Zurab Kostava';
-        $ai_summary = get_post_meta( $target_id, '_zk_geo_ai_summary', true );
         $seo_desc   = get_post_meta( $target_id, '_zk_seo_description', true );
         
-        $desc = !empty( $ai_summary ) ? $ai_summary : ( !empty($seo_desc) ? $seo_desc : wp_trim_words( wp_strip_all_tags( get_post($target_id)->post_content ), 50, '' ) );
+        $desc = !empty($seo_desc) ? $seo_desc : wp_trim_words( wp_strip_all_tags( get_post($target_id)->post_content ), 50, '' );
         
         $book_schema = [
             '@context' => 'https://schema.org',
