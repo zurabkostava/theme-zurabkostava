@@ -460,8 +460,8 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 }
 
 .hero-sub {
-    max-width: 32ch;
-    color: var(--text-muted);
+    max-width: 38ch;
+    color: rgba(255, 255, 255, 0.45);
     font-weight: 300;
     font-size: clamp(1rem, 2.2vw, 1.25rem);
     line-height: 1.6;
