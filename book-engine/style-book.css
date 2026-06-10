@@ -3314,7 +3314,13 @@ i[class*="icon"], span[class*="icon"] {
 /* 4. ზომის მცირე კორექცია */
 /* Noto Sans-ი ოდნავ პატარაა, ამიტომ მთლიანობაში 5%-ით ვზრდით */
 #digital-library-root {
-    --book-width: 600px;
+    /* 🚀 LAZY RESPONSIVE WIDTH: 
+       ინარჩუნებს წიგნის ესთეტიურ პროპორციას მაღალ რეზოლუციებზე. 
+       - იღებს სიმაღლის 72%-ს
+       - არ სცდება 800px-ს (რომ ტექსტი ძალიან არ გაიწელოს)
+       - ითვალისწინებს საიდბარის სიგანეს, რომ ეკრანს არ გაცდეს 
+    */
+    --book-width: min(800px, clamp(350px, calc(var(--book-height) * 0.72), calc((100vw - var(--sidebar-width) - 60px) / 2)));
     --book-height: 80vh;
     --sidebar-width: 300px;
     --bg-color: #111111;
@@ -5472,4 +5478,16 @@ body.light-mode #ambient-bg {
     user-select: none !important;
     touch-action: manipulation !important;
     outline: none !important;
+}
+
+/* 🚀 ULTRA-WIDE TYPOGRAPHY SCALING */
+@media (min-width: 1920px) {
+    #digital-library-root {
+        --p-font-size: 1.05rem;
+    }
+}
+@media (min-width: 2560px) {
+    #digital-library-root {
+        --p-font-size: 1.2rem;
+    }
 }
