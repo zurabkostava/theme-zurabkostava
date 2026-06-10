@@ -1288,6 +1288,7 @@ function zk_books_shortcode() {
         $author = get_post_meta( $id, '_zk_book_author', true ) ?: 'Zurab Kostava'; // ცარიელზე ავტომატურად შენს სახელს ჩაწერს
         $link   = get_post_meta( $id, '_zk_book_link', true );
         
+        $ai_summary = get_post_meta( $id, '_zk_geo_ai_summary', true );
         $seo_desc   = get_post_meta( $id, '_zk_seo_description', true );
         $faq_text   = get_post_meta( $id, '_zk_geo_faq', true );
 
@@ -1922,7 +1923,7 @@ function zk_render_json_ld_schema() {
         $author = get_post_meta( $target_id, '_zk_book_author', true ) ?: 'Zurab Kostava';
         $seo_desc   = get_post_meta( $target_id, '_zk_seo_description', true );
         
-        $desc = !empty($seo_desc) ? $seo_desc : wp_trim_words( wp_strip_all_tags( get_post($target_id)->post_content ), 50, '' );
+        $desc = !empty($seo_desc) ? $seo_desc : wp_strip_all_tags( get_post($target_id)->post_content );
         
         $book_schema = [
             '@context' => 'https://schema.org',
