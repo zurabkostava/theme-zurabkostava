@@ -44,11 +44,14 @@ Template Name: Book Reader
 <?php
 // SEO Pre-render Logic
 $book_slug = $post->post_name;
-$transient_key = 'zk_book_seo_' . md5($book_slug);
-$seo_content = get_transient($transient_key);
+$current_locale = get_locale();
+$is_english = ( strpos( $current_locale, 'en' ) === 0 );
+
+$transient_key = 'zk_book_seo_' . md5( $book_slug . '_' . $current_locale );
+$seo_content = get_transient( $transient_key );
 
 if ( false === $seo_content ) {
-    $supabase_url = 'https://cblxbanbssnflgyrzhah.supabase.co/rest/v1/book_projects?slug=eq.' . $book_slug . '&select=chapters';
+    $supabase_url = 'https://cblxbanbssnflgyrzhah.supabase.co/rest/v1/book_projects?slug=eq.' . $book_slug . '&select=chapters,chapters_en';
     $supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNibHhiYW5ic3NuZmxneXJ6aGFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2Mzk0NDYsImV4cCI6MjA3OTIxNTQ0Nn0.36w4C_Y8TsTJ2ifORlE5vQu-yMHYCCD-Ebetz8CpQ9A';
     
     $args = array(
@@ -67,19 +70,29 @@ if ( false === $seo_content ) {
         $body = wp_remote_retrieve_body( $response );
         $data = json_decode( $body, true );
         
-        if ( ! empty( $data ) && isset( $data[0]['chapters'] ) ) {
-            $chapters = $data[0]['chapters'];
-            foreach ( $chapters as $chapter ) {
-                if ( isset( $chapter['title'] ) ) {
-                    $seo_html .= '<h2>' . esc_html( $chapter['title'] ) . '</h2>';
-                }
-                if ( isset( $chapter['content'] ) ) {
-                    $seo_html .= wp_kses_post( $chapter['content'] );
-                }
+        if ( ! empty( $data ) ) {
+            $chapters_to_render = null;
+            
+            // If English is active and we have English chapters, use them. Otherwise fallback to default.
+            if ( $is_english && isset( $data[0]['chapters_en'] ) && ! empty( $data[0]['chapters_en'] ) ) {
+                $chapters_to_render = $data[0]['chapters_en'];
+            } elseif ( isset( $data[0]['chapters'] ) ) {
+                $chapters_to_render = $data[0]['chapters'];
             }
-            // Cache for 12 hours
-            set_transient( $transient_key, $seo_html, 12 * HOUR_IN_SECONDS );
-            $seo_content = $seo_html;
+
+            if ( $chapters_to_render ) {
+                foreach ( $chapters_to_render as $chapter ) {
+                    if ( isset( $chapter['title'] ) ) {
+                        $seo_html .= '<h2>' . esc_html( $chapter['title'] ) . '</h2>';
+                    }
+                    if ( isset( $chapter['content'] ) ) {
+                        $seo_html .= wp_kses_post( $chapter['content'] );
+                    }
+                }
+                // Cache for 12 hours
+                set_transient( $transient_key, $seo_html, 12 * HOUR_IN_SECONDS );
+                $seo_content = $seo_html;
+            }
         }
     }
 }
