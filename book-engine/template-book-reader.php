@@ -45,9 +45,12 @@ Template Name: Book Reader
 // SEO Pre-render Logic
 $book_slug = $post->post_name;
 $current_locale = get_locale();
-$is_georgian = ( strpos( $_SERVER['REQUEST_URI'], '/ka/' ) !== false || strpos( $current_locale, 'ka' ) === 0 );
-$transient_key = 'zk_book_seo_v3_' . md5( $book_slug . '_' . ( $is_georgian ? 'ka' : 'en' ) );
+$request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+$is_georgian = ( strpos( $request_uri, '/ka/' ) !== false || strpos( $request_uri, 'lang=ka' ) !== false || strpos( $current_locale, 'ka' ) === 0 );
+$transient_key = 'zk_book_seo_v4_' . md5( $book_slug . '_' . ( $is_georgian ? 'ka' : 'en' ) );
 $seo_content = get_transient( $transient_key );
+
+echo "<!-- SEO DEBUG: Locale={$current_locale}, URI={$request_uri}, IsGeorgian=" . ($is_georgian ? 'YES' : 'NO') . " -->\n";
 
 if ( false === $seo_content ) {
     $supabase_url = 'https://cblxbanbssnflgyrzhah.supabase.co/rest/v1/book_projects?slug=eq.' . $book_slug . '&select=chapters';
