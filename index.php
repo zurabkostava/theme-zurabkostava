@@ -19,16 +19,14 @@ ob_start(); ?>
     <!-- Cinematic Content -->
     <div class="hero-inner">
         <div class="hero-eyebrow-wrap">
-            <p class="hero-eyebrow"><?php echo esc_html( apply_filters( 'zk_hero_eyebrow', 'Portfolio' ) ); ?></p>
+            <p class="hero-eyebrow"><?php echo esc_html( apply_filters( 'zk_hero_eyebrow', '[ TRANSMISSION LIVE ]' ) ); ?></p>
         </div>
         <div class="hero-title-wrap">
             <h1 class="hero-title" data-text="<?php echo esc_attr( $zk_site ); ?>"><?php echo esc_html( $zk_site ); ?></h1>
         </div>
-        <?php if ( get_bloginfo( 'description' ) ) : ?>
-            <div class="hero-sub-wrap">
-                <p class="hero-sub"><?php echo esc_html( get_bloginfo( 'description' ) ); ?></p>
-            </div>
-        <?php endif; ?>
+        <div class="hero-sub-wrap">
+            <p class="hero-sub">Multidisciplinary Artist From The Solar System</p>
+        </div>
     </div>
 </div>
 <?php
