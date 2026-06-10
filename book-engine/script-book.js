@@ -1253,7 +1253,7 @@ async function generateBookStructure() {
     }
 
     let coverHTML = bookMeta.coverImage ?
-        `<img src="${bookMeta.coverImage}" class="cover-img">` :
+        `<img src="${bookMeta.coverImage}" class="cover-img" fetchpriority="high" loading="eager" decoding="sync">` :
         `<div class="cover-design"><h1>${displayTitle}</h1><p>${displaySubtitle}</p></div>`;
 
     pages.push({ html: coverHTML, isCover: true });
@@ -1291,6 +1291,18 @@ async function generateBookStructure() {
         footnotes.forEach((fn, index) => {
             fn.setAttribute('data-fn-index', index + 1);
         });
+        
+        // 🚀 LAZY LOADING & FADE-IN OPTIMIZATION
+        tempContainer.querySelectorAll('img').forEach(img => {
+            if (!img.classList.contains('cover-img')) {
+                img.setAttribute('loading', 'lazy');
+                img.setAttribute('decoding', 'async');
+                img.style.opacity = '0';
+                img.style.transition = 'opacity 0.6s ease-in-out';
+                img.setAttribute('onload', "this.style.opacity='1'");
+            }
+        });
+
         contentToRender = tempContainer.innerHTML;
 
         const hyph = applyCustomGeorgianHyphenation(contentToRender);
