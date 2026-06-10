@@ -1705,10 +1705,27 @@ add_action( 'save_post', 'zk_seo_save_meta' );
 // Ensure WP doesn't output its own <title> if theme supports it
 remove_action( 'wp_head', '_wp_render_title_tag', 1 );
 
+function zk_get_seo_target_id( $default_id ) {
+    if ( is_page() && get_page_template_slug( $default_id ) === 'book-engine/template-book-reader.php' ) {
+        $book_slug = get_post_field( 'post_name', $default_id );
+        $book_posts = get_posts( array(
+            'name'        => $book_slug,
+            'post_type'   => 'zk_book',
+            'post_status' => 'publish',
+            'numberposts' => 1
+        ) );
+        if ( ! empty( $book_posts ) ) {
+            return $book_posts[0]->ID;
+        }
+    }
+    return $default_id;
+}
+
 function zk_render_seo_meta() {
     // Determine context
     $is_single = is_single() || is_page();
     $obj_id = get_queried_object_id();
+    $obj_id = zk_get_seo_target_id( $obj_id );
     
     // Default Fallbacks
     $site_name = get_bloginfo( 'name' );
@@ -2268,7 +2285,11 @@ add_action( 'save_post', 'zk_save_geo_meta_box_data' );
 function zk_inject_faq_schema() {
     if ( ! is_singular() ) return;
     global $post;
-    $faq_text = get_post_meta( $post->ID, '_zk_geo_faq', true );
+    
+    // Automatically fetch FAQ from the corresponding zk_book if on a book reader page
+    $target_id = function_exists('zk_get_seo_target_id') ? zk_get_seo_target_id( $post->ID ) : $post->ID;
+    
+    $faq_text = get_post_meta( $target_id, '_zk_geo_faq', true );
     if ( empty( trim( $faq_text ) ) ) return;
 
     $blocks = explode( "\n\n", str_replace( "\r", "", $faq_text ) );
