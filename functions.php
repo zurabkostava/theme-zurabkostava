@@ -41,6 +41,14 @@ function zk_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'zk_assets' );
 
+// 🔴 Bypass WP Rocket Delay JS for app.js so tracking fires immediately
+add_filter( 'script_loader_tag', function( $tag, $handle ) {
+    if ( 'zk-app' === $handle ) {
+        return str_replace( '<script ', '<script data-no-optimize="1" ', $tag );
+    }
+    return $tag;
+}, 10, 2 );
+
 function zk_register_menus() {
     register_nav_menu('primary-menu', 'Primary Header Menu');
 }
@@ -2642,7 +2650,7 @@ add_action( 'after_setup_theme', 'zk_create_analytics_table' );
 // 2. REST API Tracking Endpoint
 add_action( 'rest_api_init', function () {
     register_rest_route( 'zk/v1', '/sync', array(
-        'methods' => array('GET', 'POST'),
+        'methods' => 'POST',
         'callback' => 'zk_track_visitor',
         'permission_callback' => '__return_true', // Open endpoint
     ) );
@@ -2681,9 +2689,6 @@ function zk_track_visitor( WP_REST_Request $request ) {
         if (!empty($body)) {
             $params = json_decode($body, true);
         }
-    }
-    if (empty($params) && $request->get_method() === 'GET') {
-        $params = $request->get_query_params();
     }
     $url = isset($params['url']) ? sanitize_text_field($params['url']) : '/';
     $country = isset($params['country']) ? sanitize_text_field($params['country']) : '';

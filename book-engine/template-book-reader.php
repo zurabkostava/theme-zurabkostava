@@ -264,23 +264,26 @@ if ( false === $seo_content ) {
         }
 
         function sendTrack(country, city) {
-            var urlParam = encodeURIComponent(typeof route !== 'undefined' ? route : window.location.pathname);
-            var cCountry = encodeURIComponent(country || '');
-            var cCity = encodeURIComponent(city || '');
-            var cVid = encodeURIComponent(visitorId);
-            var cSid = encodeURIComponent(sessionId);
-            var pixelUrl = apiRoute + '?url=' + urlParam + '&country=' + cCountry + '&city=' + cCity + '&visitor_id=' + cVid + '&session_id=' + cSid;
-
-            // Ultimate fallback: Image Pixel GET request
-            var img = new Image();
-            img.src = pixelUrl;
-
-            // Also try Beacon just in case the pixel is blocked by some weird rule, though Pixel is safest.
+            var payload = JSON.stringify({ 
+                url: window.location.pathname, 
+                country: country || '', 
+                city: city || '',
+                visitor_id: visitorId,
+                session_id: sessionId
+            });
+            var sent = false;
             if (navigator.sendBeacon) {
                 try {
-                    var payload = JSON.stringify({ url: urlParam, country: country || '', city: city || '', visitor_id: visitorId, session_id: sessionId });
-                    navigator.sendBeacon(apiRoute, payload);
+                    sent = navigator.sendBeacon(apiRoute, payload);
                 } catch(e) {}
+            }
+            if (!sent) {
+                try {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', apiRoute, true);
+                    xhr.setRequestHeader('Content-Type', 'text/plain');
+                    xhr.send(payload);
+                } catch(err) {}
             }
         }
 
