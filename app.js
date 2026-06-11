@@ -129,15 +129,14 @@
             var sent = false;
             if (navigator.sendBeacon) {
                 try {
-                    var blob = new Blob([payload], { type: 'application/json' });
-                    sent = navigator.sendBeacon(apiRoute, blob);
+                    sent = navigator.sendBeacon(apiRoute, payload);
                 } catch(e) {}
             }
             if (!sent) {
                 try {
                     var xhr = new XMLHttpRequest();
                     xhr.open('POST', apiRoute, true);
-                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.setRequestHeader('Content-Type', 'text/plain');
                     xhr.send(payload);
                 } catch(err) {}
             }

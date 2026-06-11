@@ -2676,6 +2676,12 @@ function zk_track_visitor( WP_REST_Request $request ) {
 
     // Get params
     $params = $request->get_json_params();
+    if (empty($params)) {
+        $body = $request->get_body();
+        if (!empty($body)) {
+            $params = json_decode($body, true);
+        }
+    }
     $url = isset($params['url']) ? sanitize_text_field($params['url']) : '/';
     $country = isset($params['country']) ? sanitize_text_field($params['country']) : '';
     $city = isset($params['city']) ? sanitize_text_field($params['city']) : '';
