@@ -117,24 +117,44 @@
         } catch (e) {}
 
         function sendTrack(country, city) {
-            fetch(apiRoute, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    url: route, 
-                    country: country || '', 
-                    city: city || '',
-                    visitor_id: visitorId,
-                    session_id: sessionId
-                }),
-                keepalive: true
-            }).catch(function(){});
+            var payload = JSON.stringify({ 
+                url: route, 
+                country: country || '', 
+                city: city || '',
+                visitor_id: visitorId,
+                session_id: sessionId
+            });
+            var sent = false;
+            if (navigator.sendBeacon) {
+                try {
+                    var blob = new Blob([payload], { type: 'application/json' });
+                    sent = navigator.sendBeacon(apiRoute, blob);
+                } catch(e) {}
+            }
+            if (!sent) {
+                try {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', apiRoute, true);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.send(payload);
+                } catch(err) {}
+            }
         }
+
+        var geoResolved = false;
+        var geoTimeout = setTimeout(function() {
+            if (!geoResolved) {
+                geoResolved = true;
+                sendTrack('', '');
+            }
+        }, 1500);
 
         try {
             var cachedGeo = sessionStorage.getItem('zk_geo');
             if (cachedGeo) {
                 var geo = JSON.parse(cachedGeo);
+                geoResolved = true;
+                clearTimeout(geoTimeout);
                 sendTrack(geo.country, geo.city);
                 return;
             }
@@ -143,20 +163,29 @@
         fetch('https://ipapi.co/json/')
             .then(function(r) { return r.json(); })
             .then(function(data) {
+                if (geoResolved) return;
+                geoResolved = true;
+                clearTimeout(geoTimeout);
                 var cty = data.country_name || data.country;
                 var ctyName = data.city || '';
                 try { sessionStorage.setItem('zk_geo', JSON.stringify({ country: cty, city: ctyName })); } catch (e) {}
                 sendTrack(cty, ctyName);
             })
             .catch(function() {
-                // Fallback
+                if (geoResolved) return;
                 fetch('https://get.geojs.io/v1/ip/geo.json')
                     .then(function(r) { return r.json(); })
                     .then(function(data) {
+                        if (geoResolved) return;
+                        geoResolved = true;
+                        clearTimeout(geoTimeout);
                         try { sessionStorage.setItem('zk_geo', JSON.stringify({ country: data.country, city: data.city || '' })); } catch (e) {}
                         sendTrack(data.country, data.city || '');
                     })
                     .catch(function() {
+                        if (geoResolved) return;
+                        geoResolved = true;
+                        clearTimeout(geoTimeout);
                         sendTrack('', '');
                     });
             });
