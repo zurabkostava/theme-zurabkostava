@@ -97,15 +97,28 @@ function zk_get_browser_and_os($ua) {
     $browser = 'Unknown Browser';
     $os = 'Unknown OS';
 
-    // Browser Detection
+    // In-App Browser Detection
     if (stripos($ua, 'Instagram') !== false) { $browser = 'Instagram In-App'; }
-    elseif (stripos($ua, 'FB_IAB') !== false || stripos($ua, 'FBAN') !== false || stripos($ua, 'FBAV') !== false) { $browser = 'Facebook In-App'; }
+    elseif (stripos($ua, 'FB_IAB') !== false || stripos($ua, 'FBAN') !== false || stripos($ua, 'FBAV') !== false || stripos($ua, 'FacebookApp') !== false) { $browser = 'Facebook In-App'; }
     elseif (stripos($ua, 'TikTok') !== false) { $browser = 'TikTok In-App'; }
+    elseif (stripos($ua, 'LinkedInApp') !== false) { $browser = 'LinkedIn In-App'; }
+    elseif (stripos($ua, 'Twitter') !== false) { $browser = 'Twitter/X In-App'; }
+    elseif (stripos($ua, 'Snapchat') !== false) { $browser = 'Snapchat In-App'; }
+    elseif (stripos($ua, 'Pinterest') !== false) { $browser = 'Pinterest In-App'; }
+    elseif (stripos($ua, 'Telegram') !== false) { $browser = 'Telegram In-App'; }
+    elseif (stripos($ua, 'WhatsApp') !== false) { $browser = 'WhatsApp In-App'; }
+    elseif (stripos($ua, 'Viber') !== false) { $browser = 'Viber In-App'; }
+    elseif (stripos($ua, 'Reddit') !== false) { $browser = 'Reddit In-App'; }
+    elseif (stripos($ua, 'Threads') !== false) { $browser = 'Threads In-App'; }
+    elseif (stripos($ua, 'Discord') !== false) { $browser = 'Discord In-App'; }
+    elseif (stripos($ua, 'GSA/') !== false || stripos($ua, 'GoogleApp') !== false) { $browser = 'Google Search App'; }
+
+    // Regular Browser Detection
     elseif (stripos($ua, 'Edg') !== false) { $browser = 'Microsoft Edge'; }
     elseif (stripos($ua, 'OPR') !== false || stripos($ua, 'Opera') !== false) { $browser = 'Opera'; }
     elseif (stripos($ua, 'Firefox') !== false || stripos($ua, 'FxiOS') !== false) { $browser = 'Mozilla Firefox'; }
     elseif (stripos($ua, 'Chrome') !== false || stripos($ua, 'CriOS') !== false) { $browser = 'Google Chrome'; }
-    elseif (stripos($ua, 'Safari') !== false) { $browser = 'Apple Safari'; }
+    elseif (stripos($ua, 'Safari') !== false && stripos($ua, 'Chrome') === false) { $browser = 'Apple Safari'; }
 
     // OS Detection
     if (stripos($ua, 'Windows NT 10.0') !== false || stripos($ua, 'Windows NT 11.0') !== false) { $os = 'Windows 10/11'; }
