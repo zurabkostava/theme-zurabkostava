@@ -233,5 +233,76 @@ if ( false === $seo_content ) {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="<?php echo esc_url( get_template_directory_uri() . '/book-engine/script-book.min.js?v=' . filemtime( get_template_directory() . '/book-engine/script-book.min.js' ) ); ?>"></script>
 
+<!-- Standalone Analytics Tracking for Book Engine -->
+<script>
+(function() {
+    try {
+        if (window.zkIsAdmin) return;
+        if (localStorage.getItem('zk_ignore_tracking') === 'true') return;
+        
+        var apiRoute = '<?php echo esc_url(rest_url("zk/v1/track")); ?>';
+        
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        var visitorId = localStorage.getItem('zk_visitor_id');
+        if (!visitorId) {
+            visitorId = generateUUID();
+            localStorage.setItem('zk_visitor_id', visitorId);
+        }
+
+        var sessionId = sessionStorage.getItem('zk_session_id');
+        if (!sessionId) {
+            sessionId = generateUUID();
+            sessionStorage.setItem('zk_session_id', sessionId);
+        }
+
+        function sendTrack(country, city) {
+            fetch(apiRoute, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    url: window.location.pathname, 
+                    country: country || '', 
+                    city: city || '',
+                    visitor_id: visitorId,
+                    session_id: sessionId
+                }),
+                keepalive: true
+            }).catch(function(){});
+        }
+
+        var cachedGeo = sessionStorage.getItem('zk_geo');
+        if (cachedGeo) {
+            var geo = JSON.parse(cachedGeo);
+            sendTrack(geo.country, geo.city);
+            return;
+        }
+
+        fetch('https://ipapi.co/json/')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var cty = data.country_name || data.country;
+                var ctyName = data.city || '';
+                sessionStorage.setItem('zk_geo', JSON.stringify({ country: cty, city: ctyName }));
+                sendTrack(cty, ctyName);
+            })
+            .catch(function() {
+                fetch('https://get.geojs.io/v1/ip/geo.json')
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        sessionStorage.setItem('zk_geo', JSON.stringify({ country: data.country, city: data.city || '' }));
+                        sendTrack(data.country, data.city || '');
+                    })
+                    .catch(function() { sendTrack('', ''); });
+            });
+    } catch(e) {}
+})();
+</script>
+
 </body>
 </html>
