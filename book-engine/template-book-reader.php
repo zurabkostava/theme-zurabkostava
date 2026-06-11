@@ -238,7 +238,9 @@ if ( false === $seo_content ) {
 (function() {
     try {
         if (window.zkIsAdmin) return;
-        if (localStorage.getItem('zk_ignore_tracking') === 'true') return;
+        try { 
+            if (localStorage.getItem('zk_ignore_tracking') === 'true' && window.location.search.indexOf('force_track') === -1) return; 
+        } catch(e) {}
         
         var apiRoute = '<?php echo esc_url(rest_url("zk/v1/sync")); ?>';
         
