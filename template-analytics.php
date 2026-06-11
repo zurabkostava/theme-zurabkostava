@@ -564,7 +564,8 @@ get_header();
     grid-template-columns: 1fr 1fr;
 }
 @media (max-width: 900px) {
-    .zk-analytics-main, .zk-analytics-main.zk-half { grid-template-columns: 1fr; }
+    .zk-analytics-main { display: flex; flex-direction: column; }
+    .zk-analytics-main.zk-half { display: flex; flex-direction: column; }
 }
 @media (max-width: 600px) {
     .zk-analytics-container { padding: 80px 16px 40px 16px; }
