@@ -2603,4 +2603,99 @@ function zk_mobile_bottom_nav() {
     <?php
 }
 add_action('wp_footer', 'zk_mobile_bottom_nav');
+
+/* ============================================================
+   ZK CUSTOM ANALYTICS (Zero-Plugin Minimalist Tracking)
+   ============================================================ */
+
+// 1. Create DB Table
+function zk_create_analytics_table() {
+    // Only run if option not set (performance optimization)
+    if ( get_option( 'zk_analytics_db_created' ) ) {
+        return;
+    }
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'zk_analytics';
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        ip_hash varchar(64) NOT NULL,
+        url varchar(255) NOT NULL,
+        user_agent text NOT NULL,
+        visit_time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+
+    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+    dbDelta( $sql );
+
+    update_option( 'zk_analytics_db_created', true );
+}
+add_action( 'after_setup_theme', 'zk_create_analytics_table' );
+
+// 2. REST API Tracking Endpoint
+add_action( 'rest_api_init', function () {
+    register_rest_route( 'zk/v1', '/track', array(
+        'methods' => 'POST',
+        'callback' => 'zk_track_visitor',
+        'permission_callback' => '__return_true', // Open endpoint
+    ) );
+} );
+
+function zk_track_visitor( WP_REST_Request $request ) {
+    // Ignore logged in users (admins)
+    if ( is_user_logged_in() ) {
+        return new WP_REST_Response( array('status' => 'ignored (admin)'), 200 );
+    }
+
+    $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+    
+    // Basic bot detection
+    $bots = array('bot', 'spider', 'crawler', 'google', 'bing', 'yandex', 'baidu', 'ahrefs', 'semrush');
+    $is_bot = false;
+    $ua_lower = strtolower($user_agent);
+    foreach ($bots as $bot) {
+        if (strpos($ua_lower, $bot) !== false) {
+            $is_bot = true;
+            break;
+        }
+    }
+
+    if ( $is_bot ) {
+        return new WP_REST_Response( array('status' => 'ignored (bot)'), 200 );
+    }
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'zk_analytics';
+
+    // Get params
+    $params = $request->get_json_params();
+    $url = isset($params['url']) ? sanitize_text_field($params['url']) : '/';
+
+    // Get IP and Hash it (GDPR friendly)
+    $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        $ip = $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0];
+    }
+    
+    // Daily salt ensures IPs cannot be reversed across days, but uniquely identifies daily visitors
+    $salt = date('Y-m-d') . wp_salt();
+    $ip_hash = hash('sha256', $ip . $salt);
+
+    $wpdb->insert(
+        $table_name,
+        array(
+            'ip_hash' => $ip_hash,
+            'url' => $url,
+            'user_agent' => substr($user_agent, 0, 250) // truncate just in case
+        ),
+        array('%s', '%s', '%s')
+    );
+
+    return new WP_REST_Response( array('status' => 'success'), 200 );
+}
 

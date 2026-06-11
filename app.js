@@ -83,6 +83,17 @@
         p = p.replace(/\/+$/, '');
         return p === '' ? '/' : p;
     }
+    
+    function zkTrackView(route) {
+        if (!window.fetch || !window.ZK) return;
+        var apiRoute = ZK.home.replace(/\/$/, '') + '/wp-json/zk/v1/track';
+        fetch(apiRoute, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: route }),
+            keepalive: true
+        }).catch(function(){});
+    }
     function keyOf(u) { return u.pathname + u.search; }
     function delay(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
@@ -213,6 +224,7 @@
                 scrollTopInstant();
                 viewEl.focus({ preventScroll: true });
                 document.dispatchEvent(new CustomEvent('zk:viewChange'));
+                zkTrackView(data.route);
             }
 
             if (document.startViewTransition) {
@@ -266,7 +278,9 @@
         route: viewEl.getAttribute('data-route') || toRoute(location.pathname),
         title: document.title
     };
-    updateChrome(viewEl.getAttribute('data-route') || toRoute(location.pathname));
+    var initialRoute = viewEl.getAttribute('data-route') || toRoute(location.pathname);
+    updateChrome(initialRoute);
+    zkTrackView(initialRoute);
 })();
 
 /* ============================================================
