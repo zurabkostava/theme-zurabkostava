@@ -105,8 +105,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // 🚫 Remove Mobile Bottom
             background: var(--bg);
             color: var(--text);
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
             min-height: 100vh;
             margin: 0;
             padding: 80px 30px 30px 30px;
@@ -124,7 +125,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // 🚫 Remove Mobile Bottom
         .hero-orb-2 { width: 50vw; height: 50vw; max-width: 600px; max-height: 600px; background: radial-gradient(circle, rgba(0, 240, 255, 0.12) 0%, transparent 70%); bottom: -10%; right: -10%; animation-delay: -5s; animation-duration: 18s; }
         @keyframes orbFloat { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(10%, 15%) scale(1.1); } }
 
-        .container { position: relative; z-index: 2; width: 100%; max-width: 1200px; margin: 0 auto; text-align: center; background: var(--glass-bg); backdrop-filter: blur(22px) saturate(170%); -webkit-backdrop-filter: blur(22px) saturate(170%); border-radius: 16px; border: 1px solid var(--hairline); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); padding: 2.5rem; }
+        .container { position: relative; z-index: 2; width: 100%; max-width: 1200px; margin: auto; text-align: center; background: var(--glass-bg); backdrop-filter: blur(22px) saturate(170%); -webkit-backdrop-filter: blur(22px) saturate(170%); border-radius: 16px; border: 1px solid var(--hairline); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); padding: 2.5rem; flex-shrink: 0; }
         .encrolib-title {
             position: relative;
             font-size: clamp(3rem, 8vw, 5rem);
