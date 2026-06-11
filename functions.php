@@ -2611,7 +2611,7 @@ add_action('wp_footer', 'zk_mobile_bottom_nav');
 // 1. Create DB Table
 function zk_create_analytics_table() {
     // Only run if option not set (performance optimization)
-    if ( get_option( 'zk_analytics_db_v2' ) ) {
+    if ( get_option( 'zk_analytics_db_v3' ) ) {
         return;
     }
 
@@ -2622,6 +2622,8 @@ function zk_create_analytics_table() {
     $sql = "CREATE TABLE $table_name (
         id bigint(20) NOT NULL AUTO_INCREMENT,
         ip_hash varchar(64) NOT NULL,
+        visitor_id varchar(36) DEFAULT '' NOT NULL,
+        session_id varchar(36) DEFAULT '' NOT NULL,
         url varchar(255) NOT NULL,
         country varchar(100) DEFAULT '' NOT NULL,
         city varchar(100) DEFAULT '' NOT NULL,
@@ -2633,7 +2635,7 @@ function zk_create_analytics_table() {
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     dbDelta( $sql );
 
-    update_option( 'zk_analytics_db_v2', true );
+    update_option( 'zk_analytics_db_v3', true );
 }
 add_action( 'after_setup_theme', 'zk_create_analytics_table' );
 
@@ -2677,6 +2679,8 @@ function zk_track_visitor( WP_REST_Request $request ) {
     $url = isset($params['url']) ? sanitize_text_field($params['url']) : '/';
     $country = isset($params['country']) ? sanitize_text_field($params['country']) : '';
     $city = isset($params['city']) ? sanitize_text_field($params['city']) : '';
+    $visitor_id = isset($params['visitor_id']) ? sanitize_text_field($params['visitor_id']) : '';
+    $session_id = isset($params['session_id']) ? sanitize_text_field($params['session_id']) : '';
 
     // Get IP and Hash it (GDPR friendly)
     $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
@@ -2694,12 +2698,14 @@ function zk_track_visitor( WP_REST_Request $request ) {
         $table_name,
         array(
             'ip_hash' => $ip_hash,
+            'visitor_id' => $visitor_id,
+            'session_id' => $session_id,
             'url' => $url,
             'country' => $country,
             'city' => $city,
             'user_agent' => substr($user_agent, 0, 250) // truncate just in case
         ),
-        array('%s', '%s', '%s', '%s', '%s')
+        array('%s', '%s', '%s', '%s', '%s', '%s', '%s')
     );
 
     return new WP_REST_Response( array('status' => 'success'), 200 );

@@ -88,11 +88,42 @@
         if (!window.fetch || !window.ZK) return;
         var apiRoute = ZK.home.replace(/\/$/, '') + '/wp-json/zk/v1/track';
         
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        var visitorId = '';
+        try {
+            visitorId = localStorage.getItem('zk_visitor_id');
+            if (!visitorId) {
+                visitorId = generateUUID();
+                localStorage.setItem('zk_visitor_id', visitorId);
+            }
+        } catch (e) {}
+
+        var sessionId = '';
+        try {
+            sessionId = sessionStorage.getItem('zk_session_id');
+            if (!sessionId) {
+                sessionId = generateUUID();
+                sessionStorage.setItem('zk_session_id', sessionId);
+            }
+        } catch (e) {}
+
         function sendTrack(country, city) {
             fetch(apiRoute, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: route, country: country || '', city: city || '' }),
+                body: JSON.stringify({ 
+                    url: route, 
+                    country: country || '', 
+                    city: city || '',
+                    visitor_id: visitorId,
+                    session_id: sessionId
+                }),
                 keepalive: true
             }).catch(function(){});
         }

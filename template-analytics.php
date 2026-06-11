@@ -19,6 +19,17 @@ if ( isset($_POST['zk_reset_analytics']) && wp_verify_nonce($_POST['zk_reset_ana
     exit;
 }
 
+// Name Generator for Visitors
+function zk_generate_fan_name($visitor_id) {
+    if (empty($visitor_id)) return "Unknown Visitor";
+    $adjectives = array("Silent", "Neon", "Crimson", "Midnight", "Lunar", "Velvet", "Golden", "Shadow", "Electric", "Crystal", "Ruby", "Azure", "Cosmic", "Phantom", "Silver", "Jade", "Ember", "Quantum", "Vivid", "Echo");
+    $nouns = array("Wolf", "Tiger", "Raven", "Dragon", "Phoenix", "Panther", "Falcon", "Serpent", "Fox", "Hawk", "Bear", "Lion", "Eagle", "Leopard", "Owl", "Shark", "Cobra", "Stag", "Lynx", "Viper");
+    $hash = crc32($visitor_id);
+    $adj_index = abs($hash) % count($adjectives);
+    $noun_index = abs((int)($hash / count($adjectives))) % count($nouns);
+    return $adjectives[$adj_index] . ' ' . $nouns[$noun_index];
+}
+
 // 1. Basic Stats
 $total_views = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
 $unique_visitors = $wpdb->get_var("SELECT COUNT(DISTINCT ip_hash) FROM $table_name");
@@ -55,6 +66,20 @@ $top_cities = $wpdb->get_results("
     GROUP BY city, country 
     ORDER BY uniques DESC 
     LIMIT 10
+");
+
+// 3.3 Top 20 Fans
+$top_fans = $wpdb->get_results("
+    SELECT visitor_id, 
+           MAX(country) as country, 
+           MAX(city) as city, 
+           COUNT(DISTINCT session_id) as total_visits, 
+           COUNT(*) as page_views 
+    FROM $table_name 
+    WHERE visitor_id != '' 
+    GROUP BY visitor_id 
+    ORDER BY total_visits DESC, page_views DESC 
+    LIMIT 20
 ");
 
 // 4. Last 7 Days Activity
@@ -238,6 +263,50 @@ get_header();
                             <?php else: ?>
                                 <tr>
                                     <td colspan="2" style="text-align: center; color: var(--text-dim);">No geo data yet.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOP 20 FANS -->
+        <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr;">
+            <div class="zk-analytics-panel">
+                <h3 class="zk-panel-title" style="color: #00bcd4;">Top 20 Returning Fans</h3>
+                <div class="zk-table-wrapper">
+                    <table class="zk-table">
+                        <thead>
+                            <tr>
+                                <th>Fan Name (Anonymous ID)</th>
+                                <th>Location</th>
+                                <th style="text-align: right;">Total Visits (Sessions)</th>
+                                <th style="text-align: right;">Page Views</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($top_fans): ?>
+                                <?php foreach ($top_fans as $fan): ?>
+                                    <tr>
+                                        <td>
+                                            <strong style="color: #00bcd4;"><?php echo esc_html(zk_generate_fan_name($fan->visitor_id)); ?></strong>
+                                            <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;"><?php echo esc_html(substr($fan->visitor_id, 0, 8) . '...'); ?></div>
+                                        </td>
+                                        <td>
+                                            <?php echo esc_html($fan->city ? $fan->city . ', ' . $fan->country : ($fan->country ?: 'Unknown')); ?>
+                                        </td>
+                                        <td style="text-align: right; color: var(--text);">
+                                            <strong><?php echo number_format($fan->total_visits); ?></strong>
+                                        </td>
+                                        <td style="text-align: right; color: var(--text-dim);">
+                                            <?php echo number_format($fan->page_views); ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: var(--text-dim);">No loyal fans found yet.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
