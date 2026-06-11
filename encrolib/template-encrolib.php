@@ -13,6 +13,7 @@ add_action('wp_enqueue_scripts', function() {
 }, 999);
 remove_action('wp_head', 'print_emoji_detection_script', 7);
 remove_action('wp_print_styles', 'print_emoji_styles');
+remove_action('wp_footer', 'zk_mobile_bottom_nav'); // 🚫 Remove Mobile Bottom Nav from App
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
