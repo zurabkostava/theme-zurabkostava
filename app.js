@@ -89,7 +89,7 @@
         if (window.zkIsAdmin) return;
         try { if (localStorage.getItem('zk_ignore_tracking') === 'true') return; } catch(e) {}
 
-        var apiRoute = ZK.home.replace(/\/$/, '') + '/wp-json/zk/v1/track';
+        var apiRoute = ZK.home.replace(/\/$/, '') + '/wp-json/zk/v1/sync';
         
         function generateUUID() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {

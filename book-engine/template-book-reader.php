@@ -240,7 +240,7 @@ if ( false === $seo_content ) {
         if (window.zkIsAdmin) return;
         if (localStorage.getItem('zk_ignore_tracking') === 'true') return;
         
-        var apiRoute = '<?php echo esc_url(rest_url("zk/v1/track")); ?>';
+        var apiRoute = '<?php echo esc_url(rest_url("zk/v1/sync")); ?>';
         
         function generateUUID() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {

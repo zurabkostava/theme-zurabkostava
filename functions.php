@@ -2641,7 +2641,7 @@ add_action( 'after_setup_theme', 'zk_create_analytics_table' );
 
 // 2. REST API Tracking Endpoint
 add_action( 'rest_api_init', function () {
-    register_rest_route( 'zk/v1', '/track', array(
+    register_rest_route( 'zk/v1', '/sync', array(
         'methods' => 'POST',
         'callback' => 'zk_track_visitor',
         'permission_callback' => '__return_true', // Open endpoint
