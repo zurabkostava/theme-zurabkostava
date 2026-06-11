@@ -2,15 +2,57 @@
 /*
 Template Name: App - Encrolib
 */
+
+// Protect this custom app from global WordPress styles and scripts
+add_action('wp_enqueue_scripts', function() {
+    wp_dequeue_style('zk-style');
+    wp_dequeue_style('zk-fonts');
+    wp_dequeue_script('zk-app');
+    wp_dequeue_style('wp-block-library');
+    wp_dequeue_style('global-styles');
+}, 999);
+remove_action('wp_head', 'print_emoji_detection_script', 7);
+remove_action('wp_print_styles', 'print_emoji_styles');
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html <?php language_attributes(); ?>>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php the_title(); ?> — <?php bloginfo('name'); ?></title>
+    
+    <!-- WordPress SEO & Meta Tags (RankMath/Yoast) -->
+    <?php wp_head(); ?>
+
+    <!-- Custom App CSS & Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Encrolib Visual Language Translator",
+      "operatingSystem": "Any",
+      "applicationCategory": "UtilitiesApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0"
+      },
+      "description": "Translate any text into a beautiful visual language using unique color codes and shapes. Convert words to colors and colors back to words instantly."
+    }
+    </script>
 
     <style>
+        /* --- SEO HIDING UTILITY --- */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
         /* --- 💎 ZK APP ESCAPE BUTTON --- */
         .zk-app-back {
             position: fixed;
@@ -212,7 +254,19 @@ Template Name: App - Encrolib
         };
     </script>
 </head>
-<body>
+<body <?php body_class(); ?>>
+
+<!-- 🤖 SEO Semantic Content Area (Hidden from UI, visible to bots/screen-readers) -->
+<article class="sr-only">
+    <h1><?php the_title(); ?></h1>
+    <?php
+    if ( have_posts() ) :
+        while ( have_posts() ) : the_post();
+            the_content();
+        endwhile;
+    endif;
+    ?>
+</article>
 
 <!-- Ambient Orbs from Main Site -->
 <div class="hero-ambient">
@@ -1571,5 +1625,6 @@ Template Name: App - Encrolib
 })();
 </script>
 
+<?php wp_footer(); ?>
 </body>
 </html>
