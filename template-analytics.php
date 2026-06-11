@@ -12,6 +12,13 @@ if ( ! current_user_can( 'administrator' ) ) {
 global $wpdb;
 $table_name = $wpdb->prefix . 'zk_analytics';
 
+// Handle Reset Request
+if ( isset($_POST['zk_reset_analytics']) && wp_verify_nonce($_POST['zk_reset_analytics_nonce'], 'zk_reset_action') ) {
+    $wpdb->query("TRUNCATE TABLE $table_name");
+    wp_redirect(home_url('/analytics'));
+    exit;
+}
+
 // 1. Basic Stats
 $total_views = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
 $unique_visitors = $wpdb->get_var("SELECT COUNT(DISTINCT ip_hash) FROM $table_name");
@@ -92,9 +99,15 @@ get_header();
 
 <div class="page__content" id="view" data-route="/analytics">
     <div class="zk-analytics-container">
-        <header class="zk-analytics-header">
-            <h1 class="zk-title">Analytics Studio</h1>
-            <p class="zk-subtitle">Real-time minimalist visitor tracking.</p>
+        <header class="zk-analytics-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;">
+            <div>
+                <h1 class="zk-title">Analytics Studio</h1>
+                <p class="zk-subtitle">Real-time minimalist visitor tracking.</p>
+            </div>
+            <form method="post" onsubmit="return confirm('Are you sure you want to permanently delete all analytics data? This cannot be undone.');">
+                <?php wp_nonce_field('zk_reset_action', 'zk_reset_analytics_nonce'); ?>
+                <button type="submit" name="zk_reset_analytics" class="zk-reset-btn">Reset Statistics</button>
+            </form>
         </header>
 
         <!-- OVERVIEW CARDS -->
@@ -215,13 +228,7 @@ get_header();
                                 <?php foreach ($top_cities as $c): ?>
                                     <tr>
                                         <td>
-                                            <?php 
-                                            if (!empty($c->city)) {
-                                                echo esc_html($c->city . ', ' . $c->country);
-                                            } else {
-                                                echo esc_html($c->country . ' (Unknown City)');
-                                            }
-                                            ?>
+                                            <?php echo esc_html($c->city . ', ' . $c->country); ?>
                                         </td>
                                         <td style="text-align: right; color: var(--text);">
                                             <strong><?php echo number_format($c->uniques); ?></strong>
@@ -268,6 +275,23 @@ get_header();
 .zk-subtitle {
     color: var(--text-muted);
     font-size: 1.1rem;
+}
+
+/* RESET BUTTON */
+.zk-reset-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 69, 58, 0.3);
+    color: #ff453a;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+.zk-reset-btn:hover {
+    background: rgba(255, 69, 58, 0.1);
+    border-color: rgba(255, 69, 58, 0.6);
 }
 
 /* STAT CARDS */
