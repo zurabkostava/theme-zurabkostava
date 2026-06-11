@@ -205,7 +205,13 @@ get_header();
         <header class="zk-analytics-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;">
             <div>
                 <h1 class="zk-title">Analytics Studio</h1>
-                <p class="zk-subtitle">Real-time minimalist visitor tracking.</p>
+                <p class="zk-subtitle" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+                    Real-time minimalist visitor tracking.
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text); background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1);">
+                        <input type="checkbox" id="zkIgnoreTrackingToggle" style="accent-color: #ff453a;">
+                        Ignore my visits on this device
+                    </label>
+                </p>
             </div>
             <form method="post" onsubmit="return confirm('Are you sure you want to permanently delete all analytics data? This cannot be undone.');">
                 <?php wp_nonce_field('zk_reset_action', 'zk_reset_analytics_nonce'); ?>
@@ -725,6 +731,22 @@ let zkChartInterval = setInterval(() => {
         }
     });
 }, 100);
+
+document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.getElementById('zkIgnoreTrackingToggle');
+    if (toggle) {
+        try {
+            toggle.checked = localStorage.getItem('zk_ignore_tracking') === 'true';
+            toggle.addEventListener('change', function() {
+                if (this.checked) {
+                    localStorage.setItem('zk_ignore_tracking', 'true');
+                } else {
+                    localStorage.removeItem('zk_ignore_tracking');
+                }
+            });
+        } catch(e) {}
+    }
+});
 </script>
 
 <?php get_footer(); ?>

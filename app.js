@@ -86,6 +86,8 @@
     
     function zkTrackView(route) {
         if (!window.fetch || !window.ZK) return;
+        try { if (localStorage.getItem('zk_ignore_tracking') === 'true') return; } catch(e) {}
+
         var apiRoute = ZK.home.replace(/\/$/, '') + '/wp-json/zk/v1/track';
         
         function generateUUID() {
