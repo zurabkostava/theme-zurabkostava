@@ -215,7 +215,13 @@ get_header();
                                 <?php foreach ($top_cities as $c): ?>
                                     <tr>
                                         <td>
-                                            <?php echo esc_html($c->city . ', ' . $c->country); ?>
+                                            <?php 
+                                            if (!empty($c->city)) {
+                                                echo esc_html($c->city . ', ' . $c->country);
+                                            } else {
+                                                echo esc_html($c->country . ' (Unknown City)');
+                                            }
+                                            ?>
                                         </td>
                                         <td style="text-align: right; color: var(--text);">
                                             <strong><?php echo number_format($c->uniques); ?></strong>
