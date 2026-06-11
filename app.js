@@ -106,14 +106,25 @@
             }
         } catch (e) {}
 
-        fetch('https://get.geojs.io/v1/ip/geo.json')
+        fetch('https://ipapi.co/json/')
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                try { sessionStorage.setItem('zk_geo', JSON.stringify({ country: data.country, city: data.city })); } catch (e) {}
-                sendTrack(data.country, data.city);
+                var cty = data.country_name || data.country;
+                var ctyName = data.city || '';
+                try { sessionStorage.setItem('zk_geo', JSON.stringify({ country: cty, city: ctyName })); } catch (e) {}
+                sendTrack(cty, ctyName);
             })
             .catch(function() {
-                sendTrack('', ''); // Fallback
+                // Fallback
+                fetch('https://get.geojs.io/v1/ip/geo.json')
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        try { sessionStorage.setItem('zk_geo', JSON.stringify({ country: data.country, city: data.city || '' })); } catch (e) {}
+                        sendTrack(data.country, data.city || '');
+                    })
+                    .catch(function() {
+                        sendTrack('', '');
+                    });
             });
     }
     function keyOf(u) { return u.pathname + u.search; }
