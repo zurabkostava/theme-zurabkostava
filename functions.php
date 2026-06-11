@@ -2642,7 +2642,7 @@ add_action( 'after_setup_theme', 'zk_create_analytics_table' );
 // 2. REST API Tracking Endpoint
 add_action( 'rest_api_init', function () {
     register_rest_route( 'zk/v1', '/sync', array(
-        'methods' => 'POST',
+        'methods' => array('GET', 'POST'),
         'callback' => 'zk_track_visitor',
         'permission_callback' => '__return_true', // Open endpoint
     ) );
@@ -2681,6 +2681,9 @@ function zk_track_visitor( WP_REST_Request $request ) {
         if (!empty($body)) {
             $params = json_decode($body, true);
         }
+    }
+    if (empty($params) && $request->get_method() === 'GET') {
+        $params = $request->get_query_params();
     }
     $url = isset($params['url']) ? sanitize_text_field($params['url']) : '/';
     $country = isset($params['country']) ? sanitize_text_field($params['country']) : '';
