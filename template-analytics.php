@@ -82,6 +82,59 @@ $top_fans = $wpdb->get_results("
     LIMIT 20
 ");
 
+// 3.4 Devices and Browsers
+$ua_data = $wpdb->get_results("
+    SELECT user_agent, COUNT(DISTINCT session_id) as visits 
+    FROM $table_name 
+    WHERE user_agent != '' 
+    GROUP BY user_agent
+");
+
+$browsers = [];
+$os_devices = [];
+
+function zk_get_browser_and_os($ua) {
+    $browser = 'Unknown Browser';
+    $os = 'Unknown OS';
+
+    // Browser Detection
+    if (stripos($ua, 'Instagram') !== false) { $browser = 'Instagram In-App'; }
+    elseif (stripos($ua, 'FB_IAB') !== false || stripos($ua, 'FBAN') !== false || stripos($ua, 'FBAV') !== false) { $browser = 'Facebook In-App'; }
+    elseif (stripos($ua, 'TikTok') !== false) { $browser = 'TikTok In-App'; }
+    elseif (stripos($ua, 'Edg') !== false) { $browser = 'Microsoft Edge'; }
+    elseif (stripos($ua, 'OPR') !== false || stripos($ua, 'Opera') !== false) { $browser = 'Opera'; }
+    elseif (stripos($ua, 'Firefox') !== false || stripos($ua, 'FxiOS') !== false) { $browser = 'Mozilla Firefox'; }
+    elseif (stripos($ua, 'Chrome') !== false || stripos($ua, 'CriOS') !== false) { $browser = 'Google Chrome'; }
+    elseif (stripos($ua, 'Safari') !== false) { $browser = 'Apple Safari'; }
+
+    // OS Detection
+    if (stripos($ua, 'Windows NT 10.0') !== false || stripos($ua, 'Windows NT 11.0') !== false) { $os = 'Windows 10/11'; }
+    elseif (stripos($ua, 'Windows NT') !== false) { $os = 'Windows (Older)'; }
+    elseif (stripos($ua, 'iPhone') !== false) { $os = 'Apple iPhone'; }
+    elseif (stripos($ua, 'iPad') !== false) { $os = 'Apple iPad'; }
+    elseif (stripos($ua, 'Mac OS X') !== false || stripos($ua, 'Macintosh') !== false) { $os = 'Apple Mac'; }
+    elseif (stripos($ua, 'Android') !== false) { $os = 'Android Device'; }
+    elseif (stripos($ua, 'Linux') !== false) { $os = 'Linux'; }
+
+    return [$browser, $os];
+}
+
+if ($ua_data) {
+    foreach ($ua_data as $row) {
+        list($b, $o) = zk_get_browser_and_os($row->user_agent);
+        if (!isset($browsers[$b])) $browsers[$b] = 0;
+        $browsers[$b] += $row->visits;
+        
+        if (!isset($os_devices[$o])) $os_devices[$o] = 0;
+        $os_devices[$o] += $row->visits;
+    }
+}
+arsort($browsers);
+arsort($os_devices);
+
+$top_browsers = array_slice($browsers, 0, 15, true);
+$top_os = array_slice($os_devices, 0, 15, true);
+
 // 4. Last 7 Days Activity
 $seven_days_ago = date('Y-m-d', strtotime('-6 days', current_time('timestamp')));
 $daily_stats = $wpdb->get_results("
@@ -307,6 +360,71 @@ get_header();
                             <?php else: ?>
                                 <tr>
                                     <td colspan="4" style="text-align: center; color: var(--text-dim);">No loyal fans found yet.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TECH DATA (BROWSERS & OS) -->
+        <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr 1fr;">
+            <!-- Left: Top Browsers -->
+            <div class="zk-analytics-panel">
+                <h3 class="zk-panel-title">Top Browsers</h3>
+                <div class="zk-table-wrapper">
+                    <table class="zk-table">
+                        <thead>
+                            <tr>
+                                <th>Browser</th>
+                                <th style="text-align: right;">Unique Visits</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($top_browsers): ?>
+                                <?php foreach ($top_browsers as $name => $count): ?>
+                                    <tr>
+                                        <td><?php echo esc_html($name); ?></td>
+                                        <td style="text-align: right; color: var(--text);">
+                                            <strong><?php echo number_format($count); ?></strong>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="2" style="text-align: center; color: var(--text-dim);">No data yet.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right: Top OS & Devices -->
+            <div class="zk-analytics-panel">
+                <h3 class="zk-panel-title">Top Devices & OS</h3>
+                <div class="zk-table-wrapper">
+                    <table class="zk-table">
+                        <thead>
+                            <tr>
+                                <th>Device / OS</th>
+                                <th style="text-align: right;">Unique Visits</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($top_os): ?>
+                                <?php foreach ($top_os as $name => $count): ?>
+                                    <tr>
+                                        <td><?php echo esc_html($name); ?></td>
+                                        <td style="text-align: right; color: var(--text);">
+                                            <strong><?php echo number_format($count); ?></strong>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="2" style="text-align: center; color: var(--text-dim);">No data yet.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
