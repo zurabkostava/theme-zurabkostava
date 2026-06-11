@@ -2710,4 +2710,10 @@ function zk_track_visitor( WP_REST_Request $request ) {
 
     return new WP_REST_Response( array('status' => 'success'), 200 );
 }
-
+
+// Inject global flag for JS tracking logic to ignore admins
+add_action('wp_head', function() {
+    if (current_user_can('manage_options')) {
+        echo '<script>window.zkIsAdmin = true;</script>';
+    }
+});
