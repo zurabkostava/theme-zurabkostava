@@ -288,7 +288,7 @@ get_header();
         </div>
 
         <!-- GEO DATA (COUNTRIES & CITIES) -->
-        <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr 1fr;">
+        <div class="zk-analytics-main zk-half" style="margin-top: 24px;">
             <!-- Left: Top Countries -->
             <div class="zk-analytics-panel">
                 <h3 class="zk-panel-title">Top Countries</h3>
@@ -401,7 +401,7 @@ get_header();
         </div>
 
         <!-- TECH DATA (BROWSERS & OS) -->
-        <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr 1fr;">
+        <div class="zk-analytics-main zk-half" style="margin-top: 24px;">
             <!-- Left: Top Browsers -->
             <div class="zk-analytics-panel">
                 <h3 class="zk-panel-title">Top Browsers</h3>
@@ -560,8 +560,17 @@ get_header();
     grid-template-columns: 3fr 2fr;
     gap: 24px;
 }
+.zk-analytics-main.zk-half {
+    grid-template-columns: 1fr 1fr;
+}
 @media (max-width: 900px) {
-    .zk-analytics-main { grid-template-columns: 1fr; }
+    .zk-analytics-main, .zk-analytics-main.zk-half { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+    .zk-analytics-container { padding: 80px 16px 40px 16px; }
+    .zk-title { font-size: 2rem; }
+    .zk-stat-value { font-size: 2rem; }
+    .zk-analytics-panel { padding: 20px; }
 }
 .zk-analytics-panel {
     background: rgba(255, 255, 255, 0.015);
@@ -609,6 +618,7 @@ get_header();
     padding-bottom: 12px;
     border-bottom: 1px solid var(--hairline-strong);
     font-weight: 500;
+    white-space: nowrap;
 }
 .zk-table td {
     padding: 14px 0;
@@ -616,6 +626,7 @@ get_header();
     font-size: 0.95rem;
     color: var(--text-muted);
     font-family: var(--font-mono, monospace);
+    white-space: nowrap;
 }
 .zk-table tr:last-child td { border-bottom: none; }
 </style>
