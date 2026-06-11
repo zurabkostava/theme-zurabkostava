@@ -1708,7 +1708,11 @@ function zk_render_seo_meta() {
 
     // Override for single posts/pages
     if ( $is_single ) {
-        $type = 'article';
+        if ( get_post_type( $obj_id ) === 'zk_book' ) {
+            $type = 'book';
+        } else {
+            $type = 'article';
+        }
         
         // Fetch custom SEO meta
         $custom_title = get_post_meta( $obj_id, '_zk_seo_title', true );
