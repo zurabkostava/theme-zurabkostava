@@ -87,12 +87,34 @@
     function zkTrackView(route) {
         if (!window.fetch || !window.ZK) return;
         var apiRoute = ZK.home.replace(/\/$/, '') + '/wp-json/zk/v1/track';
-        fetch(apiRoute, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: route }),
-            keepalive: true
-        }).catch(function(){});
+        
+        function sendTrack(country, city) {
+            fetch(apiRoute, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: route, country: country || '', city: city || '' }),
+                keepalive: true
+            }).catch(function(){});
+        }
+
+        try {
+            var cachedGeo = sessionStorage.getItem('zk_geo');
+            if (cachedGeo) {
+                var geo = JSON.parse(cachedGeo);
+                sendTrack(geo.country, geo.city);
+                return;
+            }
+        } catch (e) {}
+
+        fetch('https://get.geojs.io/v1/ip/geo.json')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                try { sessionStorage.setItem('zk_geo', JSON.stringify({ country: data.country, city: data.city })); } catch (e) {}
+                sendTrack(data.country, data.city);
+            })
+            .catch(function() {
+                sendTrack('', ''); // Fallback
+            });
     }
     function keyOf(u) { return u.pathname + u.search; }
     function delay(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }

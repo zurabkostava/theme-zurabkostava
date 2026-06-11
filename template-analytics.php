@@ -30,6 +30,26 @@ $top_pages = $wpdb->get_results("
     LIMIT 10
 ");
 
+// 3.1 Top Countries
+$top_countries = $wpdb->get_results("
+    SELECT country, COUNT(*) as views, COUNT(DISTINCT ip_hash) as uniques 
+    FROM $table_name 
+    WHERE country != '' AND country IS NOT NULL
+    GROUP BY country 
+    ORDER BY uniques DESC 
+    LIMIT 10
+");
+
+// 3.2 Top Cities
+$top_cities = $wpdb->get_results("
+    SELECT city, country, COUNT(*) as views, COUNT(DISTINCT ip_hash) as uniques 
+    FROM $table_name 
+    WHERE city != '' AND city IS NOT NULL
+    GROUP BY city, country 
+    ORDER BY uniques DESC 
+    LIMIT 10
+");
+
 // 4. Last 7 Days Activity
 $seven_days_ago = date('Y-m-d', strtotime('-6 days', current_time('timestamp')));
 $daily_stats = $wpdb->get_results("
@@ -136,6 +156,75 @@ get_header();
                             <?php else: ?>
                                 <tr>
                                     <td colspan="2" style="text-align: center; color: var(--text-dim);">No data yet.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- GEO DATA (COUNTRIES & CITIES) -->
+        <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr 1fr;">
+            <!-- Left: Top Countries -->
+            <div class="zk-analytics-panel">
+                <h3 class="zk-panel-title">Top Countries</h3>
+                <div class="zk-table-wrapper">
+                    <table class="zk-table">
+                        <thead>
+                            <tr>
+                                <th>Country</th>
+                                <th style="text-align: right;">Unique Visitors</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($top_countries): ?>
+                                <?php foreach ($top_countries as $c): ?>
+                                    <tr>
+                                        <td>
+                                            <?php echo esc_html($c->country); ?>
+                                        </td>
+                                        <td style="text-align: right; color: var(--text);">
+                                            <strong><?php echo number_format($c->uniques); ?></strong>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="2" style="text-align: center; color: var(--text-dim);">No geo data yet.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right: Top Cities -->
+            <div class="zk-analytics-panel">
+                <h3 class="zk-panel-title">Top Cities</h3>
+                <div class="zk-table-wrapper">
+                    <table class="zk-table">
+                        <thead>
+                            <tr>
+                                <th>City</th>
+                                <th style="text-align: right;">Unique Visitors</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($top_cities): ?>
+                                <?php foreach ($top_cities as $c): ?>
+                                    <tr>
+                                        <td>
+                                            <?php echo esc_html($c->city . ', ' . $c->country); ?>
+                                        </td>
+                                        <td style="text-align: right; color: var(--text);">
+                                            <strong><?php echo number_format($c->uniques); ?></strong>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="2" style="text-align: center; color: var(--text-dim);">No geo data yet.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
