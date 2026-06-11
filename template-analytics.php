@@ -135,40 +135,65 @@ arsort($os_devices);
 $top_browsers = array_slice($browsers, 0, 15, true);
 $top_os = array_slice($os_devices, 0, 15, true);
 
-// 4. Last 7 Days Activity
-$seven_days_ago = date('Y-m-d', strtotime('-6 days', current_time('timestamp')));
-$daily_stats = $wpdb->get_results("
-    SELECT DATE(visit_time) as visit_date, COUNT(*) as views, COUNT(DISTINCT ip_hash) as uniques 
-    FROM $table_name 
-    WHERE DATE(visit_time) >= '$seven_days_ago' 
-    GROUP BY DATE(visit_time) 
-    ORDER BY DATE(visit_time) ASC
-");
+// 4. Activity Chart
+$range_param = isset($_GET['range']) ? $_GET['range'] : '7';
+$valid_ranges = ['7' => 'Last 7 Days', '30' => 'Last 30 Days', '365' => 'Last 1 Year'];
+if (!array_key_exists($range_param, $valid_ranges)) $range_param = '7';
 
-// Prepare data for the chart
 $dates = [];
 $views_data = [];
 $uniques_data = [];
 
-// Fill in all 7 days even if no data
-for ($i = 6; $i >= 0; $i--) {
-    $d = date('Y-m-d', strtotime("-$i days", current_time('timestamp')));
-    $dates[] = date('M j', strtotime($d));
-    
-    $found = false;
-    if ($daily_stats) {
-        foreach ($daily_stats as $stat) {
-            if ($stat->visit_date === $d) {
-                $views_data[] = $stat->views;
-                $uniques_data[] = $stat->uniques;
-                $found = true;
-                break;
+if ($range_param === '365') {
+    $one_year_ago = date('Y-m-01', strtotime('-11 months', current_time('timestamp')));
+    $monthly_stats = $wpdb->get_results("
+        SELECT DATE_FORMAT(visit_time, '%Y-%m') as visit_month, COUNT(*) as views, COUNT(DISTINCT session_id) as uniques 
+        FROM $table_name 
+        WHERE visit_time >= '$one_year_ago' 
+        GROUP BY DATE_FORMAT(visit_time, '%Y-%m') 
+        ORDER BY visit_month ASC
+    ");
+    for ($i = 11; $i >= 0; $i--) {
+        $m = date('Y-m', strtotime("-$i months", current_time('timestamp')));
+        $dates[] = date('M Y', strtotime($m . '-01'));
+        $found = false;
+        if ($monthly_stats) {
+            foreach ($monthly_stats as $stat) {
+                if ($stat->visit_month === $m) {
+                    $views_data[] = $stat->views;
+                    $uniques_data[] = $stat->uniques;
+                    $found = true;
+                    break;
+                }
             }
         }
+        if (!$found) { $views_data[] = 0; $uniques_data[] = 0; }
     }
-    if (!$found) {
-        $views_data[] = 0;
-        $uniques_data[] = 0;
+} else {
+    $days_ago = intval($range_param) - 1;
+    $start_date = date('Y-m-d', strtotime("-$days_ago days", current_time('timestamp')));
+    $daily_stats = $wpdb->get_results("
+        SELECT DATE(visit_time) as visit_date, COUNT(*) as views, COUNT(DISTINCT session_id) as uniques 
+        FROM $table_name 
+        WHERE DATE(visit_time) >= '$start_date' 
+        GROUP BY DATE(visit_time) 
+        ORDER BY DATE(visit_time) ASC
+    ");
+    for ($i = $days_ago; $i >= 0; $i--) {
+        $d = date('Y-m-d', strtotime("-$i days", current_time('timestamp')));
+        $dates[] = date('M j', strtotime($d));
+        $found = false;
+        if ($daily_stats) {
+            foreach ($daily_stats as $stat) {
+                if ($stat->visit_date === $d) {
+                    $views_data[] = $stat->views;
+                    $uniques_data[] = $stat->uniques;
+                    $found = true;
+                    break;
+                }
+            }
+        }
+        if (!$found) { $views_data[] = 0; $uniques_data[] = 0; }
     }
 }
 
@@ -210,9 +235,16 @@ get_header();
 
         <!-- CHARTS & TABLES -->
         <div class="zk-analytics-main">
-            <!-- Left: 7 Days Chart -->
-            <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Last 7 Days Activity</h3>
+            <!-- Left: Chart -->
+            <div class="zk-analytics-panel has-chart">
+                <h3 class="zk-panel-title" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; margin-bottom: 12px; padding-bottom: 0;">
+                    <?php echo esc_html(strtoupper($valid_ranges[$range_param] . ' Activity')); ?>
+                    <select onchange="window.location.href='?range=' + this.value" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; outline: none; cursor: pointer; font-family: var(--font-mono, monospace); font-size: 0.8rem;">
+                        <?php foreach ($valid_ranges as $val => $label): ?>
+                            <option value="<?php echo esc_attr($val); ?>" <?php selected($range_param, (string)$val); ?> style="background: #121212;"><?php echo esc_html($label); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </h3>
                 <div class="zk-chart-wrapper">
                     <canvas id="zkActivityChart"></canvas>
                 </div>
@@ -549,9 +581,14 @@ get_header();
 }
 
 /* CHART */
+.zk-analytics-panel.has-chart {
+    display: flex;
+    flex-direction: column;
+}
 .zk-chart-wrapper {
     position: relative;
-    height: 300px;
+    flex-grow: 1;
+    min-height: 300px;
     width: 100%;
 }
 
