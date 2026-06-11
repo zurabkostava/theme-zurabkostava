@@ -300,6 +300,10 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
     </div>
 </header>
 
+<div id="zk-global-loader">
+    <div class="zk-line-loader"></div>
+</div>
+
 <main id="app">
     <article id="view" class="view" data-route="<?php echo esc_attr( $zk_current ); ?>" tabindex="-1">
         <?php echo $zk_view; // phpcs:ignore WordPress.Security.EscapeOutput ?>

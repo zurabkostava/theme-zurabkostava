@@ -184,6 +184,7 @@
 
         setMenu(false);
         viewEl.classList.add('is-loading');
+        document.body.classList.add('is-navigating');
 
         Promise.all([
             getView(href, key).then(function (d) { return d; }, function (err) { return { error: err }; }),
@@ -206,6 +207,7 @@
                 }
 
                 viewEl.classList.remove('is-loading');
+                document.body.classList.remove('is-navigating');
                 updateChrome(data.route);
                 if (announcer) announcer.textContent = (data.title || 'Page') + ' loaded';
                 scrollTopInstant();
