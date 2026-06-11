@@ -597,6 +597,7 @@ get_header();
     border: 1px solid var(--hairline);
     border-radius: 16px;
     padding: 30px;
+    min-width: 0;
 }
 .zk-panel-title {
     font-size: 1rem;
