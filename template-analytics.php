@@ -472,7 +472,7 @@ get_header();
    ANALYTICS DASHBOARD CSS
    ============================================================ */
 .zk-analytics-container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 120px 20px 80px 20px;
     animation: fadeIn 0.4s ease forwards;
