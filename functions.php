@@ -2730,4 +2730,64 @@ add_action('wp_head', function() {
     if (current_user_can('manage_options')) {
         echo '<script>window.zkIsAdmin = true;</script>';
     }
-});
+});
+
+/* ============================================================
+   SEO & SEARCH CONSOLE CLEANUP ARCHITECTURE
+   ============================================================ */
+
+// 1. Force 410 "Gone" for deleted tags/categories to drop them from Google Index instantly
+add_action('template_redirect', function() {
+    if ( is_404() ) {
+        $url = $_SERVER['REQUEST_URI'];
+        // If the 404 URL looks like an old tag, category, or author page
+        if ( preg_match( '#/(tag|category|author|page)/#i', $url ) ) {
+            global $wp_query;
+            $wp_query->set_404();
+            status_header(410); // 410 Gone (Permanently Deleted)
+            nocache_headers();
+        }
+    }
+});
+
+// 2. Enforce strict NOINDEX on thin content (Authors, Dates, Search Results, Pagination)
+add_action('wp_head', function() {
+    if ( is_author() || is_date() || is_search() || is_attachment() || is_paged() ) {
+        echo '<meta name="robots" content="noindex, follow" />' . "\n";
+    }
+}, 1);
+
+// 3. Dynamic Robots.txt to prevent crawling of garbage URLs
+add_filter('robots_txt', function($output, $public) {
+    $custom_rules = "
+User-agent: *
+Disallow: /wp-admin/
+Disallow: /wp-json/
+Disallow: /*?replytocom=
+Disallow: /*?s=
+Disallow: /*/feed/
+Allow: /wp-admin/admin-ajax.php
+";
+    return $output . $custom_rules;
+}, 10, 2);
+
+// 4. Remove WP Head Bloat (Generators, RSD, WLW, Shortlinks)
+remove_action('wp_head', 'wp_generator');
+remove_action('wp_head', 'rsd_link');
+remove_action('wp_head', 'wlwmanifest_link');
+remove_action('wp_head', 'wp_shortlink_wp_head');
+remove_action('wp_head', 'rest_output_link_wp_head');
+remove_action('wp_head', 'wp_oembed_add_discovery_links');
+
+// 5. Disable default tag & category feeds
+add_action('do_feed', 'zk_disable_feeds', 1);
+add_action('do_feed_rdf', 'zk_disable_feeds', 1);
+add_action('do_feed_rss', 'zk_disable_feeds', 1);
+add_action('do_feed_rss2', 'zk_disable_feeds', 1);
+add_action('do_feed_atom', 'zk_disable_feeds', 1);
+add_action('do_feed_rss2_comments', 'zk_disable_feeds', 1);
+add_action('do_feed_atom_comments', 'zk_disable_feeds', 1);
+
+function zk_disable_feeds() {
+    wp_die( __('No feed available, please visit the homepage!', 'zurabkostava'), '', array('response' => 410) );
+}
