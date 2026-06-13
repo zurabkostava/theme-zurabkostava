@@ -381,16 +381,24 @@ get_header();
         <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr;">
             <div class="zk-analytics-panel">
                 <h3 class="zk-panel-title" style="color: #00bcd4;">Top 20 Returning Fans</h3>
-                <div class="zk-table-wrapper">
-                    <table class="zk-table" style="table-layout: fixed;">
+                <div class="zk-table-wrapper" style="width: 100%;">
+                    <table class="zk-table" style="table-layout: fixed; width: 100%;">
+                        <colgroup>
+                            <col style="width: 25%;">
+                            <col style="width: 20%;">
+                            <col style="width: 20%;">
+                            <col style="width: 12%;">
+                            <col style="width: 10%;">
+                            <col style="width: 13%;">
+                        </colgroup>
                         <thead>
                             <tr>
-                                <th style="width: 25%;">Fan Name (Anonymous ID)</th>
-                                <th style="width: 25%;">Location</th>
-                                <th style="width: 20%;">Tech (OS & Browser)</th>
-                                <th style="text-align: right; width: 10%;">Total Visits (Sessions)</th>
-                                <th style="text-align: right; width: 10%;">Page Views</th>
-                                <th style="text-align: right; width: 10%;">Last Seen</th>
+                                <th>Fan Name (Anonymous ID)</th>
+                                <th>Location</th>
+                                <th>Tech (OS & Browser)</th>
+                                <th style="text-align: right;">Total Visits (Sessions)</th>
+                                <th style="text-align: right;">Page Views</th>
+                                <th style="text-align: right;">Last Seen</th>
                             </tr>
                         </thead>
                         <tbody>
