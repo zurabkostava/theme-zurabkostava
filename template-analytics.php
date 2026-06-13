@@ -74,6 +74,7 @@ $top_fans = $wpdb->get_results("
            MAX(country) as country, 
            MAX(city) as city, 
            MAX(user_agent) as user_agent,
+           MAX(visit_time) as last_visit,
            COUNT(DISTINCT session_id) as total_visits, 
            COUNT(*) as page_views 
     FROM $table_name 
@@ -389,12 +390,20 @@ get_header();
                                 <th>Tech (OS & Browser)</th>
                                 <th style="text-align: right;">Total Visits (Sessions)</th>
                                 <th style="text-align: right;">Page Views</th>
+                                <th style="text-align: right;">Last Seen</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if ($top_fans): ?>
                                 <?php foreach ($top_fans as $fan): 
                                     list($b, $o) = zk_get_browser_and_os($fan->user_agent);
+                                    
+                                    // Human-readable time ago
+                                    $time_diff = current_time('timestamp') - strtotime($fan->last_visit);
+                                    if ($time_diff < 60) $last_seen = 'Just now';
+                                    elseif ($time_diff < 3600) $last_seen = floor($time_diff/60) . ' mins ago';
+                                    elseif ($time_diff < 86400) $last_seen = floor($time_diff/3600) . ' hrs ago';
+                                    else $last_seen = floor($time_diff/86400) . ' days ago';
                                 ?>
                                     <tr>
                                         <td>
@@ -413,6 +422,9 @@ get_header();
                                         </td>
                                         <td style="text-align: right; color: var(--text-dim);">
                                             <?php echo number_format($fan->page_views); ?>
+                                        </td>
+                                        <td style="text-align: right; color: var(--text-dim); font-size: 0.85rem;">
+                                            <?php echo esc_html($last_seen); ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
