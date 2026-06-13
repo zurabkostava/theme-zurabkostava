@@ -385,12 +385,12 @@ get_header();
                     <table class="zk-table">
                         <thead>
                             <tr>
-                                <th>Fan Name (Anonymous ID)</th>
-                                <th>Location</th>
-                                <th>Tech (OS & Browser)</th>
-                                <th style="text-align: right;">Total Visits (Sessions)</th>
-                                <th style="text-align: right;">Page Views</th>
-                                <th style="text-align: right;">Last Seen</th>
+                                <th style="width: 25%;">Fan Name (Anonymous ID)</th>
+                                <th style="width: 25%;">Location</th>
+                                <th style="width: 20%;">Tech (OS & Browser)</th>
+                                <th style="text-align: right; width: 10%;">Total Visits (Sessions)</th>
+                                <th style="text-align: right; width: 10%;">Page Views</th>
+                                <th style="text-align: right; width: 10%;">Last Seen</th>
                             </tr>
                         </thead>
                         <tbody>
