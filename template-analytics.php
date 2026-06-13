@@ -382,7 +382,7 @@ get_header();
             <div class="zk-analytics-panel">
                 <h3 class="zk-panel-title" style="color: #00bcd4;">Top 20 Returning Fans</h3>
                 <div class="zk-table-wrapper">
-                    <table class="zk-table">
+                    <table class="zk-table" style="table-layout: fixed;">
                         <thead>
                             <tr>
                                 <th style="width: 25%;">Fan Name (Anonymous ID)</th>
@@ -406,16 +406,16 @@ get_header();
                                     else $last_seen = floor($time_diff/86400) . ' days ago';
                                 ?>
                                     <tr>
-                                        <td>
+                                        <td style="overflow: hidden; text-overflow: ellipsis;">
                                             <strong style="color: #00bcd4;"><?php echo esc_html(zk_generate_fan_name($fan->visitor_id)); ?></strong>
                                             <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;"><?php echo esc_html(substr($fan->visitor_id, 0, 8) . '...'); ?></div>
                                         </td>
-                                        <td>
+                                        <td style="overflow: hidden; text-overflow: ellipsis;">
                                             <?php echo esc_html($fan->city ? $fan->city . ', ' . $fan->country : ($fan->country ?: 'Unknown')); ?>
                                         </td>
-                                        <td>
-                                            <div style="color: var(--text); font-size: 0.85rem;"><?php echo esc_html($o); ?></div>
-                                            <div style="color: var(--text-dim); font-size: 0.75rem; margin-top: 2px;"><?php echo esc_html($b); ?></div>
+                                        <td style="overflow: hidden; text-overflow: ellipsis;">
+                                            <div style="color: var(--text); font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis;"><?php echo esc_html($o); ?></div>
+                                            <div style="color: var(--text-dim); font-size: 0.75rem; margin-top: 2px; overflow: hidden; text-overflow: ellipsis;"><?php echo esc_html($b); ?></div>
                                         </td>
                                         <td style="text-align: right; color: var(--text);">
                                             <strong><?php echo number_format($fan->total_visits); ?></strong>
