@@ -2717,9 +2717,10 @@ function zk_track_visitor( WP_REST_Request $request ) {
             'url' => $url,
             'country' => $country,
             'city' => $city,
-            'user_agent' => substr($user_agent, 0, 250) // truncate just in case
+            'user_agent' => substr($user_agent, 0, 250), // truncate just in case
+            'visit_time' => current_time('mysql')
         ),
-        array('%s', '%s', '%s', '%s', '%s', '%s', '%s')
+        array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
     );
 
     return new WP_REST_Response( array('status' => 'success'), 200 );
