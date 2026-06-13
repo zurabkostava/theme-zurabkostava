@@ -73,6 +73,7 @@ $top_fans = $wpdb->get_results("
     SELECT visitor_id, 
            MAX(country) as country, 
            MAX(city) as city, 
+           MAX(user_agent) as user_agent,
            COUNT(DISTINCT session_id) as total_visits, 
            COUNT(*) as page_views 
     FROM $table_name 
@@ -385,13 +386,16 @@ get_header();
                             <tr>
                                 <th>Fan Name (Anonymous ID)</th>
                                 <th>Location</th>
+                                <th>Tech (OS & Browser)</th>
                                 <th style="text-align: right;">Total Visits (Sessions)</th>
                                 <th style="text-align: right;">Page Views</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if ($top_fans): ?>
-                                <?php foreach ($top_fans as $fan): ?>
+                                <?php foreach ($top_fans as $fan): 
+                                    list($b, $o) = zk_get_browser_and_os($fan->user_agent);
+                                ?>
                                     <tr>
                                         <td>
                                             <strong style="color: #00bcd4;"><?php echo esc_html(zk_generate_fan_name($fan->visitor_id)); ?></strong>
@@ -399,6 +403,10 @@ get_header();
                                         </td>
                                         <td>
                                             <?php echo esc_html($fan->city ? $fan->city . ', ' . $fan->country : ($fan->country ?: 'Unknown')); ?>
+                                        </td>
+                                        <td>
+                                            <div style="color: var(--text); font-size: 0.85rem;"><?php echo esc_html($o); ?></div>
+                                            <div style="color: var(--text-dim); font-size: 0.75rem; margin-top: 2px;"><?php echo esc_html($b); ?></div>
                                         </td>
                                         <td style="text-align: right; color: var(--text);">
                                             <strong><?php echo number_format($fan->total_visits); ?></strong>
