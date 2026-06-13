@@ -382,23 +382,15 @@ get_header();
             <div class="zk-analytics-panel">
                 <h3 class="zk-panel-title" style="color: #00bcd4;">Top 20 Returning Fans</h3>
                 <div class="zk-table-wrapper" style="width: 100%;">
-                    <table class="zk-table" style="table-layout: fixed; width: 100%;">
-                        <colgroup>
-                            <col style="width: 25%;">
-                            <col style="width: 20%;">
-                            <col style="width: 20%;">
-                            <col style="width: 12%;">
-                            <col style="width: 10%;">
-                            <col style="width: 13%;">
-                        </colgroup>
+                    <table class="zk-table zk-table-fans" style="width: 100%;">
                         <thead>
                             <tr>
-                                <th>Fan Name (Anonymous ID)</th>
-                                <th>Location</th>
-                                <th>Tech (OS & Browser)</th>
-                                <th style="text-align: right;">Total Visits (Sessions)</th>
-                                <th style="text-align: right;">Page Views</th>
-                                <th style="text-align: right;">Last Seen</th>
+                                <th style="width: 20%;">Fan Name (Anonymous ID)</th>
+                                <th style="width: 20%;">Location</th>
+                                <th style="width: 20%;">Tech (OS & Browser)</th>
+                                <th style="text-align: right; width: 15%;">Total Visits (Sessions)</th>
+                                <th style="text-align: right; width: 10%;">Page Views</th>
+                                <th style="text-align: right; width: 15%;">Last Seen</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -414,16 +406,16 @@ get_header();
                                     else $last_seen = floor($time_diff/86400) . ' days ago';
                                 ?>
                                     <tr>
-                                        <td style="overflow: hidden; text-overflow: ellipsis;">
+                                        <td>
                                             <strong style="color: #00bcd4;"><?php echo esc_html(zk_generate_fan_name($fan->visitor_id)); ?></strong>
                                             <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;"><?php echo esc_html(substr($fan->visitor_id, 0, 8) . '...'); ?></div>
                                         </td>
-                                        <td style="overflow: hidden; text-overflow: ellipsis;">
+                                        <td>
                                             <?php echo esc_html($fan->city ? $fan->city . ', ' . $fan->country : ($fan->country ?: 'Unknown')); ?>
                                         </td>
-                                        <td style="overflow: hidden; text-overflow: ellipsis;">
-                                            <div style="color: var(--text); font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis;"><?php echo esc_html($o); ?></div>
-                                            <div style="color: var(--text-dim); font-size: 0.75rem; margin-top: 2px; overflow: hidden; text-overflow: ellipsis;"><?php echo esc_html($b); ?></div>
+                                        <td>
+                                            <div style="color: var(--text); font-size: 0.85rem;"><?php echo esc_html($o); ?></div>
+                                            <div style="color: var(--text-dim); font-size: 0.75rem; margin-top: 2px;"><?php echo esc_html($b); ?></div>
                                         </td>
                                         <td style="text-align: right; color: var(--text);">
                                             <strong><?php echo number_format($fan->total_visits); ?></strong>
@@ -676,6 +668,9 @@ get_header();
     color: var(--text-muted);
     font-family: var(--font-mono, monospace);
     white-space: nowrap;
+}
+.zk-table-fans td, .zk-table-fans th {
+    white-space: normal !important;
 }
 .zk-table tr:last-child td { border-bottom: none; }
 </style>
