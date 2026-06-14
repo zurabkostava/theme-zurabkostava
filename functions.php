@@ -1955,7 +1955,8 @@ function zk_render_json_ld_schema() {
         $schema[] = [
             '@context' => 'https://schema.org',
             '@type' => 'WebSite',
-            'name' => $site_name,
+            'name' => 'Zurab Kostava',
+            'alternateName' => $site_name,
             'url' => $site_url,
             'publisher' => [
                 '@id' => $site_url . '#person'
