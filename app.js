@@ -119,16 +119,8 @@
         } catch (e) {}
 
         var uaOverride = '';
-        if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
-            navigator.userAgentData.getHighEntropyValues(["platformVersion"]).then(function(ua) {
-                if (ua.platform === "Windows") {
-                    var major = parseInt(ua.platformVersion.split('.')[0], 10);
-                    if (major >= 13) uaOverride = 'Win11';
-                }
-            }).catch(function(){});
-        }
 
-        function sendTrack(country, city) {
+        function sendTrackData(country, city) {
             var payload = JSON.stringify({ 
                 url: route, 
                 country: country || '', 
@@ -139,9 +131,7 @@
             });
             var sent = false;
             if (navigator.sendBeacon) {
-                try {
-                    sent = navigator.sendBeacon(apiRoute, payload);
-                } catch(e) {}
+                try { sent = navigator.sendBeacon(apiRoute, payload); } catch(e) {}
             }
             if (!sent) {
                 try {
@@ -150,6 +140,22 @@
                     xhr.setRequestHeader('Content-Type', 'text/plain');
                     xhr.send(payload);
                 } catch(err) {}
+            }
+        }
+
+        function sendTrack(country, city) {
+            if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+                navigator.userAgentData.getHighEntropyValues(["platformVersion"]).then(function(ua) {
+                    if (ua.platform === "Windows") {
+                        var major = parseInt(ua.platformVersion.split('.')[0], 10);
+                        if (major >= 13) uaOverride = 'Win11';
+                    }
+                    sendTrackData(country, city);
+                }).catch(function() {
+                    sendTrackData(country, city);
+                });
+            } else {
+                sendTrackData(country, city);
             }
         }
 
