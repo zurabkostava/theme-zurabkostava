@@ -118,18 +118,13 @@
             }
         } catch (e) {}
 
-        var deviceModel = '';
-        var screenData = window.screen ? (window.screen.width + 'x' + window.screen.height + '@' + (window.devicePixelRatio || 1)) : '';
-
-        function sendTrackData(country, city) {
+        function sendTrack(country, city) {
             var payload = JSON.stringify({ 
                 url: route, 
                 country: country || '', 
                 city: city || '',
                 visitor_id: visitorId,
-                session_id: sessionId,
-                device_model: deviceModel,
-                screen_data: screenData
+                session_id: sessionId
             });
             var sent = false;
             if (navigator.sendBeacon) {
@@ -142,19 +137,6 @@
                     xhr.setRequestHeader('Content-Type', 'text/plain');
                     xhr.send(payload);
                 } catch(err) {}
-            }
-        }
-
-        function sendTrack(country, city) {
-            if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
-                navigator.userAgentData.getHighEntropyValues(["model"]).then(function(ua) {
-                    if (ua.model) deviceModel = ua.model;
-                    sendTrackData(country, city);
-                }).catch(function() {
-                    sendTrackData(country, city);
-                });
-            } else {
-                sendTrackData(country, city);
             }
         }
 
