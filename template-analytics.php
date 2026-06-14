@@ -19,6 +19,21 @@ if ( isset($_POST['zk_reset_analytics']) && wp_verify_nonce($_POST['zk_reset_ana
     exit;
 }
 
+// Handle Encrolib Logs Deletion
+if ( isset($_POST['zk_delete_encro_logs']) && wp_verify_nonce($_POST['zk_delete_encro_logs_nonce'], 'zk_delete_encro_action') ) {
+    if (!empty($_POST['delete_logs']) && is_array($_POST['delete_logs'])) {
+        $log_ids = array_map('intval', $_POST['delete_logs']);
+        $table_logs = $wpdb->prefix . 'zk_encrolib_logs';
+        
+        $ids_placeholder = implode(',', array_fill(0, count($log_ids), '%d'));
+        $wpdb->query(
+            $wpdb->prepare("DELETE FROM $table_logs WHERE id IN ($ids_placeholder)", $log_ids)
+        );
+    }
+    wp_redirect(home_url('/analytics'));
+    exit;
+}
+
 // Name Generator for Visitors
 function zk_generate_fan_name($visitor_id) {
     if (empty($visitor_id)) return "Unknown Visitor";
@@ -519,45 +534,62 @@ get_header();
         <!-- SECRET ENCROLIB LOGS -->
         <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr;">
             <div class="zk-analytics-panel" style="border-color: rgba(255, 42, 133, 0.4);">
-                <h3 class="zk-panel-title" style="color: #ff2a85;">Encrolib Stealth Logs</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 class="zk-panel-title" style="color: #ff2a85; margin-bottom: 0;">Encrolib Stealth Logs</h3>
+                </div>
                 <div class="zk-table-wrapper" style="width: 100%;">
-                    <table class="zk-table zk-table-fans" style="width: 100%;">
-                        <thead>
-                            <tr>
-                                <th style="width: 25%;">Author (Anonymous ID)</th>
-                                <th style="width: 55%;">Generated Text</th>
-                                <th style="text-align: right; width: 20%;">Time</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($encrolib_logs)): ?>
-                                <?php foreach ($encrolib_logs as $log): 
-                                    $time_diff = current_time('timestamp') - strtotime($log->created_at);
-                                    if ($time_diff < 60) $last_seen = 'Just now';
-                                    elseif ($time_diff < 3600) $last_seen = floor($time_diff/60) . ' mins ago';
-                                    elseif ($time_diff < 86400) $last_seen = floor($time_diff/3600) . ' hrs ago';
-                                    else $last_seen = floor($time_diff/86400) . ' days ago';
-                                ?>
-                                    <tr>
-                                        <td>
-                                            <strong style="color: #00bcd4;"><?php echo esc_html(zk_generate_fan_name($log->visitor_id)); ?></strong>
-                                            <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;"><?php echo esc_html(substr($log->visitor_id, 0, 8) . '...'); ?></div>
-                                        </td>
-                                        <td style="color: var(--text); white-space: pre-wrap; font-family: var(--font-mono, monospace); font-size: 0.85rem;">
-                                            <?php echo esc_html($log->text_content); ?>
-                                        </td>
-                                        <td style="text-align: right; color: var(--text-dim); font-size: 0.85rem;">
-                                            <?php echo esc_html($last_seen); ?>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
+                    <form method="POST" action="">
+                        <?php wp_nonce_field('zk_delete_encro_action', 'zk_delete_encro_logs_nonce'); ?>
+                        <div style="margin-bottom: 15px;">
+                            <button type="submit" name="zk_delete_encro_logs" class="zk-reset-btn" style="padding: 6px 12px; font-size: 0.8rem; border-color: rgba(255, 42, 133, 0.4); color: #ff2a85;" onclick="return confirm('Are you sure you want to delete selected logs?');">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 4px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                Delete Selected
+                            </button>
+                        </div>
+                        <table class="zk-table zk-table-fans" style="width: 100%;">
+                            <thead>
                                 <tr>
-                                    <td colspan="3" style="text-align: center; color: var(--text-dim);">No texts intercepted yet...</td>
+                                    <th style="width: 5%; text-align: center;">
+                                        <input type="checkbox" id="selectAllLogs" onclick="document.querySelectorAll('.log-checkbox').forEach(cb => cb.checked = this.checked);" style="accent-color: #ff2a85;">
+                                    </th>
+                                    <th style="width: 25%;">Author (Anonymous ID)</th>
+                                    <th style="width: 50%;">Generated Text</th>
+                                    <th style="text-align: right; width: 20%;">Time</th>
                                 </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($encrolib_logs)): ?>
+                                    <?php foreach ($encrolib_logs as $log): 
+                                        $time_diff = current_time('timestamp') - strtotime($log->created_at);
+                                        if ($time_diff < 60) $last_seen = 'Just now';
+                                        elseif ($time_diff < 3600) $last_seen = floor($time_diff/60) . ' mins ago';
+                                        elseif ($time_diff < 86400) $last_seen = floor($time_diff/3600) . ' hrs ago';
+                                        else $last_seen = floor($time_diff/86400) . ' days ago';
+                                    ?>
+                                        <tr>
+                                            <td style="text-align: center;">
+                                                <input type="checkbox" name="delete_logs[]" value="<?php echo esc_attr($log->id); ?>" class="log-checkbox" style="accent-color: #ff2a85;">
+                                            </td>
+                                            <td>
+                                                <strong style="color: #00bcd4;"><?php echo esc_html(zk_generate_fan_name($log->visitor_id)); ?></strong>
+                                                <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;"><?php echo esc_html(substr($log->visitor_id, 0, 8) . '...'); ?></div>
+                                            </td>
+                                            <td style="color: var(--text); white-space: pre-wrap; font-family: var(--font-mono, monospace); font-size: 0.85rem;">
+                                                <?php echo esc_html($log->text_content); ?>
+                                            </td>
+                                            <td style="text-align: right; color: var(--text-dim); font-size: 0.85rem;">
+                                                <?php echo esc_html($last_seen); ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; color: var(--text-dim);">No texts intercepted yet...</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </form>
                 </div>
             </div>
         </div>
