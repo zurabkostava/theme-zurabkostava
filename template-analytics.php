@@ -34,6 +34,20 @@ if ( isset($_POST['zk_delete_encro_logs']) && wp_verify_nonce($_POST['zk_delete_
     exit;
 }
 
+// Handle Fans Deletion
+if ( isset($_POST['zk_delete_fans']) && wp_verify_nonce($_POST['zk_delete_fans_nonce'], 'zk_delete_fans_action') ) {
+    if (!empty($_POST['delete_fans']) && is_array($_POST['delete_fans'])) {
+        $visitor_ids = array_map('sanitize_text_field', $_POST['delete_fans']);
+        $table_name = $wpdb->prefix . 'zk_analytics';
+        
+        foreach ($visitor_ids as $vid) {
+            $wpdb->delete($table_name, array('visitor_id' => $vid));
+        }
+    }
+    wp_redirect(home_url('/analytics'));
+    exit;
+}
+
 // Name Generator for Visitors
 function zk_generate_fan_name($visitor_id) {
     if (empty($visitor_id)) return "Unknown Visitor";
@@ -407,61 +421,78 @@ get_header();
         <!-- TOP 20 FANS -->
         <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr;">
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title" style="color: #00bcd4;">Top 20 Returning Fans</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 class="zk-panel-title" style="color: #00bcd4; margin-bottom: 0;">Top 20 Returning Fans</h3>
+                </div>
                 <div class="zk-table-wrapper" style="width: 100%;">
-                    <table class="zk-table zk-table-fans" style="width: 100%;">
-                        <thead>
-                            <tr>
-                                <th style="width: 20%;">Fan Name (Anonymous ID)</th>
-                                <th style="width: 20%;">Location</th>
-                                <th style="width: 20%;">Tech (OS & Browser)</th>
-                                <th style="text-align: right; width: 15%;">Total Visits (Sessions)</th>
-                                <th style="text-align: right; width: 10%;">Page Views</th>
-                                <th style="text-align: right; width: 15%;">Last Seen</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if ($top_fans): 
-                                foreach ($top_fans as $fan): 
-                                    list($b, $o) = zk_get_browser_and_os($fan->user_agent);
-                                    
-                                    // Human-readable time ago
-                                    $time_diff = current_time('timestamp') - strtotime($fan->last_visit);
-                                    if ($time_diff < 60) $last_seen = 'Just now';
-                                    elseif ($time_diff < 3600) $last_seen = floor($time_diff/60) . ' mins ago';
-                                    elseif ($time_diff < 86400) $last_seen = floor($time_diff/3600) . ' hrs ago';
-                                    else $last_seen = floor($time_diff/86400) . ' days ago';
-                                ?>
-                                    <tr>
-                                        <td>
-                                            <strong style="color: #00bcd4;"><?php echo esc_html(zk_generate_fan_name($fan->visitor_id)); ?></strong>
-                                            <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;"><?php echo esc_html(substr($fan->visitor_id, 0, 8) . '...'); ?></div>
-                                        </td>
-                                        <td>
-                                            <?php echo esc_html($fan->city ? $fan->city . ', ' . $fan->country : ($fan->country ?: 'Unknown')); ?>
-                                        </td>
-                                        <td>
-                                            <div style="color: var(--text); font-size: 0.85rem;"><?php echo esc_html($o); ?></div>
-                                            <div style="color: var(--text-dim); font-size: 0.75rem; margin-top: 2px;"><?php echo esc_html($b); ?></div>
-                                        </td>
-                                        <td style="text-align: right; color: var(--text);">
-                                            <strong><?php echo number_format($fan->total_visits); ?></strong>
-                                        </td>
-                                        <td style="text-align: right; color: var(--text-dim);">
-                                            <?php echo number_format($fan->page_views); ?>
-                                        </td>
-                                        <td style="text-align: right; color: var(--text-dim); font-size: 0.85rem;">
-                                            <?php echo esc_html($last_seen); ?>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
+                    <form method="POST" action="">
+                        <?php wp_nonce_field('zk_delete_fans_action', 'zk_delete_fans_nonce'); ?>
+                        <div style="margin-bottom: 15px;">
+                            <button type="submit" name="zk_delete_fans" class="zk-reset-btn" style="padding: 6px 12px; font-size: 0.8rem; border-color: rgba(0, 188, 212, 0.4); color: #00bcd4;" onclick="return confirm('Are you sure you want to delete selected fans and all their views?');">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 4px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                Delete Selected Fans
+                            </button>
+                        </div>
+                        <table class="zk-table zk-table-fans" style="width: 100%;">
+                            <thead>
                                 <tr>
-                                    <td colspan="4" style="text-align: center; color: var(--text-dim);">No loyal fans found yet.</td>
+                                    <th style="width: 5%; text-align: center;">
+                                        <input type="checkbox" id="selectAllFans" onclick="document.querySelectorAll('.fan-checkbox').forEach(cb => cb.checked = this.checked);" style="accent-color: #00bcd4;">
+                                    </th>
+                                    <th style="width: 20%;">Fan Name (Anonymous ID)</th>
+                                    <th style="width: 20%;">Location</th>
+                                    <th style="width: 15%;">Tech (OS & Browser)</th>
+                                    <th style="text-align: right; width: 15%;">Total Visits</th>
+                                    <th style="text-align: right; width: 10%;">Views</th>
+                                    <th style="text-align: right; width: 15%;">Last Seen</th>
                                 </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <?php if ($top_fans): 
+                                    foreach ($top_fans as $fan): 
+                                        list($b, $o) = zk_get_browser_and_os($fan->user_agent);
+                                        
+                                        // Human-readable time ago
+                                        $time_diff = current_time('timestamp') - strtotime($fan->last_visit);
+                                        if ($time_diff < 60) $last_seen = 'Just now';
+                                        elseif ($time_diff < 3600) $last_seen = floor($time_diff/60) . ' mins ago';
+                                        elseif ($time_diff < 86400) $last_seen = floor($time_diff/3600) . ' hrs ago';
+                                        else $last_seen = floor($time_diff/86400) . ' days ago';
+                                    ?>
+                                        <tr>
+                                            <td style="text-align: center;">
+                                                <input type="checkbox" name="delete_fans[]" value="<?php echo esc_attr($fan->visitor_id); ?>" class="fan-checkbox" style="accent-color: #00bcd4;">
+                                            </td>
+                                            <td>
+                                                <strong style="color: #00bcd4;"><?php echo esc_html(zk_generate_fan_name($fan->visitor_id)); ?></strong>
+                                                <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;"><?php echo esc_html(substr($fan->visitor_id, 0, 8) . '...'); ?></div>
+                                            </td>
+                                            <td>
+                                                <?php echo esc_html($fan->city ? $fan->city . ', ' . $fan->country : ($fan->country ?: 'Unknown')); ?>
+                                            </td>
+                                            <td>
+                                                <div style="color: var(--text); font-size: 0.85rem;"><?php echo esc_html($o); ?></div>
+                                                <div style="color: var(--text-dim); font-size: 0.75rem; margin-top: 2px;"><?php echo esc_html($b); ?></div>
+                                            </td>
+                                            <td style="text-align: right; color: var(--text);">
+                                                <strong><?php echo number_format($fan->total_visits); ?></strong>
+                                            </td>
+                                            <td style="text-align: right; color: var(--text-dim);">
+                                                <?php echo number_format($fan->page_views); ?>
+                                            </td>
+                                            <td style="text-align: right; color: var(--text-dim); font-size: 0.85rem;">
+                                                <?php echo esc_html($last_seen); ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; color: var(--text-dim);">No loyal fans found yet.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </form>
                 </div>
             </div>
         </div>
