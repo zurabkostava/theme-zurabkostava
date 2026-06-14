@@ -1678,6 +1678,60 @@ function zk_seo_save_meta( $post_id ) {
 }
 add_action( 'save_post', 'zk_seo_save_meta' );
 
+// 2.1 Add Meta Fields to Taxonomies (Tags & Categories)
+function zk_seo_taxonomy_add_meta_fields() {
+    ?>
+    <div class="form-field">
+        <label for="zk_seo_title">SEO Title</label>
+        <input type="text" name="zk_seo_title" id="zk_seo_title" value="">
+        <p class="description">Leave empty to use default generated title.</p>
+    </div>
+    <div class="form-field">
+        <label for="zk_seo_description">SEO Description</label>
+        <textarea name="zk_seo_description" id="zk_seo_description" rows="3"></textarea>
+        <p class="description">Leave empty to use default generated description.</p>
+    </div>
+    <?php
+}
+add_action( 'category_add_form_fields', 'zk_seo_taxonomy_add_meta_fields' );
+add_action( 'post_tag_add_form_fields', 'zk_seo_taxonomy_add_meta_fields' );
+
+function zk_seo_taxonomy_edit_meta_fields( $term ) {
+    $seo_title = get_term_meta( $term->term_id, '_zk_seo_title', true );
+    $seo_desc  = get_term_meta( $term->term_id, '_zk_seo_description', true );
+    ?>
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="zk_seo_title">SEO Title</label></th>
+        <td>
+            <input type="text" name="zk_seo_title" id="zk_seo_title" value="<?php echo esc_attr( $seo_title ); ?>">
+            <p class="description">Leave empty to use default generated title.</p>
+        </td>
+    </tr>
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="zk_seo_description">SEO Description</label></th>
+        <td>
+            <textarea name="zk_seo_description" id="zk_seo_description" rows="3"><?php echo esc_textarea( $seo_desc ); ?></textarea>
+            <p class="description">Leave empty to use default generated description.</p>
+        </td>
+    </tr>
+    <?php
+}
+add_action( 'category_edit_form_fields', 'zk_seo_taxonomy_edit_meta_fields' );
+add_action( 'post_tag_edit_form_fields', 'zk_seo_taxonomy_edit_meta_fields' );
+
+function zk_seo_save_taxonomy_meta( $term_id ) {
+    if ( isset( $_POST['zk_seo_title'] ) ) {
+        update_term_meta( $term_id, '_zk_seo_title', sanitize_text_field( $_POST['zk_seo_title'] ) );
+    }
+    if ( isset( $_POST['zk_seo_description'] ) ) {
+        update_term_meta( $term_id, '_zk_seo_description', sanitize_textarea_field( $_POST['zk_seo_description'] ) );
+    }
+}
+add_action( 'created_category', 'zk_seo_save_taxonomy_meta' );
+add_action( 'edited_category', 'zk_seo_save_taxonomy_meta' );
+add_action( 'created_post_tag', 'zk_seo_save_taxonomy_meta' );
+add_action( 'edited_post_tag', 'zk_seo_save_taxonomy_meta' );
+
 // 3. Prevent WP Default Title Output & Inject Custom SEO Tags
 // Ensure WP doesn't output its own <title> if theme supports it
 remove_action( 'wp_head', '_wp_render_title_tag', 1 );
@@ -1748,12 +1802,20 @@ function zk_render_seo_meta() {
             $img = get_the_post_thumbnail_url( $obj_id, 'large' );
         }
     } elseif ( is_archive() ) {
+        $term_id = get_queried_object_id();
+        $custom_title = get_term_meta( $term_id, '_zk_seo_title', true );
+        $custom_desc  = get_term_meta( $term_id, '_zk_seo_description', true );
+
         if ( is_category() ) {
-            $title = single_cat_title( '', false ) . ' — ' . $site_name;
-            $desc = wp_strip_all_tags( category_description() ) ?: $desc;
+            $title = !empty($custom_title) ? $custom_title : single_cat_title( '', false ) . ' — ' . $site_name;
+            $desc = !empty($custom_desc) ? $custom_desc : (wp_strip_all_tags( category_description() ) ?: $desc);
         } elseif ( is_tag() ) {
-            $title = single_tag_title( '', false ) . ' — ' . $site_name;
-            $desc = wp_strip_all_tags( tag_description() ) ?: $desc;
+            $title = !empty($custom_title) ? $custom_title : single_tag_title( '', false ) . ' — ' . $site_name;
+            $desc = !empty($custom_desc) ? $custom_desc : (wp_strip_all_tags( tag_description() ) ?: $desc);
+        } else {
+            // Other archives fallback
+            if (!empty($custom_title)) $title = $custom_title;
+            if (!empty($custom_desc)) $desc = $custom_desc;
         }
     } elseif ( is_search() ) {
         $title = 'Search Results for "' . get_search_query() . '" — ' . $site_name;
