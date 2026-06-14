@@ -118,7 +118,6 @@
             }
         } catch (e) {}
 
-        var uaOverride = '';
         var deviceModel = '';
         var screenData = window.screen ? (window.screen.width + 'x' + window.screen.height + '@' + (window.devicePixelRatio || 1)) : '';
 
@@ -129,7 +128,6 @@
                 city: city || '',
                 visitor_id: visitorId,
                 session_id: sessionId,
-                os_override: uaOverride,
                 device_model: deviceModel,
                 screen_data: screenData
             });
@@ -149,11 +147,7 @@
 
         function sendTrack(country, city) {
             if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
-                navigator.userAgentData.getHighEntropyValues(["platformVersion", "model"]).then(function(ua) {
-                    if (navigator.userAgentData.platform === "Windows" && ua.platformVersion) {
-                        var major = parseInt(ua.platformVersion.split('.')[0], 10);
-                        if (major >= 13) uaOverride = 'Win11';
-                    }
+                navigator.userAgentData.getHighEntropyValues(["model"]).then(function(ua) {
                     if (ua.model) deviceModel = ua.model;
                     sendTrackData(country, city);
                 }).catch(function() {
