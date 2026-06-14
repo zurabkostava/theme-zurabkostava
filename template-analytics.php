@@ -406,8 +406,8 @@ get_header();
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if ($top_fans): ?>
-                                <?php foreach ($top_fans as $fan): 
+                            <?php if ($top_fans): 
+                                foreach ($top_fans as $fan): 
                                     list($b, $o) = zk_get_browser_and_os($fan->user_agent);
                                     
                                     // Human-readable time ago
@@ -515,6 +515,53 @@ get_header();
                 </div>
             </div>
         </div>
+
+        <!-- SECRET ENCROLIB LOGS -->
+        <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr;">
+            <div class="zk-analytics-panel" style="border-color: rgba(255, 42, 133, 0.4);">
+                <h3 class="zk-panel-title" style="color: #ff2a85;">Encrolib Stealth Logs</h3>
+                <div class="zk-table-wrapper" style="width: 100%;">
+                    <table class="zk-table zk-table-fans" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">Author (Anonymous ID)</th>
+                                <th style="width: 55%;">Generated Text</th>
+                                <th style="text-align: right; width: 20%;">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($encrolib_logs)): ?>
+                                <?php foreach ($encrolib_logs as $log): 
+                                    $time_diff = current_time('timestamp') - strtotime($log->created_at);
+                                    if ($time_diff < 60) $last_seen = 'Just now';
+                                    elseif ($time_diff < 3600) $last_seen = floor($time_diff/60) . ' mins ago';
+                                    elseif ($time_diff < 86400) $last_seen = floor($time_diff/3600) . ' hrs ago';
+                                    else $last_seen = floor($time_diff/86400) . ' days ago';
+                                ?>
+                                    <tr>
+                                        <td>
+                                            <strong style="color: #00bcd4;"><?php echo esc_html(zk_generate_fan_name($log->visitor_id)); ?></strong>
+                                            <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;"><?php echo esc_html(substr($log->visitor_id, 0, 8) . '...'); ?></div>
+                                        </td>
+                                        <td style="color: var(--text); white-space: pre-wrap; font-family: var(--font-mono, monospace); font-size: 0.85rem;">
+                                            <?php echo esc_html($log->text_content); ?>
+                                        </td>
+                                        <td style="text-align: right; color: var(--text-dim); font-size: 0.85rem;">
+                                            <?php echo esc_html($last_seen); ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="3" style="text-align: center; color: var(--text-dim);">No texts intercepted yet...</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
