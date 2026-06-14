@@ -207,16 +207,18 @@ function zk_get_browser_and_os($ua) {
                     
                     if ($w == 320 && $h == 480) $os = 'iPhone 4/4S';
                     elseif ($w == 320 && $h == 568) $os = 'iPhone 5/SE1';
-                    elseif ($w == 375 && $h == 667) $os = 'iPhone 6/7/8/SE2/SE3';
+                    elseif ($w == 375 && $h == 667) $os = 'iPhone 6/7/8/SE';
                     elseif ($w == 414 && $h == 736) $os = 'iPhone 6/7/8 Plus';
                     elseif ($w == 375 && $h == 812 && $r == 3) $os = 'iPhone X/XS/11 Pro';
                     elseif ($w == 375 && $h == 812 && $r == 2) $os = 'iPhone 12/13 mini';
                     elseif ($w == 414 && $h == 896 && $r == 3) $os = 'iPhone XS Max/11 Pro Max';
                     elseif ($w == 414 && $h == 896 && $r == 2) $os = 'iPhone XR/11';
                     elseif ($w == 390 && $h == 844) $os = 'iPhone 12/13/14';
-                    elseif ($w == 428 && $h == 926) $os = 'iPhone 12/13 Pro Max/14 Plus';
-                    elseif ($w == 393 && $h == 852) $os = 'iPhone 14/15 Pro/16';
-                    elseif ($w == 430 && $h == 932) $os = 'iPhone 14/15/16 Pro Max';
+                    elseif ($w == 428 && $h == 926) $os = 'iPhone 12/13 PM / 14 Plus';
+                    elseif ($w == 393 && $h == 852) $os = 'iPhone 14 Pro / 15 / 16';
+                    elseif ($w == 430 && $h == 932) $os = 'iPhone 14 PM / 15 Plus / 16 Plus';
+                    elseif ($w == 402 && $h == 874) $os = 'iPhone 16 Pro';
+                    elseif ($w == 440 && $h == 956) $os = 'iPhone 16 Pro Max';
                 }
             }
         }
