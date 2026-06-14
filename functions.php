@@ -2705,6 +2705,11 @@ function zk_track_visitor( WP_REST_Request $request ) {
     $city = isset($params['city']) ? sanitize_text_field($params['city']) : '';
     $visitor_id = isset($params['visitor_id']) ? sanitize_text_field($params['visitor_id']) : '';
     $session_id = isset($params['session_id']) ? sanitize_text_field($params['session_id']) : '';
+    
+    // Check OS Override (Windows 11)
+    if (!empty($params['os_override']) && $params['os_override'] === 'Win11') {
+        $user_agent = str_replace('Windows NT 10.0', 'Windows NT 11.0', $user_agent);
+    }
 
     // Get IP and Hash it (GDPR friendly)
     $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';

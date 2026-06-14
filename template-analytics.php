@@ -190,7 +190,8 @@ function zk_get_browser_and_os($ua) {
     elseif (stripos($ua, 'Safari') !== false && stripos($ua, 'Chrome') === false) { $browser = 'Apple Safari'; }
 
     // OS Detection
-    if (stripos($ua, 'Windows NT 10.0') !== false || stripos($ua, 'Windows NT 11.0') !== false) { $os = 'Windows 10/11'; }
+    if (stripos($ua, 'Windows NT 11.0') !== false) { $os = 'Windows 11'; }
+    elseif (stripos($ua, 'Windows NT 10.0') !== false) { $os = 'Windows 10'; }
     elseif (stripos($ua, 'Windows NT') !== false) { $os = 'Windows (Older)'; }
     elseif (stripos($ua, 'iPhone') !== false) { $os = 'Apple iPhone'; }
     elseif (stripos($ua, 'iPad') !== false) { $os = 'Apple iPad'; }

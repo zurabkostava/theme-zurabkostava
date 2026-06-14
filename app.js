@@ -118,13 +118,24 @@
             }
         } catch (e) {}
 
+        var uaOverride = '';
+        if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+            navigator.userAgentData.getHighEntropyValues(["platformVersion"]).then(function(ua) {
+                if (ua.platform === "Windows") {
+                    var major = parseInt(ua.platformVersion.split('.')[0], 10);
+                    if (major >= 13) uaOverride = 'Win11';
+                }
+            }).catch(function(){});
+        }
+
         function sendTrack(country, city) {
             var payload = JSON.stringify({ 
                 url: route, 
                 country: country || '', 
                 city: city || '',
                 visitor_id: visitorId,
-                session_id: sessionId
+                session_id: sessionId,
+                os_override: uaOverride
             });
             var sent = false;
             if (navigator.sendBeacon) {
