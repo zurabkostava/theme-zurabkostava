@@ -150,7 +150,7 @@
         function sendTrack(country, city) {
             if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
                 navigator.userAgentData.getHighEntropyValues(["platformVersion", "model"]).then(function(ua) {
-                    if (ua.platform === "Windows") {
+                    if (navigator.userAgentData.platform === "Windows" && ua.platformVersion) {
                         var major = parseInt(ua.platformVersion.split('.')[0], 10);
                         if (major >= 13) uaOverride = 'Win11';
                     }
