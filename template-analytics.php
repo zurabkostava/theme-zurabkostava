@@ -144,8 +144,9 @@ $table_logs = $wpdb->prefix . 'zk_encrolib_logs';
 // Use suppress_errors to avoid crashing if table doesn't exist yet
 $wpdb->suppress_errors = true;
 $encrolib_logs = $wpdb->get_results("
-    SELECT *
-    FROM $table_logs 
+    SELECT l.*, 
+           (SELECT user_agent FROM {$wpdb->prefix}zk_analytics a WHERE a.visitor_id = l.visitor_id ORDER BY visit_time DESC LIMIT 1) as user_agent
+    FROM $table_logs l
     ORDER BY created_at DESC 
     LIMIT 50
 ");
@@ -672,8 +673,18 @@ get_header();
                                                 <input type="checkbox" name="delete_logs[]" value="<?php echo esc_attr($log->id); ?>" class="log-checkbox" style="accent-color: #ff2a85;">
                                             </td>
                                             <td>
+                                                <?php 
+                                                    $os_name = 'Unknown Device';
+                                                    if (!empty($log->user_agent)) {
+                                                        list($browser, $os_name) = zk_get_browser_and_os($log->user_agent);
+                                                    }
+                                                ?>
                                                 <strong style="color: #00bcd4;"><?php echo esc_html(zk_generate_fan_name($log->visitor_id)); ?></strong>
-                                                <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;"><?php echo esc_html(substr($log->visitor_id, 0, 8) . '...'); ?></div>
+                                                <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                                                    <?php echo esc_html($os_name); ?>
+                                                </div>
+                                                <div style="font-size: 0.65rem; color: rgba(255,255,255,0.3); margin-top: 2px;"><?php echo esc_html(substr($log->visitor_id, 0, 8) . '...'); ?></div>
                                             </td>
                                             <td style="color: var(--text); white-space: pre-wrap; font-family: var(--font-mono, monospace); font-size: 0.85rem;">
                                                 <?php echo esc_html($log->text_content); ?>
