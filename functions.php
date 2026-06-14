@@ -1678,6 +1678,53 @@ function zk_seo_save_meta( $post_id ) {
 }
 add_action( 'save_post', 'zk_seo_save_meta' );
 
+// 2.2 Add AI & FAQ Meta Box
+function zk_geo_add_meta_box() {
+    $screens = array( 'post', 'page', 'zk_book' );
+    foreach ( $screens as $screen ) {
+        add_meta_box(
+            'zk_geo_meta_box',
+            'ZK GEO Settings (AI & FAQ)',
+            'zk_geo_meta_box_html',
+            $screen,
+            'normal',
+            'high'
+        );
+    }
+}
+add_action( 'add_meta_boxes', 'zk_geo_add_meta_box' );
+
+function zk_geo_meta_box_html( $post ) {
+    wp_nonce_field( 'zk_geo_save_meta', 'zk_geo_meta_nonce' );
+    $ai_summary = get_post_meta( $post->ID, '_zk_ai_summary', true );
+    $faq_schema = get_post_meta( $post->ID, '_zk_faq_schema', true );
+    ?>
+    <div style="padding: 10px 0;">
+        <label for="zk_ai_summary" style="display:block; font-weight:bold; margin-bottom:5px;">AI Summary (Abstract)</label>
+        <p style="margin-top:0; font-size:12px; color:#666;">Tell ChatGPT exactly how to summarize this page.</p>
+        <textarea id="zk_ai_summary" name="zk_ai_summary" rows="3" style="width:100%; max-width:800px; margin-bottom:15px;" placeholder="This page is about..."><?php echo esc_textarea( $ai_summary ); ?></textarea>
+        
+        <label for="zk_faq_schema" style="display:block; font-weight:bold; margin-bottom:5px;">FAQ Schema Generator (Google "People Also Ask")</label>
+        <p style="margin-top:0; font-size:12px; color:#666;">Format as:<br>Q: Question?<br>A: Answer.</p>
+        <textarea id="zk_faq_schema" name="zk_faq_schema" rows="6" style="width:100%; max-width:800px;" placeholder="Q: Who is Zurab?&#10;A: A creative lead."><?php echo esc_textarea( $faq_schema ); ?></textarea>
+    </div>
+    <?php
+}
+
+function zk_geo_save_meta( $post_id ) {
+    if ( ! isset( $_POST['zk_geo_meta_nonce'] ) || ! wp_verify_nonce( $_POST['zk_geo_meta_nonce'], 'zk_geo_save_meta' ) ) return;
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
+    if ( ! current_user_can( 'edit_post', $post_id ) ) return;
+
+    if ( isset( $_POST['zk_ai_summary'] ) ) {
+        update_post_meta( $post_id, '_zk_ai_summary', sanitize_textarea_field( $_POST['zk_ai_summary'] ) );
+    }
+    if ( isset( $_POST['zk_faq_schema'] ) ) {
+        update_post_meta( $post_id, '_zk_faq_schema', sanitize_textarea_field( $_POST['zk_faq_schema'] ) );
+    }
+}
+add_action( 'save_post', 'zk_geo_save_meta' );
+
 // 2.1 Add Meta Fields to Taxonomies (Tags & Categories)
 function zk_seo_taxonomy_add_meta_fields() {
     ?>
@@ -1832,6 +1879,15 @@ function zk_render_seo_meta() {
     echo "<title>{$title}</title>\n";
     if ( ! empty( $desc ) ) {
         echo "<meta name=\"description\" content=\"{$desc}\" />\n";
+    }
+    
+    // AI Summary Abstract
+    if ( $is_single ) {
+        $ai_summary = get_post_meta( $obj_id, '_zk_ai_summary', true );
+        if ( ! empty( $ai_summary ) ) {
+            echo "<meta name=\"abstract\" content=\"" . esc_attr( wp_strip_all_tags( $ai_summary ) ) . "\" />\n";
+            echo "<!-- AI SUMMARY: " . esc_html( $ai_summary ) . " -->\n";
+        }
     }
     
     // Canonical URL
@@ -2066,6 +2122,59 @@ function zk_render_json_ld_schema() {
             ];
         }
         $schema[] = $breadcrumbs;
+    }
+
+    // FAQ Schema parsing
+    if ( is_singular() || is_page() ) {
+        $target_id = function_exists('zk_get_seo_target_id') ? zk_get_seo_target_id( get_queried_object_id() ) : get_queried_object_id();
+        $faq_raw = get_post_meta( $target_id, '_zk_faq_schema', true );
+        if ( ! empty( $faq_raw ) ) {
+            $faq_lines = explode("\n", str_replace("\r", "", $faq_raw));
+            $faq_entities = [];
+            $current_q = '';
+            $current_a = '';
+            
+            foreach ($faq_lines as $line) {
+                if (strpos(trim($line), 'Q:') === 0) {
+                    if (!empty($current_q) && !empty($current_a)) {
+                        $faq_entities[] = [
+                            '@type' => 'Question',
+                            'name' => trim($current_q),
+                            'acceptedAnswer' => [
+                                '@type' => 'Answer',
+                                'text' => trim($current_a)
+                            ]
+                        ];
+                    }
+                    $current_q = substr(trim($line), 2);
+                    $current_a = ''; // reset answer
+                } elseif (strpos(trim($line), 'A:') === 0) {
+                    $current_a = substr(trim($line), 2);
+                } elseif (!empty($current_a)) {
+                    // multiline answer continuation
+                    $current_a .= "\n" . trim($line);
+                }
+            }
+            // push last one
+            if (!empty($current_q) && !empty($current_a)) {
+                $faq_entities[] = [
+                    '@type' => 'Question',
+                    'name' => trim($current_q),
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => trim($current_a)
+                    ]
+                ];
+            }
+            
+            if (!empty($faq_entities)) {
+                $schema[] = [
+                    '@context' => 'https://schema.org',
+                    '@type' => 'FAQPage',
+                    'mainEntity' => $faq_entities
+                ];
+            }
+        }
     }
 
     if ( ! empty( $schema ) ) {
