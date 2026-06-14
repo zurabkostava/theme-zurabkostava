@@ -84,6 +84,18 @@ $top_fans = $wpdb->get_results("
     LIMIT 20
 ");
 
+// 3.5 Encrolib Logs
+$table_logs = $wpdb->prefix . 'zk_encrolib_logs';
+// Use suppress_errors to avoid crashing if table doesn't exist yet
+$wpdb->suppress_errors = true;
+$encrolib_logs = $wpdb->get_results("
+    SELECT *
+    FROM $table_logs 
+    ORDER BY created_at DESC 
+    LIMIT 50
+");
+$wpdb->suppress_errors = false;
+
 // 3.4 Devices and Browsers
 $ua_data = $wpdb->get_results("
     SELECT user_agent, COUNT(DISTINCT session_id) as visits 
