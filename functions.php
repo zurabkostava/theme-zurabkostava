@@ -1691,6 +1691,11 @@ function zk_seo_taxonomy_add_meta_fields() {
         <textarea name="zk_seo_description" id="zk_seo_description" rows="3"></textarea>
         <p class="description">Leave empty to use default generated description.</p>
     </div>
+    <div class="form-field">
+        <label for="zk_seo_image">SEO Image URL</label>
+        <input type="text" name="zk_seo_image" id="zk_seo_image" value="">
+        <p class="description">Paste an image URL for social media sharing (Open Graph & Twitter). Leave empty to use site default.</p>
+    </div>
     <div class="form-field" style="margin-top:20px; padding-top:15px; border-top:1px solid #ccc;">
         <label for="zk_geo_ai_summary"><strong>AI Summary (Abstract):</strong></label>
         <textarea name="zk_geo_ai_summary" id="zk_geo_ai_summary" rows="3"></textarea>
@@ -1725,6 +1730,16 @@ function zk_seo_taxonomy_edit_meta_fields( $term ) {
         </td>
     </tr>
     <?php
+    $seo_img = get_term_meta( $term->term_id, '_zk_seo_image', true );
+    ?>
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="zk_seo_image">SEO Image URL</label></th>
+        <td>
+            <input type="text" name="zk_seo_image" id="zk_seo_image" value="<?php echo esc_attr( $seo_img ); ?>">
+            <p class="description">Paste an image URL for social media sharing (Open Graph & Twitter). Leave empty to use site default.</p>
+        </td>
+    </tr>
+    <?php
     $ai_summary = get_term_meta( $term->term_id, '_zk_geo_ai_summary', true );
     $faq_text   = get_term_meta( $term->term_id, '_zk_geo_faq', true );
     ?>
@@ -1756,6 +1771,9 @@ function zk_seo_save_taxonomy_meta( $term_id ) {
     }
     if ( isset( $_POST['zk_seo_description'] ) ) {
         update_term_meta( $term_id, '_zk_seo_description', sanitize_textarea_field( $_POST['zk_seo_description'] ) );
+    }
+    if ( isset( $_POST['zk_seo_image'] ) ) {
+        update_term_meta( $term_id, '_zk_seo_image', esc_url_raw( $_POST['zk_seo_image'] ) );
     }
     if ( isset( $_POST['zk_geo_ai_summary'] ) ) {
         update_term_meta( $term_id, '_zk_geo_ai_summary', sanitize_textarea_field( $_POST['zk_geo_ai_summary'] ) );
@@ -1842,6 +1860,11 @@ function zk_render_seo_meta() {
         $term_id = get_queried_object_id();
         $custom_title = get_term_meta( $term_id, '_zk_seo_title', true );
         $custom_desc  = get_term_meta( $term_id, '_zk_seo_description', true );
+        $custom_img   = get_term_meta( $term_id, '_zk_seo_image', true );
+
+        if ( !empty($custom_img) ) {
+            $img = $custom_img;
+        }
 
         if ( is_category() ) {
             $title = !empty($custom_title) ? $custom_title : single_cat_title( '', false ) . ' — ' . $site_name;
