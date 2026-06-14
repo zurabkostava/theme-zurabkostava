@@ -2711,6 +2711,17 @@ function zk_track_visitor( WP_REST_Request $request ) {
         $user_agent = str_replace('Windows NT 10.0', 'Windows NT 11.0', $user_agent);
     }
 
+    $device_model = isset($params['device_model']) ? sanitize_text_field($params['device_model']) : '';
+    $screen_data = isset($params['screen_data']) ? sanitize_text_field($params['screen_data']) : '';
+
+    if (!empty($device_model)) {
+        $user_agent .= ' [Device: ' . $device_model . ']';
+    }
+
+    if (stripos($user_agent, 'iPhone') !== false && !empty($screen_data)) {
+        $user_agent .= ' [Screen: ' . $screen_data . ']';
+    }
+
     // Get IP and Hash it (GDPR friendly)
     $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
     if (!empty($_SERVER['HTTP_CLIENT_IP'])) {

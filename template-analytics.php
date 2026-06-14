@@ -193,10 +193,42 @@ function zk_get_browser_and_os($ua) {
     if (stripos($ua, 'Windows NT 11.0') !== false) { $os = 'Windows 11'; }
     elseif (stripos($ua, 'Windows NT 10.0') !== false) { $os = 'Windows 10'; }
     elseif (stripos($ua, 'Windows NT') !== false) { $os = 'Windows (Older)'; }
-    elseif (stripos($ua, 'iPhone') !== false) { $os = 'Apple iPhone'; }
+    elseif (stripos($ua, 'iPhone') !== false) { 
+        $os = 'Apple iPhone'; 
+        if (preg_match('/\[Screen: (.*?)\]/', $ua, $matches)) {
+            $screen = $matches[1];
+            if (strpos($screen, '@') !== false) {
+                list($res, $ratio) = explode('@', $screen);
+                $parts = explode('x', $res);
+                if (count($parts) == 2) {
+                    $w = min((int)$parts[0], (int)$parts[1]);
+                    $h = max((int)$parts[0], (int)$parts[1]);
+                    $r = (int)$ratio;
+                    
+                    if ($w == 320 && $h == 480) $os = 'iPhone 4/4S';
+                    elseif ($w == 320 && $h == 568) $os = 'iPhone 5/SE1';
+                    elseif ($w == 375 && $h == 667) $os = 'iPhone 6/7/8/SE2/SE3';
+                    elseif ($w == 414 && $h == 736) $os = 'iPhone 6/7/8 Plus';
+                    elseif ($w == 375 && $h == 812 && $r == 3) $os = 'iPhone X/XS/11 Pro';
+                    elseif ($w == 375 && $h == 812 && $r == 2) $os = 'iPhone 12/13 mini';
+                    elseif ($w == 414 && $h == 896 && $r == 3) $os = 'iPhone XS Max/11 Pro Max';
+                    elseif ($w == 414 && $h == 896 && $r == 2) $os = 'iPhone XR/11';
+                    elseif ($w == 390 && $h == 844) $os = 'iPhone 12/13/14';
+                    elseif ($w == 428 && $h == 926) $os = 'iPhone 12/13 Pro Max/14 Plus';
+                    elseif ($w == 393 && $h == 852) $os = 'iPhone 14/15 Pro/16';
+                    elseif ($w == 430 && $h == 932) $os = 'iPhone 14/15/16 Pro Max';
+                }
+            }
+        }
+    }
     elseif (stripos($ua, 'iPad') !== false) { $os = 'Apple iPad'; }
     elseif (stripos($ua, 'Mac OS X') !== false || stripos($ua, 'Macintosh') !== false) { $os = 'Apple Mac'; }
-    elseif (stripos($ua, 'Android') !== false) { $os = 'Android Device'; }
+    elseif (stripos($ua, 'Android') !== false) { 
+        $os = 'Android Device'; 
+        if (preg_match('/\[Device: (.*?)\]/', $ua, $matches)) {
+            $os = 'Android (' . esc_html(substr($matches[1], 0, 30)) . ')';
+        }
+    }
     elseif (stripos($ua, 'Linux') !== false) { $os = 'Linux'; }
 
     return [$browser, $os];

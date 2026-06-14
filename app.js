@@ -119,6 +119,8 @@
         } catch (e) {}
 
         var uaOverride = '';
+        var deviceModel = '';
+        var screenData = window.screen ? (window.screen.width + 'x' + window.screen.height + '@' + (window.devicePixelRatio || 1)) : '';
 
         function sendTrackData(country, city) {
             var payload = JSON.stringify({ 
@@ -127,7 +129,9 @@
                 city: city || '',
                 visitor_id: visitorId,
                 session_id: sessionId,
-                os_override: uaOverride
+                os_override: uaOverride,
+                device_model: deviceModel,
+                screen_data: screenData
             });
             var sent = false;
             if (navigator.sendBeacon) {
@@ -145,11 +149,12 @@
 
         function sendTrack(country, city) {
             if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
-                navigator.userAgentData.getHighEntropyValues(["platformVersion"]).then(function(ua) {
+                navigator.userAgentData.getHighEntropyValues(["platformVersion", "model"]).then(function(ua) {
                     if (ua.platform === "Windows") {
                         var major = parseInt(ua.platformVersion.split('.')[0], 10);
                         if (major >= 13) uaOverride = 'Win11';
                     }
+                    if (ua.model) deviceModel = ua.model;
                     sendTrackData(country, city);
                 }).catch(function() {
                     sendTrackData(country, city);
