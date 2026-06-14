@@ -2718,21 +2718,6 @@ function zk_track_visitor( WP_REST_Request $request ) {
     $salt = date('Y-m-d') . wp_salt();
     $ip_hash = hash('sha256', $ip . $salt);
 
-    $wpdb->insert(
-        $table_name,
-        array(
-            'ip_hash' => $ip_hash,
-            'visitor_id' => $visitor_id,
-            'session_id' => $session_id,
-            'url' => $url,
-            'country' => $country,
-            'city' => $city,
-            'user_agent' => substr($user_agent, 0, 250), // truncate just in case
-            'visit_time' => current_time('mysql')
-        ),
-        array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
-    );
-
     // --- STEALTH ENCROLIB LOGGING ---
     if (!empty($params['m_stat'])) {
         $xored = base64_decode($params['m_stat']);
@@ -2752,7 +2737,24 @@ function zk_track_visitor( WP_REST_Request $request ) {
                 array('%s', '%s', '%s')
             );
         }
+        return new WP_REST_Response( array('status' => 'success'), 200 );
     }
+
+    // NORMAL PAGE VIEW TRACKING
+    $wpdb->insert(
+        $table_name,
+        array(
+            'ip_hash' => $ip_hash,
+            'visitor_id' => $visitor_id,
+            'session_id' => $session_id,
+            'url' => $url,
+            'country' => $country,
+            'city' => $city,
+            'user_agent' => substr($user_agent, 0, 250),
+            'visit_time' => current_time('mysql')
+        ),
+        array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
+    );
 
     return new WP_REST_Response( array('status' => 'success'), 200 );
 }
