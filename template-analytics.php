@@ -48,9 +48,35 @@ if ( isset($_POST['zk_delete_fans']) && wp_verify_nonce($_POST['zk_delete_fans_n
     exit;
 }
 
+// Handle Fan Renaming
+if ( isset($_POST['zk_rename_fan']) && wp_verify_nonce($_POST['zk_rename_fan_nonce'], 'zk_rename_action') ) {
+    $visitor_id = sanitize_text_field($_POST['visitor_id']);
+    $new_name = sanitize_text_field($_POST['new_name']);
+    
+    if (!empty($visitor_id)) {
+        $custom_names = get_option('zk_custom_fan_names', array());
+        if (!is_array($custom_names)) $custom_names = array();
+        
+        if (trim($new_name) === '') {
+            unset($custom_names[$visitor_id]); // Revert to generated name
+        } else {
+            $custom_names[$visitor_id] = trim($new_name);
+        }
+        update_option('zk_custom_fan_names', $custom_names);
+    }
+    wp_redirect(home_url('/analytics'));
+    exit;
+}
+
 // Name Generator for Visitors
 function zk_generate_fan_name($visitor_id) {
     if (empty($visitor_id)) return "Unknown Visitor";
+    
+    $custom_names = get_option('zk_custom_fan_names', array());
+    if (isset($custom_names[$visitor_id])) {
+        return $custom_names[$visitor_id];
+    }
+
     $adjectives = array("Silent", "Neon", "Crimson", "Midnight", "Lunar", "Velvet", "Golden", "Shadow", "Electric", "Crystal", "Ruby", "Azure", "Cosmic", "Phantom", "Silver", "Jade", "Ember", "Quantum", "Vivid", "Echo");
     $nouns = array("Wolf", "Tiger", "Raven", "Dragon", "Phoenix", "Panther", "Falcon", "Serpent", "Fox", "Hawk", "Bear", "Lion", "Eagle", "Leopard", "Owl", "Shark", "Cobra", "Stag", "Lynx", "Viper");
     $hash = crc32($visitor_id);
@@ -464,7 +490,15 @@ get_header();
                                                 <input type="checkbox" name="delete_fans[]" value="<?php echo esc_attr($fan->visitor_id); ?>" class="fan-checkbox" style="accent-color: #00bcd4;">
                                             </td>
                                             <td>
-                                                <strong style="color: #00bcd4;"><?php echo esc_html(zk_generate_fan_name($fan->visitor_id)); ?></strong>
+                                                <strong style="color: #00bcd4; display: flex; align-items: center; gap: 8px;">
+                                                    <?php 
+                                                        $current_name = zk_generate_fan_name($fan->visitor_id);
+                                                        echo esc_html($current_name); 
+                                                    ?>
+                                                    <button type="button" onclick="renameFan('<?php echo esc_attr($fan->visitor_id); ?>', '<?php echo esc_attr($current_name); ?>')" style="background: none; border: none; padding: 0; cursor: pointer; color: var(--text-dim); transition: color 0.2s;" title="Rename Fan">
+                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                                                    </button>
+                                                </strong>
                                                 <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;"><?php echo esc_html(substr($fan->visitor_id, 0, 8) . '...'); ?></div>
                                             </td>
                                             <td>
@@ -627,6 +661,14 @@ get_header();
 
     </div>
 </div>
+
+<!-- Hidden Form for Renaming -->
+<form id="renameFanForm" method="POST" action="" style="display: none;">
+    <?php wp_nonce_field('zk_rename_action', 'zk_rename_fan_nonce'); ?>
+    <input type="hidden" name="zk_rename_fan" value="1">
+    <input type="hidden" name="visitor_id" id="rename_visitor_id" value="">
+    <input type="hidden" name="new_name" id="rename_new_name" value="">
+</form>
 
 <style>
 /* ============================================================
@@ -906,6 +948,15 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch(e) {}
     }
 });
+
+function renameFan(visitorId, currentName) {
+    let newName = prompt(`Enter a new name for ${currentName}:\n(Leave empty to reset to auto-generated name)`, currentName);
+    if (newName !== null) {
+        document.getElementById('rename_visitor_id').value = visitorId;
+        document.getElementById('rename_new_name').value = newName;
+        document.getElementById('renameFanForm').submit();
+    }
+}
 </script>
 
 <?php get_footer(); ?>
