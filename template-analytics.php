@@ -277,8 +277,12 @@ if ($range_param === '365') {
             }
         }
         if (!$found) { $views_data[] = 0; $uniques_data[] = 0; }
-    }
 }
+}
+
+add_action('wp_head', function() {
+    echo '<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">' . "\n";
+}, 1);
 
 get_header();
 ?>
