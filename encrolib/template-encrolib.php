@@ -361,9 +361,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // 🚫 Remove Mobile Bottom
 
                     <div class="export-actions">
                         <button id="exportSVGButton" class="export-button" disabled>Export SVG (Vector)</button>
-                        <button id="exportJPGButton" class="export-jpg-button" disabled>Export JPG (With Titles)</button>
-                        <button id="exportSlide2Button" onclick="generateAndDownloadSecondSlide()" disabled>Export JPG (Full Canvas)</button>
-                        <button id="exportSlide3Button" onclick="generateAndDownloadThirdSlide()" disabled>Export JPG (Macro Detail)</button>
+                        <button id="exportJPGButton" class="export-jpg-button" disabled>Export JPG (Main Cover)</button>
+                        <button id="exportSlide2Button" onclick="generateAndDownloadSecondSlide()" disabled>Export Slide 2 (Wallpaper)</button>
+                        <button id="exportSlide3Button" onclick="generateAndDownloadThirdSlide()" disabled>Export Slide 3 (Macro Detail)</button>
                     </div>
                 </div>
             </div>
