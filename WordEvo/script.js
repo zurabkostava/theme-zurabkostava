@@ -1206,7 +1206,6 @@ async function deleteCard(card) {
         const toggleBtn = document.getElementById("toggleDarkModeBtn");
         if (savedTheme === "dark") {
             document.body.classList.add("dark");
-            document.documentElement.classList.add("dark");
             if (toggleBtn) toggleBtn.innerHTML = `<i class="fas fa-sun"></i>`;
             if (logoEl) logoEl.data = "/icons/logo-dark.svg";
         }
@@ -1488,25 +1487,25 @@ async function deleteCard(card) {
         const logoEl = document.getElementById("appLogo");
         const toggleBtn = document.getElementById("toggleDarkModeBtn"); // ეს ცვლადი უკვე არსებობს, მაგრამ აქ გვჭირდება
         if (savedTheme === "dark") {
-            document.body.classList.add("dark");
             document.documentElement.classList.add("dark");
+            document.body.classList.add("dark");
             toggleBtn.innerHTML = `<i class="fas fa-sun"></i>`;
             if (logoEl) {
                 logoEl.data = "/icons/logo-dark.svg";
             }
         } else {
-            document.body.classList.remove("dark");
+// ეს ბლოკი აკლდა:
             document.documentElement.classList.remove("dark");
+            document.body.classList.remove("dark");
             toggleBtn.innerHTML = `<i class="fas fa-moon"></i>`;
             if (logoEl) {
                 logoEl.data = "/icons/logo.svg";
             }
         }
-// 2. კლიკზე თემის შენახვა
+// 2. კლიკზე თემის შენახვა (ეს კოდი ისედაც სწორი იყო)
         toggleBtn.addEventListener("click", () => {
+            document.documentElement.classList.toggle("dark");
             document.body.classList.toggle("dark");
-            document.documentElement.classList.toggle("dark"); // Fix for global HTML element
-            
             const isDark = document.body.classList.contains("dark");
             localStorage.setItem("theme", isDark ? "dark" : "light");
             toggleBtn.innerHTML = `<i class="fas fa-${isDark ? 'sun' : 'moon'}"></i>`;
@@ -1815,8 +1814,9 @@ async function deleteCard(card) {
         const shuffleExamplesCheckbox = document.getElementById('shuffleExamplesCheckbox');
         const examplesSelect = document.getElementById('readExamplesSelect');
         
-        localStorage.setItem(VOICE_STORAGE_KEY, voiceSelect.value);
-        localStorage.setItem(GEORGIAN_VOICE_KEY, georgianVoiceSelect.value);
+        const dictId = localStorage.getItem(DICTIONARY_KEY) || currentDictionaryId;
+        localStorage.setItem(VOICE_STORAGE_KEY + '_' + dictId, voiceSelect.value);
+        localStorage.setItem(GEORGIAN_VOICE_KEY + '_' + dictId, georgianVoiceSelect.value);
         localStorage.setItem(ENGLISH_RATE_KEY, englishRateSlider.value);
         localStorage.setItem(GEORGIAN_RATE_KEY, georgianRateSlider.value);
         localStorage.setItem('skip_extra_translation', skipExtraCheckbox.checked);

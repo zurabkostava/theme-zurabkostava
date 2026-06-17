@@ -1,4 +1,4 @@
-﻿/*style.css*/
+/*style.css*/
 
 
 
@@ -3577,7 +3577,7 @@ textarea {
 /* მაგრამ აქტიურ ბლოკს ვუბრუნებთ 100% ხილვადობას! */
 .modal.focus-mode #previewWord.highlighted-sentence,
 .modal.focus-mode #previewTranslation.highlighted-sentence,
-.modal.focus-mode .sentence-pair:has(.highlighted-sentence) {
+.modal.focus-mode .sentence-pair.active-pair {
     opacity: 1;
 }
 

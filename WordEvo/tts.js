@@ -257,7 +257,7 @@ async function loadVoices() {
             const firstPiper2 = piperVoicesList.find(v => v.lang.startsWith(lang2));
             storedGeo = hasNativeLang2 ? voices.find(v => v.lang.startsWith(lang2)).name : (firstPiper2 ? 'piper:' + firstPiper2.key : '');
         }
-        if (storedGeo) localStorage.setItem(GEORGIAN_VOICE_KEY + '_' + window.currentDictionaryId, storedGeo);
+        if (storedGeo) localStorage.setItem(GEORGIAN_VOICE_KEY + '_' + localStorage.getItem('wordevo_current_dictionary'), storedGeo);
     }
 
     if (storedGeo && storedGeo.startsWith('piper:')) {
@@ -401,7 +401,12 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
 
     const speak = (txt, el) => {
         return new Promise(resolve => {
-            if (el) el.classList.add('highlighted-sentence');
+            if (el) {
+                el.classList.add('highlighted-sentence');
+                if (el.parentElement && el.parentElement.classList.contains('sentence-pair')) {
+                    el.parentElement.classList.add('active-pair');
+                }
+            }
             if (buttonEl) buttonEl.classList.add('active');
 
             if (isPiper) {
@@ -409,12 +414,18 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
                 const rate = parseFloat(localStorage.getItem(rateKey) || 1);
                 speakWithPiper(txt, rate, workerKey)
                     .then(() => {
-                        if (el) el.classList.remove('highlighted-sentence');
+                        if (el) {
+                            el.classList.remove('highlighted-sentence');
+                            if (el.parentElement) el.parentElement.classList.remove('active-pair');
+                        }
                         if (buttonEl) buttonEl.classList.remove('active');
                         resolve();
                     })
                     .catch(() => {
-                        if (el) el.classList.remove('highlighted-sentence');
+                        if (el) {
+                            el.classList.remove('highlighted-sentence');
+                            if (el.parentElement) el.parentElement.classList.remove('active-pair');
+                        }
                         if (buttonEl) buttonEl.classList.remove('active');
                         resolve();
                     });
@@ -429,7 +440,10 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
             utterance.rate = parseFloat(localStorage.getItem(rateKey) || 1);
 
             utterance.onend = () => {
-                if (el) el.classList.remove('highlighted-sentence');
+                if (el) {
+                    el.classList.remove('highlighted-sentence');
+                    if (el.parentElement) el.parentElement.classList.remove('active-pair');
+                }
                 if (buttonEl) buttonEl.classList.remove('active');
                 resolve();
             };
