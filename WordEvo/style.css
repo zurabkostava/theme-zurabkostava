@@ -3695,10 +3695,8 @@ textarea {
 
 
 
-#modalOverlay, #tagLibraryModal, #settingsModal{
-
-    z-index: 99999;
-
+#modalOverlay, #tagLibraryModal, #settingsModal, #cardPreviewModal, #notificationsModal, #trainingStatsModal {
+    z-index: 9999999 !important;
 }
 
 
