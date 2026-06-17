@@ -12,7 +12,7 @@ add_action('wp_enqueue_scripts', function() {
     wp_dequeue_style('global-styles');
     
     // Enqueue WordEvo App Styles
-    wp_enqueue_style('wordevo-app-style', get_template_directory_uri() . '/WordEvo/style.css', array(), '12');
+    wp_enqueue_style('wordevo-app-style', get_template_directory_uri() . '/WordEvo/style.css', array(), time());
 }, 999);
 remove_action('wp_head', 'print_emoji_detection_script', 7);
 remove_action('wp_print_styles', 'print_emoji_styles');
@@ -41,18 +41,18 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="console.error('Supabase CDN failed to load')"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/supabase-client.js?v=11"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/script.js?v=11"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/quiz.js?v=11"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/wordhear.js?v=11"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/makeword.js?v=11"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/utils.js?v=11"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/mix.js?v=11"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/typegame.js?v=11"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/sentence.js?v=11"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/puzzle.js?v=11"></script>
-    <script src="<?php echo get_template_directory_uri(); ?>/WordEvo/tts.js?v=11"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/notifications.js?v=11"></script>
+    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/supabase-client.js?v=<?php echo time(); ?>"></script>
+    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/script.js?v=<?php echo time(); ?>"></script>
+    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/quiz.js?v=<?php echo time(); ?>"></script>
+    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/wordhear.js?v=<?php echo time(); ?>"></script>
+    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/makeword.js?v=<?php echo time(); ?>"></script>
+    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/utils.js?v=<?php echo time(); ?>"></script>
+    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/mix.js?v=<?php echo time(); ?>"></script>
+    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/typegame.js?v=<?php echo time(); ?>"></script>
+    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/sentence.js?v=<?php echo time(); ?>"></script>
+    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/puzzle.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo get_template_directory_uri(); ?>/WordEvo/tts.js?v=<?php echo time(); ?>"></script>
+    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/notifications.js?v=<?php echo time(); ?>"></script>
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet"/>

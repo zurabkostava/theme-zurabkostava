@@ -33,8 +33,9 @@ async function subscribeToPush(forceNew = false) {
     }
 
     try {
-        console.log('[Push] Step 1: waiting for SW ready...');
-        const reg = await navigator.serviceWorker.ready;
+        console.log('[Push] Step 1: waiting for SW registration...');
+        const swPath = (window.WORDEVO_ASSET_PATH || '.') + '/sw.js';
+        const reg = await navigator.serviceWorker.register(swPath, { updateViaCache: 'none' });
         console.log('[Push] Step 2: SW ready, checking existing subscription...');
         let subscription = await reg.pushManager.getSubscription();
         console.log('[Push] Step 3: existing subscription:', subscription ? 'yes' : 'no');
@@ -448,7 +449,8 @@ async function initNotificationUI() {
             // Send test via SW
             if ('serviceWorker' in navigator) {
                 try {
-                    const reg = await navigator.serviceWorker.ready;
+                    const swPath = (window.WORDEVO_ASSET_PATH || '.') + '/sw.js';
+                    const reg = await navigator.serviceWorker.register(swPath, { updateViaCache: 'none' });
                     await reg.showNotification('Wordevo Test', {
                         body: 'ტესტ ნოტიფიკაცია მუშაობს!',
                         icon: './icons/icon-192.png',
@@ -573,7 +575,8 @@ async function showNotificationWithCard(notif) {
     // Show via service worker (persists even if tab not focused)
     if ('serviceWorker' in navigator) {
         try {
-            const reg = await navigator.serviceWorker.ready;
+            const swPath = (window.WORDEVO_ASSET_PATH || '.') + '/sw.js';
+            const reg = await navigator.serviceWorker.register(swPath, { updateViaCache: 'none' });
             await reg.showNotification(title, {
                 body,
                 icon: './icons/icon-192.png',
