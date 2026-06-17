@@ -1,4 +1,4 @@
-﻿//script.js
+//script.js
 // ==== 1. გლობალური მდგომარეობის ცვლადები ====
 let currentUser = null;
 let isAppInitialized = false; // NEW: ჩვენი "ალამი"
@@ -1206,6 +1206,7 @@ async function deleteCard(card) {
         const toggleBtn = document.getElementById("toggleDarkModeBtn");
         if (savedTheme === "dark") {
             document.body.classList.add("dark");
+            document.documentElement.classList.add("dark");
             if (toggleBtn) toggleBtn.innerHTML = `<i class="fas fa-sun"></i>`;
             if (logoEl) logoEl.data = "/icons/logo-dark.svg";
         }
@@ -1488,21 +1489,24 @@ async function deleteCard(card) {
         const toggleBtn = document.getElementById("toggleDarkModeBtn"); // ეს ცვლადი უკვე არსებობს, მაგრამ აქ გვჭირდება
         if (savedTheme === "dark") {
             document.body.classList.add("dark");
+            document.documentElement.classList.add("dark");
             toggleBtn.innerHTML = `<i class="fas fa-sun"></i>`;
             if (logoEl) {
                 logoEl.data = "/icons/logo-dark.svg";
             }
         } else {
-// ეს ბლოკი აკლდა:
             document.body.classList.remove("dark");
+            document.documentElement.classList.remove("dark");
             toggleBtn.innerHTML = `<i class="fas fa-moon"></i>`;
             if (logoEl) {
                 logoEl.data = "/icons/logo.svg";
             }
         }
-// 2. კლიკზე თემის შენახვა (ეს კოდი ისედაც სწორი იყო)
+// 2. კლიკზე თემის შენახვა
         toggleBtn.addEventListener("click", () => {
             document.body.classList.toggle("dark");
+            document.documentElement.classList.toggle("dark"); // Fix for global HTML element
+            
             const isDark = document.body.classList.contains("dark");
             localStorage.setItem("theme", isDark ? "dark" : "light");
             toggleBtn.innerHTML = `<i class="fas fa-${isDark ? 'sun' : 'moon'}"></i>`;
