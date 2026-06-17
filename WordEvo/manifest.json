@@ -1,0 +1,16 @@
+﻿{
+  "name": "Wordevo",
+  "short_name": "Wordevo",
+  "description": "Your personal custom vocabulary app.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0077cc",
+  "icons": [
+    {
+      "src": "/icons/logo.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
