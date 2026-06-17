@@ -6731,12 +6731,13 @@ body.dark @keyframes pulse-glow {
 
 @media (max-width: 768px) {
     .top {
-        position: absolute !important;
+        position: fixed !important;
         width: calc(100% - 20px) !important;
         left: 10px !important;
         right: auto !important;
         top: 50px !important; 
         transform: none !important; /* Remove any old transforms! */
+        z-index: 999999 !important;
     }
 
     .top.show {
@@ -6750,7 +6751,7 @@ body.dark @keyframes pulse-glow {
 
 @media (max-width: 768px) {
     .top {
-        position: absolute !important;
+        position: fixed !important;
         width: calc(100% - 20px) !important;
         left: 10px !important;
         top: 20px !important; 
@@ -6759,6 +6760,7 @@ body.dark @keyframes pulse-glow {
         pointer-events: none !important;
         transform: translateY(-20px) !important; /* Slight slide effect */
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        z-index: 999999 !important;
     }
 
     .top.show {
