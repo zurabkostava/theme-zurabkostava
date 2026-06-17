@@ -198,6 +198,10 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // 🚫 Remove Mobile Bottom
         .export-actions button { margin-top: 0; border-radius: 12px; font-size: 0.75rem; padding: 12px; }
         
         button.toggle-swatches { width: auto; display: block; margin: 15px auto 0 auto; padding: 10px 20px; font-size: 0.75rem; border-radius: 30px; }
+        
+        #playAudioButton { transition: all 0.3s ease; cursor: pointer; }
+        #playAudioButton:hover { background: rgba(0, 240, 255, 0.2) !important; border-color: rgba(0, 240, 255, 0.6) !important; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3); }
+
         label.import-label { display: flex; margin-bottom: 0; }
         
         .copy-group { display: flex; align-items: stretch; gap: 12px; }
@@ -319,16 +323,18 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // 🚫 Remove Mobile Bottom
                 <h3 class="step-title">Step 2: Visualization & Codes</h3>
                 <label for="colorSwatchesContainer">Color Visualization:</label>
                 <div id="colorSwatchesContainer"></div>
-                <button id="toggleSwatchesButton" class="toggle-swatches" style="display: none;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    Expand View
-                </button>
+                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+                    <button id="toggleSwatchesButton" class="toggle-swatches" style="display: none; margin-top: 0;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        Expand View
+                    </button>
+                </div>
 
                 <label for="colorsOutput" style="margin-top:15px;">Color Codes (for export):</label>
                 <div class="copy-group">
                     <textarea id="colorsOutput" readonly></textarea>
                     <button id="copyHexButton" title="Copy Hex Codes">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16" style="flex-shrink: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="flex-shrink: 0;">
                             <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v12.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-12.5a.5.5 0 0 1 .5-.5h10ZM14 2H4v12h10V2Z"/>
                             <path d="M2 0a2 2 0 0 0-2 2v12.5a.5.5 0 0 0 .5.5h.5v-1H1v-12a1 1 0 0 1 1-1h10.5a.5.5 0 0 0 0-1H2Z"/>
                         </svg>
@@ -480,7 +486,6 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // 🚫 Remove Mobile Bottom
     }
 
     function translateSentenceToColors() {
-        const sentence = document.getElementById('sentenceInput').value;
         const swatchesContainer = document.getElementById('colorSwatchesContainer');
         const toggleButton = document.getElementById('toggleSwatchesButton');
         const convertButton = document.getElementById('toColorsButton');
