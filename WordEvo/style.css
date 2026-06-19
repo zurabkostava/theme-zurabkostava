@@ -6561,7 +6561,8 @@ body.dark @keyframes pulse-glow {
         flex-wrap: nowrap !important;
         justify-content: space-between !important;
         align-items: center !important;
-        padding: 0 5px 15px 5px !important;
+        margin-top: 80px !important;
+        padding: 10px 5px !important;
         background: transparent !important;
         border: none !important;
         width: 100% !important;
@@ -6752,7 +6753,7 @@ body.dark @keyframes pulse-glow {
     /* Remove the hacky translateY and set proper margin */
     .card-container {
         transform: none !important;
-        margin-top: 50px !important; /* Pushes cards below the fixed logo/buttons */
+        margin-top: 10px !important; /* Pushes cards just below the toolbar */
     }
 }
 
