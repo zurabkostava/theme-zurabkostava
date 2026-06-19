@@ -170,14 +170,11 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     </div>
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
-            <div class="modal-actions close-modal">
-                <button class="close-button" id="closeAddModalBtn">
-                    ×
-                </button>
+            <div class="modal-header">
+                <h2>ახალი სიტყვა</h2>
+                <button class="close-button" id="closeAddModalBtn">×</button>
             </div>
-            <h2>
-                ახალი სიტყვა
-            </h2>
+            <div class="modal-body">
             <div class="input-container">
                 <label class="material-input validation">
                     <input class="form-control" id="wordInput" placeholder=" " required="" type="text"
@@ -244,7 +241,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
       </span>
                 </label>
             </div>
-            <div class="modal-actions">
+            </div> <!-- end modal-body -->
+            <div class="modal-footer modal-actions">
                 <button id="saveCardBtn">
                     შენახვა
                 </button>
@@ -307,14 +305,11 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     </div>
     <div class="modal-overlay" id="settingsModal" style="display: none; gap: 10px; flex-wrap: wrap;">
         <div class="modal" style="max-width: 500px;">
-            <div class="modal-actions close-modal">
-                <button class="close-button" id="closeSettingsBtn">
-                    ×
-                </button>
+            <div class="modal-header">
+                <h2>პარამეტრები</h2>
+                <button class="close-button" id="closeSettingsBtn">×</button>
             </div>
-            <h2>
-                პარამეტრები
-            </h2>
+            <div class="modal-body">
             <div class="input-container">
                 <label class="material-input material-select">
                     <select id="voiceSelect" required="">
@@ -432,7 +427,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                     </button>
                 </div>
             </div>
-            <div class="modal-actions" style="margin-top: 20px;">
+            </div> <!-- end modal-body -->
+            <div class="modal-footer modal-actions" style="margin-top: 20px;">
                 <button id="saveVoiceBtn" style="background-color: #28a745; color: white;">
                     შენახვა
                 </button>
@@ -443,10 +439,11 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <!-- New Dictionary Modal -->
     <div class="modal-overlay" id="addDictionaryModal" style="display: none; z-index: 2000;">
         <div class="modal">
-            <div class="modal-actions close-modal">
+            <div class="modal-header">
+                <h2>ახალი ლექსიკონი</h2>
                 <button class="close-button" id="closeAddDictionaryBtn">×</button>
             </div>
-            <h2>ახალი ლექსიკონი</h2>
+            <div class="modal-body">
             <div class="input-container">
                 <label class="material-input validation">
                     <input class="form-control" id="newDictName" placeholder=" " required="" type="text" />
@@ -467,7 +464,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                     <i class="fas fa-chevron-down select-arrow-icon"></i>
                 </label>
             </div>
-            <div class="modal-actions" style="margin-top: 20px;">
+            </div> <!-- end modal-body -->
+            <div class="modal-footer modal-actions" style="margin-top: 20px;">
                 <button id="saveNewDictionaryBtn" style="background-color: #28a745; color: white;">
                     შექმნა
                 </button>
@@ -613,14 +611,11 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     </div>
     <div class="modal-overlay" id="statsModal" style="display:none;">
         <div class="modal" style="max-width:400px;">
-            <div class="modal-actions close-modal">
-                <button class="close-button" id="closeStatsBtn">
-                    ×
-                </button>
+            <div class="modal-header">
+                <h2>სტატისტიკა</h2>
+                <button class="close-button" id="closeStatsBtn">×</button>
             </div>
-            <h2>
-                სტატისტიკა
-            </h2>
+            <div class="modal-body">
             <div id="statsContent">
                 <p>
                     სიტყვების საერთო რაოდენობა:
@@ -655,8 +650,11 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
        0 - 0 (0% - 0%)
       </span>
                 </p>
+            </div> <!-- end statsContent -->
+            </div> <!-- end body -->
+            <div class="modal-footer modal-actions">
                 <button id="resetStatsBtn"
-                        style="margin-top: 20px; background-color: crimson; color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer;">
+                        style="background-color: crimson; color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer;">
                     <i class="fa-solid fa-broom">
                     </i>
                     გასუფთავება
@@ -667,10 +665,11 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 
     <div class="modal-overlay" id="notificationsModal" style="display:none; z-index: 99999;">
         <div class="modal" style="max-width:550px;">
-            <div class="modal-actions close-modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-bell"></i> შეხსენებები</h2>
                 <button class="close-button" id="closeNotificationsModalBtn">&times;</button>
             </div>
-            <h2><i class="fas fa-bell"></i> შეხსენებები</h2>
+            <div class="modal-body">
 
             <div id="notificationListContainer">
                 <p class="notif-empty" style="text-align: center; color: #888;">შეხსენებები არ გაქვთ.</p>
@@ -721,7 +720,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 </div>
             </div>
 
-            <div class="modal-actions" style="margin-top: 20px; display: flex; gap: 10px;">
+            </div> <!-- end body -->
+            <div class="modal-footer modal-actions" style="margin-top: 20px; display: flex; gap: 10px;">
                 <button id="openAddNotificationModalBtn" style="background-color: #0077cc; color: white; flex: 1;">
                     <i class="fas fa-plus"></i> ახალი შეხსენების დამატება
                 </button>

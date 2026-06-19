@@ -1658,25 +1658,50 @@ body.dark ::-webkit-scrollbar-thumb:hover {
 
 
 .modal {
-
     position: relative;
-
     background: white;
-
-    padding: 30px;
-
     border-radius: 20px;
-
     width: 500px;
-
     max-width: 95%;
-
     max-height: 90vh; /* ✅ მაქსიმალური სიმაღლე */
-
-    overflow-y: auto; /* ✅ შიდა სქროლი */
-
+    display: flex;
+    flex-direction: column;
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
 
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px 15px 30px;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+}
+
+.modal-header h2 {
+    margin: 0 !important;
+    font-size: 1.5rem;
+}
+
+.modal-body {
+    padding: 20px 30px;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.modal-footer {
+    padding: 15px 30px 25px 30px;
+    border-top: 1px solid #eee;
+    display: flex;
+    flex-shrink: 0;
+}
+
+.modal-footer button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
 }
 
 
@@ -2170,25 +2195,7 @@ textarea {
 
 
 
-.close-modal {
-
-    position: sticky;
-
-    right: 0;
-
-    top: 20px!important;
-
-    transform: translateY(-30px);
-
-    margin-bottom: -69px;
-
-    display: flex;
-
-    justify-self: flex-end;
-
-    z-index: 99999999999;
-
-}
+/* .close-modal removed */
 
 
 
@@ -6925,4 +6932,31 @@ body.dark .player {
     text-transform: none;
     z-index: 1000;
     margin-top: 15px !important;
+}
+
+/* =========================================
+   MOBILE MODAL REFACTOR
+   ========================================= */
+@media (max-width: 768px) {
+    .modal-overlay {
+        align-items: stretch !important;
+    }
+    .modal {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+    }
+    .modal-header {
+        padding: 20px 20px 15px 20px !important;
+    }
+    .modal-body {
+        padding: 20px 20px !important;
+    }
+    .modal-footer {
+        padding: 15px 20px 25px 20px !important;
+    }
 }
