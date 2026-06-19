@@ -5,12 +5,19 @@
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
+function tts_log($msg) {
+    file_put_contents(__DIR__ . '/tts_log.txt', date('Y-m-d H:i:s') . " - " . $msg . "\n", FILE_APPEND);
+}
+
+tts_log("TTS Request: " . $_SERVER['REQUEST_URI']);
+
 header('Content-Type: audio/mpeg');
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Access-Control-Allow-Origin: *');
 
 $text = $_GET['text'] ?? '';
 if (empty(trim($text))) {
+    tts_log("Error: Empty text");
     http_response_code(400);
     die();
 }
@@ -58,6 +65,7 @@ $context = stream_context_create([
 
 $fp = stream_socket_client("ssl://$host:$port", $errno, $errstr, 10, STREAM_CLIENT_CONNECT, $context);
 if (!$fp) {
+    tts_log("Error: stream_socket_client failed - $errstr ($errno)");
     http_response_code(500);
     die();
 }
@@ -67,6 +75,7 @@ $req = "GET $path HTTP/1.1\r\n" .
        "Host: $host\r\n" .
        "Upgrade: websocket\r\n" .
        "Connection: Upgrade\r\n" .
+       "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0\r\n" .
        "Origin: chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold\r\n" .
        "Sec-WebSocket-Key: $key\r\n" .
        "Sec-WebSocket-Version: 13\r\n\r\n";
@@ -81,9 +90,12 @@ while(!feof($fp)) {
 }
 
 if (strpos($response, '101 Switching Protocols') === false) {
+    tts_log("Error: WebSocket handshake failed. Response:\n$response");
     http_response_code(500);
     die();
 }
+
+tts_log("Handshake successful. Sending config and SSML...");
 
 $date = gmdate('D, d M Y H:i:s') . ' GMT';
 
@@ -127,6 +139,7 @@ while(!feof($fp)) {
     
     if ($opcode == 1) { // text frame
         if (strpos($payload, 'Path: turn.end') !== false) {
+            tts_log("Success: Reached turn.end");
             break;
         }
     } elseif ($opcode == 2) { // binary frame
@@ -139,7 +152,9 @@ while(!feof($fp)) {
             }
         }
     } elseif ($opcode == 8) { // close frame
+        tts_log("Error: Server closed connection prematurely");
         break;
     }
 }
+tts_log("Finished stream.");
 fclose($fp);
