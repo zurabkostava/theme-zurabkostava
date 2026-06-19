@@ -591,8 +591,9 @@ function filterCardsByTags() {
 // NEW: წავიკითხოთ ჩამრთველის მდგომარეობაც
     const hideMastered = document.getElementById('hideMasteredCheckbox').checked;
     document.querySelectorAll('.card').forEach(card => {
-        const tagSpans = [...card.querySelectorAll('.tags span')];
-        const cardTags = tagSpans.map(span => span.textContent.replace('#', ''));
+// ვკითხულობთ თეგებს პირდაპირ dataset-დან, რადგან ზოგიერთი შეიძლება დამალული იყოს (+N)
+        const tagObjects = JSON.parse(card.dataset.tagObjects || '[]');
+        const cardTags = tagObjects.map(t => t.name);
 // 1. ვამოწმებთ, ემთხვევა თუ არა თეგებს
         const matchesTags = tagsArray.some(tag => cardTags.includes(tag)) || tagsArray.length === 0;
 // 2. ვამოწმებთ, ხომ არ არის "ნასწავლი" და ხომ არ ვმალავთ მას
@@ -600,7 +601,8 @@ function filterCardsByTags() {
         const matchesMastered = !hideMastered || !isMastered; // (უნდა გამოჩნდეს, თუ "დამალვა" გამორთულია, ან თუ დამასტერებული არაა)
 // 3. ბარათი ჩანს მხოლოდ იმ შემთხვევაში, თუ ორივე პირობას აკმაყოფილებს
         card.style.display = (matchesTags && matchesMastered) ? 'block' : 'none';
-// განვაახლოთ გაფილტრული თეგების სტილი
+// განვაახლოთ გაფილტრული თეგების სტილი (მხოლოდ ხილულ თეგებზე)
+        const tagSpans = [...card.querySelectorAll('.tags span.card-tag')];
         tagSpans.forEach(span => {
             const tag = span.textContent.replace('#', '');
             if (tagsArray.includes(tag)) {
