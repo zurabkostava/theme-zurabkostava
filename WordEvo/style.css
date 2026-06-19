@@ -2035,9 +2035,6 @@ body.dark ::-webkit-scrollbar-thumb:hover {
 
 
 .preview-modal {
-
-    top: 70px;
-
     max-height: 70vh;
 
     width: 750px;
@@ -2935,11 +2932,9 @@ textarea {
 
 
 #previewWord{
-
     display: flex;
-
-
-
+    align-items: center;
+    gap: 12px;
 }
 
 
