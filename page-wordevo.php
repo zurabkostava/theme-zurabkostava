@@ -564,6 +564,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         </div>
     </div>
     <div class="fixed-player-wrapper">
+        <div class="player-minimized-display" id="playerMinimizedDisplay" style="display: none;" title="გახსნა">
+        </div>
         <div class="player">
             <button class="player-btn" title="Previous">
                 <i class="fas fa-backward-step">
@@ -583,8 +585,6 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 </i>
             </button>
         </div>
-    </div>
-    <div class="player-minimized-display" id="playerMinimizedDisplay" style="display: none;" title="გახსნა">
     </div>
     <button class="mobile-toggle-btn" id="showTopBtn">
         <i class="fas fa-sliders">

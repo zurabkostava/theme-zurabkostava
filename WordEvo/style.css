@@ -5373,13 +5373,12 @@ body.dark .card-tag-more {
 }
 
 .player-minimized-display {
-    position: fixed;
-    /* === NEW LOCATION: Player-ის ზემოთ, ცენტრში === */
-    bottom: 70px; /* 10px (base) + ~50px (player height) + 10px (gap) */
+    position: absolute;
+    bottom: 100%; /* Above the player wrapper */
+    margin-bottom: 15px; /* Gap between player and minimized display */
     left: 50%;
     transform: translateX(-50%);
-    right: auto; /* ვაუქმებთ ძველ right: 20px-ს */
-    /* === END NEW LOCATION === */
+    width: max-content;
 
     z-index: 999999998;
 
