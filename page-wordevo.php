@@ -278,9 +278,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         <button class="nav-btn inside-nav right-nav fas fa-angle-right" id="nextCardBtn">
         </button>
         <div class="modal preview-modal">
-            <div class="modal-actions close-modal">
-                <button class="close-button" id="minimizePlayerBtn" title="ჩაკეცვა">
-                    <i class="fas fa-minus"></i> </button>
+            <div class="close-modal" style="position: absolute; right: 20px; top: 20px; z-index: 100;">
                 <button class="close-button" id="closePreviewBtn">
                     ×
                 </button>
