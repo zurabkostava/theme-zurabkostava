@@ -9,6 +9,20 @@ let selectedVoice = null;
 let selectedGeorgianVoice = null;
 let piperVoicesList = []; // Array of fetched piper voices
 
+const edgeOnlineVoices = {
+    'en': [
+        { name: 'Microsoft Libby Online (Natural) - English (United States)', lang: 'en-US' },
+        { name: 'Microsoft Aria Online (Natural) - English (United States)', lang: 'en-US' },
+        { name: 'Microsoft Guy Online (Natural) - English (United States)', lang: 'en-US' },
+        { name: 'Microsoft Jenny Online (Natural) - English (United States)', lang: 'en-US' },
+        { name: 'Microsoft Ana Online (Natural) - English (United States)', lang: 'en-US' }
+    ],
+    'ka': [
+        { name: 'Microsoft Eka Online (Natural) - Georgian (Georgia)', lang: 'ka-GE' },
+        { name: 'Microsoft Giorgi Online (Natural) - Georgian (Georgia)', lang: 'ka-GE' }
+    ]
+};
+
 // Workers map: we keep up to 2 workers alive (one for lang1, one for lang2)
 let piperWorkers = {
     lang1: { worker: null, ready: false, initializing: false, queue: [], pendingCallbacks: [], currentAudio: null, voicePath: null },
@@ -135,7 +149,17 @@ async function populateDropdowns() {
             piperGroup.appendChild(option);
         });
         voiceSelect.appendChild(piperGroup);
-        
+
+        const edgeGroup = document.createElement('optgroup');
+        edgeGroup.label = "Edge Premium Voices (Online)";
+        (edgeOnlineVoices[lang1] || []).forEach(v => {
+            const option = document.createElement('option');
+            option.value = 'edge:' + v.name;
+            option.textContent = '☁️ ' + v.name;
+            edgeGroup.appendChild(option);
+        });
+        voiceSelect.appendChild(edgeGroup);
+
         // Also show voices that were previously selected even if language mismatch
         const storedVoice = localStorage.getItem(VOICE_STORAGE_KEY + '_' + localStorage.getItem('wordevo_current_dictionary'));
         if (storedVoice) {
@@ -171,7 +195,17 @@ async function populateDropdowns() {
             piperGroup.appendChild(option);
         });
         geoSelect.appendChild(piperGroup);
-        
+
+        const edgeGroup2 = document.createElement('optgroup');
+        edgeGroup2.label = "Edge Premium Voices (Online)";
+        (edgeOnlineVoices[lang2] || []).forEach(v => {
+            const option = document.createElement('option');
+            option.value = 'edge:' + v.name;
+            option.textContent = '☁️ ' + v.name;
+            edgeGroup2.appendChild(option);
+        });
+        geoSelect.appendChild(edgeGroup2);
+
         const storedGeo = localStorage.getItem(GEORGIAN_VOICE_KEY + '_' + localStorage.getItem('wordevo_current_dictionary'));
         if (storedGeo) {
             let found = Array.from(geoSelect.options).some(o => o.value === storedGeo);
@@ -215,7 +249,10 @@ async function loadVoices() {
         if (storedVoice) localStorage.setItem(VOICE_STORAGE_KEY + '_' + localStorage.getItem('wordevo_current_dictionary'), storedVoice);
     }
 
-    if (storedVoice && storedVoice.startsWith('piper:')) {
+    if (storedVoice && storedVoice.startsWith('edge:')) {
+        const name = storedVoice.split('edge:')[1];
+        selectedVoice = { name: name, lang: lang1, isEdgeOnline: true };
+    } else if (storedVoice && storedVoice.startsWith('piper:')) {
         const key = storedVoice.split('piper:')[1];
         const pv = piperVoicesList.find(p => p.key === key);
         if (pv) {
@@ -260,7 +297,10 @@ async function loadVoices() {
         if (storedGeo) localStorage.setItem(GEORGIAN_VOICE_KEY + '_' + localStorage.getItem('wordevo_current_dictionary'), storedGeo);
     }
 
-    if (storedGeo && storedGeo.startsWith('piper:')) {
+    if (storedGeo && storedGeo.startsWith('edge:')) {
+        const name = storedGeo.split('edge:')[1];
+        selectedGeorgianVoice = { name: name, lang: lang2, isEdgeOnline: true };
+    } else if (storedGeo && storedGeo.startsWith('piper:')) {
         const key = storedGeo.split('piper:')[1];
         const pv = piperVoicesList.find(p => p.key === key);
         if (pv) {
@@ -429,6 +469,39 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
                         if (buttonEl) buttonEl.classList.remove('active');
                         resolve();
                     });
+                return;
+            }
+
+            if (voiceObj.isEdgeOnline) {
+                const rateKey = workerKey === 'lang1' ? ENGLISH_RATE_KEY : GEORGIAN_RATE_KEY;
+                const rateVal = parseFloat(localStorage.getItem(rateKey) || 1);
+                // Convert rate 0.5 - 2 to percentage: 1 is +0%, 1.5 is +50%, 0.5 is -50%
+                const pct = Math.round((rateVal - 1) * 100);
+                const rateStr = (pct >= 0 ? '+' : '') + pct + '%';
+                
+                const themeRoot = window.WORDEVO_ASSET_PATH ? window.WORDEVO_ASSET_PATH.replace('/WordEvo', '') : '.';
+                const proxyUrl = themeRoot + '/edge-tts-proxy.php?text=' + encodeURIComponent(txt) + '&voice=' + encodeURIComponent(voiceObj.name) + '&rate=' + encodeURIComponent(rateStr);
+                
+                const audio = new Audio(proxyUrl);
+                audio.onended = () => {
+                    if (el) {
+                        el.classList.remove('highlighted-sentence');
+                        if (el.parentElement) el.parentElement.classList.remove('active-pair');
+                    }
+                    if (buttonEl) buttonEl.classList.remove('active');
+                    resolve();
+                };
+                audio.onerror = () => {
+                    if (el) {
+                        el.classList.remove('highlighted-sentence');
+                        if (el.parentElement) el.parentElement.classList.remove('active-pair');
+                    }
+                    if (buttonEl) buttonEl.classList.remove('active');
+                    resolve();
+                };
+                
+                piperWorkers[workerKey].currentAudio = audio; 
+                audio.play().catch(resolve);
                 return;
             }
 
