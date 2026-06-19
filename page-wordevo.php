@@ -142,31 +142,15 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 </button>
             </div>
             <div class="toolbar-center">
-                <div class="sorting">
-                    <i class="fas fa-sort-down" id="sortDirectionIcon">
-                    </i>
-                    <label class="sort-label" for="sortSelect">
-                    </label>
-                    <select class="toolbar-select" id="sortSelect">
-                        <option value="alphabetical">
-                            ანბანური
-                        </option>
-                        <option value="updated">
-                            ბოლო
-                        </option>
-                        <option selected="" value="progress">
-                            პროგრესით
-                        </option>
-                    </select>
-                </div>
-                <div class="hide-mastered-wrapper">
-                    <label style="display: flex; align-items: center; gap: 5px;">
-                        <input id="hideMasteredCheckbox" type="checkbox"/>
-                        <span>
-        - ნასწავლი
-       </span>
-                    </label>
-                </div>
+                <button class="toolbar-btn" id="sortDirectionIcon" title="მიმართულება">
+                    <i class="fas fa-sort-down"></i>
+                </button>
+                <button class="toolbar-btn" id="sortModeBtn" title="სორტირება">
+                    <i class="fas fa-chart-line"></i>
+                </button>
+                <button class="toolbar-btn" id="hideMasteredBtn" title="ნასწავლის დამალვა/გამოჩენა">
+                    <i class="fas fa-eye"></i>
+                </button>
             </div>
         </div>
     </div>

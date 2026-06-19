@@ -6559,7 +6559,8 @@ body.dark @keyframes pulse-glow {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
-        justify-content: space-between !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
         align-items: center !important;
         margin-top: 80px !important;
         padding: 10px 5px !important;
@@ -6588,9 +6589,8 @@ body.dark @keyframes pulse-glow {
         display: flex !important;
         flex-direction: row !important;
         align-items: center !important;
-        justify-content: flex-start !important;
+        justify-content: flex-end !important;
         gap: 8px !important;
-        flex: 1 !important;
         width: auto !important;
     }
 
