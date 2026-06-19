@@ -2042,15 +2042,21 @@ body.dark ::-webkit-scrollbar-thumb:hover {
 
 .preview-modal {
     max-height: 70vh;
-
     width: 750px;
+    overflow-y: auto; /* keep its own scrolling */
+    padding: 30px !important;
+    display: block !important; /* override the new modal flex column */
+}
 
-    overflow-y: auto;
-
-    z-index: 99;
-
-
-
+.preview-modal .close-modal {
+    position: sticky;
+    right: 0;
+    top: 0 !important;
+    float: right;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    z-index: 100;
 }
 
 
