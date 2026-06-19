@@ -6556,18 +6556,28 @@ body.dark @keyframes pulse-glow {
 
     /* MOBILE CARD TOOLBAR */
     .card-toolbar {
+        position: fixed !important;
+        top: 60px !important; /* Start right below the main header */
+        left: 0 !important;
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         justify-content: flex-end !important;
         gap: 8px !important;
         align-items: center !important;
-        margin-top: 80px !important;
-        padding: 10px 5px !important;
-        background: transparent !important;
-        border: none !important;
+        margin-top: 0 !important;
+        padding: 10px 15px !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        border-bottom: 1px solid rgba(0,0,0,0.05) !important;
         width: 100% !important;
         box-sizing: border-box !important;
+        z-index: 9980 !important;
+    }
+    .dark .card-toolbar {
+        background: rgba(18, 18, 18, 0.9) !important;
+        border-bottom: 1px solid rgba(255,255,255,0.05) !important;
     }
 
     #toggleSidebarBtn {
@@ -6594,7 +6604,7 @@ body.dark @keyframes pulse-glow {
         width: auto !important;
     }
 
-    .toolbar-left .toolbar-btn {
+    .toolbar-left .toolbar-btn, .toolbar-center .toolbar-btn {
         width: 36px !important;
         height: 36px !important;
         padding: 0 !important;
@@ -6753,7 +6763,7 @@ body.dark @keyframes pulse-glow {
     /* Remove the hacky translateY and set proper margin */
     .card-container {
         transform: none !important;
-        margin-top: 10px !important; /* Pushes cards just below the toolbar */
+        margin-top: 130px !important; /* Pushes cards below the fixed logo and fixed toolbar */
     }
 }
 
