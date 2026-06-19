@@ -14,7 +14,6 @@ let wasLongPress = false;
 let activeFilterTags = new Set();
 let currentCardIndex = -1;
 let currentSortMode = 'progress';
-let isMasteredHidden = localStorage.getItem('hideMastered') === 'true';
 let isPlaying = false;
 let stopRequested = false;
 let shuffleMode = false;
@@ -623,7 +622,8 @@ function renderCardTagsHTML(allTags, activeTags = []) {
 
 function filterCardsByTags() {
     const tagsArray = [...activeFilterTags];
-    const hideMastered = isMasteredHidden;
+// NEW: წავიკითხოთ ჩამრთველის მდგომარეობაც
+    const hideMastered = document.getElementById('hideMasteredCheckbox').checked;
     document.querySelectorAll('.card').forEach(card => {
 // ვკითხულობთ თეგებს პირდაპირ dataset-დან, რადგან ზოგიერთი შეიძლება დამალული იყოს (+N)
         const tagObjects = JSON.parse(card.dataset.tagObjects || '[]');
@@ -1267,8 +1267,7 @@ async function deleteCard(card) {
     const closeStatsBtn = document.getElementById('closeStatsBtn');
     const shuffleBtn = document.querySelector('.player .fa-shuffle').closest('button');
     const previewModal = document.getElementById('cardPreviewModal');
-    const sortModeBtn = document.getElementById('sortModeBtn');
-    const hideMasteredBtn = document.getElementById('hideMasteredBtn');
+    const sortSelect = document.getElementById('sortSelect');
     const sortIcon = document.getElementById('sortDirectionIcon');
     const playBtn = document.getElementById('playToggleBtn');
 
@@ -1475,9 +1474,8 @@ async function deleteCard(card) {
         const savedSortMode = localStorage.getItem(SORT_MODE_KEY);
         if (savedSortMode) {
             currentSortMode = savedSortMode;
+            if (sortSelect) sortSelect.value = savedSortMode; // განვაახლოთ dropdown-ის UI
         }
-        if (typeof updateSortModeUI === 'function') updateSortModeUI();
-        if (typeof updateHideMasteredUI === 'function') updateHideMasteredUI();
         sortCards(); // <-- და მხოლოდ ამის მერე ვალაგებთ
         if (sortIcon) {
             sortIcon.classList.remove('fa-sort-up', 'fa-sort-down');
@@ -2116,46 +2114,17 @@ async function deleteCard(card) {
     }
 // Sorting / Filtering
 // Sorting / Filtering
-    const sortModesList = [
-        { value: 'progress', icon: 'fa-chart-line', title: 'პროგრესით' },
-        { value: 'alphabetical', icon: 'fa-font', title: 'ანბანური' },
-        { value: 'updated', icon: 'fa-clock', title: 'ბოლო' }
-    ];
-    window.updateSortModeUI = function() {
-        if(!sortModeBtn) return;
-        const mode = sortModesList.find(m => m.value === currentSortMode) || sortModesList[0];
-        sortModeBtn.innerHTML = `<i class="fas ${mode.icon}"></i>`;
-        sortModeBtn.title = `სორტირება: ${mode.title}`;
-    };
-    window.updateHideMasteredUI = function() {
-        if(!hideMasteredBtn) return;
-        if(isMasteredHidden) {
-            hideMasteredBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
-            hideMasteredBtn.title = 'ნასწავლი დამალულია';
-            hideMasteredBtn.style.color = '#ff4757';
-        } else {
-            hideMasteredBtn.innerHTML = '<i class="fas fa-eye"></i>';
-            hideMasteredBtn.title = 'ყველა სიტყვა';
-            hideMasteredBtn.style.color = '';
-        }
-    };
-    if (sortModeBtn) {
-        updateSortModeUI();
-        sortModeBtn.addEventListener('click', () => {
-            let idx = sortModesList.findIndex(m => m.value === currentSortMode);
-            idx = (idx + 1) % sortModesList.length;
-            currentSortMode = sortModesList[idx].value;
+    if (sortSelect) {
+        sortSelect.addEventListener('change', () => {
+            currentSortMode = sortSelect.value;
             localStorage.setItem(SORT_MODE_KEY, currentSortMode);
-            updateSortModeUI();
             sortCards();
         });
     }
-    if (hideMasteredBtn) {
-        updateHideMasteredUI();
-        hideMasteredBtn.addEventListener('click', () => {
-            isMasteredHidden = !isMasteredHidden;
-            localStorage.setItem('hideMastered', isMasteredHidden);
-            updateHideMasteredUI();
+
+    const hideMasteredCheckbox = document.getElementById('hideMasteredCheckbox');
+    if (hideMasteredCheckbox) {
+        hideMasteredCheckbox.addEventListener('change', () => {
             filterCardsByTags();
         });
     }

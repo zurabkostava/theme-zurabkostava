@@ -6562,7 +6562,7 @@ body.dark @keyframes pulse-glow {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
-        justify-content: flex-end !important;
+        justify-content: space-between !important;
         gap: 8px !important;
         align-items: center !important;
         margin-top: 0 !important;
