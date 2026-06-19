@@ -108,8 +108,9 @@ function populateGlobalTags() {
     if (!select) return;
     const tagSet = new Set();
     document.querySelectorAll('.card').forEach(card => {
-        card.querySelectorAll('.card-tag').forEach(tagEl => {
-            const tag = tagEl.textContent.replace('#', '').trim();
+        const tagObjects = JSON.parse(card.dataset.tagObjects || '[]');
+        tagObjects.forEach(tagObj => {
+            const tag = tagObj.name;
             if (tag) tagSet.add(tag);
         });
     });
@@ -410,8 +411,9 @@ function renderSidebarTags() {
     const cards = [...document.querySelectorAll('.card')];
     const tagCounts = {};
     cards.forEach(card => {
-        card.querySelectorAll('.card-tag').forEach(span => {
-            const tag = span.textContent.replace('#', '').trim();
+        const tagObjects = JSON.parse(card.dataset.tagObjects || '[]');
+        tagObjects.forEach(tagObj => {
+            const tag = tagObj.name;
             if (!tag) return;
             tagCounts[tag] = (tagCounts[tag] || 0) + 1;
         });
@@ -510,19 +512,18 @@ function renderSidebarTags() {
                 tagObject.name = newVal; // (ვცვლით ობიექტს პირდაპირ Set-ში)
 // 3. განვაახლოთ ყველა ბარათის UI, რომელიც ამ თეგს იყენებს
                 document.querySelectorAll('.card').forEach(card => {
-                    card.querySelectorAll('.card-tag').forEach(span => {
-                        if (span.textContent === `#${oldVal}`) {
-                            span.textContent = `#${newVal}`;
-                            span.style.backgroundColor = getColorForTag(newVal);
-                        }
-                    });
 // განვაახლოთ dataset-იც
                     let tagObjects = JSON.parse(card.dataset.tagObjects || '[]');
                     let tagToUpdate = tagObjects.find(t => t.id === tagObject.id);
                     if (tagToUpdate) {
                         tagToUpdate.name = newVal;
+                        card.dataset.tagObjects = JSON.stringify(tagObjects);
+                        // UI-ის ხელახლა დახატვა ახალი renderCardTagsHTML-ით
+                        const tagsContainer = card.querySelector('.tags');
+                        if (tagsContainer) {
+                            tagsContainer.innerHTML = renderCardTagsHTML(tagObjects.map(t => t.name), [...activeFilterTags]);
+                        }
                     }
-                    card.dataset.tagObjects = JSON.stringify(tagObjects);
                 });
 // 4. განვაახლოთ აქტიური ფილტრები
                 if (activeFilterTags.has(oldVal)) {
@@ -559,13 +560,18 @@ function renderSidebarTags() {
             allTags.delete(tagObject);
 // 3. წაშლა UI-დან (ყველა ბარათიდან)
             document.querySelectorAll('.card').forEach(card => {
-                card.querySelectorAll('.card-tag').forEach(span => {
-                    if (span.textContent === `#${tagName}`) span.remove();
-                });
 // წაშლა dataset-იდან
                 let tagObjects = JSON.parse(card.dataset.tagObjects || '[]');
-                let updatedObjects = tagObjects.filter(t => t.id !== tagObject.id);
-                card.dataset.tagObjects = JSON.stringify(updatedObjects);
+                let tagToDelete = tagObjects.find(t => t.id === tagObject.id);
+                if (tagToDelete) {
+                    let updatedObjects = tagObjects.filter(t => t.id !== tagObject.id);
+                    card.dataset.tagObjects = JSON.stringify(updatedObjects);
+                    // UI-ის ხელახლა დახატვა
+                    const tagsContainer = card.querySelector('.tags');
+                    if (tagsContainer) {
+                        tagsContainer.innerHTML = renderCardTagsHTML(updatedObjects.map(t => t.name), [...activeFilterTags]);
+                    }
+                }
             });
 // 4. წაშლა აქტიური ფილტრებიდან
             activeFilterTags.delete(tagName);
