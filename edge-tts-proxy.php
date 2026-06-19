@@ -61,9 +61,8 @@ $context = stream_context_create([
 
 $fp = stream_socket_client("ssl://$host:$port", $errno, $errstr, 10, STREAM_CLIENT_CONNECT, $context);
 if (!$fp) {
-    file_put_contents(__DIR__ . '/edge-tts-log.txt', "Error: Connection failed $errno $errstr\n", FILE_APPEND);
     http_response_code(500);
-    die();
+    die("Connection failed: $errno $errstr");
 }
 file_put_contents(__DIR__ . '/edge-tts-log.txt', "Connected to SSL\n", FILE_APPEND);
 
@@ -86,9 +85,8 @@ while(!feof($fp)) {
 }
 
 if (strpos($response, '101 Switching Protocols') === false) {
-    file_put_contents(__DIR__ . '/edge-tts-log.txt', "Error: Handshake failed, response: $response\n", FILE_APPEND);
     http_response_code(500);
-    die();
+    die("Handshake failed, response: $response");
 }
 file_put_contents(__DIR__ . '/edge-tts-log.txt', "Handshake OK\n", FILE_APPEND);
 
