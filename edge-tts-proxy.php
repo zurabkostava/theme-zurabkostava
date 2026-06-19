@@ -72,17 +72,22 @@ $req = "GET $path HTTP/1.1\r\n" .
        "Upgrade: websocket\r\n" .
        "Connection: Upgrade\r\n" .
        "Origin: chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold\r\n" .
-       "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.43\r\n" .
+       "Pragma: no-cache\r\n" .
+       "Cache-Control: no-cache\r\n" .
+       "Accept-Encoding: gzip, deflate, br\r\n" .
+       "Accept-Language: en-US,en;q=0.9\r\n" .
+       "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.59\r\n" .
        "Sec-WebSocket-Key: $key\r\n" .
        "Sec-WebSocket-Version: 13\r\n\r\n";
 
 fwrite($fp, $req);
 
 $response = '';
-while(!feof($fp)) {
+while (!feof($fp)) {
     $line = fgets($fp);
+    if ($line === false) break;
     $response .= $line;
-    if ($line == "\r\n") break;
+    if ($line === "\r\n") break;
 }
 
 if (strpos($response, '101 Switching Protocols') === false) {
