@@ -2156,13 +2156,9 @@ textarea {
 
 
 .sentence-list p {
-
     position: relative;
-
     margin: 6px 0;
-
-    padding: 8px 12px;
-
+    padding: 8px 45px 8px 12px;
     text-align: left;
 
     background-color: #f4f4f4;
@@ -2174,15 +2170,11 @@ textarea {
 }
 
 .sentence-list button{
-
-    scale: 0.7;
-
+    scale: 0.8;
     position: absolute;
-
-    right: 0;
-
-    top: 0;
-
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 
