@@ -6646,7 +6646,7 @@ body.dark @keyframes pulse-glow {
     }
 
     /* Make main action buttons full width for easy tapping */
-    #trainingBtn, #notificationsBtn, #toggleSidebarBtn {
+    #trainingBtn {
         width: 100% !important;
         padding: 14px !important;
         font-size: 16px !important;
