@@ -11,15 +11,15 @@ let piperVoicesList = []; // Array of fetched piper voices
 
 const edgeOnlineVoices = {
     'en': [
-        { name: 'Microsoft Libby Online (Natural) - English (United States)', lang: 'en-US', shortName: 'en-GB-LibbyNeural' },
-        { name: 'Microsoft Aria Online (Natural) - English (United States)', lang: 'en-US', shortName: 'en-US-AriaNeural' },
-        { name: 'Microsoft Guy Online (Natural) - English (United States)', lang: 'en-US', shortName: 'en-US-GuyNeural' },
-        { name: 'Microsoft Jenny Online (Natural) - English (United States)', lang: 'en-US', shortName: 'en-US-JennyNeural' },
-        { name: 'Microsoft Ana Online (Natural) - English (United States)', lang: 'en-US', shortName: 'en-US-AnaNeural' }
+        { name: 'Microsoft Libby Online (Natural) - English (United States)', lang: 'en-US' },
+        { name: 'Microsoft Aria Online (Natural) - English (United States)', lang: 'en-US' },
+        { name: 'Microsoft Guy Online (Natural) - English (United States)', lang: 'en-US' },
+        { name: 'Microsoft Jenny Online (Natural) - English (United States)', lang: 'en-US' },
+        { name: 'Microsoft Ana Online (Natural) - English (United States)', lang: 'en-US' }
     ],
     'ka': [
-        { name: 'Microsoft Eka Online (Natural) - Georgian (Georgia)', lang: 'ka-GE', shortName: 'ka-GE-EkaNeural' },
-        { name: 'Microsoft Giorgi Online (Natural) - Georgian (Georgia)', lang: 'ka-GE', shortName: 'ka-GE-GiorgiNeural' }
+        { name: 'Microsoft Eka Online (Natural) - Georgian (Georgia)', lang: 'ka-GE' },
+        { name: 'Microsoft Giorgi Online (Natural) - Georgian (Georgia)', lang: 'ka-GE' }
     ]
 };
 
@@ -479,15 +479,8 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
                 const pct = Math.round((rateVal - 1) * 100);
                 const rateStr = (pct >= 0 ? '+' : '') + pct + '%';
                 
-                let shortName = voiceObj.name;
-                const arr = edgeOnlineVoices[voiceObj.lang.split('-')[0]] || [];
-                const found = arr.find(v => v.name === voiceObj.name);
-                if (found) shortName = found.shortName;
-                
                 const themeRoot = window.WORDEVO_ASSET_PATH ? window.WORDEVO_ASSET_PATH.replace('/WordEvo', '') : '.';
-                const proxyUrl = themeRoot + '/edge-tts-proxy.php?text=' + encodeURIComponent(txt) + '&voice=' + encodeURIComponent(shortName) + '&rate=' + encodeURIComponent(rateStr);
-                
-                console.log("Playing edge proxy URL:", proxyUrl);
+                const proxyUrl = themeRoot + '/edge-tts-proxy.php?text=' + encodeURIComponent(txt) + '&voice=' + encodeURIComponent(voiceObj.name) + '&rate=' + encodeURIComponent(rateStr);
                 
                 const audio = new Audio(proxyUrl);
                 audio.onended = () => {
@@ -499,20 +492,18 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
                     resolve();
                 };
                 audio.onerror = (e) => {
-                    console.error("Audio playback error:", e);
                     if (el) {
                         el.classList.remove('highlighted-sentence');
                         if (el.parentElement) el.parentElement.classList.remove('active-pair');
                     }
                     if (buttonEl) buttonEl.classList.remove('active');
+                    console.error("Audio playback failed for URL:", proxyUrl, e);
+                    alert("ხმის გენერაცია ვერ მოხერხდა. სერვერის პრობლემაა. შეამოწმეთ კონსოლი და Network ეკრანი.");
                     resolve();
                 };
                 
                 piperWorkers[workerKey].currentAudio = audio; 
-                audio.play().catch(err => {
-                    console.error("Audio play() promise rejected:", err);
-                    resolve();
-                });
+                audio.play().catch(resolve);
                 return;
             }
 
