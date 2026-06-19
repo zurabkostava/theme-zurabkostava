@@ -2,10 +2,10 @@
 // edge-tts-proxy.php
 
 // Disable error output in audio stream to prevent corruption
-ini_set('display_errors', 0);
+ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-header('Content-Type: audio/mpeg');
+header('Content-Type: text/plain');
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Access-Control-Allow-Origin: *');
 
