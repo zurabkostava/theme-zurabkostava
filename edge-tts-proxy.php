@@ -2,10 +2,10 @@
 // edge-tts-proxy.php
 
 // Disable error output in audio stream to prevent corruption
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
-header('Content-Type: text/plain');
+header('Content-Type: audio/mpeg');
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Access-Control-Allow-Origin: *');
 
@@ -72,6 +72,7 @@ $req = "GET $path HTTP/1.1\r\n" .
        "Upgrade: websocket\r\n" .
        "Connection: Upgrade\r\n" .
        "Origin: chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold\r\n" .
+       "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.43\r\n" .
        "Sec-WebSocket-Key: $key\r\n" .
        "Sec-WebSocket-Version: 13\r\n\r\n";
 
