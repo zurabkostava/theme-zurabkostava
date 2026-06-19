@@ -586,6 +586,34 @@ function renderSidebarTags() {
         sidebarTagList.appendChild(li);
     });
 }
+function renderCardTagsHTML(allTags, activeTags = []) {
+    let sortedTags = [...allTags];
+    if (activeTags.length > 0) {
+        const active = [];
+        const inactive = [];
+        sortedTags.forEach(tag => {
+            if (activeTags.includes(tag)) active.push(tag);
+            else inactive.push(tag);
+        });
+        sortedTags = [...active, ...inactive];
+    }
+    
+    const maxVisibleTags = 3;
+    const totalTags = sortedTags.length;
+    let html = sortedTags.slice(0, maxVisibleTags).map(tag => {
+        const color = getColorForTag(tag);
+        const filteredClass = activeTags.includes(tag) ? ' filtered' : '';
+        return `<span class="card-tag${filteredClass}" style="background-color: ${color}">${tag}</span>`;
+    }).join('');
+    
+    if (totalTags > maxVisibleTags) {
+        const hiddenCount = totalTags - maxVisibleTags;
+        const hiddenTags = sortedTags.slice(maxVisibleTags).join(', ');
+        html += ` <span class="card-tag-more" title="${hiddenTags}">+${hiddenCount}</span>`;
+    }
+    return html;
+}
+
 function filterCardsByTags() {
     const tagsArray = [...activeFilterTags];
 // NEW: წავიკითხოთ ჩამრთველის მდგომარეობაც
@@ -601,16 +629,12 @@ function filterCardsByTags() {
         const matchesMastered = !hideMastered || !isMastered; // (უნდა გამოჩნდეს, თუ "დამალვა" გამორთულია, ან თუ დამასტერებული არაა)
 // 3. ბარათი ჩანს მხოლოდ იმ შემთხვევაში, თუ ორივე პირობას აკმაყოფილებს
         card.style.display = (matchesTags && matchesMastered) ? 'block' : 'none';
-// განვაახლოთ გაფილტრული თეგების სტილი (მხოლოდ ხილულ თეგებზე)
-        const tagSpans = [...card.querySelectorAll('.tags span.card-tag')];
-        tagSpans.forEach(span => {
-            const tag = span.textContent.replace('#', '');
-            if (tagsArray.includes(tag)) {
-                span.classList.add('filtered');
-            } else {
-                span.classList.remove('filtered');
-            }
-        });
+
+// განვაახლოთ თეგების HTML (გაფილტრული თეგები წინ გადმოვა)
+        const tagsContainer = card.querySelector('.tags');
+        if (tagsContainer) {
+            tagsContainer.innerHTML = renderCardTagsHTML(cardTags, tagsArray);
+        }
     });
 }
 function editCard(card) {
@@ -659,26 +683,8 @@ function renderCardFromData(data) {
     };
 // cardData.tags ახლა არის ['tag1', 'tag2']
     const translationHTML = `${cardData.mainTranslations.join(', ')}<span class="extra">${cardData.extraTranslations.join(', ')}</span>`;
-    // --- NEW: თეგების შეზღუდვის ლოგიკა (+N) ---
-    let tagHTML = '';
-    const maxVisibleTags = 3; // ვაჩვენებთ მაქსიმუმ 3 თეგს
-    const totalTags = cardData.tags.length;
-    // 1. ვაჩვენებთ პირველ 3 თეგს
-    tagHTML = cardData.tags.slice(0, maxVisibleTags).map(tag => {
-        const color = getColorForTag(tag);
-        return `<span class="card-tag" style="background-color: ${color}">${tag}</span>`;
-    }).join('');
-    // 2. თუ მეტია, ვამატებთ "+N" ბეიჯს
-    // 2. თუ მეტია, ვამატებთ "+N" ბეიჯს (თულთიფით დესკტოპისთვის)
-    if (totalTags > maxVisibleTags) {
-        const hiddenCount = totalTags - maxVisibleTags;
-        // --- NEW: ვიღებთ დამალულ თეგებს ---
-        const hiddenTags = cardData.tags.slice(maxVisibleTags).join(', '); // მაგ: "Verbs, Food, Travel"
-        // --- END NEW ---
-        // ვამატებთ ბეიჯს და ვსვამთ `title` ატრიბუტს
-        tagHTML += ` <span class="card-tag-more" title="${hiddenTags}">+${hiddenCount}</span>`;
-    }
-    // --- END NEW LOGIC ---
+    // თეგების გენერაცია (გაფილტრული თეგები ყოველთვის წინ)
+    const tagHTML = renderCardTagsHTML(cardData.tags, [...activeFilterTags]);
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
