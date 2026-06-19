@@ -4601,8 +4601,8 @@ textarea {
 
 
     .card{
-        width: calc(100% - 20px);
-        margin: 0 auto;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
 
@@ -6732,6 +6732,9 @@ body.dark @keyframes pulse-glow {
     .card-container {
         transform: none !important;
         margin-top: 130px !important; /* Pushes cards below the fixed logo and fixed toolbar */
+        padding: 0 15px 20px 15px !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
     }
 }
 
