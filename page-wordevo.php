@@ -131,7 +131,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     </div>
     <div class="card-toolbar" id="cardToolbar">
             <div class="toolbar-left">
-
+                <button class="toolbar-btn" id="toggleSidebarBtn" title="თეგები">
+                    <i class="fas fa-tags"></i>
+                </button>
                 <button class="toolbar-btn" id="statsBtn" title="სტატისტიკა">
                     <i class="fas fa-chart-pie"></i>
                 </button>
@@ -278,14 +280,14 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         <button class="nav-btn inside-nav right-nav fas fa-angle-right" id="nextCardBtn">
         </button>
         <div class="modal preview-modal">
-            <div class="close-modal" style="position: absolute; right: 20px; top: 20px; z-index: 100;">
-                <button class="close-button" id="closePreviewBtn">
-                    ×
-                </button>
-            </div>
             <div class="preview-sticky">
-                <h2 id="previewWord">
-                </h2>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h2 id="previewWord" style="margin: 0; padding-right: 20px;">
+                    </h2>
+                    <button class="close-button" id="closePreviewBtn" style="padding: 0;">
+                        ×
+                    </button>
+                </div>
                 <hr/>
                 <p id="previewTranslation">
                 </p>

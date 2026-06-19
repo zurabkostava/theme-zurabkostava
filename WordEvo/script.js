@@ -1784,12 +1784,14 @@ async function deleteCard(card) {
         });
     };
 // --- NEW PLAYER LISTENERS (FIXED) ---
-    minimizePlayerBtn.onclick = () => {
-        if (!isPlaying) return; // მუშაობს მხოლოდ დაკვრის დროს
-        isPlayerMinimized = true;
-        previewModal.style.display = 'none'; // დავმალოთ მოდალი
-        playerMinimizedDisplay.style.display = 'block'; // ვაჩვენოთ ჩაკეცილი
-    };
+    if (minimizePlayerBtn) {
+        minimizePlayerBtn.onclick = () => {
+            if (!isPlaying) return; // მუშაობს მხოლოდ დაკვრის დროს
+            isPlayerMinimized = true;
+            previewModal.style.display = 'none'; // დავმალოთ მოდალი
+            playerMinimizedDisplay.style.display = 'block'; // ვაჩვენოთ ჩაკეცილი
+        };
+    }
     playerMinimizedDisplay.onclick = () => {
         if (!isPlaying) return; // მუშაობს მხოლოდ დაკვრის დროს
         isPlayerMinimized = false;
