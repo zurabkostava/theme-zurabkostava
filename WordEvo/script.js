@@ -1533,7 +1533,7 @@ async function deleteCard(card) {
         document.addEventListener('mousedown', function (e) {
 // ვიყენებთ არსებულ ცვლადებს (sidebar, toggleSidebarBtn)
             const clickedInsideSidebar = sidebar.contains(e.target);
-            const clickedToggleBtn = toggleSidebarBtn.contains(e.target); // <-- ვასწორებთ 'toggleBtn'-ს
+            const clickedToggleBtn = toggleSidebarBtn ? toggleSidebarBtn.contains(e.target) : false;
             if (!clickedInsideSidebar && !clickedToggleBtn) {
                 sidebar.classList.remove('active');
             }
@@ -1884,10 +1884,12 @@ async function deleteCard(card) {
         updateSelectionUI();
     };
 // Sidebar
-    toggleSidebarBtn.onclick = () => {
-        sidebar.classList.toggle('active');
-        renderSidebarTags();
-    };
+    if (toggleSidebarBtn) {
+        toggleSidebarBtn.onclick = () => {
+            sidebar.classList.toggle('active');
+            renderSidebarTags();
+        };
+    }
     closeSidebarBtn.onclick = () => {
         sidebar.classList.remove('active');
     };
