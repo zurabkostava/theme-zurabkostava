@@ -183,7 +183,8 @@ async function speakPreviewCard(card) {
     await safeSpeak(word, selectedVoice, null, null, { type: 'word' });
     await safeSpeak(mainPart, selectedGeorgianVoice, null, extraPart, { type: 'translation' });
     const mnemonic = card.dataset.mnemonic || '';
-    if (mnemonic.trim() !== '') {
+    const skipMnemonic = localStorage.getItem('skip_mnemonic') === 'true';
+    if (!skipMnemonic && mnemonic.trim() !== '') {
         await safeSpeak(mnemonic, selectedGeorgianVoice, null, null, { type: 'mnemonic' });
     }
 
@@ -1837,6 +1838,7 @@ async function deleteCard(card) {
         loadSpeechRates();
         document.getElementById('skipExtraTranslationCheckbox').checked = localStorage.getItem('skip_extra_translation') === 'true';
         document.getElementById('shuffleExamplesCheckbox').checked = localStorage.getItem('shuffle_examples') === 'true';
+        document.getElementById('skipMnemonicCheckbox').checked = localStorage.getItem('skip_mnemonic') === 'true';
         document.getElementById('readExamplesSelect').value = localStorage.getItem('read_examples_limit') || 'all';
         settingsModal.style.display = 'flex';
     };
@@ -1850,6 +1852,7 @@ async function deleteCard(card) {
         const georgianRateSlider = document.getElementById('georgianRateSlider');
         const skipExtraCheckbox = document.getElementById('skipExtraTranslationCheckbox');
         const shuffleExamplesCheckbox = document.getElementById('shuffleExamplesCheckbox');
+        const skipMnemonicCheckbox = document.getElementById('skipMnemonicCheckbox');
         const examplesSelect = document.getElementById('readExamplesSelect');
         
         const dictId = localStorage.getItem(DICTIONARY_KEY) || currentDictionaryId;
@@ -1859,6 +1862,7 @@ async function deleteCard(card) {
         localStorage.setItem(GEORGIAN_RATE_KEY, georgianRateSlider.value);
         localStorage.setItem('skip_extra_translation', skipExtraCheckbox.checked);
         localStorage.setItem('shuffle_examples', shuffleExamplesCheckbox.checked);
+        localStorage.setItem('skip_mnemonic', skipMnemonicCheckbox.checked);
         localStorage.setItem('read_examples_limit', examplesSelect.value);
         
         loadVoices(); // Recalculate properly, including Piper initialization

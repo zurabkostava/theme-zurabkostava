@@ -397,6 +397,12 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                     <span style="font-weight: 500;">Shuffle examples</span>
                 </label>
             </div>
+            <div class="input-container checkbox-container" style="margin-bottom: 15px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="skipMnemonicCheckbox" style="width: 20px; height: 20px;" />
+                    <span style="font-weight: 500;">Don't read mnemonic</span>
+                </label>
+            </div>
             <div class="input-container">
                 <label class="material-input material-select">
                     <select id="readExamplesSelect" required="">
