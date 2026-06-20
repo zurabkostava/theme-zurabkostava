@@ -1,5 +1,5 @@
-﻿// ==== Wordevo Service Worker ====
-const SW_VERSION = 13;
+// ==== Wordevo Service Worker ====
+const SW_VERSION = 14;
 const PUSH_URL = 'https://wdgvxerfxwtmpqztwgtj.supabase.co/functions/v1/get-push-notification';
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -16,23 +16,46 @@ self.addEventListener('activate', event => {
 self.addEventListener('push', event => {
     event.waitUntil((async () => {
         let title = 'Wordevo';
-        let body = '';
+        let body = 'დროა გადაიმეოროთ სიტყვები!';
         let tag = 'wordevo-push';
 
-        try {
-            const sub = await self.registration.pushManager.getSubscription();
-            if (sub) {
-                const res = await fetch(`${PUSH_URL}?endpoint=${encodeURIComponent(sub.endpoint)}`);
-                if (res.ok) {
-                    const d = await res.json();
-                    if (d.title) title = d.title;
-                    if (d.body) body = d.body;
-                    if (!body) body = 'დროა გადაიმეოროთ სიტყვები!';
-                    if (d.schedule_id) tag = `wordevo-${d.schedule_id}`;
+        if (event.data) {
+            try {
+                const p = event.data.json();
+                if (p.title) title = p.title;
+                if (p.body) body = p.body;
+                if (p.tag) tag = p.tag;
+            } catch (e) {}
+        }
+
+        if (title === 'Wordevo') {
+            try {
+                const sub = await self.registration.pushManager.getSubscription();
+                if (sub) {
+                    const endpointUrl = `${PUSH_URL}?endpoint=${encodeURIComponent(sub.endpoint)}`;
+                    let res = null;
+                    
+                    // 3 retries to allow radio to wake up
+                    for (let i = 0; i < 3; i++) {
+                        try {
+                            res = await fetch(endpointUrl);
+                            if (res.ok) break;
+                        } catch (err) {
+                            if (i === 2) throw err;
+                            await new Promise(r => setTimeout(r, 2000));
+                        }
+                    }
+
+                    if (res && res.ok) {
+                        const d = await res.json();
+                        if (d.title) title = d.title;
+                        if (d.body && d.body.trim() !== '') body = d.body;
+                        if (d.schedule_id) tag = `wordevo-${d.schedule_id}`;
+                    }
                 }
+            } catch (e) {
+                console.error('[SW] push fetch error:', e);
             }
-        } catch (e) {
-            console.error('[SW] push fetch error:', e);
         }
 
         return self.registration.showNotification(title, {
