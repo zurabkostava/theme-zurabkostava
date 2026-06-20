@@ -1262,6 +1262,8 @@ async function deleteCard(card) {
     const modalOverlay = document.getElementById('modalOverlay');
     const cancelBtn = document.getElementById('cancelBtn');
     const saveCardBtn = document.getElementById('saveCardBtn');
+    const jsonImportInput = document.getElementById('jsonImportInput');
+    const importJsonBtn = document.getElementById('importJsonBtn');
     const cardContainer = document.getElementById('cardContainer');
     const wordInput = document.getElementById('wordInput');
     const mainTranslationInput = document.getElementById('mainTranslationInput');
@@ -2013,6 +2015,39 @@ async function deleteCard(card) {
     document.getElementById('closeAddModalBtn').onclick = () => {
         modalOverlay.style.display = 'none';
     };
+    importJsonBtn.onclick = () => {
+        try {
+            const raw = jsonImportInput.value.trim();
+            if (!raw) return;
+            const data = JSON.parse(raw);
+            if (data.word) wordInput.value = data.word;
+            if (data.main && Array.isArray(data.main)) {
+                mainTranslations = data.main;
+                renderTags(document.getElementById('mainTranslationTags'), mainTranslations, mainTranslations, true);
+            }
+            if (data.extra && Array.isArray(data.extra)) {
+                extraTranslations = data.extra;
+                renderTags(document.getElementById('extraTranslationTags'), extraTranslations, extraTranslations, true);
+            }
+            if (data.tags && Array.isArray(data.tags)) {
+                tags = data.tags;
+                renderTags(document.getElementById('tagList'), tags, tags, false);
+            }
+            if (data.english && Array.isArray(data.english)) {
+                englishSentencesInput.value = data.english.map((s, i) => `${i + 1}. ${s}`).join('\n');
+            }
+            if (data.georgian && Array.isArray(data.georgian)) {
+                georgianSentencesInput.value = data.georgian.map((s, i) => `${i + 1}. ${s}`).join('\n');
+            }
+            if (data.mnemonic) mnemonicInput.value = data.mnemonic;
+            
+            showToast("JSON Imported successfully!", "success");
+            jsonImportInput.value = ""; // Clear input after successful import
+        } catch (e) {
+            showToast("Invalid JSON format!", "error");
+        }
+    };
+
     saveCardBtn.onclick = async () => {
         const word = wordInput.value.trim();
         if (!word) return;

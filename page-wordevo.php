@@ -177,6 +177,15 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <button class="close-button" id="closeAddModalBtn">×</button>
             </div>
             <div class="modal-body">
+            <details style="margin-bottom: 15px; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05);">
+                <summary style="cursor: pointer; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-file-import"></i> Quick Import JSON
+                </summary>
+                <div style="margin-top: 10px;">
+                    <textarea id="jsonImportInput" class="form-control" rows="4" placeholder='{"word": "apple", "main": ["ვაშლი"], "extra": ["ხილის სახეობა"], "tags": ["ხილი"], "english": ["I eat an apple."], "georgian": ["მე ვჭამ ვაშლს."], "mnemonic": "A is for Apple"}'></textarea>
+                    <button type="button" id="importJsonBtn" style="margin-top: 10px; padding: 8px 16px; font-size: 14px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer;">Import Data</button>
+                </div>
+            </details>
             <div class="input-container">
                 <label class="material-input validation">
                     <input class="form-control" id="wordInput" placeholder=" " required="" type="text"
