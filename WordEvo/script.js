@@ -698,10 +698,7 @@ function renderCardFromData(data) {
     const translationHTML = `${cardData.mainTranslations.join(', ')}<span class="extra">${cardData.extraTranslations.join(', ')}</span>`;
     // თეგების გენერაცია (გაფილტრული თეგები ყოველთვის წინ)
     const tagHTML = renderCardTagsHTML(cardData.tags, [...activeFilterTags]);
-    let mnemonicHTML = '';
-    if (cardData.mnemonic && cardData.mnemonic.trim() !== '') {
-        mnemonicHTML = `<div class="mnemonic-display"><i class="fas fa-lightbulb"></i> ${cardData.mnemonic}</div>`;
-    }
+
 
     const card = document.createElement('div');
     card.className = 'card';
@@ -717,7 +714,6 @@ function renderCardFromData(data) {
 </div>
 </div>
 <p class="translation">${translationHTML}</p>
-${mnemonicHTML}
 <div class="tags">${tagHTML}</div>
 <div class="progress-bar-container">
 <div class="progress-bar" style="width: ${cardData.progress}%;"></div>
