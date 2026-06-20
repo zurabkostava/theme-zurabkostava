@@ -169,6 +169,7 @@ async function speakPreviewCard(card) {
         if (isShowing) {
             if (phase.type === 'word') el = document.getElementById('previewWord');
             else if (phase.type === 'translation') el = document.getElementById('previewTranslation');
+            else if (phase.type === 'mnemonic') el = document.getElementById('previewMnemonic');
             else {
                 const pairs = document.querySelectorAll('#previewCombinedSentences .sentence-pair');
                 el = pairs[phase.index]?.querySelector(phase.type === 'en' ? '.en-sentence' : '.ge-sentence');
@@ -181,6 +182,10 @@ async function speakPreviewCard(card) {
 
     await safeSpeak(word, selectedVoice, null, null, { type: 'word' });
     await safeSpeak(mainPart, selectedGeorgianVoice, null, extraPart, { type: 'translation' });
+    const mnemonic = card.dataset.mnemonic || '';
+    if (mnemonic.trim() !== '') {
+        await safeSpeak(mnemonic, selectedGeorgianVoice, null, null, { type: 'mnemonic' });
+    }
 
     const limitStr = localStorage.getItem('read_examples_limit') || 'all';
     
@@ -658,6 +663,7 @@ function editCard(card) {
     const ge = JSON.parse(card.dataset.georgian || '[]');
     document.getElementById('englishSentences').value = en.map((s, i) => `${i + 1}. ${s}`).join('\n');
     document.getElementById('georgianSentences').value = ge.map((s, i) => `${i + 1}. ${s}`).join('\n');
+    document.getElementById('mnemonicInput').value = card.dataset.mnemonic || '';
     document.getElementById('wordInput').value = word;
     renderTags(document.getElementById('mainTranslationTags'), mainTranslations, mainTranslations, true);
     renderTags(document.getElementById('extraTranslationTags'), extraTranslations, extraTranslations, true);
@@ -678,6 +684,7 @@ function renderCardFromData(data) {
         word: data.word,
         mainTranslations: data.main_translations || [],
         extraTranslations: data.extra_translations || [],
+        mnemonic: data.mnemonic || '',
 // NEW: data.tags არის [{id, name}], ჩვენ გვჭირდება [name]
         tags: (data.tags || []).map(tagObj => tagObj.name),
 // NEW: ვინახავთ ობიექტებსაც, რედაქტირებისთვის
@@ -691,6 +698,11 @@ function renderCardFromData(data) {
     const translationHTML = `${cardData.mainTranslations.join(', ')}<span class="extra">${cardData.extraTranslations.join(', ')}</span>`;
     // თეგების გენერაცია (გაფილტრული თეგები ყოველთვის წინ)
     const tagHTML = renderCardTagsHTML(cardData.tags, [...activeFilterTags]);
+    let mnemonicHTML = '';
+    if (cardData.mnemonic && cardData.mnemonic.trim() !== '') {
+        mnemonicHTML = `<div class="mnemonic-display"><i class="fas fa-lightbulb"></i> ${cardData.mnemonic}</div>`;
+    }
+
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
@@ -705,6 +717,7 @@ function renderCardFromData(data) {
 </div>
 </div>
 <p class="translation">${translationHTML}</p>
+${mnemonicHTML}
 <div class="tags">${tagHTML}</div>
 <div class="progress-bar-container">
 <div class="progress-bar" style="width: ${cardData.progress}%;"></div>
@@ -712,6 +725,7 @@ function renderCardFromData(data) {
 </div>
 `;
     card.dataset.id = cardData.id;
+    card.dataset.mnemonic = cardData.mnemonic || '';
     card.dataset.progress = cardData.progress;
     card.dataset.updated = new Date(cardData.updated).getTime();
     card.dataset.english = JSON.stringify(cardData.englishSentences);
@@ -788,6 +802,16 @@ data-lang="ka">
 <i class="fas fa-volume-up"></i>
 </button>`;
     document.getElementById('previewTranslation').innerHTML = main + geoSpeakBtn + extra;
+    const previewMnemonic = document.getElementById('previewMnemonic');
+    const mnemonic = card.dataset.mnemonic || '';
+    if (previewMnemonic) {
+        if (mnemonic.trim() !== '') {
+            previewMnemonic.innerHTML = `<i class="fas fa-lightbulb"></i> ${mnemonic}`;
+            previewMnemonic.style.display = 'block';
+        } else {
+            previewMnemonic.style.display = 'none';
+        }
+    }
     const tagContainer = document.getElementById('previewTags');
     tagContainer.innerHTML = '';
     tags.forEach(tag => {
@@ -1047,6 +1071,7 @@ function resetModal() {
     document.getElementById('tagInput').value = '';
     document.getElementById('englishSentences').value = '';
     document.getElementById('georgianSentences').value = '';
+    document.getElementById('mnemonicInput').value = '';
     mainTranslations = [];
     extraTranslations = [];
     tags = [];
@@ -1255,6 +1280,7 @@ async function deleteCard(card) {
     const selectAllBtn = document.getElementById('selectAllBtn');
     const englishSentencesInput = document.getElementById('englishSentences');
     const georgianSentencesInput = document.getElementById('georgianSentences');
+    const mnemonicInput = document.getElementById('mnemonicInput');
     const settingsBtn = document.getElementById('settingsBtn');
     const settingsModal = document.getElementById('settingsModal');
     const closeSettingsBtn = document.getElementById('closeSettingsBtn');
@@ -2004,7 +2030,8 @@ async function deleteCard(card) {
             english_sentences_input: englishSentencesInput.value.split('\n').map(line => line.replace(/^\d+\.\s*/, '').trim()).filter(line => line !== ''),
             georgian_sentences_input: georgianSentencesInput.value.split('\n').map(line => line.replace(/^\d+\.\s*/, '').trim()).filter(line => line !== ''),
             tag_names_input: tagNames,
-            dictionary_id_input: currentDictionaryId
+            dictionary_id_input: currentDictionaryId,
+            mnemonic_input: mnemonicInput.value.trim()
         };
         if (isEditing && editingCard) {
 // === UPDATE (განახლება) ===

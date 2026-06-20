@@ -229,6 +229,14 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             </div>
             <div class="input-container">
                 <label class="material-input">
+                    <textarea class="form-control" id="mnemonicInput" placeholder=" " rows="2"></textarea>
+                    <span>
+       მნემონიკა (ასოციაცია დასამახსოვრებლად)
+      </span>
+                </label>
+            </div>
+            <div class="input-container">
+                <label class="material-input">
                     <textarea class="form-control" id="englishSentences" placeholder=" " rows="6"></textarea>
                     <span>
        მთავარი ენის ტექსტი (Language 1)
@@ -291,6 +299,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <hr/>
                 <p id="previewTranslation">
                 </p>
+                <div id="previewMnemonic" class="mnemonic-display" style="display: none;"></div>
                 <div class="tags" id="previewTags">
                 </div>
             </div>
