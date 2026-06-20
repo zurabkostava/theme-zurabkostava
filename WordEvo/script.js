@@ -1838,10 +1838,18 @@ async function deleteCard(card) {
     settingsBtn.onclick = () => {
         populateDropdowns();
         loadSpeechRates();
-        document.getElementById('skipExtraTranslationCheckbox').checked = localStorage.getItem('skip_extra_translation') === 'true';
-        document.getElementById('shuffleExamplesCheckbox').checked = localStorage.getItem('shuffle_examples') === 'true';
-        document.getElementById('skipMnemonicCheckbox').checked = localStorage.getItem('skip_mnemonic') === 'true';
-        document.getElementById('readExamplesSelect').value = localStorage.getItem('read_examples_limit') || 'all';
+        if (document.getElementById('skipExtraTranslationCheckbox')) {
+            document.getElementById('skipExtraTranslationCheckbox').checked = localStorage.getItem('skip_extra_translation') === 'true';
+        }
+        if (document.getElementById('shuffleExamplesCheckbox')) {
+            document.getElementById('shuffleExamplesCheckbox').checked = localStorage.getItem('shuffle_examples') === 'true';
+        }
+        if (document.getElementById('skipMnemonicCheckbox')) {
+            document.getElementById('skipMnemonicCheckbox').checked = localStorage.getItem('skip_mnemonic') === 'true';
+        }
+        if (document.getElementById('readExamplesSelect')) {
+            document.getElementById('readExamplesSelect').value = localStorage.getItem('read_examples_limit') || 'all';
+        }
         settingsModal.style.display = 'flex';
     };
     closeSettingsBtn.onclick = () => {
@@ -1862,10 +1870,10 @@ async function deleteCard(card) {
         localStorage.setItem(GEORGIAN_VOICE_KEY + '_' + dictId, georgianVoiceSelect.value);
         localStorage.setItem(ENGLISH_RATE_KEY, englishRateSlider.value);
         localStorage.setItem(GEORGIAN_RATE_KEY, georgianRateSlider.value);
-        localStorage.setItem('skip_extra_translation', skipExtraCheckbox.checked);
-        localStorage.setItem('shuffle_examples', shuffleExamplesCheckbox.checked);
-        localStorage.setItem('skip_mnemonic', skipMnemonicCheckbox.checked);
-        localStorage.setItem('read_examples_limit', examplesSelect.value);
+        if (skipExtraCheckbox) localStorage.setItem('skip_extra_translation', skipExtraCheckbox.checked);
+        if (shuffleExamplesCheckbox) localStorage.setItem('shuffle_examples', shuffleExamplesCheckbox.checked);
+        if (skipMnemonicCheckbox) localStorage.setItem('skip_mnemonic', skipMnemonicCheckbox.checked);
+        if (examplesSelect) localStorage.setItem('read_examples_limit', examplesSelect.value);
         
         loadVoices(); // Recalculate properly, including Piper initialization
         
@@ -2015,38 +2023,40 @@ async function deleteCard(card) {
     document.getElementById('closeAddModalBtn').onclick = () => {
         modalOverlay.style.display = 'none';
     };
-    importJsonBtn.onclick = () => {
-        try {
-            const raw = jsonImportInput.value.trim();
-            if (!raw) return;
-            const data = JSON.parse(raw);
-            if (data.word) wordInput.value = data.word;
-            if (data.main && Array.isArray(data.main)) {
-                mainTranslations = data.main;
-                renderTags(document.getElementById('mainTranslationTags'), mainTranslations, mainTranslations, true);
+    if (importJsonBtn) {
+        importJsonBtn.onclick = () => {
+            try {
+                const raw = jsonImportInput.value.trim();
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (data.word) wordInput.value = data.word;
+                if (data.main && Array.isArray(data.main)) {
+                    mainTranslations = data.main;
+                    renderTags(document.getElementById('mainTranslationTags'), mainTranslations, mainTranslations, true);
+                }
+                if (data.extra && Array.isArray(data.extra)) {
+                    extraTranslations = data.extra;
+                    renderTags(document.getElementById('extraTranslationTags'), extraTranslations, extraTranslations, true);
+                }
+                if (data.tags && Array.isArray(data.tags)) {
+                    tags = data.tags;
+                    renderTags(document.getElementById('tagList'), tags, tags, false);
+                }
+                if (data.english && Array.isArray(data.english)) {
+                    englishSentencesInput.value = data.english.map((s, i) => `${i + 1}. ${s}`).join('\n');
+                }
+                if (data.georgian && Array.isArray(data.georgian)) {
+                    georgianSentencesInput.value = data.georgian.map((s, i) => `${i + 1}. ${s}`).join('\n');
+                }
+                if (data.mnemonic) mnemonicInput.value = data.mnemonic;
+                
+                showToast("JSON Imported successfully!", "success");
+                jsonImportInput.value = ""; // Clear input after successful import
+            } catch (e) {
+                showToast("Invalid JSON format!", "error");
             }
-            if (data.extra && Array.isArray(data.extra)) {
-                extraTranslations = data.extra;
-                renderTags(document.getElementById('extraTranslationTags'), extraTranslations, extraTranslations, true);
-            }
-            if (data.tags && Array.isArray(data.tags)) {
-                tags = data.tags;
-                renderTags(document.getElementById('tagList'), tags, tags, false);
-            }
-            if (data.english && Array.isArray(data.english)) {
-                englishSentencesInput.value = data.english.map((s, i) => `${i + 1}. ${s}`).join('\n');
-            }
-            if (data.georgian && Array.isArray(data.georgian)) {
-                georgianSentencesInput.value = data.georgian.map((s, i) => `${i + 1}. ${s}`).join('\n');
-            }
-            if (data.mnemonic) mnemonicInput.value = data.mnemonic;
-            
-            showToast("JSON Imported successfully!", "success");
-            jsonImportInput.value = ""; // Clear input after successful import
-        } catch (e) {
-            showToast("Invalid JSON format!", "error");
-        }
-    };
+        };
+    }
 
     saveCardBtn.onclick = async () => {
         const word = wordInput.value.trim();
