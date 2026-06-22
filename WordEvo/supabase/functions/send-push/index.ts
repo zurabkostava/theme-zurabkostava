@@ -98,7 +98,7 @@ Deno.serve(async () => {
       // Get random card (direct query — RPC uses auth.uid() which is null in service role)
       let title = 'Wordevo', body = ''
       try {
-        let query = db.from('cards').select('word, main_translations')
+        let query = db.from('cards').select('id, word, main_translations, progress')
           .eq('user_id', s.user_id)
 
         if (s.dictionary_id) query = query.eq('dictionary_id', s.dictionary_id)
@@ -123,6 +123,10 @@ Deno.serve(async () => {
           const card = cards[Math.floor(Math.random() * cards.length)]
           title = card.word || title
           body = (card.main_translations || []).join(', ')
+          
+          // Increment progress by 1%
+          const newProgress = Math.min(100, (card.progress || 0) + 1)
+          await db.from('cards').update({ progress: newProgress }).eq('id', card.id)
         }
       } catch (e) { console.error('Card fetch error:', e) }
 
