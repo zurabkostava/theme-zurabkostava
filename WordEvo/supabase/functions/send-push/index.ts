@@ -1,4 +1,4 @@
-﻿// send-push: runs every minute via pg_cron
+// send-push: runs every minute via pg_cron
 // finds matching schedules → gets random card → stores in push_queue → sends empty push
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -57,7 +57,12 @@ async function sendPush(endpoint: string): Promise<void> {
   const jwt = await vapidJwt(`${u.protocol}//${u.host}`)
   const res = await fetch(endpoint, {
     method: 'POST',
-    headers: { 'TTL': '86400', 'Authorization': `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}` },
+    headers: { 
+      'TTL': '86400', 
+      'Urgency': 'high',
+      'Topic': 'wordevo-reminder',
+      'Authorization': `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}` 
+    },
   })
   if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`)
 }
