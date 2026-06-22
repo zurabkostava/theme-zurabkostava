@@ -1,4 +1,4 @@
-﻿//sentence.js
+//sentence.js
 let senCards = [], senCurrent = 0, senCorrect = 0;
 let senReverse = false;
 let senCount = 10;
@@ -12,20 +12,11 @@ function initSentenceGame() {
 }
 
 function startSentenceGame() {
-    const { tag, count, reverse, hideMastered } = getGlobalTrainingSettings();
+    const { count, reverse } = getGlobalTrainingSettings();
     senReverse = reverse;
     senCount = count;
 
-    let cards = [...document.querySelectorAll('.card')];
-    if (hideMastered) {
-        cards = cards.filter(card => parseFloat(card.dataset.progress || '0') < 100);
-    }
-
-    if (tag) {
-        cards = cards.filter(card =>
-            [...card.querySelectorAll('.card-tag')].some(t => t.textContent.replace('#', '') === tag)
-        );
-    }
+    let cards = getFilteredTrainingCards();
 
     cards = shuffleArray(cards).filter(card => {
         const en = JSON.parse(card.dataset.english || '[]');

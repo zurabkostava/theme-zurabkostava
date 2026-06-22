@@ -1,4 +1,4 @@
-﻿//puzzle.js
+//puzzle.js
 let puzzleCards = [], puzzleCurrent = 0, puzzleCorrect = 0;
 let puzzleReverse = false;
 let puzzleCount = 10;
@@ -12,19 +12,11 @@ function initPuzzleGame() {
 }
 
 function startPuzzleGame() {
-    const { tag, count, reverse, hideMastered } = getGlobalTrainingSettings();
+    const { count, reverse } = getGlobalTrainingSettings();
     puzzleReverse = reverse;
     puzzleCount = count;
 
-    let cards = [...document.querySelectorAll('.card')];
-    if (hideMastered) {
-        cards = cards.filter(card => parseFloat(card.dataset.progress || '0') < 100);
-    }
-    if (tag) {
-        cards = cards.filter(card =>
-            [...card.querySelectorAll('.card-tag')].some(t => t.textContent.replace('#', '') === tag)
-        );
-    }
+    let cards = getFilteredTrainingCards();
 
     cards = shuffleArray(cards).filter(card => {
         const en = JSON.parse(card.dataset.english || '[]');

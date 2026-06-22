@@ -100,8 +100,32 @@ function getGlobalTrainingSettings() {
     const tag = document.getElementById('globalTagSelect')?.value || '';
     const count = parseInt(document.getElementById('globalQuestionCount')?.value || '10');
     const reverse = document.getElementById('globalReverseToggle')?.checked || false;
-    const hideMastered = document.getElementById('globalHideMastered')?.checked || false;
-    return {tag, count, reverse, hideMastered};
+    const progressRange = document.getElementById('globalProgressSelect')?.value || '';
+    return {tag, count, reverse, progressRange};
+}
+
+function getFilteredTrainingCards() {
+    const { tag, progressRange } = getGlobalTrainingSettings();
+    let cards = [...document.querySelectorAll('.card')];
+    
+    if (progressRange) {
+        const [minStr, maxStr] = progressRange.split('-');
+        const min = parseInt(minStr, 10);
+        const max = parseInt(maxStr, 10);
+        cards = cards.filter(card => {
+            const p = parseFloat(card.dataset.progress || '0');
+            return p >= min && p <= max;
+        });
+    }
+    
+    if (tag) {
+        cards = cards.filter(card => {
+            const cardTags = Array.from(card.querySelectorAll('.card-tag')).map(t => t.textContent.replace('#', '').trim());
+            return cardTags.includes(tag);
+        });
+    }
+    
+    return cards;
 }
 function populateGlobalTags() {
     const select = document.getElementById('globalTagSelect');

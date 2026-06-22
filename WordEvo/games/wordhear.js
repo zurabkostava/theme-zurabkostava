@@ -1,4 +1,4 @@
-﻿// wordhear.js
+// wordhear.js
 
 let wordhearCards = [];
 let wordhearCurrentIndex = 0;
@@ -58,20 +58,11 @@ function populateWordhearTags() {
 }
 
 function startWordhearGame() {
-    const { tag, count, reverse, hideMastered } = getGlobalTrainingSettings();
+    const { count, reverse } = getGlobalTrainingSettings();
     wordhearReverse = reverse;
     wordhearCount = count;
 
-    let allCards = [...document.querySelectorAll('.card')];
-    if (hideMastered) {
-        allCards = allCards.filter(card => parseFloat(card.dataset.progress || '0') < 100);
-    }
-
-    if (tag) {
-        allCards = allCards.filter(card =>
-            [...card.querySelectorAll('.card-tag')].some(el => el.textContent.includes(tag))
-        );
-    }
+    let allCards = getFilteredTrainingCards();
 
     if (allCards.length === 0) {
         alert("ბარათები ვერ მოიძებნა არჩეული თეგით.");

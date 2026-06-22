@@ -1,4 +1,4 @@
-﻿// mix.js ====
+// mix.js ====
 function incrementStat(key, amount = 1) {
     const current = parseInt(localStorage.getItem(key) || '0');
     localStorage.setItem(key, current + amount);
@@ -29,19 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function startMixGame() {
-    const { tag, count, reverse, hideMastered } = getGlobalTrainingSettings();
+    const { count, reverse } = getGlobalTrainingSettings();
     mixReverse = reverse;
 
-    let allCards = [...document.querySelectorAll('.card')];
-    if (hideMastered) {
-        allCards = allCards.filter(card => parseFloat(card.dataset.progress || '0') < 100);
-    }
-
-    if (tag) {
-        allCards = allCards.filter(card =>
-            [...card.querySelectorAll('.card-tag')].some(el => el.textContent.includes(tag))
-        );
-    }
+    let allCards = getFilteredTrainingCards();
 
     if (allCards.length === 0) {
         alert("ბარათები ვერ მოიძებნა არჩეული თეგით.");

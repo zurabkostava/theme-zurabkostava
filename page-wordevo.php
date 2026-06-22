@@ -543,10 +543,19 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <input id="globalReverseToggle" type="checkbox"/>
                         რევერსი
                     </label>
-                    <label>
-                        <input id="globalHideMastered" type="checkbox"/>
-                        - ნასწავლი
-                    </label>
+                    <div class="progress-filter" style="margin-top: 10px;">
+                        <label for="globalProgressSelect" style="display:block; margin-bottom: 5px;">პროგრესი:</label>
+                        <select id="globalProgressSelect" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="">ნებისმიერი (ყველა)</option>
+                            <option value="0-99">ყველა (100%-ის გარდა)</option>
+                            <option value="0-30">0% - 30%</option>
+                            <option value="31-50">31% - 50%</option>
+                            <option value="51-70">51% - 70%</option>
+                            <option value="71-80">71% - 80%</option>
+                            <option value="81-99">81% - 99%</option>
+                            <option value="100-100">შესწავლილი (100%)</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="global-start-container">
                     <button id="globalStartBtn" class="global-start-btn" onclick="startActiveGame()">დაწყება 🚀</button>

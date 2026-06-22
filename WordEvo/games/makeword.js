@@ -1,4 +1,4 @@
-﻿//makeword.js
+//makeword.js
 let mwCards = [];
 let mwCurrentIndex = 0;
 let mwCorrectAnswers = 0;
@@ -54,21 +54,12 @@ function incrementStat(key, amount) {
 }
 
 function startMakewordGame() {
-    const { tag, count, reverse, hideMastered } = getGlobalTrainingSettings();
+    const { count, reverse } = getGlobalTrainingSettings();
     mwReverse = reverse;
     mwTotalQuestions = count;
     mwFullBlankMode = document.getElementById('mwFullBlankToggle')?.checked;
 
-    let allCards = [...document.querySelectorAll('.card')];
-    if (hideMastered) {
-        allCards = allCards.filter(card => parseFloat(card.dataset.progress || '0') < 100);
-    }
-
-    if (tag) {
-        allCards = allCards.filter(card =>
-            [...card.querySelectorAll('.card-tag')].some(el => el.textContent.includes(tag))
-        );
-    }
+    let allCards = getFilteredTrainingCards();
 
     if (allCards.length === 0) {
         alert("ბარათები ვერ მოიძებნა არჩეული თეგით.");

@@ -1,4 +1,4 @@
-﻿//quiz.js
+//quiz.js
 
 const quizTab = document.getElementById('quizTab');
 
@@ -54,22 +54,10 @@ function getStat(key) {
 }
 
 function startQuiz() {
-    const { tag: selectedTag, count: requestedCount, reverse, hideMastered } = getGlobalTrainingSettings();
+    const { count: requestedCount, reverse } = getGlobalTrainingSettings();
     reverseMode = reverse;
 
-    let allCards = [...document.querySelectorAll('.card')];
-    if (hideMastered) {
-        allCards = allCards.filter(card => parseFloat(card.dataset.progress || '0') < 100);
-    }
-
-    if (selectedTag) {
-        allCards = allCards.filter(card => {
-            const cardTags = Array.from(card.querySelectorAll('.card-tag')).map(tagEl =>
-                tagEl.textContent.replace('#', '').trim()
-            );
-            return cardTags.includes(selectedTag);
-        });
-    }
+    let allCards = getFilteredTrainingCards();
 
     if (allCards.length === 0) {
         alert("არჩეული თეგით ბარათები ვერ მოიძებნა.");

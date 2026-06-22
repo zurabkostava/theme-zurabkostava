@@ -1,4 +1,4 @@
-﻿//typegame.js
+//typegame.js
 let tiCards = [], tiCurrent = 0, tiCorrect = 0;
 let tiReverse = false;
 let tiCount = 10;
@@ -24,21 +24,11 @@ function initTypingGame() {
 }
 
 function startTypingGame() {
-    const { tag: selectedTag, count, reverse, hideMastered } = getGlobalTrainingSettings();
+    const { count, reverse } = getGlobalTrainingSettings();
     tiReverse = reverse;
     tiCount = count;
 
-    let cards = [...document.querySelectorAll('.card')];
-
-    if (hideMastered) {
-        cards = cards.filter(card => parseFloat(card.dataset.progress || '0') < 100);
-    }
-
-    if (selectedTag) {
-        cards = cards.filter(card =>
-            [...card.querySelectorAll('.card-tag')].some(t => t.textContent.replace('#', '') === selectedTag)
-        );
-    }
+    let cards = getFilteredTrainingCards();
 
     cards = shuffleArray(cards).slice(0, tiCount);
     tiCards = cards;
