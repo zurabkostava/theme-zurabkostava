@@ -9,10 +9,7 @@ let wordhearCount = 10;
 let whQuestionContainer, whResultContainer, whTagSelect, whCountInput, whReverseToggle;
 
 // === სტატისტიკის დამხმარე ფუნქციები ===
-function incrementStat(key, amount) {
-    const currentVal = parseInt(localStorage.getItem(key) || '0');
-    localStorage.setItem(key, currentVal + amount);
-}
+
 
 function getStat(key) {
     return parseInt(localStorage.getItem(key) || '0');
@@ -176,4 +173,5 @@ function showWordhearResults() {
         <p>არასწორი პასუხები: ${wordhearCards.length - wordhearCorrectAnswers}</p>
     `;
 }
+
 

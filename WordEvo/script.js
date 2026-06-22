@@ -67,6 +67,8 @@ const DICTIONARY_KEY = 'wordevo_current_dictionary';
 let currentDictionaryId = null;
 let allDictionaries = [];
 // ==== 2. ყველა ფუნქციის დეფინიცია (გლობალური) ====
+let statsChartInstance = null;
+
 function updateStatsModal() {
     const allCards = document.querySelectorAll('.card');
     const totalWords = allCards.length;
@@ -89,12 +91,132 @@ function updateStatsModal() {
         correctPercent = ((totalCorrect / totalAnswers) * 100).toFixed(1);
         wrongPercent = ((totalWrong / totalAnswers) * 100).toFixed(1);
     }
-    document.getElementById('statsTotalWords').textContent = totalWords;
-    document.getElementById('statsMastered').textContent = masteredCount;
-    document.getElementById('statsTotal2').textContent = totalWords;
-    document.getElementById('statsAvgProgress').textContent = avgProgress;
-    document.getElementById('statsTests').textContent = totalTests;
-    document.getElementById('statsCorrectWrong').textContent = `${totalCorrect} - ${totalWrong} (${correctPercent}% - ${wrongPercent}%)`;
+    
+    const elTotalWords = document.getElementById('statsTotalWords');
+    if(elTotalWords) elTotalWords.textContent = totalWords;
+    
+    const elMastered = document.getElementById('statsMastered');
+    if(elMastered) elMastered.textContent = masteredCount;
+    
+    const elAvgProg = document.getElementById('statsAvgProgress');
+    if(elAvgProg) elAvgProg.textContent = avgProgress + '%';
+    
+    const elTests = document.getElementById('statsTests');
+    if(elTests) elTests.textContent = totalTests;
+    
+    const accuracyEl = document.getElementById('statsAccuracy');
+    if(accuracyEl) accuracyEl.textContent = correctPercent + '%';
+
+    const cwEl = document.getElementById('statsCorrectWrong');
+    if(cwEl) cwEl.textContent = `${totalCorrect} 🟢 / ${totalWrong} 🔴 (${correctPercent}% / ${wrongPercent}%)`;
+
+    renderStatsChart('week');
+}
+
+function renderStatsChart(period) {
+    const canvas = document.getElementById('statsChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    if (statsChartInstance) {
+        statsChartInstance.destroy();
+    }
+
+    let dailyStats = {};
+    try {
+        dailyStats = JSON.parse(localStorage.getItem('DAILY_STATS')) || {};
+    } catch(e){}
+
+    const labels = [];
+    const dataPoints = [];
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    if (period === 'week' || period === 'month') {
+        let daysToSubtract = period === 'week' ? 6 : 29;
+        for (let i = daysToSubtract; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(d.getDate() - i);
+            const tzOffset = d.getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(d - tzOffset)).toISOString().slice(0, 10);
+            
+            labels.push(localISOTime.slice(5)); // MM-DD
+            dataPoints.push((dailyStats[localISOTime] && dailyStats[localISOTime].tests) || 0);
+        }
+    } else if (period === 'year') {
+        const monthNames = ["იან","თებ","მარ","აპრ","მაი","ივნ","ივლ","აგვ","სექ","ოქტ","ნოე","დეკ"];
+        for (let i = 11; i >= 0; i--) {
+            const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            labels.push(monthNames[d.getMonth()]);
+            
+            let monthSum = 0;
+            const targetMonthStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+            for (const [dateStr, stats] of Object.entries(dailyStats)) {
+                if (dateStr.startsWith(targetMonthStr)) {
+                    monthSum += (stats.tests || 0);
+                }
+            }
+            dataPoints.push(monthSum);
+        }
+    }
+
+    statsChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'გავლილი ტესტები',
+                data: dataPoints,
+                backgroundColor: '#89b4fa',
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#a6adc8', stepSize: 1 },
+                    grid: { color: '#313244' }
+                },
+                x: {
+                    ticks: { color: '#a6adc8' },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+function incrementStat(key, amount = 1) {
+    const currentVal = parseFloat(localStorage.getItem(key) || '0');
+    localStorage.setItem(key, (currentVal + amount).toString());
+
+    if (key === 'TOTAL_TESTS' || key === 'TOTAL_CORRECT' || key === 'TOTAL_WRONG') {
+        const d = new Date();
+        const tzOffset = d.getTimezoneOffset() * 60000;
+        const localISOTime = (new Date(d - tzOffset)).toISOString().slice(0, 10);
+        const today = localISOTime; // Format YYYY-MM-DD local time
+        
+        let dailyStats = {};
+        try {
+            dailyStats = JSON.parse(localStorage.getItem('DAILY_STATS')) || {};
+        } catch (e) {}
+
+        if (!dailyStats[today]) {
+            dailyStats[today] = { tests: 0, correct: 0, wrong: 0 };
+        }
+
+        if (key === 'TOTAL_TESTS') dailyStats[today].tests += amount;
+        if (key === 'TOTAL_CORRECT') dailyStats[today].correct += amount;
+        if (key === 'TOTAL_WRONG') dailyStats[today].wrong += amount;
+
+        localStorage.setItem('DAILY_STATS', JSON.stringify(dailyStats));
+    }
 }
 function getGlobalTrainingSettings() {
     const tag = document.getElementById('globalTagSelect')?.value || '';
@@ -1644,6 +1766,13 @@ async function deleteCard(card) {
     closeStatsBtn.onclick = () => {
         statsModal.style.display = 'none';
     };
+    document.querySelectorAll('.chart-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            renderStatsChart(e.target.dataset.period);
+        });
+    });
     document.getElementById('resetStatsBtn')?.addEventListener('click', async () => {
         if (!confirm("ნამდვილად გსურს ყველა ბარათის პროგრესის განულება?")) return;
         if (!currentUser) return;

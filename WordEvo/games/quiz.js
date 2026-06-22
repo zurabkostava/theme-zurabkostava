@@ -44,10 +44,7 @@ function createQuizUI() {
     resultContainer = document.getElementById('quizResultContainer');
 }
 
-function incrementStat(key, amount) {
-    const currentVal = parseInt(localStorage.getItem(key) || '0');
-    localStorage.setItem(key, currentVal + amount);
-}
+
 
 function getStat(key) {
     return parseInt(localStorage.getItem(key) || '0');
@@ -176,4 +173,5 @@ document.addEventListener('DOMContentLoaded', () => {
         populateQuizTags();
     }
 });
+
 

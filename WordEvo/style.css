@@ -6993,3 +6993,103 @@ body.dark .player {
     font-size: 16px;
 }
 
+
+/* =========================================
+   PREMIUM STATS MODAL
+   ========================================= */
+.stats-modal-premium {
+    background: #1e1e2e !important;
+    border: 1px solid #313244;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: #313244;
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    border: 1px solid #45475a;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    border-color: #89b4fa;
+}
+
+.stat-icon {
+    font-size: 20px;
+    color: #89b4fa;
+    margin-bottom: 8px;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #a6adc8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 22px;
+    font-weight: bold;
+    color: #cdd6f4;
+}
+
+.stats-chart-section {
+    background: #313244;
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid #45475a;
+}
+
+.chart-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    justify-content: center;
+}
+
+.chart-btn {
+    background: #45475a;
+    border: none;
+    color: #cdd6f4;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.chart-btn:hover {
+    background: #585b70;
+}
+
+.chart-btn.active {
+    background: #89b4fa;
+    color: #1e1e2e;
+    font-weight: bold;
+}
+
+.chart-container {
+    position: relative;
+    height: 250px;
+    width: 100%;
+}
+
+@media (max-width: 500px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+

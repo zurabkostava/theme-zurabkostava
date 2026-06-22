@@ -135,10 +135,7 @@ function shuffleArray(arr) {
     return [...arr].sort(() => 0.5 - Math.random());
 }
 
-function incrementStat(key, amount) {
-    const val = parseInt(localStorage.getItem(key) || '0');
-    localStorage.setItem(key, val + amount);
-}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const tabBtn = document.querySelector('[data-tab="tab6"]');
@@ -146,4 +143,5 @@ document.addEventListener('DOMContentLoaded', () => {
         tabBtn.addEventListener('click', initSentenceGame);
     }
 });
+
 

@@ -48,10 +48,7 @@ function populateMWTags() {
     });
 }
 
-function incrementStat(key, amount) {
-    const currentVal = parseFloat(localStorage.getItem(key) || '0');
-    localStorage.setItem(key, (currentVal + amount).toString());
-}
+
 
 function startMakewordGame() {
     const { count, reverse } = getGlobalTrainingSettings();
@@ -244,4 +241,5 @@ function showMakewordResults() {
 function shuffleArray(arr) {
     return [...arr].sort(() => 0.5 - Math.random());
 }
+
 

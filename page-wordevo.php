@@ -58,6 +58,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <div class="auth-container" id="authContainer">
@@ -643,49 +644,48 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         </button>
     </div>
     <div class="modal-overlay" id="statsModal" style="display:none;">
-        <div class="modal" style="max-width:400px;">
+        <div class="modal stats-modal-premium" style="max-width:600px;">
             <div class="modal-header">
-                <h2>სტატისტიკა</h2>
+                <h2>📊 სტატისტიკა</h2>
                 <button class="close-button" id="closeStatsBtn">×</button>
             </div>
             <div class="modal-body">
-            <div id="statsContent">
-                <p>
-                    სიტყვების საერთო რაოდენობა:
-                    <span id="statsTotalWords">
-       0
-      </span>
-                </p>
-                <p>
-                    ნასწავლი სიტყვები:
-                    <span id="statsMastered">
-       0
-      </span>
-                    <span id="statsTotal2">
-       0
-      </span>
-                </p>
-                <p>
-                    საშუალო პროგრესი:
-                    <span id="statsAvgProgress">
-       0
-      </span>
-                </p>
-                <p>
-                    გავლილი ტესტირება (სულ):
-                    <span id="statsTests">
-       0
-      </span>
-                </p>
-                <p>
-                    სწორი vs არასწორი:
-                    <span id="statsCorrectWrong">
-       0 - 0 (0% - 0%)
-      </span>
-                </p>
-            </div> <!-- end statsContent -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fa-solid fa-layer-group stat-icon"></i>
+                        <span class="stat-label">სულ სიტყვა</span>
+                        <span class="stat-value"><span id="statsMastered">0</span> / <span id="statsTotalWords">0</span></span>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-chart-line stat-icon"></i>
+                        <span class="stat-label">საშ. პროგრესი</span>
+                        <span class="stat-value" id="statsAvgProgress">0%</span>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-bolt stat-icon"></i>
+                        <span class="stat-label">ტესტირებები</span>
+                        <span class="stat-value" id="statsTests">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-bullseye stat-icon"></i>
+                        <span class="stat-label">სიზუსტე</span>
+                        <span class="stat-value" id="statsAccuracy">0%</span>
+                    </div>
+                </div>
+
+                <div class="stats-chart-section">
+                    <div class="chart-controls">
+                        <button class="chart-btn active" data-period="week">კვირა</button>
+                        <button class="chart-btn" data-period="month">თვე</button>
+                        <button class="chart-btn" data-period="year">წელი</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="statsChart"></canvas>
+                    </div>
+                </div>
             </div> <!-- end body -->
-            <div class="modal-footer modal-actions">
+            <div class="modal-footer modal-actions" style="justify-content: space-between;">
+                <div style="font-size: 13px; color: #a6adc8;" id="statsCorrectWrong">0 - 0 (0% - 0%)</div>
                 <button id="resetStatsBtn"
                         style="background-color: crimson; color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer;">
                     <i class="fa-solid fa-broom">

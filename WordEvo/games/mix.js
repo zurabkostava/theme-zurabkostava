@@ -1,8 +1,5 @@
 // mix.js ====
-function incrementStat(key, amount = 1) {
-    const current = parseInt(localStorage.getItem(key) || '0');
-    localStorage.setItem(key, current + amount);
-}
+
 
 // ==== EXISTING CODE ====
 let mixPairs = [];
@@ -193,4 +190,5 @@ function showMixResults() {
         <p>წყვილები: ${matchedPairs} / ${totalPairs}</p>
     `;
 }
+
 

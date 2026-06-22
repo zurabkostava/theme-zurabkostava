@@ -127,10 +127,7 @@ function showTypingResult() {
     `;
 }
 
-function incrementStat(key, amount) {
-    const val = parseInt(localStorage.getItem(key) || '0');
-    localStorage.setItem(key, val + amount);
-}
+
 
 function getStat(key) {
     return parseInt(localStorage.getItem(key) || '0');
@@ -144,4 +141,5 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.querySelector('[data-tab="tab5"]');
     if (btn) btn.addEventListener('click', initTypingGame);
 });
+
 
