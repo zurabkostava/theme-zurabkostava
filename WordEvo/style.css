@@ -5794,6 +5794,7 @@ body.dark @keyframes pulse-glow {
 }
 
 #globalTrainingSettings .tag-filter select,
+#globalTrainingSettings .progress-filter select,
 #globalTrainingSettings .count-filter input {
     padding: 8px 12px !important;
     border-radius: 8px !important;
@@ -5804,6 +5805,7 @@ body.dark @keyframes pulse-glow {
 }
 
 #globalTrainingSettings .tag-filter select:focus,
+#globalTrainingSettings .progress-filter select:focus,
 #globalTrainingSettings .count-filter input:focus {
     border-color: #007bff !important;
     box-shadow: 0 0 0 3px rgba(0,123,255,0.1) !important;

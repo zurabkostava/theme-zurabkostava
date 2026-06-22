@@ -539,10 +539,6 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         </label>
                         <input id="globalQuestionCount" max="100" min="1" type="number" value="10"/>
                     </div>
-                    <label>
-                        <input id="globalReverseToggle" type="checkbox"/>
-                        რევერსი
-                    </label>
                     <div class="progress-filter">
                         <label for="globalProgressSelect">პროგრესი:</label>
                         <select id="globalProgressSelect">
@@ -556,6 +552,10 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                             <option value="100-100">შესწავლილი (100%)</option>
                         </select>
                     </div>
+                    <label>
+                        <input id="globalReverseToggle" type="checkbox"/>
+                        რევერსი
+                    </label>
                 </div>
                 <div class="global-start-container">
                     <button id="globalStartBtn" class="global-start-btn" onclick="startActiveGame()">დაწყება 🚀</button>
