@@ -543,9 +543,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <input id="globalReverseToggle" type="checkbox"/>
                         რევერსი
                     </label>
-                    <div class="progress-filter" style="margin-top: 10px;">
-                        <label for="globalProgressSelect" style="display:block; margin-bottom: 5px;">პროგრესი:</label>
-                        <select id="globalProgressSelect" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                    <div class="progress-filter">
+                        <label for="globalProgressSelect">პროგრესი:</label>
+                        <select id="globalProgressSelect">
                             <option value="">ნებისმიერი (ყველა)</option>
                             <option value="0-99">ყველა (100%-ის გარდა)</option>
                             <option value="0-30">0% - 30%</option>

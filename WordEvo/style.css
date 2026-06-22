@@ -5976,6 +5976,7 @@ body.dark @keyframes pulse-glow {
     color: #cdd6f4 !important;
 }
 #globalTrainingSettings .tag-filter select,
+#globalTrainingSettings .progress-filter select,
 #globalTrainingSettings .count-filter input {
     background: #313244 !important;
     color: #cdd6f4 !important;
@@ -6083,6 +6084,7 @@ body.dark @keyframes pulse-glow {
 }
 
 #globalTrainingSettings .tag-filter select,
+#globalTrainingSettings .progress-filter select,
 #globalTrainingSettings .count-filter input {
     font-size: 16px !important;
     padding: 10px 14px !important;
@@ -6452,6 +6454,7 @@ body.dark @keyframes pulse-glow {
         gap: 10px !important;
     }
     #globalTrainingSettings .tag-filter,
+    #globalTrainingSettings .progress-filter,
     #globalTrainingSettings .count-filter {
         width: 100% !important;
         display: flex;
@@ -6503,6 +6506,7 @@ body.dark @keyframes pulse-glow {
     }
     
     #globalTrainingSettings .tag-filter,
+    #globalTrainingSettings .progress-filter,
     #globalTrainingSettings .count-filter {
         width: 100% !important;
         display: flex !important;
