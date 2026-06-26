@@ -42,52 +42,30 @@ ob_start(); ?>
             </a>
         </div>
     </div>
-</div>
 
-<?php
-$latest_args = array(
-    'post_type'      => 'post',
-    'posts_per_page' => 3,
-    'post_status'    => 'publish',
-);
-$latest_query = new WP_Query( $latest_args );
+    <?php
+    $latest_args = array(
+        'post_type'      => 'post',
+        'posts_per_page' => 3,
+        'post_status'    => 'publish',
+    );
+    $latest_query = new WP_Query( $latest_args );
 
-if ( $latest_query->have_posts() ) :
-?>
-<div class="zk-home-latest-wrap">
-    <div class="zk-home-latest-header">
-        <h2 class="zk-home-latest-title">Recent Transmissions</h2>
-    </div>
-    <div class="zk-post-grid">
-        <?php while ( $latest_query->have_posts() ) : $latest_query->the_post();
-            $title = get_the_title();
-            $link = get_permalink();
-            $path = wp_parse_url( $link, PHP_URL_PATH );
+    if ( $latest_query->have_posts() ) :
+    ?>
+    <div class="hero-latest-dock">
+        <?php while ( $latest_query->have_posts() ) : $latest_query->the_post(); 
             $categories = get_the_category();
-            $cat_name = ! empty( $categories ) ? esc_html( $categories[0]->name ) : 'Post';
-            $date = get_the_date( 'M j, Y' );
-            $timestamp = get_the_time( 'U' );
-            $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
-            ?>
-            <a href="<?php echo esc_url( $link ); ?>" class="zk-grid-card" data-route="<?php echo esc_attr( $path ); ?>" data-time="<?php echo esc_attr( $timestamp ); ?>">
-                <div class="zk-card-image">
-                    <?php if ( $img_url ) : ?>
-                        <img src="<?php echo esc_url( $img_url ); ?>" loading="lazy" decoding="async" alt="<?php echo esc_attr( $title ); ?>" class="zk-card-img">
-                    <?php endif; ?>
-                </div>
-                <div class="zk-card-content">
-                    <div class="zk-card-meta">
-                        <span class="zk-card-category"><?php echo $cat_name; ?></span>
-                        <span class="zk-card-meta-separator"></span>
-                        <span class="zk-card-date"><?php echo esc_html( $date ); ?></span>
-                    </div>
-                    <h3 class="zk-card-title"><?php echo esc_html( $title ); ?></h3>
-                </div>
+            $cat_name = ! empty( $categories ) ? esc_html( $categories[0]->name ) : 'Log';
+        ?>
+            <a href="<?php echo esc_url( get_permalink() ); ?>" class="hero-dock-item" data-route="<?php echo esc_attr( wp_parse_url( get_permalink(), PHP_URL_PATH ) ); ?>">
+                <span class="dock-meta"><?php echo $cat_name; ?> &bull; <?php echo get_the_date('m/d/y'); ?></span>
+                <span class="dock-title"><?php echo esc_html( get_the_title() ); ?></span>
             </a>
         <?php endwhile; wp_reset_postdata(); ?>
     </div>
+    <?php endif; ?>
 </div>
-<?php endif; ?>
 
 <?php
 $zk_hero = ob_get_clean();
