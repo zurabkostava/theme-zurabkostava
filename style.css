@@ -2737,23 +2737,46 @@ body.zk-lb-open { overflow: hidden; }
 
 .hero-dock-item {
     flex: 1;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 0.8rem 1rem;
-    border-radius: 8px;
+    border-radius: 12px;
     text-decoration: none;
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
-    transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    transition: border-color 0.4s ease, transform 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    --dock-bg: initial;
+}
+
+.hero-dock-item::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--dock-bg, none);
+    background-size: cover;
+    background-position: center;
+    filter: blur(25px) saturate(120%);
+    opacity: 0.35;
+    z-index: 0;
+    transition: opacity 0.4s ease, transform 0.6s ease;
+}
+
+.dock-meta, .dock-title {
+    position: relative;
+    z-index: 2;
 }
 
 .hero-dock-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
+}
+
+.hero-dock-item:hover::before {
+    opacity: 0.55;
+    transform: scale(1.08);
 }
 
 .dock-meta {

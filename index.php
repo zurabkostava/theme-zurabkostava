@@ -57,8 +57,11 @@ ob_start(); ?>
         <?php while ( $latest_query->have_posts() ) : $latest_query->the_post(); 
             $categories = get_the_category();
             $cat_name = ! empty( $categories ) ? esc_html( $categories[0]->name ) : 'Log';
+            
+            $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
+            $bg_style = $img_url ? 'style="--dock-bg: url(\'' . esc_url( $img_url ) . '\');"' : '';
         ?>
-            <a href="<?php echo esc_url( get_permalink() ); ?>" class="hero-dock-item" data-route="<?php echo esc_attr( wp_parse_url( get_permalink(), PHP_URL_PATH ) ); ?>">
+            <a href="<?php echo esc_url( get_permalink() ); ?>" class="hero-dock-item" data-route="<?php echo esc_attr( wp_parse_url( get_permalink(), PHP_URL_PATH ) ); ?>" <?php echo $bg_style; ?>>
                 <span class="dock-meta"><?php echo $cat_name; ?> &bull; <?php echo get_the_date('m/d/y'); ?></span>
                 <span class="dock-title"><?php echo esc_html( get_the_title() ); ?></span>
             </a>
