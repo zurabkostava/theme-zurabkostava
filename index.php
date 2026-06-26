@@ -68,9 +68,6 @@ ob_start(); ?>
         <?php endwhile; wp_reset_postdata(); ?>
     </div>
     <?php endif; ?>
-
-    <!-- Warp Speed Indicator -->
-    <div id="warp-speed" class="warp-speed-indicator">WARP: 1.0X</div>
 </div>
 
 <?php

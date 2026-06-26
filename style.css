@@ -2818,25 +2818,3 @@ body.zk-lb-open { overflow: hidden; }
         display: none; /* Show only the very latest post */
     }
 }
-
-/* Warp Speed Indicator */
-.warp-speed-indicator {
-    position: absolute;
-    bottom: 2rem;
-    left: 2rem;
-    font-family: monospace;
-    font-size: 0.75rem;
-    letter-spacing: 0.15em;
-    color: rgba(255, 255, 255, 0.4);
-    z-index: 10;
-    pointer-events: none;
-    transition: color 0.3s ease;
-}
-
-@media (max-width: 768px) {
-    .warp-speed-indicator {
-        bottom: 5.5rem;
-        left: 1rem;
-        font-size: 0.65rem;
-    }
-}
