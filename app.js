@@ -1388,6 +1388,9 @@
     const numStars = 800;
     let stars = [];
     const baseSpeed = 0.6;
+    let targetScrollSpeed = 0;
+    let currentScrollSpeed = 0;
+    let warpIndicator = null;
 
     function initHero() {
         hero = document.querySelector('.hero');
@@ -1414,7 +1417,9 @@
             }, 100);
         }
 
+        warpIndicator = document.getElementById('warp-speed');
         document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('wheel', onWheel, { passive: true });
         animate();
     }
 
@@ -1456,7 +1461,7 @@
         
         // Speed multiplier increases when mouse moves further from center
         const speedBoost = Math.abs(currentX) * 0.05 + Math.abs(currentY) * 0.05;
-        const speed = baseSpeed + speedBoost;
+        const speed = baseSpeed + speedBoost + currentScrollSpeed;
         
         for (let i = 0; i < numStars; i++) {
             let s = stars[i];
@@ -1497,8 +1502,33 @@
         mouseY = y * 30;
     }
 
+    function onWheel(e) {
+        if (!hero) return;
+        targetScrollSpeed += Math.abs(e.deltaY) * 0.02;
+        if (targetScrollSpeed > 60) targetScrollSpeed = 60;
+    }
+
     function animate() {
         if (!hero) return;
+        
+        // Decay target speed (friction)
+        targetScrollSpeed *= 0.95;
+        if (targetScrollSpeed < 0.01) targetScrollSpeed = 0;
+        
+        // Smoothly approach target
+        currentScrollSpeed += (targetScrollSpeed - currentScrollSpeed) * 0.1;
+        
+        if (warpIndicator) {
+            const displaySpeed = (1 + currentScrollSpeed * 0.5).toFixed(1);
+            warpIndicator.textContent = `WARP: ${displaySpeed}X`;
+            if (currentScrollSpeed > 5) {
+                warpIndicator.style.color = 'rgba(255,255,255,0.9)';
+                warpIndicator.style.textShadow = '0 0 10px rgba(255,255,255,0.8)';
+            } else {
+                warpIndicator.style.color = '';
+                warpIndicator.style.textShadow = '';
+            }
+        }
         
         // Smooth interpolation
         currentX += (mouseX - currentX) * 0.1;
@@ -1518,6 +1548,7 @@
 
     function cleanup() {
         document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('wheel', onWheel);
         window.removeEventListener('resize', resizeCanvas);
         cancelAnimationFrame(rafId);
         hero = null;
