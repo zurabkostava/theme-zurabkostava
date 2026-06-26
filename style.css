@@ -2717,3 +2717,27 @@ body.zk-lb-open { overflow: hidden; }
         transform: translateY(-2px);
     }
 }
+
+/* Home Latest Transmissions */
+.zk-home-latest-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 2rem 6rem;
+    position: relative;
+    z-index: 10;
+}
+
+.zk-home-latest-header {
+    margin-bottom: 3rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 1.5rem;
+}
+
+.zk-home-latest-title {
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+}
