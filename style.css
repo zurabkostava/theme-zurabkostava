@@ -2807,3 +2807,14 @@ body.zk-lb-open { overflow: hidden; }
 .hero-dock-item:hover .dock-title {
     color: #fff;
 }
+
+/* Mobile Responsiveness for Hero Dock */
+@media (max-width: 768px) {
+    .hero-latest-dock {
+        bottom: 5.5rem; /* Move above bottom nav */
+        width: 85%;
+    }
+    .hero-dock-item:nth-child(n+2) {
+        display: none; /* Show only the very latest post */
+    }
+}
