@@ -2741,6 +2741,7 @@ body.zk-lb-open { overflow: hidden; }
 
 .hero-dock-item {
     flex: 1;
+    min-width: 0;
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 0.8rem 1rem;
@@ -2793,6 +2794,7 @@ body.zk-lb-open { overflow: hidden; }
 }
 
 .dock-title {
+    width: 100%;
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.8);
     font-weight: 400;
