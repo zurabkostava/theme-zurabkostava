@@ -2718,7 +2718,11 @@ body.zk-lb-open { overflow: hidden; }
     }
 }
 
-/* Hero Latest Dock (Cosmic Minimalism) */
+@keyframes revealUpCentered {
+    0% { opacity: 0; transform: translate(-50%, 20px); }
+    100% { opacity: 1; transform: translate(-50%, 0); }
+}
+
 .hero-latest-dock {
     position: absolute;
     bottom: 2rem;
@@ -2731,7 +2735,7 @@ body.zk-lb-open { overflow: hidden; }
     justify-content: center;
     z-index: 10;
     opacity: 0;
-    animation: revealUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: revealUpCentered 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     animation-delay: 1s; /* Enters after the main hero content */
 }
 
