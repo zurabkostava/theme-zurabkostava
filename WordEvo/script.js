@@ -869,7 +869,7 @@ function filterCardsByTags() {
             matchesProgress = (progress >= minP && progress <= maxP);
         }
 
-        card.style.display = (matchesTags && matchesProgress) ? 'block' : 'none';
+        card.style.display = (matchesTags && matchesProgress) ? '' : 'none';
 
 // განვაახლოთ თეგების HTML (გაფილტრული თეგები წინ გადმოვა)
         const tagsContainer = card.querySelector('.tags');
@@ -2489,7 +2489,7 @@ async function deleteCard(card) {
             const translation = card.querySelector('.translation').textContent.toLowerCase();
             const tags = card.querySelector('.tags').textContent.toLowerCase();
             const matches = word.includes(query) || translation.includes(query) || tags.includes(query);
-            card.style.display = matches ? 'block' : 'none';
+            card.style.display = matches ? '' : 'none';
         });
     });
 // Training Modal
