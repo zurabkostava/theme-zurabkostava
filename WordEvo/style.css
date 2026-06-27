@@ -6636,7 +6636,6 @@ body.dark .top-left button, body.dark .top-right button {
     justify-content: center !important;
     gap: 8px !important;
     font-size: 1rem !important;
-    margin: 0 auto !important;
 }
 
 body.dark #trainingBtn {
@@ -6645,12 +6644,13 @@ body.dark #trainingBtn {
     border-color: rgba(96, 165, 250, 0.2) !important;
 }
 
-/* User Email styling to span full width above buttons */
+/* User Email styling */
 #userEmailDisplay {
-    width: 100% !important;
-    text-align: center !important;
-    display: block !important;
-    margin-bottom: 5px !important;
+    width: auto !important;
+    text-align: right !important;
+    display: inline-block !important;
+    margin-bottom: 0 !important;
+    margin-right: 15px !important;
     font-size: 0.85rem !important;
     opacity: 0.6 !important;
 }
@@ -6659,5 +6659,35 @@ body.dark #trainingBtn {
 @media (max-width: 768px) {
     .top-left, .top-right {
         gap: 12px !important;
+    }
+    #userEmailDisplay {
+        width: 100% !important;
+        text-align: center !important;
+        display: block !important;
+        margin-bottom: 5px !important;
+        margin-right: 0 !important;
+    }
+}
+
+/* Desktop explicit alignments to prevent spacing bugs */
+@media (min-width: 769px) {
+    .top-left { 
+        justify-content: flex-start !important; 
+        gap: 15px !important; 
+        flex: 1 !important; 
+    }
+    .top-center { 
+        justify-content: center !important; 
+        gap: 15px !important; 
+        flex: 2 !important; 
+    }
+    .top-right { 
+        justify-content: flex-end !important; 
+        gap: 15px !important; 
+        flex: 1 !important; 
+    }
+    .top-bar .app-logo {
+        margin-right: 15px !important;
+        width: auto !important;
     }
 }
