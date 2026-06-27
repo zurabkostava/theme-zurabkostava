@@ -6344,3 +6344,22 @@ body.dark .card-toolbar, .dark .card-toolbar {
     background: transparent !important;
     box-shadow: none !important;
 }
+
+
+/* NUCLEAR BACKGROUND & BLUR REMOVAL FOR INNER WRAPPERS */
+.top, body.dark .top, .dark .top {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.top-bar, body.dark .top-bar, .dark .top-bar, 
+.card-toolbar, body.dark .card-toolbar, .dark .card-toolbar {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
