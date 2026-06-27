@@ -1071,14 +1071,19 @@ data-lang="ka" style="margin-right: 8px; margin-left: 0; vertical-align: middle;
                 const div = document.createElement('div');
                 div.className = 'sentence-pair';
                 div.style.marginBottom = '12px';
+                div.style.display = 'flex';
+                div.style.alignItems = 'center';
+                div.style.justifyContent = 'space-between';
+                div.style.gap = '12px';
+
+                const textsDiv = document.createElement('div');
+                textsDiv.style.flex = '1';
 
                 if (englishSentences[i]) {
                     const pEn = document.createElement('p');
                     pEn.className = 'en-sentence';
-                    const safeEn = (englishSentences[i] || '').replace(/"/g, '&quot;');
-                    const safeGe = (georgianSentences[i] || '').replace(/"/g, '&quot;');
-                    pEn.innerHTML = `<span class="prefix">${i + 1}. </span>${englishSentences[i]} <button class="speak-btn" title="წაიკითხე ორივე ენაზე" data-read-both="true" data-text-en="${safeEn}" data-text-ge="${safeGe}"><i class="fas fa-volume-up"></i></button>`;
-                    div.appendChild(pEn);
+                    pEn.innerHTML = `<span class="prefix">${i + 1}. </span>${englishSentences[i]}`;
+                    textsDiv.appendChild(pEn);
                 }
                 if (georgianSentences[i]) {
                     const pGe = document.createElement('p');
@@ -1087,8 +1092,17 @@ data-lang="ka" style="margin-right: 8px; margin-left: 0; vertical-align: middle;
                     pGe.style.marginTop = '4px';
                     pGe.style.paddingLeft = '20px';
                     pGe.innerHTML = `${georgianSentences[i]}`;
-                    div.appendChild(pGe);
+                    textsDiv.appendChild(pGe);
                 }
+                div.appendChild(textsDiv);
+
+                const safeEn = (englishSentences[i] || '').replace(/"/g, '&quot;');
+                const safeGe = (georgianSentences[i] || '').replace(/"/g, '&quot;');
+                const btnDiv = document.createElement('div');
+                btnDiv.style.flexShrink = '0';
+                btnDiv.innerHTML = `<button class="speak-btn" title="წაიკითხე ორივე ენაზე" data-read-both="true" data-text-en="${safeEn}" data-text-ge="${safeGe}"><i class="fas fa-volume-up"></i></button>`;
+                div.appendChild(btnDiv);
+
                 combinedBlock.appendChild(div);
             }
         }
