@@ -386,11 +386,21 @@ async function speakPreviewCard(card) {
     };
 
     await safeSpeak(word, selectedVoice, null, null, { type: 'word' });
+    if (!stopRequested) updateCardProgress(card, 0.1);
+
     await safeSpeak(mainPart, selectedGeorgianVoice, null, extraPart, { type: 'translation' });
+    if (!stopRequested) {
+        updateCardProgress(card, 0.1); // For mainPart
+        if (extraPart) {
+            updateCardProgress(card, 0.1); // For extraPart
+        }
+    }
+
     const mnemonic = card.dataset.mnemonic || '';
     const skipMnemonic = localStorage.getItem('skip_mnemonic') === 'true';
     if (!skipMnemonic && mnemonic.trim() !== '') {
         await safeSpeak(mnemonic, selectedGeorgianVoice, null, null, { type: 'mnemonic' });
+        if (!stopRequested) updateCardProgress(card, 0.1);
     }
 
     const limitStr = localStorage.getItem('read_examples_limit') || 'all';
@@ -419,6 +429,10 @@ async function speakPreviewCard(card) {
         }
         if (ex.ge) {
             await safeSpeak(ex.ge, selectedGeorgianVoice, null, null, { type: 'ge', index: ex.originalIndex });
+        }
+        
+        if (!stopRequested && (ex.en || ex.ge)) {
+            updateCardProgress(card, 0.1);
         }
         
         // --- NEW: პაუზა მაგალითებს შორის ---
