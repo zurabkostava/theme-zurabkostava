@@ -2120,7 +2120,7 @@ textarea {
 
 #statsMastered::after {
 
-    content: " სიტყვა /";
+    content: " Word";
 
 }
 
@@ -2132,7 +2132,7 @@ textarea {
 
 #statsAvgProgress::after{
 
-    content: "-%";
+    content: "";
 
 }
 
