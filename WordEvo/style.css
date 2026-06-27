@@ -3048,7 +3048,7 @@ textarea {
 
     z-index: 10; /* საჭიროებისამებრ უფრო მაღალი მნიშვნელობა */
 
-    background: var(--card-bg-premium); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding-bottom: 15px; margin-bottom: 10px; margin-top: -15px; padding-top: 15px; border-bottom: 1px solid var(--glass-border);
+    background: transparent; padding-bottom: 10px; margin-bottom: 10px; border-bottom: none;
 
 }
 
@@ -3062,7 +3062,7 @@ textarea {
 
     z-index: 10; /* საჭიროებისამებრ უფრო მაღალი მნიშვნელობა */
 
-    background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding-bottom: 15px; margin-bottom: 10px; margin-top: -15px; padding-top: 15px; border-bottom: 1px solid rgba(0,0,0,0.05);
+    background: transparent; padding-bottom: 10px; margin-bottom: 10px; border-bottom: none;
 
 }
 
@@ -6138,6 +6138,8 @@ button:active, .btn:active {
 .dark button:active, .dark .btn:active {
     box-shadow: 0 2px 6px rgba(255, 255, 255, 0.05);
 }
+
+
 
 
 
