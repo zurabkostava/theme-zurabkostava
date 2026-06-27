@@ -1038,10 +1038,10 @@ function showCardPreview(word, mainTranslations, extraTranslations, tags, englis
 <button class="speak-btn" title="წაიკითხე ქართულად"
 data-text="${mainTranslations.join(', ')}"
 data-extra="${extraTranslations.join(', ')}"
-data-lang="ka">
+data-lang="ka" style="margin-right: 8px; margin-left: 0; vertical-align: middle;">
 <i class="fas fa-volume-up"></i>
 </button>`;
-    document.getElementById('previewTranslation').innerHTML = main + geoSpeakBtn + extra;
+    document.getElementById('previewTranslation').innerHTML = geoSpeakBtn + main + ' ' + extra;
     const previewMnemonic = document.getElementById('previewMnemonic');
     const mnemonic = card.dataset.mnemonic || '';
     if (previewMnemonic) {
