@@ -6402,3 +6402,14 @@ body.dark .card-toolbar {
     left: 0 !important;
     right: 0 !important;
 }
+
+
+/* NATIVE DROPDOWN OPTIONS DARK MODE FIX */
+body.dark select {
+    color-scheme: dark !important;
+}
+
+body.dark option {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+}
