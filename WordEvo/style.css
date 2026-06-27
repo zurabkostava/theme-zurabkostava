@@ -7304,7 +7304,7 @@ body.dark #trainingBtn {
         flex-direction: column !important;
     }
     .card-container.list-view .card {
-        display: flex !important;
+        display: flex; /* Removed !important to allow inline display: none */
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 15px !important;
