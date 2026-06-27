@@ -7453,99 +7453,105 @@ button.speak-btn.active {
     box-shadow: 0 0 8px rgba(230, 126, 34, 0.4) !important;
 }
 
+
 /* =========================================
-   REDESIGNED BOTTOM DOCKED PLAYER
+   REFINED BOTTOM DOCKED PLAYER
    ========================================= */
 
 .fixed-player-wrapper {
     bottom: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    transform: none !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: fit-content !important;
     display: flex !important;
     justify-content: center !important;
-    pointer-events: none !important; /* Let clicks pass through sides */
+    pointer-events: none !important; 
+    z-index: 999999999 !important;
 }
 
 .player {
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    gap: 12px !important;
-    padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    gap: 16px !important;
+    padding: 10px 24px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
     border-radius: 24px 24px 0 0 !important;
-    width: 100% !important;
-    max-width: 480px !important;
-    margin: 0 auto !important;
+    width: max-content !important;
+    margin: 0 !important;
     border: none !important;
     box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.15) !important;
-    pointer-events: auto !important; /* Catch clicks */
+    pointer-events: auto !important;
     transition: background 0.3s ease, box-shadow 0.3s ease !important;
 }
 
 /* Light Mode Defaults */
 body:not(.dark) .player {
-    background: rgba(255, 255, 255, 0.85) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
-    border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-left: 1px solid rgba(0, 0, 0, 0.04) !important;
+    border-right: 1px solid rgba(0, 0, 0, 0.04) !important;
 }
 
 /* Dark Mode Overrides */
 body.dark .player {
-    background: rgba(20, 20, 28, 0.85) !important;
+    background: rgba(25, 25, 35, 0.9) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
     box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.4) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.04) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
 }
 
 /* Standard Player Buttons (Smaller & Cleaner) */
 .player-btn {
-    width: 42px !important;
-    height: 42px !important;
+    width: 40px !important;
+    height: 40px !important;
     font-size: 16px !important;
-    color: #64748b !important; /* Slate 500 */
+    color: #64748b !important;
     border-radius: 50% !important;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: all 0.2s ease !important;
     background: transparent !important;
 }
 
 body.dark .player-btn {
-    color: #94a3b8 !important; /* Slate 400 */
+    color: #94a3b8 !important;
 }
 
 .player-btn:hover {
-    color: #0f172a !important; /* Slate 900 */
+    color: #0f172a !important;
     background: rgba(0, 0, 0, 0.05) !important;
-    transform: scale(1.05) !important;
 }
 
 body.dark .player-btn:hover {
-    color: #f8fafc !important; /* Slate 50 */
+    color: #f8fafc !important;
     background: rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Highlight the Main Play Button */
+/* Highlight the Main Play Button (Subtle & Elegant) */
 #playToggleBtn {
     background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%) !important;
     color: white !important;
-    width: 52px !important;
-    height: 52px !important;
-    font-size: 20px !important;
-    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4) !important;
-    margin: 0 8px !important;
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 18px !important;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3) !important;
+    margin: 0 4px !important;
     border: none !important;
+    transition: all 0.2s ease !important;
 }
 
+/* Refined Hover - No Scale, just brightness/shadow */
 #playToggleBtn:hover {
-    transform: scale(1.1) !important;
-    box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5) !important;
-    color: white !important;
+    box-shadow: 0 6px 16px rgba(236, 72, 153, 0.45) !important;
+    filter: brightness(1.1) !important;
+    transform: translateY(-1px) !important;
 }
 
 /* When playing, change color to indicate Stop/Pause action */
 #playToggleBtn.active {
     background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
-    box-shadow: 0 4px 15px rgba(225, 29, 72, 0.4) !important;
+    box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3) !important;
 }
