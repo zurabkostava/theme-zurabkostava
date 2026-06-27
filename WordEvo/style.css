@@ -7164,8 +7164,8 @@ body.dark #trainingBtn {
     display: flex;
     align-items: center !important;
     gap: 12px !important;
-    flex: 0 0 200px; /* Fixed width to align nicely */
-    min-width: 150px;
+    flex: 0 0 150px; /* Fixed width to align nicely, brought closer */
+    min-width: 140px;
 }
 .card-container.list-view .card-title-group h2.word {
     font-size: 1.2rem;
@@ -7191,10 +7191,10 @@ body.dark #trainingBtn {
 /* 3. Tags */
 .card-container.list-view .tags {
     order: 3;
-    flex: 0 1 350px; /* Allow ample space for tags */
+    flex: 0 1 500px; /* Allow ample space for tags (more than before) */
     min-width: 0;
     margin: 0;
-    justify-content: flex-start; /* Align tags to left in their space */
+    justify-content: flex-end; /* Align tags to right in their space */
     flex-wrap: wrap; /* allow wrap if many tags */
     gap: 5px;
 }
