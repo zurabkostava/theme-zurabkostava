@@ -6084,6 +6084,201 @@ h1, h2, h3, .app-logo {
     transform: translateY(-2px);
 }
 
+.dark .card-toolbar {
+    border-bottom: none;
+    margin-top: 10px;
+}
+
+
+/* ============================================================
+   GAMIFICATION & ANIMATIONS
+   ============================================================ */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
+}
+
+@keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.dark .correct, .correct {
+    background-color: rgba(46, 204, 113, 0.2) !important;
+    border-color: #2ecc71 !important;
+    color: #2ecc71 !important;
+    animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 12px rgba(46, 204, 113, 0.4);
+}
+
+.dark .incorrect, .incorrect {
+    background-color: rgba(231, 76, 60, 0.2) !important;
+    border-color: #e74c3c !important;
+    color: #e74c3c !important;
+    animation: shake 0.4s ease-in-out;
+    box-shadow: 0 0 12px rgba(231, 76, 60, 0.4);
+}
+
+.dark .selected, .selected {
+    background-color: rgba(52, 152, 219, 0.2) !important;
+    border-color: #3498db !important;
+    box-shadow: 0 0 12px rgba(52, 152, 219, 0.4);
+}
+
+
+/* ============================================================
+   MODERN INPUTS OVERRIDE (Replaces Material Floating Labels)
+   ============================================================ */
+
+/* Disable Material Pseudo-elements */
+.input-container .material-input > input + span::before,
+.input-container .material-input > input + span::after,
+.input-container .material-input > textarea + span::before,
+.input-container .material-input > textarea + span::after,
+.material-input::before, .material-input::after {
+    display: none !important;
+}
+
+/* Transform the container to flex column-reverse to put label on top */
+.input-container .material-input, .input-container .material-select {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    align-items: flex-start !important;
+    border: none !important;
+    margin-bottom: 16px !important;
+    width: 100%;
+}
+
+/* Modern Label Style */
+.input-container .material-input > input + span,
+.input-container .material-input > textarea + span,
+.input-container .material-select span {
+    position: static !important;
+    display: block !important;
+    margin-bottom: 8px !important;
+    transform: none !important;
+    color: var(--text-secondary) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+    padding: 0 !important;
+    pointer-events: auto !important;
+    text-align: left;
+    transition: color 0.2s ease;
+}
+
+/* Focus state for label */
+.input-container .material-input > input:focus + span,
+.input-container .material-input > textarea:focus + span,
+.input-container .material-select > select:focus ~ span {
+    color: var(--accent) !important;
+}
+
+/* Modern Input Style */
+.input-container .material-input > input,
+.input-container .material-input > textarea,
+.input-container .material-select > select {
+    width: 100% !important;
+    padding: 14px 16px !important;
+    font-size: 15px !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 12px !important;
+    background: rgba(255,255,255,0.03) !important;
+    color: var(--text-primary) !important;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1) !important;
+    box-sizing: border-box;
+}
+
+/* Input Focus */
+.input-container .material-input > input:focus,
+.input-container .material-input > textarea:focus,
+.input-container .material-select > select:focus {
+    background: rgba(255,255,255,0.06) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 4px rgba(230,126,34,0.15), inset 0 2px 4px rgba(0,0,0,0.1) !important;
+    outline: none !important;
+}
+
+/* Placeholder adjustments since we removed the floating label */
+.input-container .material-input > input::placeholder,
+.input-container .material-input > textarea::placeholder {
+    color: rgba(255,255,255,0.2) !important;
+}
+
+/* Select Arrow Icon Fix */
+.select-arrow-icon {
+    position: absolute !important;
+    top: 42px !important;
+    right: 16px !important;
+    pointer-events: none;
+    color: var(--text-secondary);
+}
+
+.input-container.material-select {
+    position: relative;
+}
+
+/* Dropdowns & Modals */
+.dropdown {
+    background: var(--card-bg-premium) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+    padding: 8px !important;
+    overflow: hidden;
+}
+
+.dropdown div {
+    padding: 10px 14px !important;
+    border-radius: 6px !important;
+    transition: background 0.2s ease !important;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.dropdown div:hover {
+    background: rgba(255,255,255,0.1) !important;
+    color: white !important;
+}
+
+/* Tag Inputs Layout Fix (if they are grouped) */
+.input-container.tag-input {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    gap: 10px;
+}
+
+.input-container.tag-input .material-input {
+    flex: 1;
+    margin-bottom: 0 !important;
+}
+
+.input-container.tag-input button {
+    height: 48px;
+    width: 48px;
+    border-radius: 12px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+.input-container.tag-input button:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
+
 /* WordEvo 2026 Button Styles */
 button, .btn {
     border-radius: 8px;
