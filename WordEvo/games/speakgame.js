@@ -180,15 +180,15 @@ function handleSpeakResult(transcript) {
     let fbColor = '';
     
     if (similarity >= 0.90) {
-        fbText = 'Perfect! 🎉 +2%';
+        fbText = 'Perfect! 🎉 +1%';
         fbColor = '#2ecc71'; // Green
-        speakTotalScore += 2;
-        if (card) updateCardProgress(card, 2);
-    } else if (similarity >= 0.70) {
-        fbText = 'Good! 👍 +1%';
-        fbColor = '#f1c40f'; // Yellow
         speakTotalScore += 1;
         if (card) updateCardProgress(card, 1);
+    } else if (similarity >= 0.70) {
+        fbText = 'Good! 👍 +0.5%';
+        fbColor = '#f1c40f'; // Yellow
+        speakTotalScore += 0.5;
+        if (card) updateCardProgress(card, 0.5);
     } else {
         fbText = 'Try again! ❌ +0%';
         fbColor = '#e74c3c'; // Red
