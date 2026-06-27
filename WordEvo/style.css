@@ -6579,3 +6579,85 @@ body:not(.dark) .material-input > span {
         padding-top: 0 !important;
     }
 }
+
+/* =========================================
+   TOP-BAR INTERNAL BEAUTIFICATION
+   ========================================= */
+/* Make all small action buttons perfectly square/squircle */
+.top-left button, .top-right button {
+    width: 44px !important;
+    height: 44px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.1rem !important;
+    border-radius: 12px !important;
+    flex: none !important;
+    max-width: none !important;
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    color: var(--text-color) !important;
+    transition: all 0.2s ease !important;
+}
+
+body.dark .top-left button, body.dark .top-right button {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Specific overrides for destructive buttons */
+#deleteDictionaryBtn, #logoutBtn {
+    color: #ff4757 !important;
+    background: rgba(255, 71, 87, 0.1) !important;
+    border: 1px solid rgba(255, 71, 87, 0.2) !important;
+}
+
+/* Ensure the dictionary select matches height */
+#dictionarySelect {
+    height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Training Button - Sleek Glassmorphism instead of solid blue */
+#trainingBtn {
+    width: auto !important;
+    height: 44px !important;
+    padding: 0 24px !important;
+    border-radius: 12px !important;
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: #3b82f6 !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    box-shadow: none !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    font-size: 1rem !important;
+    margin: 0 auto !important;
+}
+
+body.dark #trainingBtn {
+    background: rgba(96, 165, 250, 0.1) !important;
+    color: #60a5fa !important;
+    border-color: rgba(96, 165, 250, 0.2) !important;
+}
+
+/* User Email styling to span full width above buttons */
+#userEmailDisplay {
+    width: 100% !important;
+    text-align: center !important;
+    display: block !important;
+    margin-bottom: 5px !important;
+    font-size: 0.85rem !important;
+    opacity: 0.6 !important;
+}
+
+/* Mobile specific tweaks for flex rows */
+@media (max-width: 768px) {
+    .top-left, .top-right {
+        gap: 12px !important;
+    }
+}
