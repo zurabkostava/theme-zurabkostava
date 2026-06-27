@@ -6456,6 +6456,7 @@ body:not(.dark) .material-input > span {
         display: flex !important;
         flex-direction: column !important;
         padding: 10px !important;
+        gap: 0 !important;
         box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
     }
 
@@ -6553,14 +6554,14 @@ body:not(.dark) .material-input > span {
     .card-toolbar, body.dark .card-toolbar {
         position: static !important;
         width: 100% !important;
-        margin: 10px 0 0 0 !important;
+        margin: 5px 0 0 0 !important;
         border-radius: 12px !important;
         background: transparent !important;
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
         border: none !important;
         border-top: 1px solid rgba(0,0,0,0.05) !important;
-        padding: 10px 5px 0 5px !important;
+        padding: 5px 5px 0 5px !important;
         display: flex !important;
         flex-wrap: wrap !important;
         justify-content: space-around !important;
