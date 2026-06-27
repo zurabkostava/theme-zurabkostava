@@ -6385,10 +6385,14 @@ body.dark .card-toolbar {
     position: relative;
     width: 300px;
     max-width: 100%;
+    margin-right: 15px !important; /* Force space in case flex gap fails */
+    flex-shrink: 1;
 }
 
 .modern-search-input {
     width: 100%;
+    min-width: 0 !important;
+
     padding: 10px 15px 10px 40px !important;
     border-radius: 24px !important;
     border: 1px solid rgba(0,0,0,0.1) !important;
@@ -6822,6 +6826,7 @@ body.dark .top-left button, body.dark .top-right button {
     padding: 0 24px !important;
     border-radius: 12px !important;
     background: rgba(59, 130, 246, 0.15) !important;
+    flex-shrink: 0 !important;
     color: #3b82f6 !important;
     border: 1px solid rgba(59, 130, 246, 0.3) !important;
     box-shadow: none !important;
