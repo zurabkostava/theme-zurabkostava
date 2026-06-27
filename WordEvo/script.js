@@ -1483,9 +1483,11 @@ async function deleteCard(card) {
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
     const topBar = document.querySelector('.top-bar');
     if (mobileMenuBtn && topBar) {
-        mobileMenuBtn.addEventListener('click', () => {
+        mobileMenuBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             topBar.classList.toggle('show-mobile');
-        });
+        };
     }
     const closeSidebarBtn = document.getElementById('closeSidebarBtn');
     const sidebar = document.getElementById('sidebar');
