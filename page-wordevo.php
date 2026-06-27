@@ -165,7 +165,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                     </select>
                 </div>
                 <div class="hide-mastered-wrapper" style="margin-left: 10px;">
-                    <select id="mainProgressSelect" class="sort-select" style="min-width: 120px;">
+                    <select id="mainProgressSelect" class="toolbar-select" style="min-width: 120px;">
                         <option value="">Any Progress</option>
                         <option value="0-99" selected>- Learned (Except 100%)</option>
                         <option value="0-30">0% - 30%</option>
