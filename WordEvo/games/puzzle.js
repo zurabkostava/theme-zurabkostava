@@ -6,8 +6,7 @@ let puzzleCount = 10;
 function initPuzzleGame() {
     const tab = document.querySelector('[data-tab-content="tab7"]');
     tab.innerHTML = `
-        <h2>🧩 წინადადების აწყობა</h2>
-        <div id="puzzleGame" style="margin-top: 1rem;"></div>
+<div id="puzzleGame" style="margin-top: 1rem;"></div>
     `;
 }
 

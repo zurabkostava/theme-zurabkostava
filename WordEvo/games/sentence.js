@@ -6,8 +6,7 @@ let senCount = 10;
 function initSentenceGame() {
     const tab = document.querySelector('[data-tab-content="tab6"]');
     tab.innerHTML = `
-        <h2>✨ სიტყვა წინადადებაში</h2>
-        <div id="senGame"></div>
+<div id="senGame"></div>
     `;
 }
 

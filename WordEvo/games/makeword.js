@@ -13,8 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tab) return;
 
     tab.innerHTML = `
-        <h2>🧠 Fill in the missing letters</h2>
-        <label style="margin-bottom:10px; display:inline-block;">
+<label style="margin-bottom:10px; display:inline-block;">
             <input type="checkbox" id="mwFullBlankToggle" />
             All letters blank
         </label>

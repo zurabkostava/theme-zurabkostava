@@ -9,8 +9,7 @@ let tiHintIndex = 0;
 function initTypingGame() {
     const tab = document.querySelector('[data-tab-content="tab5"]');
     tab.innerHTML = `
-        <h2>🖊️ სიტყვის ჩაწერა</h2>
-        <div id="tiGame"></div>
+<div id="tiGame"></div>
     `;
 
     const tagSelect = document.getElementById('tiTag');

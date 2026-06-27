@@ -16,8 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tab) return;
 
     tab.innerHTML = `
-        <h2>🤩 Mix & Match</h2>
-        <div id="mixContainer" class="mix-columns" style="display: flex; gap: 40px; flex-wrap: wrap;"></div>
+<div id="mixContainer" class="mix-columns" style="display: flex; gap: 40px; flex-wrap: wrap;"></div>
         <div id="mixResultContainer" style="margin-top: 2rem;"></div>
     `;
 

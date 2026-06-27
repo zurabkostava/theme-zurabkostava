@@ -20,8 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tab) return;
 
     tab.innerHTML = `
-        <h2>🎧 გაიგონე სიტყვა</h2>
-        <div id="whQuestionContainer"></div>
+<div id="whQuestionContainer"></div>
         <div id="whResultContainer" style="margin-top: 2rem;"></div>
     `;
 

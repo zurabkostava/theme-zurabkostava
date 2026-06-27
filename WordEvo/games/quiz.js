@@ -35,8 +35,7 @@ function populateQuizTags() {
 
 function createQuizUI() {
     quizTab.innerHTML = `
-        <h2>Quiz</h2>
-        <div id="quizQuestionContainer"></div>
+<div id="quizQuestionContainer"></div>
         <div id="quizResultContainer" style="margin-top: 2rem;"></div>
     `;
 
