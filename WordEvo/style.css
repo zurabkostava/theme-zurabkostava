@@ -6363,3 +6363,23 @@ body.dark .card-toolbar, .dark .card-toolbar {
     box-shadow: none !important;
     border: none !important;
 }
+
+
+/* CARD TOOLBAR SEPARATION OVERRIDE */
+.card-toolbar, body.dark .card-toolbar, .dark .card-toolbar {
+    background: rgba(0, 0, 0, 0.12) !important; /* Slightly darker for better separation */
+    border-bottom-left-radius: 16px !important;
+    border-bottom-right-radius: 16px !important;
+    margin-left: -15px !important;
+    margin-right: -15px !important;
+    margin-bottom: -10px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    padding-bottom: 10px !important;
+    border-top: 1px solid rgba(0,0,0,0.05) !important;
+}
+
+body.dark .card-toolbar {
+    background: rgba(0, 0, 0, 0.15) !important;
+    border-top: 1px solid rgba(255,255,255,0.05) !important;
+}
