@@ -7134,38 +7134,51 @@ body.dark #trainingBtn {
     align-items: stretch;
     gap: 12px;
     padding: 0 10px;
+    /* Prevent horizontal scroll */
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 .card-container.list-view .card {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     width: 100%;
-    max-width: none;
+    max-width: 100%;
     padding: 12px 20px;
     gap: 20px;
     height: auto;
+    box-sizing: border-box;
 }
 
-/* Adjust components inside the card when in list view */
+/* Flatten the .card-header so its children participate in .card flexbox */
 .card-container.list-view .card-header {
-    flex: 1.5;
-    margin-bottom: 0;
-    align-items: center !important;
+    display: contents;
 }
+
+/* 1. Main Word */
 .card-container.list-view .card-title-group {
+    order: 1;
+    display: flex;
     align-items: center !important;
     gap: 12px !important;
+    flex: 0 0 200px; /* Fixed width to align nicely */
+    min-width: 150px;
 }
-
-.card-container.list-view .card-header h2.word {
+.card-container.list-view .card-title-group h2.word {
     font-size: 1.2rem;
     line-height: 1.2;
+    margin: 0;
+    word-break: break-word;
 }
 
+/* 2. Translation */
 .card-container.list-view p.translation {
-    flex: 2;
+    order: 2;
+    flex: 1 1 0; /* Grow and shrink */
+    min-width: 0; /* VERY IMPORTANT to prevent flex blowout */
     margin: 0;
     font-size: 0.95rem;
     display: -webkit-box;
@@ -7175,14 +7188,20 @@ body.dark #trainingBtn {
     text-overflow: ellipsis;
 }
 
+/* 3. Tags */
 .card-container.list-view .tags {
-    flex: 1.5;
+    order: 3;
+    flex: 0 1 350px; /* Allow ample space for tags */
+    min-width: 0;
     margin: 0;
-    justify-content: flex-end;
+    justify-content: flex-start; /* Align tags to left in their space */
+    flex-wrap: wrap; /* allow wrap if many tags */
+    gap: 5px;
 }
 
-/* Transform the progress bar into a badge */
+/* 4. Progress */
 .card-container.list-view .progress-bar-container {
+    order: 4;
     position: relative;
     width: auto;
     height: auto;
@@ -7192,10 +7211,9 @@ body.dark #trainingBtn {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    margin-left: 10px;
 }
 .card-container.list-view .progress-bar {
-    display: none; /* Hide the bar */
+    display: none;
 }
 .card-container.list-view .progress-label {
     position: relative;
@@ -7212,8 +7230,9 @@ body.dark #trainingBtn {
     border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* Make sure progress text stands out */
+/* 5. Actions */
 .card-container.list-view .card-actions {
+    order: 5;
     flex-shrink: 0;
     display: flex;
     gap: 10px;
@@ -7225,32 +7244,44 @@ body.dark #trainingBtn {
 }
 
 /* Mobile responsiveness for list view */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .card-container.list-view .card {
         flex-direction: column;
         align-items: flex-start;
         gap: 15px;
     }
-    .card-container.list-view .card-header,
-    .card-container.list-view p.translation,
-    .card-container.list-view .tags {
+    
+    .card-container.list-view .card-header {
+        display: flex; /* Revert display contents */
+        flex-direction: row;
         width: 100%;
-        justify-content: flex-start;
-        flex: none;
-        -webkit-line-clamp: unset;
+        justify-content: space-between;
+        align-items: center;
+        order: 1; /* Whole header goes first */
+    }
+    .card-container.list-view .card-title-group {
+        flex: 1;
+        min-width: 0;
+    }
+    .card-container.list-view .card-actions {
+        position: static; /* Flow normally inside card-header */
+    }
+
+    .card-container.list-view p.translation {
+        order: 2;
+        width: 100%;
+        -webkit-line-clamp: unset; /* show full translation on mobile */
     }
     .card-container.list-view .tags {
+        order: 3;
+        width: 100%;
+        flex: none;
         justify-content: flex-start;
     }
     .card-container.list-view .progress-bar-container {
         position: absolute;
-        top: 12px;
-        right: 15px;
-        margin: 0;
-    }
-    .card-container.list-view .card-actions {
-        position: absolute;
         bottom: 15px;
         right: 15px;
+        margin: 0;
     }
 }
