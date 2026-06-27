@@ -1,4 +1,4 @@
-//typegame.js
+﻿//typegame.js
 let tiCards = [], tiCurrent = 0, tiCorrect = 0;
 let tiReverse = false;
 let tiCount = 10;
@@ -14,7 +14,7 @@ function initTypingGame() {
     `;
 
     const tagSelect = document.getElementById('tiTag');
-    tagSelect.innerHTML = '<option value="">ყველა</option>';
+    tagSelect.innerHTML = '<option value="">All</option>';
     [...allTags].forEach(tag => {
         const opt = document.createElement('option');
         opt.value = tag;
@@ -54,7 +54,7 @@ function showNextTyping() {
 
     const game = document.getElementById('tiGame');
     game.innerHTML = `
-        <h3>კითხვის ${tiCurrent + 1} / ${tiCards.length}</h3>
+        <h3>Question ${tiCurrent + 1} / ${tiCards.length}</h3>
         <p style="font-size:1.2rem;">${shown}</p>
         <div class="input-container" style="margin-bottom: 10px;">
             <label class="material-input type-word-test">
@@ -62,7 +62,7 @@ function showNextTyping() {
                 <span>პასუხი</span>
             </label>
         </div>
-        <button id="tiCheck">შემოწმება</button>
+        <button id="tiCheck">Check</button>
         <button id="tiHint">მინიშნება</button>
         <div id="tiFeedback" style="margin-top: 10px;"></div>
     `;
@@ -76,11 +76,11 @@ function showNextTyping() {
         incrementStat(isCorrect ? 'TOTAL_CORRECT' : 'TOTAL_WRONG', 1);
 
         if (isCorrect) {
-            feedback.innerHTML = `<span style="color:green;">სწორია!</span>`;
+            feedback.innerHTML = `<span style="color:green;">Correct!</span>`;
             updateCardByText(word, 3);
             tiCorrect++;
         } else {
-            feedback.innerHTML = `<span style="color:red;">არასწორია. სწორი პასუხია: <strong>${correctAnswers[0]}</strong></span>`;
+            feedback.innerHTML = `<span style="color:red;">არაCorrect. სწორი პასუხია: <strong>${correctAnswers[0]}</strong></span>`;
             updateCardByText(word, -3);
         }
         applyCurrentSort?.();
@@ -122,8 +122,8 @@ function updateCardByText(wordText, delta) {
 function showTypingResult() {
     const game = document.getElementById('tiGame');
     game.innerHTML = `
-        <h3>შედეგები</h3>
-        <p>სწორი პასუხები: ${tiCorrect} / ${tiCards.length}</p>
+        <h3>Results</h3>
+        <p>Correct answers: ${tiCorrect} / ${tiCards.length}</p>
     `;
 }
 
@@ -141,5 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.querySelector('[data-tab="tab5"]');
     if (btn) btn.addEventListener('click', initTypingGame);
 });
+
+
 
 

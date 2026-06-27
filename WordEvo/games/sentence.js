@@ -1,4 +1,4 @@
-//sentence.js
+﻿//sentence.js
 let senCards = [], senCurrent = 0, senCorrect = 0;
 let senReverse = false;
 let senCount = 10;
@@ -64,7 +64,7 @@ function showNextSentence() {
 
     const game = document.getElementById('senGame');
     game.innerHTML = `
-        <h3>კითხვის ${senCurrent + 1} / ${senCards.length}</h3>
+        <h3>Question ${senCurrent + 1} / ${senCards.length}</h3>
         <div id="senSentences">${displayedSentences.map((s, i) => `<p><strong>${i + 1}.</strong> ${s}</p>`).join('')}</div>
         <div id="senOptions">
             ${options.map(opt => `<button class="sen-option">${opt}</button>`).join('')}
@@ -82,11 +82,11 @@ function showNextSentence() {
             incrementStat(isCorrect ? 'TOTAL_CORRECT' : 'TOTAL_WRONG', 1);
 
             if (isCorrect) {
-                feedback.innerHTML = `<span style="color:green;">სწორია!</span>`;
+                feedback.innerHTML = `<span style="color:green;">Correct!</span>`;
                 updateCardByText(correctWord, 4);
                 senCorrect++;
             } else {
-                feedback.innerHTML = `<span style="color:red;">არასწორია. სწორი იყო: <strong>${correctWord}</strong></span>`;
+                feedback.innerHTML = `<span style="color:red;">არაCorrect. სწორი იყო: <strong>${correctWord}</strong></span>`;
                 updateCardByText(correctWord, -4);
             }
 
@@ -126,8 +126,8 @@ function updateCardByText(wordText, delta) {
 function showSentenceResult() {
     const game = document.getElementById('senGame');
     game.innerHTML = `
-        <h3>შედეგები</h3>
-        <p>სწორი პასუხები: ${senCorrect} / ${senCards.length}</p>
+        <h3>Results</h3>
+        <p>Correct answers: ${senCorrect} / ${senCards.length}</p>
     `;
 }
 
@@ -143,5 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tabBtn.addEventListener('click', initSentenceGame);
     }
 });
+
+
 
 

@@ -1,4 +1,4 @@
-//utils.js
+﻿//utils.js
 
 /**
  * განახლებულია: ეს ფუნქცია ახლა მუშაობს 2 რეჟიმში:
@@ -79,4 +79,5 @@ function getProgressColor(percent) {
     if (percent < 100) return '#66bb6a';
     return '#55d288';
 }
+
 

@@ -1,4 +1,4 @@
-//makeword.js
+﻿//makeword.js
 let mwCards = [];
 let mwCurrentIndex = 0;
 let mwCorrectAnswers = 0;
@@ -13,10 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tab) return;
 
     tab.innerHTML = `
-        <h2>🧠 გამოტოვებული ასოების შევსება</h2>
+        <h2>🧠 Fill in the missing letters</h2>
         <label style="margin-bottom:10px; display:inline-block;">
             <input type="checkbox" id="mwFullBlankToggle" />
-            ყველა ასო ცარიელი იყოს
+            All letters blank
         </label>
         <div id="mwContainer" style="margin-top: 1rem;"></div>
         <div id="mwResultContainer" style="margin-top: 2rem;"></div>
@@ -39,7 +39,7 @@ function populateMWTags() {
         });
     });
 
-    select.innerHTML = '<option value="">ყველა</option>';
+    select.innerHTML = '<option value="">All</option>';
     [...allTags].sort().forEach(tag => {
         const option = document.createElement('option');
         option.value = tag;
@@ -59,7 +59,7 @@ function startMakewordGame() {
     let allCards = getFilteredTrainingCards();
 
     if (allCards.length === 0) {
-        alert("ბარათები ვერ მოიძებნა არჩეული თეგით.");
+        alert("No cards found with the selected tag.");
         return;
     }
 
@@ -113,10 +113,10 @@ function showNextMWQuestion() {
     const helperWord = mwReverse ? word : mainTranslation;
 
     mwContainer.innerHTML = `
-        <h3>კითხვის ${mwCurrentIndex + 1} / ${mwCards.length}</h3>
+        <h3>Question ${mwCurrentIndex + 1} / ${mwCards.length}</h3>
         <div id="mwHintSection" style="margin-bottom: 10px;">
             <button id="showHintBtn" style="padding: 5px 10px; font-size: 0.9rem;">
-                ❓ დახმარება
+                ❓ Help
             </button>
             <span id="hintWord" style="display: ${mwFullBlankMode ? 'inline' : 'none'}; margin-left: 10px; font-weight: bold; color: #666;">
                 ${helperWord}
@@ -232,14 +232,16 @@ function generateRandomMissingIndices(word) {
 
 function showMakewordResults() {
     mwContainer.innerHTML = `
-        <h3>შედეგები</h3>
-        <p>სწორი პასუხები: ${mwCorrectAnswers} / ${mwCards.length}</p>
-        <p>არასწორი პასუხები: ${mwCards.length - mwCorrectAnswers}</p>
+        <h3>Results</h3>
+        <p>Correct answers: ${mwCorrectAnswers} / ${mwCards.length}</p>
+        <p>არაCorrect answers: ${mwCards.length - mwCorrectAnswers}</p>
     `;
 }
 
 function shuffleArray(arr) {
     return [...arr].sort(() => 0.5 - Math.random());
 }
+
+
 
 

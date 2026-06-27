@@ -1,4 +1,4 @@
-//script.js
+﻿//script.js
 // ==== 1. გლობალური მდგომარეობის ცვლადები ====
 let currentUser = null;
 let isAppInitialized = false; // NEW: ჩვენი "ალამი"
@@ -66,7 +66,7 @@ const SORT_MODE_KEY = 'wordevo_sort_mode'; // NEW
 const DICTIONARY_KEY = 'wordevo_current_dictionary';
 let currentDictionaryId = null;
 let allDictionaries = [];
-// ==== 2. ყველა ფუნქციის დეფინიცია (გლობალური) ====
+// ==== 2. All ფუნქციის დეფინიცია (გლობალური) ====
 let statsChartInstance = null;
 
 function updateStatsModal() {
@@ -144,7 +144,7 @@ function renderStatsChart(period) {
             dataPoints.push((dailyStats[localISOTime] && dailyStats[localISOTime].tests) || 0);
         }
     } else if (period === 'year') {
-        const monthNames = ["იან","თებ","მარ","აპრ","მაი","ივნ","ივლ","აგვ","სექ","ოქტ","ნოე","დეკ"];
+        const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
         for (let i = 11; i >= 0; i--) {
             const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
             labels.push(monthNames[d.getMonth()]);
@@ -165,7 +165,7 @@ function renderStatsChart(period) {
         data: {
             labels: labels,
             datasets: [{
-                label: 'გავლილი ტესტები',
+                label: 'Passed Tests',
                 data: dataPoints,
                 backgroundColor: '#89b4fa',
                 borderRadius: 4,
@@ -319,7 +319,7 @@ function populateGlobalTags() {
             if (tag) tagSet.add(tag);
         });
     });
-    select.innerHTML = '<option value="">ყველა</option>';
+    select.innerHTML = '<option value="">All</option>';
     [...tagSet].sort().forEach(tag => {
         const opt = document.createElement('option');
         opt.value = tag;
@@ -632,7 +632,7 @@ function renderSidebarTags() {
     const addContainer = document.createElement('li');
     addContainer.className = 'tag-add-container';
     const input = document.createElement('input');
-    input.placeholder = 'ახალი თეგი';
+    input.placeholder = 'New tag';
     input.style.flex = '1';
     const addBtn = document.createElement('button');
     addBtn.innerHTML = '<i class="fas fa-plus"></i>';
@@ -642,7 +642,7 @@ function renderSidebarTags() {
 // შევამოწმოთ, ხომ არ არსებობს უკვე (სახელით)
         const exists = [...allTags].some(tag => tag.name.toLowerCase() === val.toLowerCase());
         if (exists) {
-            showToast("ასეთი თეგი უკვე არსებობს", "error");
+            showToast("Tag already exists", "error");
             return;
         }
 // 1. შევინახოთ ბაზაში
@@ -652,7 +652,7 @@ function renderSidebarTags() {
             .select()
             .single(); // დაგვიბრუნე შექმნილი ობიექტი
         if (error) {
-            showToast(`თეგის დამატება ვერ მოხერხდა: ${error.message}`, "error");
+            showToast(`Failed to add tag: ${error.message}`, "error");
         } else {
 // 2. დავამატოთ გლობალურ სიაში
             allTags.add(data); // data არის {id, name, ...}
@@ -721,7 +721,7 @@ function renderSidebarTags() {
                 }
 // 2. განვაახლოთ გლობალური 'allTags'
                 tagObject.name = newVal; // (ვცვლით ობიექტს პირდაპირ Set-ში)
-// 3. განვაახლოთ ყველა ბარათის UI, რომელიც ამ თეგს იყენებს
+// 3. განვაახლოთ All cardsს UI, რომელიც ამ თეგს იყენებს
                 document.querySelectorAll('.card').forEach(card => {
 // განვაახლოთ dataset-იც
                     let tagObjects = JSON.parse(card.dataset.tagObjects || '[]');
@@ -769,7 +769,7 @@ function renderSidebarTags() {
             }
 // 2. წაშლა გლობალური 'allTags' სიიდან
             allTags.delete(tagObject);
-// 3. წაშლა UI-დან (ყველა ბარათიდან)
+// 3. წაშლა UI-დან (All cardsდან)
             document.querySelectorAll('.card').forEach(card => {
 // წაშლა dataset-იდან
                 let tagObjects = JSON.parse(card.dataset.tagObjects || '[]');
@@ -841,10 +841,10 @@ function filterCardsByTags() {
         const cardTags = tagObjects.map(t => t.name);
 // 1. ვამოწმებთ, ემთხვევა თუ არა თეგებს
         const matchesTags = tagsArray.some(tag => cardTags.includes(tag)) || tagsArray.length === 0;
-// 2. ვამოწმებთ, ხომ არ არის "ნასწავლი" და ხომ არ ვმალავთ მას
+// 2. ვამოწმებთ, ხომ არ არის "Learned" და ხომ არ ვმალავთ მას
         const isMastered = parseFloat(card.dataset.progress || 0) >= 100;
         const matchesMastered = !hideMastered || !isMastered; // (უნდა გამოჩნდეს, თუ "დამალვა" გამორთულია, ან თუ დამასტერებული არაა)
-// 3. ბარათი ჩანს მხოლოდ იმ შემთხვევაში, თუ ორივე პირობას აკმაყოფილებს
+// 3. cards ჩანს მხოლოდ იმ შემთხვევაში, თუ ორივე პირობას აკმაყოფილებს
         card.style.display = (matchesTags && matchesMastered) ? 'block' : 'none';
 
 // განვაახლოთ თეგების HTML (გაფილტრული თეგები წინ გადმოვა)
@@ -875,7 +875,7 @@ function editCard(card) {
     renderTags(document.getElementById('extraTranslationTags'), extraTranslations, extraTranslations, true);
     renderTags(document.getElementById('tagList'), tags, tags, false); // ეს სწორად მუშაობს, მას სახელები უნდა
     isEditing = true;
-    editingCard = card; // editingCard-ში ინახება ბარათი თავისი dataset.id-ით
+    editingCard = card; // editingCard-ში ინახება cards თავისი dataset.id-ით
     document.getElementById('modalOverlay').style.display = 'flex';
 }
 function getColorForTag(tag) {
@@ -1193,7 +1193,7 @@ function addLongPressHandlers(card) {
 // --- ⬇️ NEW: თეგზე კლიკის დამმუშავებელი ⬇️ ---
         if (e.target.classList.contains('card-tag')) {
 // თუ დავაკლიკეთ თეგს
-            e.stopPropagation(); // გააჩერე ივენთი, რომ ბარათის preview არ გაიხსნას
+            e.stopPropagation(); // გააჩერე ივენთი, რომ cardsს preview არ გაიხსნას
             const tag = e.target.textContent.replace('#', '');
 // ფილტრაციის ლოგიკა (რომელიც წავშალეთ initializeApp-დან)
             if (activeFilterTags.has(tag)) {
@@ -1357,7 +1357,7 @@ async function loadDataFromSupabase(retryCount = 0) {
         console.error('[Wordevo] loadData: currentDictionaryId is null/undefined!');
         return;
     }
-// 1. ვიღებთ *ყველა* მონაცემს პარალელურად
+// 1. ვიღებთ *All* მონაცემს პარალელურად
     let cardsResponse, tagsResponse, relationsResponse;
     try {
         [cardsResponse, tagsResponse, relationsResponse] = await Promise.all([
@@ -1371,7 +1371,7 @@ async function loadDataFromSupabase(retryCount = 0) {
             await new Promise(r => setTimeout(r, 1500));
             return loadDataFromSupabase(retryCount + 1);
         }
-        showToast('ქსელის შეცდომა. გადატვირთეთ გვერდი.', 'error');
+        showToast('ქსელის Error. გადატვირთეთ გვერდი.', 'error');
         return;
     }
 // შეცდომების დამუშავება
@@ -1400,7 +1400,7 @@ async function loadDataFromSupabase(retryCount = 0) {
     });
 // 4. ვამატებთ თეგებს ბარათებს
     const cardsWithTags = cards.map(card => {
-// 1. იპოვე ამ ბარათის თეგის ID-ები
+// 1. იპოვე ამ cardsს თეგის ID-ები
         const relatedTagIds = relations
             .filter(r => r.card_id === card.id)
             .map(r => r.tag_id);
@@ -1426,7 +1426,7 @@ async function deleteCard(card) {
         showToast("Cannot delete card: Missing ID", "error");
         return;
     }
-    if (!confirm("ნამდვილად გსურთ ამ ბარათის წაშლა?")) return;
+    if (!confirm("ნამდვილად გსურთ ამ cardsს წაშლა?")) return;
     const {error} = await supabaseClient
         .from('cards')
         .delete()
@@ -1435,7 +1435,7 @@ async function deleteCard(card) {
         showToast(`Delete failed: ${error.message}`, "error");
     } else {
         card.remove();
-        showToast("ბარათი წაიშალა", "success");
+        showToast("cards წაიშალა", "success");
     }
 }
 // defer script — DOM is already parsed, no need for DOMContentLoaded
@@ -1645,7 +1645,7 @@ async function deleteCard(card) {
                     .single();
 
                 if (error) {
-                    showToast(`შეცდომა: ${error.message}`, "error");
+                    showToast(`Error: ${error.message}`, "error");
                     return;
                 }
 
@@ -1675,7 +1675,7 @@ async function deleteCard(card) {
                     return;
                 }
                 const dictToDelete = allDictionaries.find(d => d.id === currentDictionaryId);
-                if (!confirm(`ნამდვილად გსურთ ლექსიკონის "${dictToDelete.name}" წაშლა? მასში არსებული ყველა სიტყვა წაიშლება.`)) {
+                if (!confirm(`ნამდვილად გსურთ ლექსიკონის "${dictToDelete.name}" წაშლა? მასში არსებული All სიტყვა წაიშლება.`)) {
                     return;
                 }
 
@@ -1685,7 +1685,7 @@ async function deleteCard(card) {
                     .eq('id', currentDictionaryId);
 
                 if (error) {
-                    showToast(`შეცდომა: ${error.message}`, "error");
+                    showToast(`Error: ${error.message}`, "error");
                     return;
                 }
 
@@ -1812,7 +1812,7 @@ async function deleteCard(card) {
         if (error) {
             authMessage.textContent = error.message;
         } else {
-            authMessage.textContent = 'რეგისტრაცია წარმატებულია! გთხოვთ, დაადასტუროთ იმეილი და შემდეგ შეხვიდეთ სისტემაში.';
+            authMessage.textContent = 'Registration successful! გთხოვთ, დაადასტუროთ იმეილი და შემდეგ შეხვიდეთ სისტემაში.';
         }
     };
     logoutBtn.onclick = async () => {
@@ -1845,7 +1845,7 @@ async function deleteCard(card) {
         });
     });
     document.getElementById('resetStatsBtn')?.addEventListener('click', async () => {
-        if (!confirm("ნამდვილად გსურს ყველა ბარათის პროგრესის განულება?")) return;
+        if (!confirm("ნამდვილად გსურს All cardsს პროგრესის განულება?")) return;
         if (!currentUser) return;
 // 1. ვასუფთავებთ ლოკალურ სტატისტიკას (ტესტები)
         localStorage.removeItem('TOTAL_TESTS');
@@ -1884,7 +1884,7 @@ async function deleteCard(card) {
                 progressBar.style.backgroundColor = getProgressColor(0); // დავუბრუნოთ საწყისი ფერი
             }
             if (progressLabel) progressLabel.textContent = '0%';
-            card.classList.remove('mastered'); // მოვაშოროთ "ნასწავლის" კლასი
+            card.classList.remove('mastered'); // მოვაშოროთ "Learnedს" კლასი
         });
 // 4. განვაახლოთ სტატისტიკის მოდალი
         updateStatsModal?.();
@@ -2128,8 +2128,8 @@ async function deleteCard(card) {
     deleteSelectedBtn.onclick = async () => {
         const selectedCards = document.querySelectorAll('.card.selected');
         if (selectedCards.length === 0) return;
-        if (!confirm(`ნამდვილად გსურთ ${selectedCards.length} ბარათის წაშლა?`)) return;
-// 1. შევაგროვოთ ყველა მონიშნული ბარათის ID
+        if (!confirm(`ნამდვილად გსურთ ${selectedCards.length} cardsს წაშლა?`)) return;
+// 1. შევაგროვოთ All მონიშნული cardsს ID
         const cardIdsToDelete = [...selectedCards].map(card => card.dataset.id).filter(Boolean);
         if (cardIdsToDelete.length === 0) {
             showToast("წაშლა ვერ მოხერხდა: ID-ები ვერ მოიძებნა", "error");
@@ -2139,7 +2139,7 @@ async function deleteCard(card) {
         const {error} = await supabaseClient
             .from('cards')
             .delete()
-            .in('id', cardIdsToDelete); // წაშალე ყველა, ვისი ID-ც ამ სიაშია
+            .in('id', cardIdsToDelete); // წაშალე All, ვისი ID-ც ამ სიაშია
         if (error) {
             showToast(`წაშლა ვერ მოხერხდა: ${error.message}`, "error");
         } else {
@@ -2147,7 +2147,7 @@ async function deleteCard(card) {
             selectedCards.forEach(card => card.remove());
             selectionMode = false;
             updateSelectionUI();
-            showToast(`${cardIdsToDelete.length} ბარათი წაიშალა`, "success");
+            showToast(`${cardIdsToDelete.length} cards წაიშალა`, "success");
         }
     };
     cancelSelectionBtn.onclick = () => {
@@ -2319,7 +2319,7 @@ async function deleteCard(card) {
                 showToast("Error updating card: Missing card ID", "error");
                 return;
             }
-// RPC ფუნქციას ვამატებთ ბარათის ID-ს
+// RPC ფუნქციას ვამატებთ cardsს ID-ს
             cardData.card_id_input = cardId;
             const {data, error} = await supabaseClient
                 .rpc('update_card_with_tags', cardData)
@@ -2333,12 +2333,12 @@ async function deleteCard(card) {
                 data.tags = tagNames.map(name => {
                     return [...allTags].find(tagObj => tagObj.name === name) || {name: name};
                 }).filter(Boolean);
-// წავშალოთ ძველი ბარათი
+// წავშალოთ ძველი cards
                 editingCard.remove();
 // დავხატოთ ახალი (განახლებული)
                 renderCardFromData(data);
                 resetModal();
-                showToast("ბარათი განახლდა", "success");
+                showToast("cards განახლდა", "success");
             }
         } else {
 // === CREATE (შექმნა) ===
@@ -2358,13 +2358,13 @@ async function deleteCard(card) {
             if (error) {
                 showToast(`Save failed: ${error.message}`, "error");
             } else {
-// 'data' არის ახალი ბარათი. დავამატოთ თეგები, რომ renderCard-მა დახატოს
+// 'data' არის ახალი cards. დავამატოთ თეგები, რომ renderCard-მა დახატოს
                 data.tags = tagNames.map(name => {
                     return [...allTags].find(tagObj => tagObj.name === name) || {name: name};
                 }).filter(Boolean);
                 renderCardFromData(data);
                 resetModal();
-                showToast("ბარათი დაემატა", "success");
+                showToast("cards დაემატა", "success");
             }
         }
     };
@@ -2395,7 +2395,7 @@ async function deleteCard(card) {
                 .select()
                 .single();
             if (error) {
-                showToast(`თეგის დამატება ვერ მოხერხდა: ${error.message}`, "error");
+                showToast(`Failed to add tag: ${error.message}`, "error");
                 return;
             }
             tagObj = data;
@@ -2616,7 +2616,7 @@ async function deleteCard(card) {
 // 3. ვიძახებთ ბაზის ფუნქციას
                 const {error} = await supabaseClient.rpc('create_card_with_tags', cardData);
                 if (error) {
-                    showToast(`შეცდომა სიტყვაზე "${word}": ${error.message}`, "error");
+                    showToast(`Error სიტყვაზე "${word}": ${error.message}`, "error");
 // თუ ერთი ვერ დაემატა, დანარჩენები მაინც უნდა დაემატოს
                 } else {
                     addedCount++;
@@ -2625,7 +2625,7 @@ async function deleteCard(card) {
             }
 // 4. დასრულების შემდეგ, სრულად განვაახლოთ UI ბაზიდან
             showToast(`იმპორტი დასრულდა: დაემატა ${addedCount}, გამოიტოვა ${skippedCount}`, "success");
-            await loadDataFromSupabase(); // ეს ფუნქცია ყველაფერს თავიდან ჩატვირთავს და დახატავს
+            await loadDataFromSupabase(); // ეს ფუნქცია Allფერს თავიდან ჩატვირთავს და დახატავს
         };
         reader.readAsArrayBuffer(file);
     });
@@ -2772,3 +2772,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 });
+
+
+
+

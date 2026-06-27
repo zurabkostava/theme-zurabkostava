@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
 Template Name: App - WordEvo
 */
@@ -64,7 +64,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 <div class="auth-container" id="authContainer">
     <div class="auth-box">
         <h2>Wordevo</h2>
-        <p>შედი სისტემაში ან გაიარე რეგისტრაცია</p>
+        <p>Login or Register</p>
         <div class="input-container">
             <label class="material-input">
                 <input class="form-control" id="authEmail" placeholder=" " type="email"/>
@@ -78,8 +78,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             </label>
         </div>
         <div class="auth-actions">
-            <button id="loginBtn">შესვლა</button>
-            <button id="registerBtn">რეგისტრაცია</button>
+            <button id="loginBtn">Login</button>
+            <button id="registerBtn">Register</button>
         </div>
         <button id="skipAuthBtn" style="margin-top:12px;padding:8px 24px;background:#e67e22;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">Skip Login (Offline)</button>
         <div class="auth-message" id="authMessage"></div>
@@ -88,7 +88,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 <div id="mainAppContainer" style="display: none;">
     <div class="header-wrapper">
         <div class="mobile-header" style="display: none;">
-            <button class="mobile-tags-btn" id="mobileToggleSidebarBtn" title="თეგები">
+            <button class="mobile-tags-btn" id="mobileToggleSidebarBtn" title="Tags">
                 <i class="fas fa-tags"></i>
             </button>
             <div class="app-logo">Wordevo</div>
@@ -101,25 +101,25 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             <div class="top-left">
                 <div class="app-logo">Wordevo</div>
                 <select id="dictionarySelect"></select>
-                <button id="addDictionaryBtn" title="ახალი ლექსიკონი"><i class="fas fa-plus"></i></button>
-                <button id="deleteDictionaryBtn" title="ლექსიკონის წაშლა" style="color: #ff4757; background: rgba(255, 71, 87, 0.1);"><i class="fas fa-trash"></i></button>
+                <button id="addDictionaryBtn" title="New Dictionary"><i class="fas fa-plus"></i></button>
+                <button id="deleteDictionaryBtn" title="Delete Dictionary" style="color: #ff4757; background: rgba(255, 71, 87, 0.1);"><i class="fas fa-trash"></i></button>
             </div>
             <div class="top-center" style="display: flex !important; align-items: center !important; justify-content: center !important; gap: 20px !important;">
 
                 <div class="search-input-wrapper" style="position: relative !important; width: 350px !important; flex-shrink: 0 !important; margin: 0 !important;">
                     <i class="fas fa-search search-icon"></i>
-                    <input class="modern-search-input" id="searchInput" placeholder="მოძებნე სიტყვა..." type="text" style="width: 100% !important; box-sizing: border-box !important; min-width: 0 !important; margin: 0 !important;"/>
+                    <input class="modern-search-input" id="searchInput" placeholder="Search word..." type="text" style="width: 100% !important; box-sizing: border-box !important; min-width: 0 !important; margin: 0 !important;"/>
                 </div>
                 <button id="trainingBtn" style="margin: 0 !important; flex-shrink: 0 !important; position: relative !important; z-index: 2 !important;">
                     <i class="fa-solid fa-award"></i>
-                    ტრენინგი
+                    Training
                 </button>
 
 
             </div>
             <div class="top-right">
                 <span id="userEmailDisplay" style="font-size: 0.9rem; color: #888;"></span>
-                <button id="logoutBtn" title="გასვლა">
+                <button id="logoutBtn" title="Logout">
                     <i class="fas fa-sign-out-alt"></i>
                 </button>
                 <button id="toggleDarkModeBtn" title="Dark Mode Toggle">
@@ -135,13 +135,13 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     </div>
     <div class="card-toolbar" id="cardToolbar">
             <div class="toolbar-left">
-                <button class="toolbar-btn" id="toggleSidebarBtn" title="თეგები">
+                <button class="toolbar-btn" id="toggleSidebarBtn" title="Tags">
                     <i class="fas fa-tags"></i>
                 </button>
-                <button class="toolbar-btn" id="statsBtn" title="სტატისტიკა">
+                <button class="toolbar-btn" id="statsBtn" title="Statistics">
                     <i class="fas fa-chart-pie"></i>
                 </button>
-                <button class="toolbar-btn" id="notificationsBtn" title="შეხსენებები">
+                <button class="toolbar-btn" id="notificationsBtn" title="Reminders">
                     <i class="fas fa-bell"></i>
                 </button>
             </div>
@@ -153,20 +153,20 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                     </label>
                     <select class="toolbar-select" id="sortSelect">
                         <option value="alphabetical">
-                            ანბანური
+                            Alphabetical
                         </option>
                         <option value="updated">
-                            ბოლო
+                            Recent
                         </option>
                         <option selected="" value="progress">
-                            პროგრესით
+                            By Progress
                         </option>
                     </select>
                 </div>
                 <div class="hide-mastered-wrapper">
                     <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
                         <input id="hideMasteredCheckbox" type="checkbox"/>
-                        <span style="font-size: 13px; color: #cdd6f4;">- ნასწავლი</span>
+                        <span style="font-size: 13px; color: #cdd6f4;">- Learned</span>
                     </label>
                 </div>
             </div>
@@ -177,7 +177,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-header">
-                <h2>ახალი სიტყვა</h2>
+                <h2>New Word</h2>
                 <button class="close-button" id="closeAddModalBtn">×</button>
             </div>
             <div class="modal-body">
@@ -193,9 +193,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             <div class="input-container">
                 <label class="material-input validation">
                     <input class="form-control" id="wordInput" placeholder=" " required="" type="text"
-                           value="(ვალიდაცია)"/>
+                           value="(Validation)"/>
                     <span>
-       საწყისი სიტყვა
+       Word
       </span>
                 </label>
             </div>
@@ -203,7 +203,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <label class="material-input">
                     <input id="mainTranslationInput" placeholder=" " type="text"/>
                     <span>
-       მთავარი თარგმანი
+       Main Translation
       </span>
                 </label>
                 <button id="addMainTranslationBtn">
@@ -216,7 +216,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <label class="material-input">
                     <input id="extraTranslationInput" placeholder=" " type="text"/>
                     <span>
-       დამატებითები თარგმანი
+       Extra Translations
       </span>
                 </label>
                 <button id="addExtraTranslationBtn">
@@ -229,7 +229,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <label class="material-input">
                     <input id="tagInput" placeholder=" " type="text"/>
                     <span>
-       ჩაწერე ან აარჩიე თეგი
+       Type or select tag
       </span>
                 </label>
                 <button id="addTagBtn">
@@ -244,7 +244,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <label class="material-input">
                     <textarea class="form-control" id="mnemonicInput" placeholder=" " rows="2"></textarea>
                     <span>
-       მნემონიკა (ასოციაცია დასამახსოვრებლად)
+       Mnemonic (Association)
       </span>
                 </label>
             </div>
@@ -252,7 +252,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <label class="material-input">
                     <textarea class="form-control" id="englishSentences" placeholder=" " rows="6"></textarea>
                     <span>
-       მთავარი ენის ტექსტი (Language 1)
+       Main Language Text (Lang 1)
       </span>
                 </label>
             </div>
@@ -260,17 +260,17 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <label class="material-input">
                     <textarea class="form-control" id="georgianSentences" placeholder=" " rows="5"></textarea>
                     <span>
-       თარგმანი / მეორე ენის ტექსტი (Language 2)
+       Translation / Second Lang Text (Lang 2)
       </span>
                 </label>
             </div>
             </div> <!-- end modal-body -->
             <div class="modal-footer modal-actions">
                 <button id="saveCardBtn">
-                    შენახვა
+                    Save
                 </button>
                 <button id="cancelBtn">
-                    გაუქმება
+                    Cancel
                 </button>
             </div>
         </div>
@@ -286,10 +286,10 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 ✖
             </button>
             <h3>
-                თეგები
+                Tags
             </h3>
             <button class="clear-tags-btn" id="clearTagFiltersBtn">
-                ✖ ფილტრის გასუფთავება
+                ✖ Clear Filter
             </button>
         </div>
         <ul id="sidebarTagList">
@@ -328,7 +328,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <div class="modal-overlay" id="settingsModal" style="display: none; gap: 10px; flex-wrap: wrap;">
         <div class="modal" style="max-width: 500px;">
             <div class="modal-header">
-                <h2>პარამეტრები</h2>
+                <h2>Settings</h2>
                 <button class="close-button" id="closeSettingsBtn">×</button>
             </div>
             <div class="modal-body">
@@ -357,7 +357,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         </option>
                     </select>
                     <span>
-       აირჩიე მთავარი ენის ხმა (Lang 1)
+       Select Main Lang Voice (Lang 1)
       </span>
                     <i class="fas fa-chevron-down select-arrow-icon">
                     </i>
@@ -366,7 +366,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             <div>
                 <label class="material-input">
       <span>
-       მთავარი ენის ხმის სიჩქარე
+       Main Voice Speed
       </span>
                     <input id="englishRateSlider" max="2" min="0.5" step="0.1" type="range" value="1"/>
                 </label>
@@ -384,7 +384,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         </option>
                     </select>
                     <span>
-       აირჩიე მეორე ენის ხმა (Lang 2)
+       Select Second Lang Voice (Lang 2)
       </span>
                     <i class="fas fa-chevron-down select-arrow-icon">
                     </i>
@@ -393,7 +393,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             <div>
                 <label class="material-input">
       <span>
-       მეორე ენის ხმის სიჩქარე
+       Second Voice Speed
       </span>
                     <input id="georgianRateSlider" max="2" min="0.5" step="0.1" type="range" value="1"/>
                 </label>
@@ -436,29 +436,29 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             </div>
             <div class="import-export-group">
                 <h3>
-                    ფაილების იმპორტი / ექსპორტი
+                    Import / Export Files
                 </h3>
                 <div class="button-row">
                     <button class="settings-btn blue" id="exportExcelBtn">
-                        📤 ექსპორტი Excel-ში
+                        📤 Export to Excel
                     </button>
                     <button class="settings-btn" id="exportMyDictionaryBtn" style="background-color: #6a1b9a; color: white;">
-                        📤 ექსპორტი My Dictionary-სთვის
+                        📤 Export for My Dictionary
                     </button>
                     <label class="settings-btn settings-btn-force cyan" for="importExcelInput">
                     <label class="settings-btn settings-btn-force cyan" for="importExcelInput">
-                        📥 იმპორტი Excel-დან
+                        📥 Import from Excel
                     </label>
                     <input accept=".xlsx" id="importExcelInput" style="display: none;" type="file">
                     <button class="settings-btn gray" id="downloadTemplateBtn">
-                        🧾 ჩამოტვირთე შაბლონი
+                        🧾 Download Template
                     </button>
                 </div>
             </div>
             </div> <!-- end modal-body -->
             <div class="modal-footer modal-actions" style="margin-top: 20px;">
                 <button id="saveVoiceBtn" style="background-color: #28a745; color: white;">
-                    შენახვა
+                    Save
                 </button>
             </div>
         </div>
@@ -468,34 +468,34 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <div class="modal-overlay" id="addDictionaryModal" style="display: none; z-index: 2000;">
         <div class="modal">
             <div class="modal-header">
-                <h2>ახალი ლექსიკონი</h2>
+                <h2>New Dictionary</h2>
                 <button class="close-button" id="closeAddDictionaryBtn">×</button>
             </div>
             <div class="modal-body">
             <div class="input-container">
                 <label class="material-input validation">
                     <input class="form-control" id="newDictName" placeholder=" " required="" type="text" />
-                    <span>ლექსიკონის სახელი</span>
+                    <span>Dictionary Name</span>
                 </label>
             </div>
             <div class="input-container">
                 <label class="material-input material-select">
                     <select id="newDictLang1Select" required=""></select>
-                    <span>აირჩიე მთავარი ენა (Lang 1)</span>
+                    <span>Select Main Language (Lang 1)</span>
                     <i class="fas fa-chevron-down select-arrow-icon"></i>
                 </label>
             </div>
             <div class="input-container">
                 <label class="material-input material-select">
                     <select id="newDictLang2Select" required=""></select>
-                    <span>აირჩიე თარგმანის ენა (Lang 2)</span>
+                    <span>Select Translation Language (Lang 2)</span>
                     <i class="fas fa-chevron-down select-arrow-icon"></i>
                 </label>
             </div>
             </div> <!-- end modal-body -->
             <div class="modal-footer modal-actions" style="margin-top: 20px;">
                 <button id="saveNewDictionaryBtn" style="background-color: #28a745; color: white;">
-                    შექმნა
+                    Create
                 </button>
             </div>
         </div>
@@ -532,37 +532,37 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <div id="globalTrainingSettings">
                     <div class="tag-filter">
                         <label for="globalTagSelect">
-                            თეგი:
+                            Tag:
                         </label>
                         <select id="globalTagSelect">
                         </select>
                     </div>
                     <div class="count-filter">
                         <label for="globalQuestionCount">
-                            რაოდენობა:
+                            Count:
                         </label>
                         <input id="globalQuestionCount" max="100" min="1" type="number" value="10"/>
                     </div>
                     <div class="progress-filter">
-                        <label for="globalProgressSelect">პროგრესი:</label>
+                        <label for="globalProgressSelect">Progress:</label>
                         <select id="globalProgressSelect">
-                            <option value="">ნებისმიერი (ყველა)</option>
-                            <option value="0-99">ყველა (100%-ის გარდა)</option>
+                            <option value="">Any (All)</option>
+                            <option value="0-99">All (Except 100%)</option>
                             <option value="0-30">0% - 30%</option>
                             <option value="31-50">31% - 50%</option>
                             <option value="51-70">51% - 70%</option>
                             <option value="71-80">71% - 80%</option>
                             <option value="81-99">81% - 99%</option>
-                            <option value="100-100">შესწავლილი (100%)</option>
+                            <option value="100-100">Learned (100%)</option>
                         </select>
                     </div>
                     <label>
                         <input id="globalReverseToggle" type="checkbox"/>
-                        რევერსი
+                        Reverse
                     </label>
                 </div>
                 <div class="global-start-container">
-                    <button id="globalStartBtn" class="global-start-btn" onclick="startActiveGame()">დაწყება 🚀</button>
+                    <button id="globalStartBtn" class="global-start-btn" onclick="startActiveGame()">Start 🚀</button>
                 </div>
             </div>
             <div class="training-tab-content" data-tab-content="quiz" id="quizTab">
@@ -635,7 +635,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         <button id="deleteSelectedBtn">
             <i class="fas fa-trash">
             </i>
-            წაშლა
+            Delete
         </button>
         <button id="selectAllBtn">
             <i class="fa-solid fa-check-double">
@@ -649,38 +649,38 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <div class="modal-overlay" id="statsModal" style="display:none;">
         <div class="modal stats-modal-premium" style="max-width:600px;">
             <div class="modal-header">
-                <h2>📊 სტატისტიკა</h2>
+                <h2>📊 Statistics</h2>
                 <button class="close-button" id="closeStatsBtn">×</button>
             </div>
             <div class="modal-body">
                 <div class="stats-grid">
                     <div class="stat-card">
                         <i class="fa-solid fa-layer-group stat-icon"></i>
-                        <span class="stat-label">სულ სიტყვა</span>
+                        <span class="stat-label">Total Words</span>
                         <span class="stat-value"><span id="statsMastered">0</span> / <span id="statsTotalWords">0</span></span>
                     </div>
                     <div class="stat-card">
                         <i class="fa-solid fa-chart-line stat-icon"></i>
-                        <span class="stat-label">საშ. პროგრესი</span>
+                        <span class="stat-label">Avg. Progress</span>
                         <span class="stat-value" id="statsAvgProgress">0%</span>
                     </div>
                     <div class="stat-card">
                         <i class="fa-solid fa-bolt stat-icon"></i>
-                        <span class="stat-label">ტესტირებები</span>
+                        <span class="stat-label">Tests</span>
                         <span class="stat-value" id="statsTests">0</span>
                     </div>
                     <div class="stat-card">
                         <i class="fa-solid fa-bullseye stat-icon"></i>
-                        <span class="stat-label">სიზუსტე</span>
+                        <span class="stat-label">Accuracy</span>
                         <span class="stat-value" id="statsAccuracy">0%</span>
                     </div>
                 </div>
 
                 <div class="stats-chart-section">
                     <div class="chart-controls">
-                        <button class="chart-btn active" data-period="week">კვირა</button>
-                        <button class="chart-btn" data-period="month">თვე</button>
-                        <button class="chart-btn" data-period="year">წელი</button>
+                        <button class="chart-btn active" data-period="week">Week</button>
+                        <button class="chart-btn" data-period="month">Month</button>
+                        <button class="chart-btn" data-period="year">Year</button>
                     </div>
                     <div class="chart-container">
                         <canvas id="statsChart"></canvas>
@@ -693,7 +693,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         style="background-color: crimson; color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer;">
                     <i class="fa-solid fa-broom">
                     </i>
-                    გასუფთავება
+                    Clear
                 </button>
             </div>
         </div>
@@ -702,67 +702,67 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <div class="modal-overlay" id="notificationsModal" style="display:none; z-index: 99999;">
         <div class="modal" style="max-width:550px;">
             <div class="modal-header">
-                <h2><i class="fas fa-bell"></i> შეხსენებები</h2>
+                <h2><i class="fas fa-bell"></i> Reminders</h2>
                 <button class="close-button" id="closeNotificationsModalBtn">&times;</button>
             </div>
             <div class="modal-body">
 
             <div id="notificationListContainer">
-                <p class="notif-empty" style="text-align: center; color: #888;">შეხსენებები არ გაქვთ.</p>
+                <p class="notif-empty" style="text-align: center; color: #888;">No reminders.</p>
             </div>
 
             <div class="notif-add-form" id="notifAddForm" style="display:none;">
-                <h3>ახალი შეხსენება</h3>
+                <h3>New Reminder</h3>
                 <div class="notif-form-row">
-                    <label>დრო:</label>
+                    <label>Time:</label>
                     <input type="time" id="notifTimeInput" value="12:00">
                 </div>
                 <div class="notif-form-row">
-                    <label>დღეები:</label>
+                    <label>Days:</label>
                     <div class="notif-weekdays" id="notifWeekdays">
-                        <button type="button" class="weekday-btn" data-day="1">ორშ</button>
-                        <button type="button" class="weekday-btn" data-day="2">სამ</button>
-                        <button type="button" class="weekday-btn" data-day="3">ოთხ</button>
-                        <button type="button" class="weekday-btn" data-day="4">ხუთ</button>
-                        <button type="button" class="weekday-btn" data-day="5">პარ</button>
-                        <button type="button" class="weekday-btn" data-day="6">შაბ</button>
-                        <button type="button" class="weekday-btn" data-day="0">კვი</button>
+                        <button type="button" class="weekday-btn" data-day="1">Mon</button>
+                        <button type="button" class="weekday-btn" data-day="2">Tue</button>
+                        <button type="button" class="weekday-btn" data-day="3">Wed</button>
+                        <button type="button" class="weekday-btn" data-day="4">Thu</button>
+                        <button type="button" class="weekday-btn" data-day="5">Fri</button>
+                        <button type="button" class="weekday-btn" data-day="6">Sat</button>
+                        <button type="button" class="weekday-btn" data-day="0">Sun</button>
                     </div>
                 </div>
                 <div class="notif-form-row">
-                    <label>ლექსიკონი:</label>
+                    <label>Dictionary:</label>
                     <select id="notifDictSelect"></select>
                 </div>
                 <div class="notif-form-row">
-                    <label>თეგები (არასავალდებულო):</label>
+                    <label>Tags (Optional):</label>
                     <select id="notifTagSelect" multiple></select>
                 </div>
                 <div class="notif-form-row">
-                    <label>პროგრესი:</label>
+                    <label>Progress:</label>
                     <select id="notifProgressSelect">
-                        <option value="">გლობალური (ყველა)</option>
-                        <option value="0-99">ყველა (100%-ის გარეშე)</option>
+                        <option value="">Global (All)</option>
+                        <option value="0-99">All (Except 100%)</option>
                         <option value="0-30">0% - 30%</option>
                         <option value="31-50">31% - 50%</option>
                         <option value="51-70">51% - 70%</option>
                         <option value="71-80">71% - 80%</option>
                         <option value="81-99">81% - 99%</option>
-                        <option value="100-100">ნასწავლი (100%)</option>
+                        <option value="100-100">Learned (100%)</option>
                     </select>
                 </div>
                 <div class="notif-form-actions">
-                    <button id="notifSaveBtn"><i class="fas fa-check"></i> შენახვა</button>
-                    <button id="notifCancelBtn"><i class="fas fa-times"></i> გაუქმება</button>
+                    <button id="notifSaveBtn"><i class="fas fa-check"></i> Save</button>
+                    <button id="notifCancelBtn"><i class="fas fa-times"></i> Cancel</button>
                 </div>
             </div>
 
             </div> <!-- end body -->
             <div class="modal-footer modal-actions" style="margin-top: 20px; display: flex; gap: 10px;">
                 <button id="openAddNotificationModalBtn" style="background-color: #0077cc; color: white; flex: 1;">
-                    <i class="fas fa-plus"></i> ახალი შეხსენების დამატება
+                    <i class="fas fa-plus"></i> Add New Reminder
                 </button>
-                <button id="testNotificationBtn" style="background-color: #28a745; color: white; flex: 0 0 auto; padding: 8px 16px;" title="ტესტი">
-                    <i class="fas fa-bell"></i> ტესტი
+                <button id="testNotificationBtn" style="background-color: #28a745; color: white; flex: 0 0 auto; padding: 8px 16px;" title="Test">
+                    <i class="fas fa-bell"></i> Test
                 </button>
             </div>
             <div id="notifDebugInfo" style="margin-top: 10px; font-size: 0.8rem; color: #888;"></div>
@@ -776,4 +776,5 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 <?php wp_footer(); ?>
 </body>
 </html>
+
 

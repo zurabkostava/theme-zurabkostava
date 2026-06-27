@@ -1,4 +1,4 @@
-//quiz.js
+﻿//quiz.js
 
 const quizTab = document.getElementById('quizTab');
 
@@ -15,7 +15,7 @@ function populateQuizTags() {
     const tagSelect = document.getElementById('quizTagSelect');
     if (!tagSelect) return;
 
-    tagSelect.innerHTML = '<option value="">ყველა</option>';
+    tagSelect.innerHTML = '<option value="">All</option>';
 
     const allTags = new Set();
     document.querySelectorAll('.card').forEach(card => {
@@ -112,7 +112,7 @@ function renderNextQuestion() {
 
     questionContainer.innerHTML = `
         <div class="quiz-question">
-            <h3>კითხვის ${currentQuestionIndex + 1} / ${quizCards.length}</h3>
+            <h3>Question ${currentQuestionIndex + 1} / ${quizCards.length}</h3>
             <p><strong>${questionText}</strong></p>
             <div class="quiz-options">
                 ${options.map(opt => `<button class="quiz-option" data-answer="${opt}">${opt}</button>`).join('')}
@@ -161,9 +161,9 @@ function renderNextQuestion() {
 function showQuizResult() {
     questionContainer.innerHTML = '';
     resultContainer.innerHTML = `
-        <h3>შედეგები</h3>
-        <p>სწორი პასუხები: ${correctAnswers} / ${quizCards.length}</p>
-        <p>არასწორი პასუხები: ${quizCards.length - correctAnswers}</p>
+        <h3>Results</h3>
+        <p>Correct answers: ${correctAnswers} / ${quizCards.length}</p>
+        <p>არაCorrect answers: ${quizCards.length - correctAnswers}</p>
     `;
 }
 
@@ -173,5 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         populateQuizTags();
     }
 });
+
+
 
 

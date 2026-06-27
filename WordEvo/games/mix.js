@@ -1,4 +1,4 @@
-// mix.js ====
+﻿// mix.js ====
 
 
 // ==== EXISTING CODE ====
@@ -32,7 +32,7 @@ function startMixGame() {
     let allCards = getFilteredTrainingCards();
 
     if (allCards.length === 0) {
-        alert("ბარათები ვერ მოიძებნა არჩეული თეგით.");
+        alert("No cards found with the selected tag.");
         return;
     }
 
@@ -186,9 +186,11 @@ function updateCardProgressFromText(left, right, delta) {
 
 function showMixResults() {
     mixResultContainer.innerHTML = `
-        <h3>შედეგები</h3>
+        <h3>Results</h3>
         <p>წყვილები: ${matchedPairs} / ${totalPairs}</p>
     `;
 }
+
+
 
 

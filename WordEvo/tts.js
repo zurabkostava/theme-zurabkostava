@@ -1,4 +1,4 @@
-// ==== tts.js ====
+﻿// ==== tts.js ====
 
 const VOICE_STORAGE_KEY = 'selected_voice_name';
 const GEORGIAN_VOICE_KEY = 'selected_georgian_voice';
@@ -476,4 +476,5 @@ document.addEventListener('click', (e) => {
         speakWithVoice(text, selectedVoice, speakBtn);
     }
 });
+
 

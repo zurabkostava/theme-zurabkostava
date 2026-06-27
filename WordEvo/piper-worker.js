@@ -1,4 +1,4 @@
-// ==== Piper TTS Web Worker ====
+﻿// ==== Piper TTS Web Worker ====
 // Runs Piper neural TTS locally in the browser via WASM + ONNX Runtime
 
 const PIPER_WASM_BASE = 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/';
@@ -47,13 +47,13 @@ function PCM2WAV(buffer, sampleRate) {
 
 async function init(voicePath) {
     // 1. Load ONNX Runtime
-    self.postMessage({ kind: 'status', message: 'ONNX Runtime იტვირთება...' });
+    self.postMessage({ kind: 'status', message: 'ONNX Runtime loading...' });
     importScripts(ORT_CDN);
     ort.env.wasm.numThreads = 1;
     ort.env.wasm.wasmPaths = 'https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.17.1/';
 
     // 2. Load Piper phonemize WASM
-    self.postMessage({ kind: 'status', message: 'Piper Phonemize იტვირთება...' });
+    self.postMessage({ kind: 'status', message: 'Piper Phonemize loading...' });
     importScripts(PIPER_WASM_BASE + 'piper_phonemize.js');
 
     // createPiperPhonemize is the Emscripten factory function
@@ -78,12 +78,12 @@ async function init(voicePath) {
     });
 
     // 3. Download voice model config + ONNX model
-    self.postMessage({ kind: 'status', message: 'კონფიგურაცია იტვირთება...' });
+    self.postMessage({ kind: 'status', message: 'Configuration loading...' });
     const configResp = await fetch(HF_BASE + voicePath + '.onnx.json');
     if (!configResp.ok) throw new Error('Failed to fetch voice config');
     modelConfig = await configResp.json();
 
-    self.postMessage({ kind: 'status', message: 'ხმის მოდელი მოწმდება ლოკალურ მეხსიერებაში...' });
+    self.postMessage({ kind: 'status', message: 'Voice model checking in local storage...' });
     const modelUrl = HF_BASE + voicePath + '.onnx';
     const CACHE_NAME = 'piper-models-cache-v1';
     let modelBuffer;
@@ -93,10 +93,10 @@ async function init(voicePath) {
         const cachedResponse = await cache.match(modelUrl);
         
         if (cachedResponse) {
-            self.postMessage({ kind: 'status', message: 'მოდელი იტვირთება მეხსიერებიდან...' });
+            self.postMessage({ kind: 'status', message: 'Model loading from storage...' });
             modelBuffer = await cachedResponse.arrayBuffer();
         } else {
-            self.postMessage({ kind: 'status', message: 'ხმის მოდელი იტვირთება (~60MB)...' });
+            self.postMessage({ kind: 'status', message: 'Voice model loading (~60MB)...' });
             const fetchResponse = await fetch(modelUrl);
             if (!fetchResponse.ok) throw new Error('Failed to fetch voice model');
             
@@ -107,13 +107,13 @@ async function init(voicePath) {
         }
     } catch (e) {
         console.warn('[Piper Worker] Cache API failed, falling back to network:', e);
-        self.postMessage({ kind: 'status', message: 'ხმის მოდელი იტვირთება (~60MB)...' });
+        self.postMessage({ kind: 'status', message: 'Voice model loading (~60MB)...' });
         const fetchResponse = await fetch(modelUrl);
         if (!fetchResponse.ok) throw new Error('Failed to fetch voice model');
         modelBuffer = await fetchResponse.arrayBuffer();
     }
 
-    self.postMessage({ kind: 'status', message: 'მოდელი ინიციალიზდება...' });
+    self.postMessage({ kind: 'status', message: 'Model initializing...' });
     ortSession = await ort.InferenceSession.create(modelBuffer);
 
     self.postMessage({ kind: 'ready' });
@@ -151,7 +151,7 @@ async function synthesize(text) {
     const phonemeIds = await phonemize(text);
 
     if (!phonemeIds || phonemeIds.length === 0) {
-        self.postMessage({ kind: 'error', message: 'ტექსტი ვერ გარდაიქმნა ფონემებად' });
+        self.postMessage({ kind: 'error', message: 'Text could not be converted to phonemes' });
         return;
     }
 
@@ -193,3 +193,5 @@ self.addEventListener('message', async (event) => {
         self.postMessage({ kind: 'error', message: e.message || String(e) });
     }
 });
+
+

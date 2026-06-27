@@ -1,4 +1,4 @@
-// supabase-client.js
+﻿// supabase-client.js
 
 const SUPABASE_URL = 'https://wdgvxerfxwtmpqztwgtj.supabase.co';
 
@@ -11,3 +11,4 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         }
     }
 });
+

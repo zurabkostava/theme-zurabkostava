@@ -1,4 +1,4 @@
-//puzzle.js
+﻿//puzzle.js
 let puzzleCards = [], puzzleCurrent = 0, puzzleCorrect = 0;
 let puzzleReverse = false;
 let puzzleCount = 10;
@@ -45,12 +45,12 @@ function showNextPuzzle() {
 
     const container = document.getElementById('puzzleGame');
     container.innerHTML = `
-        <h3>კითხვის ${puzzleCurrent + 1} / ${puzzleCards.length}</h3>
+        <h3>Question ${puzzleCurrent + 1} / ${puzzleCards.length}</h3>
         <p>დააწკაპუნე სიტყვებზე სწორი თანმიმდევრობით:</p>
         <div id="puzzleWords" style="margin: 10px 0;"></div>
         <div id="puzzleAnswer" style="min-height: 40px; border: 1px dashed #ccc; padding: 10px; margin-bottom: 10px;"></div>
-        <button id="puzzleSubmit" disabled>შემოწმება</button>
-        <button id="puzzleHintBtn" style="margin-left: 10px;">❓ დახმარება</button>
+        <button id="puzzleSubmit" disabled>Check</button>
+        <button id="puzzleHintBtn" style="margin-left: 10px;">❓ Help</button>
         <button id="puzzleAutoHintBtn" style="margin-left: 10px;">💡 მინიშნება</button>
         <div id="puzzleHint" style="margin-top: 10px; color: #888;"></div>
         <div id="puzzleFeedback" style="margin-top: 1rem;"></div>
@@ -141,7 +141,7 @@ function showNextPuzzle() {
         }
 
         if (isCorrect) {
-            feedback.innerHTML = `<span style="color: green;">სწორია!</span>`;
+            feedback.innerHTML = `<span style="color: green;">Correct!</span>`;
             updateCardByText(word, 3);
             puzzleCorrect++;
             puzzleAnswer.querySelectorAll('button').forEach(b => {
@@ -150,7 +150,7 @@ function showNextPuzzle() {
                 b.disabled = true;
             });
         } else {
-            feedback.innerHTML = `<span style="color: red;">არასწორია. სწორი წინადადება:<br><strong>${originalSentence}</strong></span>`;
+            feedback.innerHTML = `<span style="color: red;">არაCorrect. სწორი წინადადება:<br><strong>${originalSentence}</strong></span>`;
             updateCardByText(word, -3);
             puzzleAnswer.querySelectorAll('button').forEach(b => b.disabled = true);
         }
@@ -188,8 +188,8 @@ function updateCardByText(wordText, delta) {
 function showPuzzleResults() {
     const container = document.getElementById('puzzleGame');
     container.innerHTML = `
-        <h3>შედეგები</h3>
-        <p>სწორი პასუხები: ${puzzleCorrect} / ${puzzleCards.length}</p>
+        <h3>Results</h3>
+        <p>Correct answers: ${puzzleCorrect} / ${puzzleCards.length}</p>
     `;
 }
 
@@ -205,5 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tabBtn.addEventListener('click', initPuzzleGame);
     }
 });
+
+
 
 

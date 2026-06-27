@@ -1,4 +1,4 @@
-// wordhear.js
+﻿// wordhear.js
 
 let wordhearCards = [];
 let wordhearCurrentIndex = 0;
@@ -45,7 +45,7 @@ function populateWordhearTags() {
         });
     });
 
-    whTagSelect.innerHTML = '<option value="">ყველა</option>';
+    whTagSelect.innerHTML = '<option value="">All</option>';
     [...allTags].sort().forEach(tag => {
         const option = document.createElement('option');
         option.value = tag;
@@ -62,7 +62,7 @@ function startWordhearGame() {
     let allCards = getFilteredTrainingCards();
 
     if (allCards.length === 0) {
-        alert("ბარათები ვერ მოიძებნა არჩეული თეგით.");
+        alert("No cards found with the selected tag.");
         return;
     }
 
@@ -114,7 +114,7 @@ async function showNextWordhear() {
 
     whQuestionContainer.innerHTML = `
         <div class="quiz-question">
-            <h3>კითხვის ${wordhearCurrentIndex + 1} / ${wordhearCards.length}</h3>
+            <h3>Question ${wordhearCurrentIndex + 1} / ${wordhearCards.length}</h3>
             <button id="repeatWordhearBtn" style="margin-bottom: 10px;">🔁 გაიმეორე კითხვა</button>
             <div class="quiz-options">
                 ${options.map(opt => `<button class="quiz-option">${opt}</button>`).join('')}
@@ -168,10 +168,12 @@ async function showNextWordhear() {
 function showWordhearResults() {
     whQuestionContainer.innerHTML = '';
     whResultContainer.innerHTML = `
-        <h3>შედეგები</h3>
-        <p>სწორი პასუხები: ${wordhearCorrectAnswers} / ${wordhearCards.length}</p>
-        <p>არასწორი პასუხები: ${wordhearCards.length - wordhearCorrectAnswers}</p>
+        <h3>Results</h3>
+        <p>Correct answers: ${wordhearCorrectAnswers} / ${wordhearCards.length}</p>
+        <p>არაCorrect answers: ${wordhearCards.length - wordhearCorrectAnswers}</p>
     `;
 }
+
+
 
 

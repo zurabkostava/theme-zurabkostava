@@ -1,4 +1,4 @@
-// ==== notifications.js — Web Push + Supabase-synced notifications ====
+﻿// ==== notifications.js — Web Push + Supabase-synced notifications ====
 
 const VAPID_PUBLIC_KEY = 'BI6GbgN9_udyAyaXIumgu8X8u3BRwdvuest29gyLcvwKDBqhzk6Bp9OYOjMLeJtFU94Tx8khU-lI19M7APVvMFc';
 
@@ -154,7 +154,7 @@ async function saveNotification(notifData) {
             .select()
             .single();
         if (error) {
-            showToast('შეცდომა: ' + error.message, 'error');
+            showToast('Error: ' + error.message, 'error');
             return null;
         }
         return data;
@@ -165,7 +165,7 @@ async function saveNotification(notifData) {
             .select()
             .single();
         if (error) {
-            showToast('შეცდომა: ' + error.message, 'error');
+            showToast('Error: ' + error.message, 'error');
             return null;
         }
         return data;
@@ -177,7 +177,7 @@ async function deleteNotificationFromDB(id) {
         .from('notification_schedules')
         .delete()
         .eq('id', id);
-    if (error) showToast('შეცდომა: ' + error.message, 'error');
+    if (error) showToast('Error: ' + error.message, 'error');
 }
 
 async function toggleNotificationInDB(id, enabled) {
@@ -194,11 +194,11 @@ function renderNotificationList() {
     if (!container) return;
 
     if (notificationSchedules.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #888;">შეხსენებები არ გაქვთ.</p>';
+        container.innerHTML = '<p style="text-align: center; color: #888;">No reminders.</p>';
         return;
     }
 
-    const dayNames = ['კვი', 'ორშ', 'სამ', 'ოთხ', 'ხუთ', 'პარ', 'შაბ'];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     container.innerHTML = notificationSchedules.map((notif, index) => {
         const days = (notif.days || []).map(d => dayNames[d]).join(', ');
@@ -215,10 +215,10 @@ function renderNotificationList() {
                         <input type="checkbox" ${notif.enabled ? 'checked' : ''} onchange="toggleNotification(${index}, this.checked)">
                         <span class="notif-toggle-slider"></span>
                     </label>
-                    <button class="notif-edit-btn" onclick="editNotification(${index})" title="რედაქტირება">
+                    <button class="notif-edit-btn" onclick="editNotification(${index})" title="Edit">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="notif-delete-btn" onclick="deleteNotification(${index})" title="წაშლა">
+                    <button class="notif-delete-btn" onclick="deleteNotification(${index})" title="Delete">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
@@ -233,9 +233,9 @@ function renderNotificationList() {
 }
 
 function getProgressLabel(progressRange) {
-    if (!progressRange) return 'გლობალური';
-    if (progressRange === '100-100') return 'ნასწავლი';
-    if (progressRange === '0-99') return '100%-ის გარეშე';
+    if (!progressRange) return 'Global';
+    if (progressRange === '100-100') return 'Learned';
+    if (progressRange === '0-99') return 'Except 100%';
     return progressRange + '%';
 }
 
@@ -244,13 +244,13 @@ function getDictionaryNameById(id) {
         const dict = allDictionaries.find(d => d.id === id);
         if (dict) return dict.name;
     }
-    return 'ყველა';
+    return 'All';
 }
 
 // ==== CRUD Actions ====
 
 async function deleteNotification(index) {
-    if (!confirm('ნამდვილად წაშალოთ შეხსენება?')) return;
+    if (!confirm('Are you sure you want to delete the reminder?')) return;
     const notif = notificationSchedules[index];
     if (notif.id) await deleteNotificationFromDB(notif.id);
     notificationSchedules.splice(index, 1);
@@ -288,7 +288,7 @@ function populateNotifDictDropdown(selectedId) {
 function populateNotifTagDropdown(selectedTags) {
     const select = document.getElementById('notifTagSelect');
     if (!select || typeof allTags === 'undefined') return;
-    select.innerHTML = '<option value="">ყველა</option>';
+    select.innerHTML = '<option value="">All</option>';
     const selected = selectedTags || [];
     [...allTags].forEach(tag => {
         const option = document.createElement('option');
@@ -310,7 +310,7 @@ function openNotifForm(notif) {
     const progressSelect = document.getElementById('notifProgressSelect');
 
     if (notif) {
-        formTitle.textContent = 'შეხსენების რედაქტირება';
+        formTitle.textContent = 'Edit Reminder';
         document.getElementById('notifTimeInput').value = notif.time || '12:00';
         populateNotifDictDropdown(notif.dictionaryId);
         populateNotifTagDropdown(notif.tags);
@@ -320,7 +320,7 @@ function openNotifForm(notif) {
             btn.classList.toggle('active', (notif.days || []).includes(day));
         });
     } else {
-        formTitle.textContent = 'ახალი შეხსენება';
+        formTitle.textContent = 'New Reminder';
         document.getElementById('notifTimeInput').value = '12:00';
         populateNotifDictDropdown();
         populateNotifTagDropdown();
@@ -377,13 +377,13 @@ async function initNotificationUI() {
     saveBtn.onclick = async () => {
         const time = document.getElementById('notifTimeInput').value;
         if (!time) {
-            showToast('აირჩიეთ დრო', 'error');
+            showToast('Select time', 'error');
             return;
         }
 
         const selectedDays = [...document.querySelectorAll('.weekday-btn.active')].map(btn => parseInt(btn.dataset.day));
         if (selectedDays.length === 0) {
-            showToast('აირჩიეთ მინიმუმ ერთი დღე', 'error');
+            showToast('Select at least one day', 'error');
             return;
         }
 
@@ -416,7 +416,7 @@ async function initNotificationUI() {
         addBtn.style.display = '';
         editingNotifIndex = -1;
 
-        showToast(notifData.id ? 'შეხსენება განახლდა' : 'შეხსენება დაემატა', 'success');
+        showToast(notifData.id ? 'Reminder updated' : 'Reminder added', 'success');
     };
 
     // Test notification button
@@ -436,7 +436,7 @@ async function initNotificationUI() {
                 info += ` | Asked: ${result}`;
                 if (result !== 'granted') {
                     if (debugEl) debugEl.textContent = info;
-                    showToast('ნოტიფიკაციის ნებართვა უარყოფილია. ბრაუზერის პარამეტრებში ჩართეთ.', 'error');
+                    showToast('Notification permission denied. Enable in browser settings.', 'error');
                     return;
                 }
             }
@@ -452,7 +452,7 @@ async function initNotificationUI() {
                     const swPath = (window.WORDEVO_ASSET_PATH || '.') + '/sw.js';
                     const reg = await navigator.serviceWorker.register(swPath, { updateViaCache: 'none' });
                     await reg.showNotification('Wordevo Test', {
-                        body: 'ტესტ ნოტიფიკაცია მუშაობს!',
+                        body: 'Test notification works!',
                         icon: './icons/icon-192.png',
                         badge: './icons/icon-192.png',
                         tag: 'wordevo-test',
@@ -460,22 +460,22 @@ async function initNotificationUI() {
                         vibrate: [200, 100, 200],
                         requireInteraction: true
                     });
-                    showToast('ტესტ ნოტიფიკაცია გაიგზავნა!', 'success');
+                    showToast('Test notification sent!', 'success');
                 } catch(e) {
                     console.error('[Notif] Test SW showNotification failed:', e);
                     new Notification('Wordevo Test', {
-                        body: 'ტესტ ნოტიფიკაცია მუშაობს!',
+                        body: 'Test notification works!',
                         icon: './icons/logo.svg'
                     });
-                    showToast('ტესტ ნოტიფიკაცია გაიგზავნა!', 'success');
+                    showToast('Test notification sent!', 'success');
                 }
             } else {
                 // Fallback
                 new Notification('Wordevo Test', {
-                    body: 'ტესტ ნოტიფიკაცია მუშაობს!',
+                    body: 'Test notification works!',
                     icon: './icons/logo.svg'
                 });
-                showToast('ტესტ ნოტიფიკაცია გაიგზავნა!', 'success');
+                showToast('Test notification sent!', 'success');
             }
         };
     }
@@ -569,7 +569,7 @@ async function showNotificationWithCard(notif) {
         title = card.word || 'Wordevo';
         body = (card.main_translations || []).join(', ');
     } else {
-        body = `დროა გადაიმეოროთ სიტყვები! (${dictName})`;
+        body = `Time to review your words! (${dictName})`;
     }
 
     // Show via service worker (persists even if tab not focused)
@@ -611,4 +611,7 @@ async function registerNotificationSW() {
         return null;
     }
 }
+
+
+
 

@@ -1,4 +1,4 @@
-// ==== Wordevo Service Worker ====
+﻿// ==== Wordevo Service Worker ====
 const SW_VERSION = 14;
 const PUSH_URL = 'https://wdgvxerfxwtmpqztwgtj.supabase.co/functions/v1/get-push-notification';
 
@@ -94,4 +94,5 @@ self.addEventListener('notificationclick', event => {
             .then(clients => clients.length > 0 ? clients[0].focus() : self.clients.openWindow('./'))
     );
 });
+
 
