@@ -735,24 +735,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <p class="notif-empty" style="text-align: center; color: #888;">No reminders.</p>
             </div>
 
-            <div class="notif-add-form" id="notifAddForm" style="display:none;">
-                <h3>New Reminder</h3>
-                <div class="notif-form-row">
-                    <label>Time:</label>
-                    <input type="time" id="notifTimeInput" value="12:00">
-                </div>
-                <div class="notif-form-row">
-                    <label>Days:</label>
-                    <div class="notif-weekdays" id="notifWeekdays">
-                        <button type="button" class="weekday-btn" data-day="1">Mon</button>
-                        <button type="button" class="weekday-btn" data-day="2">Tue</button>
-                        <button type="button" class="weekday-btn" data-day="3">Wed</button>
-                        <button type="button" class="weekday-btn" data-day="4">Thu</button>
-                        <button type="button" class="weekday-btn" data-day="5">Fri</button>
-                        <button type="button" class="weekday-btn" data-day="6">Sat</button>
-                        <button type="button" class="weekday-btn" data-day="0">Sun</button>
-                    </div>
-                </div>
+            
                 <div class="notif-form-row">
                     <label>Dictionary:</label>
                     <select id="notifDictSelect"></select>
@@ -793,6 +776,35 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         </div>
     </div>
 
+    <div class="modal-overlay" id="notifAddModal" style="display:none; z-index: 100000;">
+        <div class="modal" style="max-width:450px;">
+            <div class="modal-header">
+                <h2 id="notifAddModalTitle">New Reminder</h2>
+                <button class="close-button" id="closeNotifAddModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="notif-add-form" id="notifAddForm" style="display:none;">
+                
+                <div class="notif-form-row">
+                    <label>Time:</label>
+                    <input type="time" id="notifTimeInput" value="12:00">
+                </div>
+                <div class="notif-form-row">
+                    <label>Days:</label>
+                    <div class="notif-weekdays" id="notifWeekdays">
+                        <button type="button" class="weekday-btn" data-day="1">Mon</button>
+                        <button type="button" class="weekday-btn" data-day="2">Tue</button>
+                        <button type="button" class="weekday-btn" data-day="3">Wed</button>
+                        <button type="button" class="weekday-btn" data-day="4">Thu</button>
+                        <button type="button" class="weekday-btn" data-day="5">Fri</button>
+                        <button type="button" class="weekday-btn" data-day="6">Sat</button>
+                        <button type="button" class="weekday-btn" data-day="0">Sun</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <h2 class="app-logo mobile-logo">Wordevo</h2>
     <div class="toast-container" id="toastContainer"></div>
 </div>

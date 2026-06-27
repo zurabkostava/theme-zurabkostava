@@ -300,12 +300,10 @@ function populateNotifTagDropdown(selectedTags) {
 }
 
 function openNotifForm(notif) {
-    const form = document.getElementById('notifAddForm');
-    const addBtn = document.getElementById('openAddNotificationModalBtn');
-    const formTitle = form.querySelector('h3');
+    const modal = document.getElementById('notifAddModal');
+    const formTitle = document.getElementById('notifAddModalTitle');
 
-    form.style.display = 'block';
-    addBtn.style.display = 'none';
+    modal.style.display = 'flex';
 
     const progressSelect = document.getElementById('notifProgressSelect');
 
@@ -346,17 +344,23 @@ async function initNotificationUI() {
 
     notifBtn.onclick = () => {
         renderNotificationList();
-        form.style.display = 'none';
-        addBtn.style.display = '';
         editingNotifIndex = -1;
         modal.style.display = 'flex';
     };
 
     closeBtn.onclick = () => {
         modal.style.display = 'none';
-        form.style.display = 'none';
         editingNotifIndex = -1;
     };
+    
+    const notifAddModal = document.getElementById('notifAddModal');
+    const closeNotifAddModalBtn = document.getElementById('closeNotifAddModalBtn');
+    if (closeNotifAddModalBtn) {
+        closeNotifAddModalBtn.onclick = () => {
+            notifAddModal.style.display = 'none';
+            editingNotifIndex = -1;
+        };
+    }
 
     addBtn.onclick = () => {
         editingNotifIndex = -1;
@@ -364,8 +368,8 @@ async function initNotificationUI() {
     };
 
     cancelBtn.onclick = () => {
-        form.style.display = 'none';
-        addBtn.style.display = '';
+        const notifAddModal = document.getElementById('notifAddModal');
+        if (notifAddModal) notifAddModal.style.display = 'none';
         editingNotifIndex = -1;
     };
 
@@ -412,8 +416,8 @@ async function initNotificationUI() {
         await loadNotificationSchedules();
         renderNotificationList();
 
-        form.style.display = 'none';
-        addBtn.style.display = '';
+        const notifAddModal = document.getElementById('notifAddModal');
+        if (notifAddModal) notifAddModal.style.display = 'none';
         editingNotifIndex = -1;
 
         showToast(notifData.id ? 'Reminder updated' : 'Reminder added', 'success');
