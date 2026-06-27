@@ -7422,8 +7422,8 @@ button.speak-btn.active {
     padding: 4px 8px !important;
     font-size: 0.85rem !important;
     border-radius: 6px !important;
-    margin-left: 4px !important;
-    margin-right: 8px !important;
+    margin-left: 6px !important;
+    margin-right: 0 !important;
     vertical-align: middle !important;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
 }
@@ -7447,7 +7447,7 @@ button.speak-btn.active {
 .sentence-pair .speak-btn:hover {
     transform: translateZ(0) !important;
     vertical-align: baseline !important;
-    margin: 0 8px 0 4px !important;
+    margin: 0 0 0 6px !important;
     padding: 4px 8px !important;
     border-width: 1px !important;
     box-shadow: 0 0 8px rgba(230, 126, 34, 0.4) !important;

@@ -1077,7 +1077,7 @@ data-lang="ka" style="margin-right: 8px; margin-left: 0; vertical-align: middle;
                     pEn.className = 'en-sentence';
                     const safeEn = (englishSentences[i] || '').replace(/"/g, '&quot;');
                     const safeGe = (georgianSentences[i] || '').replace(/"/g, '&quot;');
-                    pEn.innerHTML = `<span class="prefix">${i + 1}. </span><button class="speak-btn" title="წაიკითხე ორივე ენაზე" data-read-both="true" data-text-en="${safeEn}" data-text-ge="${safeGe}"><i class="fas fa-volume-up"></i></button> ${englishSentences[i]}`;
+                    pEn.innerHTML = `<span class="prefix">${i + 1}. </span>${englishSentences[i]} <button class="speak-btn" title="წაიკითხე ორივე ენაზე" data-read-both="true" data-text-en="${safeEn}" data-text-ge="${safeGe}"><i class="fas fa-volume-up"></i></button>`;
                     div.appendChild(pEn);
                 }
                 if (georgianSentences[i]) {
