@@ -7608,3 +7608,6 @@ body.dark .primary-add-btn:hover {
         margin-left: 0 !important; /* Let it wrap or flex nicely */
     }
 }
+
+body.dark .toolbar-divider { background: rgba(255, 255, 255, 0.1) !important; }
+@media (max-width: 768px) { .toolbar-divider { display: none !important; } }
