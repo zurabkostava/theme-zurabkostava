@@ -51,6 +51,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/typegame.js?v=<?php echo time(); ?>"></script>
     <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/sentence.js?v=<?php echo time(); ?>"></script>
     <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/puzzle.js?v=<?php echo time(); ?>"></script>
+    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/speakgame.js?v=<?php echo time(); ?>"></script>
     <script src="<?php echo get_template_directory_uri(); ?>/WordEvo/tts.js?v=<?php echo time(); ?>"></script>
     <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/notifications.js?v=<?php echo time(); ?>"></script>
 
@@ -525,6 +526,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                     <button class="training-tab" data-tab="tab7">
                         PUZZLE
                     </button>
+                    <button class="training-tab" data-tab="tab8">
+                        SPEAK
+                    </button>
                     <button class="training-close">
                         ×
                     </button>
@@ -597,6 +601,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             <div class="training-tab-content hidden" data-tab-content="tab6">
             </div>
             <div class="training-tab-content hidden" data-tab-content="tab7">
+            </div>
+            <div class="training-tab-content hidden" data-tab-content="tab8" id="speakTab">
             </div>
         </div>
     </div>

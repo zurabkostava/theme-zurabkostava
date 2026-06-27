@@ -1,4 +1,4 @@
-﻿//script.js
+//script.js
 // ==== 1. გლობალური მდგომარეობის ცვლადები ====
 let currentUser = null;
 let isAppInitialized = false; // NEW: ჩვენი "ალამი"
@@ -2760,6 +2760,9 @@ window.startActiveGame = function() {
             break;
         case 'tab7':
             if (typeof startPuzzleGame === 'function') startPuzzleGame();
+            break;
+        case 'tab8':
+            if (typeof startSpeakGame === 'function') startSpeakGame();
             break;
     }
 };
