@@ -97,16 +97,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             </div>
             <div class="top-center">
 
-                <div class="input-container search-input">
-                    <label class="material-input">
-                        <input class="form-control" id="searchInput" placeholder=" " type="text"/>
-                        <span>
-        ძიება
-       </span>
-                        <i class="fas fa-search"
-                           style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #aaa;">
-                        </i>
-                    </label>
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input class="modern-search-input" id="searchInput" placeholder="მოძებნე სიტყვა..." type="text"/>
                 </div>
                 <button id="trainingBtn">
                     <i class="fa-solid fa-award"></i>

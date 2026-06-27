@@ -6120,3 +6120,213 @@ button:active, .btn:active {
 
 
 
+
+
+/* ==========================================================================
+   WORD EVO - HEADER OVERHAUL (GLASSMORPHISM & UNIFIED UI)
+   ========================================================================== */
+
+/* 1. Header Wrapper */
+.header-wrapper {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05) !important;
+    overflow: visible !important; /* Allow dropdowns to overflow */
+    padding: 10px 15px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+body.dark .header-wrapper {
+    background: var(--card-bg-premium) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* 2. Top Bar & Card Toolbar Structure */
+.top-bar, .card-toolbar {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    height: auto !important;
+    box-shadow: none !important;
+}
+
+.top-bar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.card-toolbar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding-top: 10px !important;
+    border-top: 1px solid rgba(0,0,0,0.05) !important;
+}
+
+body.dark .card-toolbar {
+    border-top: 1px solid rgba(255,255,255,0.05) !important;
+}
+
+/* 3. Logo */
+.app-logo {
+    font-size: 24px !important;
+    font-weight: 900 !important;
+    background: linear-gradient(135deg, #a855f7, #ec4899) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    letter-spacing: -0.5px;
+}
+
+/* 4. Search Bar Modernization */
+.search-input-wrapper {
+    position: relative;
+    width: 300px;
+    max-width: 100%;
+}
+
+.modern-search-input {
+    width: 100%;
+    padding: 10px 15px 10px 40px !important;
+    border-radius: 24px !important;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    background: rgba(0,0,0,0.03) !important;
+    font-family: inherit;
+    font-size: 14px;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+.modern-search-input:focus {
+    outline: none;
+    border-color: #a855f7 !important;
+    background: transparent !important;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1) !important;
+}
+
+body.dark .modern-search-input {
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    background: rgba(255,255,255,0.05) !important;
+    color: #fff;
+}
+
+body.dark .modern-search-input:focus {
+    background: rgba(0,0,0,0.2) !important;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    pointer-events: none;
+}
+
+/* 5. Unified Action Buttons */
+.top-bar button, .card-toolbar .toolbar-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    border: none !important;
+    background: rgba(0,0,0,0.05) !important;
+    color: #555 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    padding: 0 !important;
+    font-size: 15px !important;
+}
+
+body.dark .top-bar button, body.dark .card-toolbar .toolbar-btn {
+    background: rgba(255,255,255,0.05) !important;
+    color: #ddd !important;
+}
+
+.top-bar button:hover, .card-toolbar .toolbar-btn:hover {
+    background: rgba(0,0,0,0.1) !important;
+    transform: translateY(-2px);
+}
+
+body.dark .top-bar button:hover, body.dark .card-toolbar .toolbar-btn:hover {
+    background: rgba(255,255,255,0.1) !important;
+}
+
+/* Red Buttons (Delete, Logout) */
+#deleteDictionaryBtn, #logoutBtn {
+    color: #ff4757 !important;
+    background: rgba(255, 71, 87, 0.1) !important;
+}
+#deleteDictionaryBtn:hover, #logoutBtn:hover {
+    background: rgba(255, 71, 87, 0.2) !important;
+}
+
+/* 6. Primary Training Button */
+#trainingBtn {
+    width: auto !important;
+    padding: 0 20px !important;
+    border-radius: 20px !important;
+    background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+    border: none !important;
+}
+#trainingBtn i { margin-right: 8px; }
+#trainingBtn:hover {
+    background: linear-gradient(135deg, #60a5fa, #3b82f6) !important;
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* 7. Dropdowns and Checkboxes inside Toolbar */
+#dictionarySelect, .toolbar-select {
+    padding: 8px 12px !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    background: rgba(0,0,0,0.03) !important;
+    font-family: inherit;
+    font-size: 13px !important;
+    color: inherit;
+    cursor: pointer;
+    outline: none;
+}
+body.dark #dictionarySelect, body.dark .toolbar-select {
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    background: rgba(255,255,255,0.05) !important;
+    color: #fff;
+}
+#dictionarySelect:hover, .toolbar-select:hover { background: rgba(0,0,0,0.08) !important; }
+body.dark #dictionarySelect:hover, body.dark .toolbar-select:hover { background: rgba(255,255,255,0.1) !important; }
+
+/* 8. Hide Mastered Toggle Cleanup */
+.hide-mastered-wrapper label span {
+    font-weight: 500;
+    color: inherit !important;
+    opacity: 0.8;
+}
+
+/* Miscellaneous Alignment Fixes */
+.top-left, .top-center, .top-right, .toolbar-left, .toolbar-center {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+.top-center {
+    flex-grow: 1;
+    justify-content: center !important;
+}
+#userEmailDisplay {
+    margin-right: 10px;
+    font-weight: 500;
+    opacity: 0.7;
+}
+
