@@ -182,6 +182,12 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                     </button>
                 </div>
             </div>
+            <div class="toolbar-right" style="display: flex; align-items: center; margin-left: auto;">
+                <button id="addCardBtn" class="primary-add-btn">
+                    <i class="fas fa-plus"></i>
+                    <span class="add-btn-text">Add Word</span>
+                </button>
+            </div>
         </div>
     </div>
     <div class="card-container" id="cardContainer">
@@ -646,10 +652,6 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     </div>
     <button class="mobile-toggle-btn" id="showTopBtn">
         <i class="fas fa-sliders">
-        </i>
-    </button>
-    <button class="add-card-btn" id="addCardBtn">
-        <i class="fas fa-plus">
         </i>
     </button>
     <div class="toolbar-actions">

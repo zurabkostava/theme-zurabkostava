@@ -7555,3 +7555,56 @@ body.dark .player-btn:hover {
     background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
     box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3) !important;
 }
+
+/* =========================================
+   PRIMARY ADD BUTTON (IN TOOLBAR)
+   ========================================= */
+.primary-add-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    background: linear-gradient(135deg, #0077cc 0%, #005fa3 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 15px rgba(0, 119, 204, 0.3) !important;
+    height: 38px !important;
+    width: auto !important; /* Override toolbar-btn square constraint if applied */
+}
+
+.primary-add-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0, 119, 204, 0.5) !important;
+    filter: brightness(1.1) !important;
+}
+
+body.dark .primary-add-btn {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3) !important;
+}
+
+body.dark .primary-add-btn:hover {
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5) !important;
+}
+
+/* Mobile optimizations for the new toolbar-based Add button */
+@media (max-width: 768px) {
+    .add-btn-text {
+        display: none !important; /* Hide "Add Word" text on small screens */
+    }
+    .primary-add-btn {
+        padding: 0 !important;
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 50% !important; /* Make it a circle */
+    }
+    .toolbar-right {
+        margin-left: 0 !important; /* Let it wrap or flex nicely */
+    }
+}
