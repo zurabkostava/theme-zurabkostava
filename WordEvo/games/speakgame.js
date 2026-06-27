@@ -179,19 +179,24 @@ function handleSpeakResult(transcript) {
     let fbText = '';
     let fbColor = '';
     
+    incrementStat('TOTAL_TESTS', 1);
+
     if (similarity >= 0.90) {
         fbText = 'Perfect! 🎉 +0.5%';
         fbColor = '#2ecc71'; // Green
         speakTotalScore += 0.5;
+        incrementStat('TOTAL_CORRECT', 1);
         if (card) updateCardProgress(card, 0.5);
     } else if (similarity >= 0.70) {
         fbText = 'Good! 👍 +0.2%';
         fbColor = '#f1c40f'; // Yellow
         speakTotalScore += 0.2;
+        incrementStat('TOTAL_CORRECT', 1);
         if (card) updateCardProgress(card, 0.2);
     } else {
         fbText = 'Try again! ❌ +0%';
         fbColor = '#e74c3c'; // Red
+        incrementStat('TOTAL_WRONG', 1);
     }
     
     showSpeakFeedback(fbText, fbColor);
