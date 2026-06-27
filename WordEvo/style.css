@@ -6383,3 +6383,12 @@ body.dark .card-toolbar {
     background: rgba(0, 0, 0, 0.15) !important;
     border-top: 1px solid rgba(255,255,255,0.05) !important;
 }
+
+
+/* HEADER FLOATING MARGINS */
+.header-wrapper {
+    margin-left: 10px !important;
+    margin-right: 10px !important;
+    width: calc(100% - 20px) !important;
+    margin-top: 10px !important;
+}
