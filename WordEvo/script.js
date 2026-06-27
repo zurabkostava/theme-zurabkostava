@@ -192,6 +192,64 @@ function renderStatsChart(period) {
     });
 }
 
+async function syncStatsFromSupabase() {
+    if (!currentUser || currentUser.id === 'offline-user') return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('user_stats')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .single();
+
+        if (error && error.code !== 'PGRST116') {
+            console.error('[Wordevo] Error fetching stats:', error);
+            return;
+        }
+
+        if (data) {
+            localStorage.setItem('TOTAL_TESTS', (data.total_tests || 0).toString());
+            localStorage.setItem('TOTAL_CORRECT', (data.total_correct || 0).toString());
+            localStorage.setItem('TOTAL_WRONG', (data.total_wrong || 0).toString());
+            localStorage.setItem('DAILY_STATS', JSON.stringify(data.daily_stats || {}));
+        } else {
+            const tests = parseInt(localStorage.getItem('TOTAL_TESTS') || '0');
+            const correct = parseInt(localStorage.getItem('TOTAL_CORRECT') || '0');
+            const wrong = parseInt(localStorage.getItem('TOTAL_WRONG') || '0');
+            let daily = {};
+            try { daily = JSON.parse(localStorage.getItem('DAILY_STATS')) || {}; } catch(e) {}
+            
+            await supabaseClient.from('user_stats').insert({
+                user_id: currentUser.id,
+                total_tests: tests,
+                total_correct: correct,
+                total_wrong: wrong,
+                daily_stats: daily
+            });
+        }
+    } catch (e) {
+        console.error('[Wordevo] Exception in syncStats:', e);
+    }
+}
+
+async function pushStatsToSupabase() {
+    if (!currentUser || currentUser.id === 'offline-user') return;
+    const tests = parseInt(localStorage.getItem('TOTAL_TESTS') || '0');
+    const correct = parseInt(localStorage.getItem('TOTAL_CORRECT') || '0');
+    const wrong = parseInt(localStorage.getItem('TOTAL_WRONG') || '0');
+    let daily = {};
+    try { daily = JSON.parse(localStorage.getItem('DAILY_STATS')) || {}; } catch(e) {}
+    
+    try {
+        await supabaseClient.from('user_stats').upsert({
+            user_id: currentUser.id,
+            total_tests: tests,
+            total_correct: correct,
+            total_wrong: wrong,
+            daily_stats: daily
+        }, { onConflict: 'user_id' });
+    } catch (e) {}
+}
+
 function incrementStat(key, amount = 1) {
     const currentVal = parseFloat(localStorage.getItem(key) || '0');
     localStorage.setItem(key, (currentVal + amount).toString());
@@ -217,6 +275,7 @@ function incrementStat(key, amount = 1) {
 
         localStorage.setItem('DAILY_STATS', JSON.stringify(dailyStats));
     }
+    pushStatsToSupabase();
 }
 function getGlobalTrainingSettings() {
     const tag = document.getElementById('globalTagSelect')?.value || '';
@@ -1459,6 +1518,7 @@ async function deleteCard(card) {
             userEmailDisplay.textContent = currentUser.email;
         } catch(e) { console.error('[Wordevo] CRASH at UI setup:', e); }
         try {
+            await syncStatsFromSupabase(); // Sync stats right away
             const stored = localStorage.getItem(TEXTAREA_STORAGE_KEY);
             const btn = document.getElementById("downloadTemplateBtn");
             const quizTab = document.getElementById('quizTab');
@@ -1780,6 +1840,16 @@ async function deleteCard(card) {
         localStorage.removeItem('TOTAL_TESTS');
         localStorage.removeItem('TOTAL_CORRECT');
         localStorage.removeItem('TOTAL_WRONG');
+        localStorage.removeItem('DAILY_STATS');
+        if (currentUser && currentUser.id !== 'offline-user') {
+            await supabaseClient.from('user_stats').upsert({
+                user_id: currentUser.id,
+                total_tests: 0,
+                total_correct: 0,
+                total_wrong: 0,
+                daily_stats: {}
+            }, { onConflict: 'user_id' });
+        }
 // 2. ვანულებთ პროგრესს ბაზაში
 // ვეუბნებით Supabase-ს: განაახლე "cards" ცხრილი,
 // დააყენე progress = 0
