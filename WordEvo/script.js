@@ -1077,7 +1077,7 @@ data-lang="ka">
                     pEn.className = 'en-sentence';
                     const safeEn = (englishSentences[i] || '').replace(/"/g, '&quot;');
                     const safeGe = (georgianSentences[i] || '').replace(/"/g, '&quot;');
-                    pEn.innerHTML = `<span class="prefix">${i + 1}. </span>${englishSentences[i]} <button class="speak-btn" title="წაიკითხე ორივე ენაზე" data-read-both="true" data-text-en="${safeEn}" data-text-ge="${safeGe}"><i class="fas fa-volume-up"></i></button>`;
+                    pEn.innerHTML = `<span class="prefix">${i + 1}. </span><button class="speak-btn" title="წაიკითხე ორივე ენაზე" data-read-both="true" data-text-en="${safeEn}" data-text-ge="${safeGe}"><i class="fas fa-volume-up"></i></button> ${englishSentences[i]}`;
                     div.appendChild(pEn);
                 }
                 if (georgianSentences[i]) {
