@@ -310,6 +310,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         ×
                     </button>
                 </div>
+                <div id="previewDate" style="font-size: 13px; color: #888; margin-bottom: 10px;"></div>
                 <hr/>
                 <p id="previewTranslation">
                 </p>

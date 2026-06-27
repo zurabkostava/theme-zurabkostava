@@ -1006,6 +1006,17 @@ function showCardPreview(word, mainTranslations, extraTranslations, tags, englis
     }
     const previewWordEl = document.getElementById('previewWord');
     previewWordEl.innerHTML = `${word} <button class="speak-btn" title="წაიკითხე სიტყვა" data-word="${word}"><i class="fas fa-volume-up"></i></button>`;
+
+    const previewDateEl = document.getElementById('previewDate');
+    if (previewDateEl) {
+        if (card && card.dataset.updated) {
+            const dateObj = new Date(parseInt(card.dataset.updated));
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            previewDateEl.textContent = `Added / Updated: ${dateObj.toLocaleDateString('en-GB', options)}`;
+        } else {
+            previewDateEl.textContent = '';
+        }
+    }
     const main = mainTranslations.join('; ');
     const extra = extraTranslations.length
         ? `<span class="extra">${extraTranslations.join('; ')}</span>`
