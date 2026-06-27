@@ -104,16 +104,17 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <button id="addDictionaryBtn" title="ახალი ლექსიკონი"><i class="fas fa-plus"></i></button>
                 <button id="deleteDictionaryBtn" title="ლექსიკონის წაშლა" style="color: #ff4757; background: rgba(255, 71, 87, 0.1);"><i class="fas fa-trash"></i></button>
             </div>
-            <div class="top-center">
+            <div class="top-center" style="display: flex !important; align-items: center !important; justify-content: center !important; gap: 20px !important;">
 
-                <div class="search-input-wrapper">
+                <div class="search-input-wrapper" style="position: relative !important; width: 350px !important; flex-shrink: 0 !important; margin: 0 !important;">
                     <i class="fas fa-search search-icon"></i>
-                    <input class="modern-search-input" id="searchInput" placeholder="მოძებნე სიტყვა..." type="text"/>
+                    <input class="modern-search-input" id="searchInput" placeholder="მოძებნე სიტყვა..." type="text" style="width: 100% !important; box-sizing: border-box !important; min-width: 0 !important; margin: 0 !important;"/>
                 </div>
-                <button id="trainingBtn">
+                <button id="trainingBtn" style="margin: 0 !important; flex-shrink: 0 !important; position: relative !important; z-index: 2 !important;">
                     <i class="fa-solid fa-award"></i>
                     ტრენინგი
                 </button>
+
 
             </div>
             <div class="top-right">
