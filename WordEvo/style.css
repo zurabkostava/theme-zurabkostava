@@ -3071,622 +3071,182 @@ textarea {
 
 }
 
+
 .input-container {
-
     width: 100%;
-
-    /* Input, Textarea */
-
-    /* Span */
-
-    /* Corners */
-
-    /* Hover */
-
-    /* Placeholder-shown */
-
-    /* Focus */
-
-    /* Disabled */
-
-    /* Faster transition in Safari for less noticable fractional font-size issue */
-
-    /* Autofilled */
-
+    margin-bottom: 16px;
 }
 
 .input-container .material-input {
-
-    --pure-material-safari-helper1: rgb(var(--pure-material-primary-rgb, 33, 150, 243));
-
     position: relative;
-
     display: inline-block;
-
-    padding-top: 6px;
-
-    font-family: var(--pure-material-font, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
-
-    font-size: 16px;
-
-    line-height: 1.5;
-
     width: 100%;
-
-    overflow: hidden;
-
+    font-family: 'Outfit', 'Inter', sans-serif;
+    font-size: 16px;
 }
 
 .input-container .material-input > input,
-
 .input-container .material-input > textarea {
-
     box-sizing: border-box;
-
+    width: 100%;
+    padding: 20px 14px 8px 14px;
     margin: 0;
-
-    border: solid 1px; /* Safari */
-
-    border-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.6);
-
-    border-top-color: transparent;
-
-    border-radius: 6px;
-
-    padding: 12px 10px 16px;
-
-    width: 100%;
-
-    height: inherit;
-
-    color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.87);
-
-    background-color: rgba(255, 255, 255, 0.47);
-
-    box-shadow: none; /* Firefox */
-
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    color: #e0e0e0;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     font-family: inherit;
-
     font-size: inherit;
-
-    line-height: inherit;
-
-    caret-color: rgb(var(--pure-material-primary-rgb, 33, 150, 243));
-
-    transition: border 0.2s, box-shadow 0.2s;
-
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    outline: none;
 }
 
-.input-container .material-input > input + span,
-
-.input-container .material-input > textarea + span {
-
-    position: absolute;
-
-    top: -1px;
-
-    left: 0;
-
-    display: flex;
-
-    border-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.6);
-
-    width: 100%;
-
-    max-height: 100%;
-
-    color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.6);
-
-    font-size: 75%;
-
-    line-height: 15px;
-
-    cursor: text;
-
-    transition: color 0.2s, font-size 0.2s, line-height 0.2s;
-
+body:not(.dark) .input-container .material-input > input,
+body:not(.dark) .input-container .material-input > textarea {
+    color: #111;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.input-container .material-input > input + span::before,
-
-.input-container .material-input > input + span::after,
-
-.input-container .material-input > textarea + span::before,
-
-.input-container .material-input > textarea + span::after {
-
-    content: "";
-
-    display: block;
-
-    box-sizing: border-box;
-
-    margin-top: 6px;
-
-    border-top: solid 1px;
-
-    border-top-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.6);
-
-    min-width: 10px;
-
-    height: 8px;
-
-    pointer-events: none;
-
-    box-shadow: inset 0 1px transparent;
-
-    transition: border-color 0.2s, box-shadow 0.2s;
-
+.input-container .material-input > input:hover,
+.input-container .material-input > textarea:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.25);
 }
 
-.input-container .material-input > input + span::before,
-
-.input-container .material-input > textarea + span::before {
-
-    margin-right: 4px;
-
-    border-left: solid 1px transparent;
-
-    border-radius: 6px 0;
-
-}
-
-.input-container .material-input > input + span::after,
-
-.input-container .material-input > textarea + span::after {
-
-    flex-grow: 1;
-
-    margin-left: 4px;
-
-    border-right: solid 1px transparent;
-
-    border-radius: 0 6px;
-
-}
-
-.input-container .material-input:hover > input,
-
-.input-container .material-input:hover > textarea {
-
-    border-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.87);
-
-    border-top-color: transparent;
-
-}
-
-.input-container .material-input:hover > input + span::before,
-
-.input-container .material-input:hover > textarea + span::before,
-
-.input-container .material-input:hover > input + span::after,
-
-.input-container .material-input:hover > textarea + span::after {
-
-    border-top-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.87);
-
-}
-
-.input-container .material-input:hover > input:not(:focus):placeholder-shown,
-
-.input-container .material-input:hover > textarea:not(:focus):placeholder-shown {
-
-    border-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.87);
-
-}
-
-.input-container .material-input > input:not(:focus):placeholder-shown,
-
-.input-container .material-input > textarea:not(:focus):placeholder-shown {
-
-    border-top-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.6);
-
-}
-
-.input-container .material-input > input:not(:focus):placeholder-shown + span,
-
-.input-container .material-input > textarea:not(:focus):placeholder-shown + span {
-
-    font-size: inherit;
-
-    line-height: 68px;
-
-}
-
-.input-container .material-input > input:not(:focus):placeholder-shown + span::before,
-
-.input-container .material-input > textarea:not(:focus):placeholder-shown + span::before,
-
-.input-container .material-input > input:not(:focus):placeholder-shown + span::after,
-
-.input-container .material-input > textarea:not(:focus):placeholder-shown + span::after {
-
-    border-top-color: transparent;
-
+body:not(.dark) .input-container .material-input > input:hover,
+body:not(.dark) .input-container .material-input > textarea:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(0, 0, 0, 0.3);
 }
 
 .input-container .material-input > input:focus,
-
 .input-container .material-input > textarea:focus {
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1), inset 0 2px 10px rgba(0, 0, 0, 0.2);
+}
 
-    border-color: rgb(var(--pure-material-primary-rgb, 33, 150, 243));
+body:not(.dark) .input-container .material-input > input:focus,
+body:not(.dark) .input-container .material-input > textarea:focus {
+    border-color: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05), inset 0 2px 10px rgba(0, 0, 0, 0.05);
+}
 
-    border-top-color: transparent;
+.input-container .material-input > span {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.5);
+    pointer-events: none;
+    font-size: 16px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
 
-    box-shadow: inset 1px 0 var(--pure-material-safari-helper1), inset -1px 0 var(--pure-material-safari-helper1), inset 0 -1px var(--pure-material-safari-helper1);
-
-    outline: none;
-
+body:not(.dark) .input-container .material-input > span {
+    color: rgba(0, 0, 0, 0.5);
 }
 
 .input-container .material-input > input:focus + span,
-
-.input-container .material-input > textarea:focus + span {
-
-    color: rgb(var(--pure-material-primary-rgb, 33, 150, 243));
-
+.input-container .material-input > textarea:focus + span,
+.input-container .material-input > input:not(:placeholder-shown) + span,
+.input-container .material-input > textarea:not(:placeholder-shown) + span {
+    top: 12px;
+    left: 14px;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
 }
 
-.input-container .material-input > input:focus + span::before,
-
-.input-container .material-input > input:focus + span::after,
-
-.input-container .material-input > textarea:focus + span::before,
-
-.input-container .material-input > textarea:focus + span::after {
-
-    border-top-color: var(--pure-material-safari-helper1) !important;
-
-    box-shadow: inset 0 1px var(--pure-material-safari-helper1);
-
+body:not(.dark) .input-container .material-input > input:focus + span,
+body:not(.dark) .input-container .material-input > textarea:focus + span,
+body:not(.dark) .input-container .material-input > input:not(:placeholder-shown) + span,
+body:not(.dark) .input-container .material-input > textarea:not(:placeholder-shown) + span {
+    color: rgba(0, 0, 0, 0.7);
 }
 
-.input-container .material-input > input:disabled,
-
-.input-container .material-input > input:disabled + span,
-
-.input-container .material-input > textarea:disabled,
-
-.input-container .material-input > textarea:disabled + span {
-
-    border-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.38) !important;
-
-    border-top-color: transparent !important;
-
-    color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.38);
-
-    pointer-events: none;
-
-}
-
-.input-container .material-input > input:disabled + span::before,
-
-.input-container .material-input > input:disabled + span::after,
-
-.input-container .material-input > textarea:disabled + span::before,
-
-.input-container .material-input > textarea:disabled + span::after {
-
-    border-top-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.38) !important;
-
-}
-
-.input-container .material-input > input:disabled:placeholder-shown,
-
-.input-container .material-input > input:disabled:placeholder-shown + span,
-
-.input-container .material-input > textarea:disabled:placeholder-shown,
-
-.input-container .material-input > textarea:disabled:placeholder-shown + span {
-
-    border-top-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.38) !important;
-
-}
-
-.input-container .material-input > input:disabled:placeholder-shown + span::before,
-
-.input-container .material-input > input:disabled:placeholder-shown + span::after,
-
-.input-container .material-input > textarea:disabled:placeholder-shown + span::before,
-
-.input-container .material-input > textarea:disabled:placeholder-shown + span::after {
-
-    border-top-color: transparent !important;
-
-}
-
-@media not all and (min-resolution: 0.001dpcm) {
-
-    @supports (-webkit-appearance: none) {
-
-        .input-container .material-input > input,
-
-        .input-container .material-input > input + span,
-
-        .input-container .material-input > textarea,
-
-        .input-container .material-input > textarea + span,
-
-        .input-container .material-input > input + span::before,
-
-        .input-container .material-input > input + span::after,
-
-        .input-container .material-input > textarea + span::before,
-
-        .input-container .material-input > textarea + span::after {
-
-            transition-duration: 0.1s;
-
-        }
-
-    }
-
-}
-
-.input-container .material-input > input:-webkit-autofill,
-
-.input-container .material-input > textarea:-webkit-autofill {
-
-    /* Here you can define the styles for autofilled input field. */
-
-}
-
-.input-container .material-input > input:-webkit-autofill + span,
-
-.input-container .material-input > textarea:-webkit-autofill + span {
-
-    /* Here you can define the styles for the span element when the input is autofilled. */
-
-    color: rgb(var(--pure-material-primary-rgb, 33, 150, 243));
-
-}
-
-.input-container .material-input > input:-webkit-autofill + span::before,
-
-.input-container .material-input > input:-webkit-autofill + span::after,
-
-.input-container .material-input > textarea:-webkit-autofill + span::before,
-
-.input-container .material-input > textarea:-webkit-autofill + span::after {
-
-    /* Here you can define the styles for the pseudo-elements of the span when the input is autofilled. */
-
-    border-top-color: var(--pure-material-safari-helper1) !important;
-
-    box-shadow: inset 0 1px var(--pure-material-safari-helper1);
-
-}
-
-.input-container .material-select{
-
-    cursor: pointer!important;
-
+/* Material Select Replacement */
+.input-container .material-select {
+    cursor: pointer !important;
 }
 
 .material-select {
-
     position: relative;
-
     display: inline-block;
-
-    font-family: var(--pure-material-font, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
-
-    font-size: 16px;
-
-    line-height: 1.5;
-
     width: 100%;
-
-    overflow: hidden;
-
-    padding-top: 6px;
-
-}
-
-.material-select::after {
-
-    content: none;
-
-    position: absolute;
-
-    right: 10px;
-
-    top: 22px;
-
-    color: gray;
-
+    font-family: 'Outfit', 'Inter', sans-serif;
+    font-size: 16px;
 }
 
 .material-select > select {
-
     box-sizing: border-box;
-
-    margin: 0;
-
-    border: solid 1px;
-
-    border-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.6);
-
-    border-top-color: transparent;
-
-    border-radius: 6px;
-
-    padding: 15px 13px 15px;
-
     width: 100%;
-
-    color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.87);
-
-    background-color: rgba(255, 255, 255, 0.3);
-
-    box-shadow: none;
-
+    padding: 20px 36px 8px 14px;
+    margin: 0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    color: #e0e0e0;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     font-family: inherit;
-
-    font-size: inherit;
-
-    line-height: inherit;
-
-    caret-color: rgb(var(--pure-material-primary-rgb, 33, 150, 243));
-
-    transition: border 0.2s, box-shadow 0.2s;
-
-    appearance: none; /* remove default arrow */
-
+    font-size: 16px;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    outline: none;
+    appearance: none;
     cursor: pointer;
+}
 
+body:not(.dark) .material-select > select {
+    color: #111;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.material-select > select:focus {
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1), inset 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+body:not(.dark) .material-select > select:focus {
+    border-color: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05), inset 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.material-select > span {
+    position: absolute;
+    top: 12px;
+    left: 14px;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+body:not(.dark) .material-select > span {
+    color: rgba(0, 0, 0, 0.7);
 }
 
 .select-arrow-icon {
-
     position: absolute;
-
-    right: 12px;
-
-    top: 55%;
-
+    right: 14px;
+    top: 50%;
     transform: translateY(-50%);
-
     pointer-events: none;
-
-    color: gray;
-
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
 }
 
-.material-select > select:focus + span::before,
-
-.material-select > select:focus + span::after {
-
-    border-top-color: rgb(var(--pure-material-primary-rgb, 33, 150, 243));
-
-    box-shadow: inset 0 1px rgb(var(--pure-material-primary-rgb, 33, 150, 243));
-
-}
-
-.material-select > select + span {
-
-    position: absolute;
-
-    top: 0;
-
-    left: 0;
-
-    display: flex;
-
-    border-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.6);
-
-    width: 100%;
-
-    max-height: 100%;
-
-    color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.6);
-
-    font-size: 75%;
-
-    line-height: 15px;
-
-    cursor: text;
-
-    transition: color 0.2s, font-size 0.2s, line-height 0.2s;
-
-}
-
-/* Placeholder-shown */
-
-.material-select > select:not(:focus):placeholder-shown {
-
-    border-top-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.6);
-
-}
-
-.material-select > select + span::before,
-
-.material-select > select + span::after {
-
-    content: "";
-
-    display: block;
-
-    box-sizing: border-box;
-
-    margin-top: 6px;
-
-    border-top: solid 1px;
-
-    border-top-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.6);
-
-    min-width: 10px;
-
-    height: 8px;
-
-    pointer-events: none;
-
-    box-shadow: inset 0 1px transparent;
-
-    transition: border-color 0.2s, box-shadow 0.2s;
-
-}
-
-.material-select > select + span::before {
-
-    margin-right: 4px;
-
-    border-left: solid 1px transparent;
-
-    border-radius: 6px 0;
-
-}
-
-.material-select > select + span::after {
-
-    flex-grow: 1;
-
-    margin-left: 4px;
-
-    border-right: solid 1px transparent;
-
-    border-radius: 0 6px;
-
-}
-
-.material-select:active > select + span::before,
-
-.material-select:active > select + span::after {
-
-    border-top-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.87);
-
-}
-
-.material-select > select:focus,
-
-.material-select > select:active {
-
-    border-color: rgb(var(--pure-material-primary-rgb, 33, 150, 243));
-
-    border-top-color: transparent;
-
-    box-shadow: inset 1px 0 var(--pure-material-safari-helper1), inset -1px 0 var(--pure-material-safari-helper1), inset 0 -1px var(--pure-material-safari-helper1);
-
-    outline: none;
-
-}
-
-.material-select > select:not(:focus):placeholder-shown + span {
-
-    font-size: inherit;
-
-    line-height: 68px;
-
-    background-color: red;
-
-}
-
-.material-select > select:focus + span,
-
-.material-select > select:active + span {
-
-    color: rgb(var(--pure-material-primary-rgb, 33, 150, 243));
-
+body:not(.dark) .select-arrow-icon {
+    color: rgba(0, 0, 0, 0.5);
 }
 
 .fixed-player-wrapper {
@@ -6403,4 +5963,183 @@ h1, h2, h3, .app-logo {
     background-color: rgba(52, 152, 219, 0.2) !important;
     border-color: #3498db !important;
     box-shadow: 0 0 12px rgba(52, 152, 219, 0.4);
+}
+
+
+/* ============================================================
+   MODERN INPUTS OVERRIDE (Replaces Material Floating Labels)
+   ============================================================ */
+
+/* Disable Material Pseudo-elements */
+.input-container .material-input > input + span::before,
+.input-container .material-input > input + span::after,
+.input-container .material-input > textarea + span::before,
+.input-container .material-input > textarea + span::after,
+.material-input::before, .material-input::after {
+    display: none !important;
+}
+
+/* Transform the container to flex column-reverse to put label on top */
+.input-container .material-input, .input-container .material-select {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    align-items: flex-start !important;
+    border: none !important;
+    margin-bottom: 16px !important;
+    width: 100%;
+}
+
+/* Modern Label Style */
+.input-container .material-input > input + span,
+.input-container .material-input > textarea + span,
+.input-container .material-select span {
+    position: static !important;
+    display: block !important;
+    margin-bottom: 8px !important;
+    transform: none !important;
+    color: var(--text-secondary) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+    padding: 0 !important;
+    pointer-events: auto !important;
+    text-align: left;
+    transition: color 0.2s ease;
+}
+
+/* Focus state for label */
+.input-container .material-input > input:focus + span,
+.input-container .material-input > textarea:focus + span,
+.input-container .material-select > select:focus ~ span {
+    color: var(--accent) !important;
+}
+
+/* Modern Input Style */
+.input-container .material-input > input,
+.input-container .material-input > textarea,
+.input-container .material-select > select {
+    width: 100% !important;
+    padding: 14px 16px !important;
+    font-size: 15px !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 12px !important;
+    background: rgba(255,255,255,0.03) !important;
+    color: var(--text-primary) !important;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1) !important;
+    box-sizing: border-box;
+}
+
+/* Input Focus */
+.input-container .material-input > input:focus,
+.input-container .material-input > textarea:focus,
+.input-container .material-select > select:focus {
+    background: rgba(255,255,255,0.06) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 4px rgba(230,126,34,0.15), inset 0 2px 4px rgba(0,0,0,0.1) !important;
+    outline: none !important;
+}
+
+/* Placeholder adjustments since we removed the floating label */
+.input-container .material-input > input::placeholder,
+.input-container .material-input > textarea::placeholder {
+    color: rgba(255,255,255,0.2) !important;
+}
+
+/* Select Arrow Icon Fix */
+.select-arrow-icon {
+    position: absolute !important;
+    top: 42px !important;
+    right: 16px !important;
+    pointer-events: none;
+    color: var(--text-secondary);
+}
+
+.input-container.material-select {
+    position: relative;
+}
+
+/* Dropdowns & Modals */
+.dropdown {
+    background: var(--card-bg-premium) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+    padding: 8px !important;
+    overflow: hidden;
+}
+
+.dropdown div {
+    padding: 10px 14px !important;
+    border-radius: 6px !important;
+    transition: background 0.2s ease !important;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.dropdown div:hover {
+    background: rgba(255,255,255,0.1) !important;
+    color: white !important;
+}
+
+/* Tag Inputs Layout Fix (if they are grouped) */
+.input-container.tag-input {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    gap: 10px;
+}
+
+.input-container.tag-input .material-input {
+    flex: 1;
+    margin-bottom: 0 !important;
+}
+
+.input-container.tag-input button {
+    height: 48px;
+    width: 48px;
+    border-radius: 12px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+.input-container.tag-input button:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
+
+/* WordEvo 2026 Button Styles */
+button, .btn {
+    border-radius: 8px;
+    font-family: 'Outfit', 'Inter', sans-serif;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+}
+
+button:hover, .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+button:active, .btn:active {
+    transform: scale(0.97) translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dark button:hover, .dark .btn:hover {
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.08);
+}
+
+.dark button:active, .dark .btn:active {
+    box-shadow: 0 2px 6px rgba(255, 255, 255, 0.05);
 }
