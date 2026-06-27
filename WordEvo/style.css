@@ -1695,13 +1695,11 @@ body.dark ::-webkit-scrollbar-thumb:hover {
     width: 750px;
     overflow: hidden;
     padding: 30px !important;
-    display: flex !important;
-    flex-direction: column;
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr);
 }
 
 #previewSentencesContainer {
-    flex-grow: 1;
-    min-height: 0;
     overflow-y: auto;
     margin-top: 0 !important;
     padding-top: 30px;
