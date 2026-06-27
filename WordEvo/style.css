@@ -3243,46 +3243,6 @@ body:not(.dark) .select-arrow-icon {
 
 }
 
-/* ღილაკი დამატების მრგვალი სტილისთვის */
-
-#addCardBtn {
-
-    position: fixed;
-
-    bottom: calc(20px + env(safe-area-inset-bottom, 0px)); /* ქვედა */
-
-    right: 20px; /* მარჯვნივ */
-
-    background-color: #0077cc; /* ლურჯი */
-
-    color: white;
-
-    border: none;
-
-    border-radius: 50%; /* მრგვალი */
-
-    padding: 20px 22px;
-
-    font-size: 1.8rem;
-
-    cursor: pointer;
-
-    z-index: 9999; /* მაღლა რომ იყოს */
-
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* ჩრდილი */
-
-    transition: background-color 0.3s ease, transform 0.3s ease;
-
-}
-
-#addCardBtn:hover {
-
-    background-color: #03538c;
-
-    transform: scale(1.1); /* ღილაკის ზომის გაზრდა */
-
-}
-
 .mobile-sidebar-btn {
 
     display: none;
