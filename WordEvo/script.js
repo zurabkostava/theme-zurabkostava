@@ -923,12 +923,12 @@ function renderCardFromData(data) {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
-<div class="card-header">
-<div class="card-header">
-<button class="speak-btn" title="წაიკითხე სიტყვა" data-word="${cardData.word}"><i class="fas fa-volume-up"></i></button>
-<h2 class="word">${cardData.word}</h2>
+<div class="card-header" style="align-items: flex-start;">
+<div class="card-title-group" style="display: flex; align-items: flex-start; gap: 12px; flex: 1; padding-right: 10px;">
+<button class="speak-btn" title="წაიკითხე სიტყვა" data-word="${cardData.word}" style="flex-shrink: 0; margin-top: 2px;"><i class="fas fa-volume-up"></i></button>
+<h2 class="word" style="line-height: 1.3; word-break: break-word;">${cardData.word}</h2>
 </div>
-<div class="card-actions">
+<div class="card-actions" style="flex-shrink: 0; display: flex; gap: 8px;">
 <i class="fas fa-edit"></i>
 <i class="fas fa-trash-alt"></i>
 </div>
@@ -1005,7 +1005,10 @@ function showCardPreview(word, mainTranslations, extraTranslations, tags, englis
         }
     }
     const previewWordEl = document.getElementById('previewWord');
-    previewWordEl.innerHTML = `${word} <button class="speak-btn" title="წაიკითხე სიტყვა" data-word="${word}"><i class="fas fa-volume-up"></i></button>`;
+    previewWordEl.innerHTML = `<button class="speak-btn" title="წაიკითხე სიტყვა" data-word="${word}" style="flex-shrink: 0; margin-top: 4px;"><i class="fas fa-volume-up"></i></button><span style="line-height: 1.3; word-break: break-word;">${word}</span>`;
+    previewWordEl.style.display = 'flex';
+    previewWordEl.style.alignItems = 'flex-start';
+    previewWordEl.style.gap = '12px';
 
     const previewDateEl = document.getElementById('previewDate');
     if (previewDateEl) {
