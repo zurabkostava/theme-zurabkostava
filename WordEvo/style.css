@@ -7134,15 +7134,17 @@ body.dark #trainingBtn {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
-    padding: 25px 10px; /* Added 25px padding top/bottom so it's not glued to header */
+    padding: 25px 10px; 
+    width: 100%;
     max-width: 100%;
     overflow-x: hidden;
+    box-sizing: border-box; /* THIS FIXES HORIZONTAL SCROLL */
 }
 
 .card-container.list-view .card {
     display: grid;
     grid-template-columns: minmax(150px, max-content) minmax(150px, 1fr) auto auto auto;
-    column-gap: 20px; /* Use grid column gap for clean spacing */
+    column-gap: 20px; 
     align-items: center;
     width: 100%;
     max-width: 100%;
@@ -7150,18 +7152,29 @@ body.dark #trainingBtn {
     box-sizing: border-box;
 }
 
+/* Remove hover scale effect in list view */
+.card-container.list-view .card:hover {
+    transform: none !important;
+    /* Optional: keep box shadow or change background slightly instead */
+    background-color: rgba(255, 255, 255, 0.02);
+}
+.dark .card-container.list-view .card:hover {
+    transform: none !important;
+    background-color: rgba(30, 30, 46, 0.8);
+}
+
 /* Modern browsers with subgrid support - PERFECT ALIGNMENT */
 @supports (grid-template-columns: subgrid) {
     .card-container.list-view {
         display: grid;
-        grid-template-columns: minmax(100px, max-content) minmax(150px, 1fr) auto auto auto;
-        column-gap: 25px; /* Ensures nothing is glued to each other globally */
+        grid-template-columns: minmax(100px, max-content) minmax(150px, 1fr) auto max-content max-content;
+        column-gap: 25px; 
     }
     .card-container.list-view .card {
         grid-template-columns: subgrid;
         grid-column: 1 / -1;
         gap: 0; 
-        padding: 12px 20px; /* Padding for the card row */
+        padding: 12px 20px; 
     }
 }
 
@@ -7204,12 +7217,11 @@ body.dark #trainingBtn {
     grid-column: 3;
     grid-row: 1;
     display: flex;
-    justify-content: flex-end; 
-    flex-wrap: nowrap; /* Force 1 line */
+    justify-content: flex-start; /* FIX: Moved left to avoid overlapping % */
+    flex-wrap: nowrap; 
     overflow: hidden;
     gap: 5px;
     align-self: center;
-    max-width: 400px;
 }
 
 /* Grid View Visibility (shows max 3 tags) */
