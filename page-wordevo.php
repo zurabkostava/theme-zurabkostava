@@ -783,7 +783,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <button class="close-button" id="closeNotifAddModalBtn">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="notif-add-form" id="notifAddForm" style="display:none;">
+                <div class="notif-add-form" id="notifAddForm">
                 
                 <div class="notif-form-row">
                     <label>Time:</label>
