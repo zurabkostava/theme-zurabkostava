@@ -1701,6 +1701,7 @@ body.dark ::-webkit-scrollbar-thumb:hover {
 
 #previewSentencesContainer {
     flex-grow: 1;
+    min-height: 0;
     overflow-y: auto;
     margin-top: 0 !important;
     padding-top: 30px;
