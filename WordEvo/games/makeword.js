@@ -113,26 +113,42 @@ function showNextMWQuestion() {
     const helperWord = mwReverse ? word : mainTranslation;
 
     mwContainer.innerHTML = `
-        <h3>Question ${mwCurrentIndex + 1} / ${mwCards.length}</h3>
-        <div id="mwHintSection" style="margin-bottom: 10px;">
-            <button id="showHintBtn" style="padding: 5px 10px; font-size: 0.9rem;">
-                ❓ Help
-            </button>
-            <span id="hintWord" style="display: ${mwFullBlankMode ? 'inline' : 'none'}; margin-left: 10px; font-weight: bold; color: #666;">
-                ${helperWord}
-            </span>
-        </div>
-        <div class="mw-word" style="font-size: 2rem; margin-bottom: 1rem;">
-            ${blanks.map((ch, i) =>
-        `<span class="mw-letter ${ch === '_' ? 'missing' : ''}" data-index="${i}">${ch}</span>`
-    ).join('')}
-        </div>
-        <div class="mw-buttons" style="display: flex; flex-wrap: wrap; gap: 10px;">
-            ${buttons.map(ch =>
-        `<button class="mw-char" data-char="${ch}">${ch}</button>`
-    ).join('')}
+        <div class="game-question-animated" style="text-align: center;">
+            <h3>Question ${mwCurrentIndex + 1} / ${mwCards.length}</h3>
+            
+            <div class="mw-word" style="font-size: 2rem; margin: 30px 0;">
+                ${blanks.map((ch, i) =>
+            `<span class="mw-letter ${ch === '_' ? 'missing' : ''}" data-index="${i}">${ch === '_' ? '' : ch}</span>`
+        ).join('')}
+            </div>
+            
+            <div class="mw-buttons" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px;">
+                ${buttons.map(ch =>
+            `<button class="mw-char mix-btn" data-char="${ch}" style="width: 50px; height: 50px; font-size: 24px; padding: 0; margin-bottom: 0;">${ch}</button>`
+        ).join('')}
+            </div>
+            
+            <div id="mwHintSection" style="margin-bottom: 10px;">
+                <button id="showHintBtn" class="mix-btn" style="width: auto; padding: 10px 15px; font-size: 14px; margin-bottom: 0;">
+                    💡 Help
+                </button>
+                <div id="hintWord" style="display: ${mwFullBlankMode ? 'block' : 'none'}; margin-top: 10px; font-weight: bold; font-size: 20px; color: var(--accent);">
+                    ${helperWord}
+                </div>
+            </div>
+            
+            <div id="mwEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>
         </div>
     `;
+    
+    // Auto-focus logic for active typing slot
+    const updateActiveSlot = () => {
+        document.querySelectorAll('.mw-letter.missing').forEach(el => el.classList.remove('active-typing'));
+        const emptySpan = document.querySelector('.mw-letter.missing:not(.inserted-letter)');
+        if (emptySpan) emptySpan.classList.add('active-typing');
+    };
+    updateActiveSlot();
+
 
     const used = new Map();
 
@@ -147,6 +163,7 @@ function showNextMWQuestion() {
             used.set(emptySpan.dataset.index, btn);
             btn.disabled = true;
             btn.style.opacity = '0.5';
+            updateActiveSlot();
 
             checkMWAnswer();
         });
@@ -163,6 +180,7 @@ function showNextMWQuestion() {
             span.textContent = '_';
             span.classList.remove('inserted-letter');
             used.delete(idx);
+            updateActiveSlot();
         });
     });
 
@@ -204,9 +222,14 @@ function showNextMWQuestion() {
             el.style.color = isCorrect ? 'green' : 'red';
         });
 
-        setTimeout(() => {
-            mwCurrentIndex++;
-            showNextMWQuestion();
+        document.getElementById('mwEnterHint').classList.add('visible');
+        window.mwNextReady = true;
+        window.mwTimeout = setTimeout(() => {
+            if (window.mwNextReady) {
+                window.mwNextReady = false;
+                mwCurrentIndex++;
+                showNextMWQuestion();
+            }
         }, 1500);
     }
 }
@@ -231,11 +254,16 @@ function generateRandomMissingIndices(word) {
 }
 
 function showMakewordResults() {
+    const percentage = mwCards.length > 0 ? Math.round((mwCorrectAnswers / mwCards.length) * 100) : 0;
     mwContainer.innerHTML = `
-        <h3>Results</h3>
-        <p>Correct answers: ${mwCorrectAnswers} / ${mwCards.length}</p>
-        <p>არაCorrect answers: ${mwCards.length - mwCorrectAnswers}</p>
+        <div class="beautiful-results">
+            <h3>Fill Completed! ✍️</h3>
+            <div class="score-circle">${percentage}%</div>
+            <p>Correct answers: <strong>${mwCorrectAnswers} / ${mwCards.length}</strong></p>
+            <button class="play-again-btn" onclick="startMakewordGame()">Play Again 🔄</button>
+        </div>
     `;
+    window.mwNextReady = false;
 }
 
 function shuffleArray(arr) {
@@ -245,3 +273,27 @@ function shuffleArray(arr) {
 
 
 
+
+document.addEventListener('keydown', (e) => {
+    if (document.getElementById('trainingModal')?.classList.contains('hidden')) return;
+    const activeTab = document.querySelector('.training-tab.active')?.dataset.tab;
+    if (activeTab !== 'tab4') return;
+
+    if (e.key === 'Enter') {
+        if (window.mwNextReady) {
+            clearTimeout(window.mwTimeout);
+            window.mwNextReady = false;
+            mwCurrentIndex++;
+            showNextMWQuestion();
+        }
+    } else if (/^[a-zA-Zა-ჰ]$/.test(e.key)) {
+        const char = e.key.toLowerCase();
+        const btn = [...document.querySelectorAll('.mw-char')].find(b => b.dataset.char.toLowerCase() === char && !b.disabled);
+        if (btn) btn.click();
+    } else if (e.key === 'Backspace') {
+        const inserted = [...document.querySelectorAll('.mw-letter.inserted-letter')];
+        if (inserted.length > 0) {
+            inserted[inserted.length - 1].click();
+        }
+    }
+});

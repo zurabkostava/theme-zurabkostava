@@ -111,12 +111,13 @@ function renderNextQuestion() {
     const options = [...shuffledOptions, randomCorrect].sort(() => 0.5 - Math.random());
 
     questionContainer.innerHTML = `
-        <div class="quiz-question">
+        <div class="quiz-question game-question-animated">
             <h3>Question ${currentQuestionIndex + 1} / ${quizCards.length}</h3>
             <p><strong>${questionText}</strong></p>
             <div class="quiz-options">
-                ${options.map(opt => `<button class="quiz-option" data-answer="${opt}">${opt}</button>`).join('')}
+                ${options.map((opt, i) => `<button class="quiz-option" data-answer="${opt}"><span class="key-hint">${i + 1}</span>${opt}</button>`).join('')}
             </div>
+            <div id="quizEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>
         </div>
     `;
 
@@ -129,6 +130,10 @@ function renderNextQuestion() {
             // === სტატისტიკის დაუყოვნებლივ მიწოდება ===
             incrementStat('TOTAL_TESTS', 1);
             incrementStat(isCorrect ? 'TOTAL_CORRECT' : 'TOTAL_WRONG', 1);
+
+            const hint = document.getElementById('quizEnterHint');
+            if(hint) hint.classList.add('visible');
+            window.quizNextReady = true;
 
             if (isCorrect) {
                 btn.classList.add('correct');
@@ -150,21 +155,29 @@ function renderNextQuestion() {
 
             applyCurrentSort?.();
 
-            setTimeout(() => {
-                currentQuestionIndex++;
-                renderNextQuestion();
-            }, 1000);
+            window.quizTimeout = setTimeout(() => {
+                if (window.quizNextReady) {
+                    window.quizNextReady = false;
+                    currentQuestionIndex++;
+                    renderNextQuestion();
+                }
+            }, 1500);
         });
     });
 }
 
 function showQuizResult() {
     questionContainer.innerHTML = '';
+    const percentage = quizCards.length > 0 ? Math.round((correctAnswers / quizCards.length) * 100) : 0;
     resultContainer.innerHTML = `
-        <h3>Results</h3>
-        <p>Correct answers: ${correctAnswers} / ${quizCards.length}</p>
-        <p>არაCorrect answers: ${quizCards.length - correctAnswers}</p>
+        <div class="beautiful-results">
+            <h3>Quiz Completed! 🎉</h3>
+            <div class="score-circle">${percentage}%</div>
+            <p>Correct answers: <strong>${correctAnswers} / ${quizCards.length}</strong></p>
+            <button class="play-again-btn" onclick="startQuiz()">Play Again 🔄</button>
+        </div>
     `;
+    window.quizNextReady = false;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -177,3 +190,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
+
+// Global Keyboard shortcuts for Quiz
+document.addEventListener('keydown', (e) => {
+    if (document.getElementById('trainingModal')?.classList.contains('hidden')) return;
+    const activeTab = document.querySelector('.training-tab.active')?.dataset.tab;
+    if (activeTab !== 'quiz') return;
+
+    if (e.key >= '1' && e.key <= '5') {
+        const index = parseInt(e.key) - 1;
+        const btns = document.querySelectorAll('.quiz-option');
+        if (btns[index] && !btns[index].disabled) {
+            btns[index].click();
+        }
+    } else if (e.key === 'Enter') {
+        if (window.quizNextReady) {
+            clearTimeout(window.quizTimeout);
+            window.quizNextReady = false;
+            currentQuestionIndex++;
+            renderNextQuestion();
+        }
+    }
+});

@@ -45,15 +45,24 @@ function showNextPuzzle() {
 
     const container = document.getElementById('puzzleGame');
     container.innerHTML = `
-        <h3>Question ${puzzleCurrent + 1} / ${puzzleCards.length}</h3>
-        <p>დააწკაპუნე სიტყვებზე სწორი თანმიმდევრობით:</p>
-        <div id="puzzleWords" style="margin: 10px 0;"></div>
-        <div id="puzzleAnswer" style="min-height: 40px; border: 1px dashed #ccc; padding: 10px; margin-bottom: 10px;"></div>
-        <button id="puzzleSubmit" disabled>Check</button>
-        <button id="puzzleHintBtn" style="margin-left: 10px;">❓ Help</button>
-        <button id="puzzleAutoHintBtn" style="margin-left: 10px;">💡 მინიშნება</button>
-        <div id="puzzleHint" style="margin-top: 10px; color: #888;"></div>
-        <div id="puzzleFeedback" style="margin-top: 1rem;"></div>
+        <div class="game-question-animated">
+            <h3>Question ${puzzleCurrent + 1} / ${puzzleCards.length}</h3>
+            <p style="font-size:18px; margin-bottom: 15px;">დააწკაპუნე სიტყვებზე სწორი თანმიმდევრობით:</p>
+            
+            <div id="puzzleAnswer" style="min-height: 70px; background: rgba(0,0,0,0.03); border: 2px dashed var(--glass-border); border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 8px;"></div>
+            
+            <div id="puzzleWords" style="margin: 10px 0 25px 0; display: flex; flex-wrap: wrap; gap: 8px;"></div>
+            
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button id="puzzleSubmit" disabled style="background: var(--primary-color);">Check <span class="key-hint" style="margin-left:5px; margin-right:0;">↵</span></button>
+                <button id="puzzleAutoHintBtn" class="mix-btn" style="width: auto; padding: 10px 15px; margin-bottom: 0; font-size: 14px; background: rgba(0,0,0,0.05); border: none; color: var(--text-primary);">💡 სიტყვის დამატება</button>
+                <button id="puzzleHintBtn" class="mix-btn" style="width: auto; padding: 10px 15px; margin-bottom: 0; font-size: 14px; background: rgba(0,0,0,0.05); border: none; color: var(--text-primary);">❓ თარგმანი</button>
+            </div>
+            
+            <div id="puzzleHint" style="margin-top: 15px; font-weight: bold; font-size: 18px; color: var(--accent);"></div>
+            <div id="puzzleFeedback" style="margin-top: 15px; font-size: 20px; font-weight: bold;"></div>
+            <div id="puzzleEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>
+        </div>
     `;
 
     const puzzleWords = document.getElementById('puzzleWords');
@@ -66,8 +75,12 @@ function showNextPuzzle() {
     shuffled.forEach((word, index) => {
         const btn = document.createElement('button');
         btn.textContent = word;
-        btn.className = 'puzzle-word';
-        btn.style.margin = '5px';
+        btn.className = 'puzzle-word mix-btn';
+        btn.style.margin = '0';
+        btn.style.width = 'auto';
+        btn.style.padding = '8px 16px';
+        btn.style.fontSize = '16px';
+        btn.style.marginBottom = '0';
         btn.dataset.index = index;
 
         const clickFn = () => {
@@ -159,9 +172,14 @@ function showNextPuzzle() {
         puzzleWords.querySelectorAll('button').forEach(b => b.disabled = true);
         puzzleSubmit.disabled = true;
 
-        setTimeout(() => {
-            puzzleCurrent++;
-            showNextPuzzle();
+        document.getElementById('puzzleEnterHint').classList.add('visible');
+        window.puzzleNextReady = true;
+        window.puzzleTimeout = setTimeout(() => {
+            if (window.puzzleNextReady) {
+                window.puzzleNextReady = false;
+                puzzleCurrent++;
+                showNextPuzzle();
+            }
         }, 2500);
     };
 
@@ -187,10 +205,16 @@ function updateCardByText(wordText, delta) {
 
 function showPuzzleResults() {
     const container = document.getElementById('puzzleGame');
+    const percentage = puzzleCards.length > 0 ? Math.round((puzzleCorrect / puzzleCards.length) * 100) : 0;
     container.innerHTML = `
-        <h3>Results</h3>
-        <p>Correct answers: ${puzzleCorrect} / ${puzzleCards.length}</p>
+        <div class="beautiful-results">
+            <h3>Puzzle Completed! 🧩</h3>
+            <div class="score-circle">${percentage}%</div>
+            <p>Correct answers: <strong>${puzzleCorrect} / ${puzzleCards.length}</strong></p>
+            <button class="play-again-btn" onclick="startPuzzleGame()">Play Again 🔄</button>
+        </div>
     `;
+    window.puzzleNextReady = false;
 }
 
 function shuffleArray(arr) {
@@ -209,3 +233,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
+document.addEventListener('keydown', (e) => {
+    if (document.getElementById('trainingModal')?.classList.contains('hidden')) return;
+    const activeTab = document.querySelector('.training-tab.active')?.dataset.tab;
+    if (activeTab !== 'tab7') return;
+
+    if (e.key === 'Enter') {
+        if (window.puzzleNextReady) {
+            clearTimeout(window.puzzleTimeout);
+            window.puzzleNextReady = false;
+            puzzleCurrent++;
+            showNextPuzzle();
+        } else {
+            const submitBtn = document.getElementById('puzzleSubmit');
+            if (submitBtn && !submitBtn.disabled) submitBtn.click();
+        }
+    }
+});

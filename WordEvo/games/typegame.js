@@ -54,17 +54,20 @@ function showNextTyping() {
 
     const game = document.getElementById('tiGame');
     game.innerHTML = `
-        <h3>Question ${tiCurrent + 1} / ${tiCards.length}</h3>
-        <p style="font-size:1.2rem;">${shown}</p>
-        <div class="input-container" style="margin-bottom: 10px;">
-            <label class="material-input type-word-test">
-                <input type="text" id="tiInput" placeholder=" " >
-                <span>პასუხი</span>
-            </label>
+        <div class="game-question-animated">
+            <h3>Question ${tiCurrent + 1} / ${tiCards.length}</h3>
+            <p style="font-size:26px; margin-bottom: 20px;"><strong>${shown}</strong></p>
+            <div class="input-container" style="margin-bottom: 20px;">
+                <label class="material-input type-word-test">
+                    <input type="text" id="tiInput" placeholder=" " autocomplete="off">
+                    <span>პასუხი</span>
+                </label>
+            </div>
+            <button id="tiCheck" style="margin-right: 10px;">Check <span class="key-hint" style="margin-left:5px; margin-right:0;">↵</span></button>
+            <button id="tiHint" class="mix-btn" style="width:auto; padding: 10px 15px; margin-bottom:0; font-size:14px; background:rgba(0,0,0,0.05); color:var(--text-primary); border:none;">💡 მინიშნება</button>
+            <div id="tiFeedback" style="margin-top: 20px; font-size: 20px; font-weight: bold;"></div>
+            <div id="tiEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>
         </div>
-        <button id="tiCheck">Check</button>
-        <button id="tiHint">მინიშნება</button>
-        <div id="tiFeedback" style="margin-top: 10px;"></div>
     `;
 
     document.getElementById('tiCheck').onclick = () => {
@@ -85,9 +88,14 @@ function showNextTyping() {
         }
         applyCurrentSort?.();
 
-        setTimeout(() => {
-            tiCurrent++;
-            showNextTyping();
+        document.getElementById('tiEnterHint').classList.add('visible');
+        window.tiNextReady = true;
+        window.tiTimeout = setTimeout(() => {
+            if (window.tiNextReady) {
+                window.tiNextReady = false;
+                tiCurrent++;
+                showNextTyping();
+            }
         }, 1500);
     };
 
@@ -109,7 +117,21 @@ function showNextTyping() {
         }
     };
 
-    document.getElementById('tiInput').focus();
+    const inputEl = document.getElementById('tiInput');
+    inputEl.focus();
+    inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (window.tiNextReady) {
+                clearTimeout(window.tiTimeout);
+                window.tiNextReady = false;
+                tiCurrent++;
+                showNextTyping();
+            } else {
+                document.getElementById('tiCheck').click();
+            }
+        }
+    });
 }
 
 function updateCardByText(wordText, delta) {
@@ -121,10 +143,16 @@ function updateCardByText(wordText, delta) {
 
 function showTypingResult() {
     const game = document.getElementById('tiGame');
+    const percentage = tiCards.length > 0 ? Math.round((tiCorrect / tiCards.length) * 100) : 0;
     game.innerHTML = `
-        <h3>Results</h3>
-        <p>Correct answers: ${tiCorrect} / ${tiCards.length}</p>
+        <div class="beautiful-results">
+            <h3>Typing Completed! ⌨️</h3>
+            <div class="score-circle">${percentage}%</div>
+            <p>Correct answers: <strong>${tiCorrect} / ${tiCards.length}</strong></p>
+            <button class="play-again-btn" onclick="startTypingGame()">Play Again 🔄</button>
+        </div>
     `;
+    window.tiNextReady = false;
 }
 
 
