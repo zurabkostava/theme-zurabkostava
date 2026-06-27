@@ -176,6 +176,11 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <option value="100-100">100%</option>
                     </select>
                 </div>
+                <div class="view-toggle-wrapper" style="margin-left: 10px;">
+                    <button id="viewToggleBtn" class="toolbar-btn" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(30, 30, 46, 0.7); color: #cdd6f4; border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; transition: all 0.2s ease;" title="Toggle View">
+                        <i class="fas fa-th-large" id="viewToggleIcon"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

@@ -2805,6 +2805,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
     }
+
+    // Grid/List View Toggle Logic
+    const viewToggleBtn = document.getElementById('viewToggleBtn');
+    const viewToggleIcon = document.getElementById('viewToggleIcon');
+    const cardContainer = document.getElementById('cardContainer');
+    
+    if (viewToggleBtn && viewToggleIcon && cardContainer) {
+        const savedView = localStorage.getItem('wordevo_view_mode') || 'grid';
+        if (savedView === 'list') {
+            cardContainer.classList.add('list-view');
+            viewToggleIcon.className = 'fas fa-list'; // When in list, show grid icon to switch back
+        } else {
+            viewToggleIcon.className = 'fas fa-th-large'; // Default: show list icon
+        }
+
+        viewToggleBtn.onclick = () => {
+            const isList = cardContainer.classList.toggle('list-view');
+            if (isList) {
+                viewToggleIcon.className = 'fas fa-list';
+                localStorage.setItem('wordevo_view_mode', 'list');
+            } else {
+                viewToggleIcon.className = 'fas fa-th-large';
+                localStorage.setItem('wordevo_view_mode', 'grid');
+            }
+        };
+    }
 });
 
 
