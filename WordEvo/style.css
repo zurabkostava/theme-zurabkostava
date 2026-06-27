@@ -256,13 +256,7 @@ body.dark {
 
 }
 
-.dark .sentence-list p {
-
-    background-color: rgba(255, 255, 255, 0.04);
-
-    color: #e0e0e0;
-
-}
+.dark .sentence-list p { color: #e0e0e0; } .dark .sentence-list p.en-sentence { background-color: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255,255,255,0.05); } .dark .sentence-list p.ge-sentence { background-color: transparent; border: none; padding-top: 0; padding-bottom: 0; margin-top: 0; }
 
 .dark .modal .highlighted-sentence {
     color: #64b5f6 !important;
@@ -3054,7 +3048,7 @@ textarea {
 
     z-index: 10; /* საჭიროებისამებრ უფრო მაღალი მნიშვნელობა */
 
-    background: rgba(30, 30, 30, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding-bottom: 10px; margin-bottom: 10px;
+    background: var(--card-bg-premium); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding-bottom: 15px; margin-bottom: 10px; margin-top: -15px; padding-top: 15px; border-bottom: 1px solid var(--glass-border);
 
 }
 
@@ -3068,7 +3062,7 @@ textarea {
 
     z-index: 10; /* საჭიროებისამებრ უფრო მაღალი მნიშვნელობა */
 
-    background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding-bottom: 10px; margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding-bottom: 15px; margin-bottom: 10px; margin-top: -15px; padding-top: 15px; border-bottom: 1px solid rgba(0,0,0,0.05);
 
 }
 
@@ -6144,4 +6138,6 @@ button:active, .btn:active {
 .dark button:active, .dark .btn:active {
     box-shadow: 0 2px 6px rgba(255, 255, 255, 0.05);
 }
+
+
 
