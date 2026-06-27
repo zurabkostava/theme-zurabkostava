@@ -7430,6 +7430,7 @@ button.speak-btn.active {
 
 .sentence-pair .speak-btn:hover {
     transform: none !important; /* No translateY or scale to avoid ANY jumping */
+    box-shadow: 0 0 8px rgba(230, 126, 34, 0.3) !important; /* Center the shadow, don't push it down */
 }
 
 .sentence-pair .speak-btn:active {
