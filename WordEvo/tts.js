@@ -403,8 +403,9 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
         return new Promise(resolve => {
             if (el) {
                 el.classList.add('highlighted-sentence');
-                const pair = el.closest('.sentence-pair');
-                if (pair) pair.classList.add('active-pair');
+                if (el.parentElement && el.parentElement.classList.contains('sentence-pair')) {
+                    el.parentElement.classList.add('active-pair');
+                }
             }
             if (buttonEl) buttonEl.classList.add('active');
 
@@ -415,8 +416,7 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
                     .then(() => {
                         if (el) {
                             el.classList.remove('highlighted-sentence');
-                            const pair = el.closest('.sentence-pair');
-                            if (pair) pair.classList.remove('active-pair');
+                            if (el.parentElement) el.parentElement.classList.remove('active-pair');
                         }
                         if (buttonEl) buttonEl.classList.remove('active');
                         resolve();
@@ -424,8 +424,7 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
                     .catch(() => {
                         if (el) {
                             el.classList.remove('highlighted-sentence');
-                            const pair = el.closest('.sentence-pair');
-                            if (pair) pair.classList.remove('active-pair');
+                            if (el.parentElement) el.parentElement.classList.remove('active-pair');
                         }
                         if (buttonEl) buttonEl.classList.remove('active');
                         resolve();
@@ -443,8 +442,7 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
             utterance.onend = () => {
                 if (el) {
                     el.classList.remove('highlighted-sentence');
-                    const pair = el.closest('.sentence-pair');
-                            if (pair) pair.classList.remove('active-pair');
+                    if (el.parentElement) el.parentElement.classList.remove('active-pair');
                 }
                 if (buttonEl) buttonEl.classList.remove('active');
                 resolve();
