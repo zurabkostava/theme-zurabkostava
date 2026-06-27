@@ -4462,7 +4462,7 @@ body.dark @keyframes pulse-glow {
 }
 
 .training-tab.active {
-    background: linear-gradient(135deg, #007bff 0%, #00d2ff 100%) !important;
+    background: linear-gradient(135deg, #1575c9 0%, #00d2ff 100%) !important;
     color: white !important;
     border-color: transparent !important;
     box-shadow: 0 8px 16px rgba(0, 123, 255, 0.3) !important;
@@ -4517,8 +4517,8 @@ body.dark @keyframes pulse-glow {
 #globalTrainingSettings .tag-filter select:focus,
 #globalTrainingSettings .progress-filter select:focus,
 #globalTrainingSettings .count-filter input:focus {
-    border-color: #007bff !important;
-    box-shadow: 0 0 0 3px rgba(0,123,255,0.1) !important;
+    border-color: #1575c9 !important;
+    box-shadow: 0 0 0 3px rgba(21,117,201,0.1) !important;
 }
 
 #globalTrainingSettings label {
@@ -4594,10 +4594,10 @@ body.dark @keyframes pulse-glow {
 }
 
 .quiz-option:hover {
-    border-color: #007bff !important;
+    border-color: #1575c9 !important;
     background: #f8fbff !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 6px 12px rgba(0,123,255,0.08) !important;
+    box-shadow: 0 6px 12px rgba(21,117,201,0.08) !important;
 }
 
 .quiz-option.correct {
@@ -4655,73 +4655,73 @@ body.dark @keyframes pulse-glow {
    DARK MODE OVERRIDES & BUTTON STYLES
    ========================================= */
 
-.training-modal-content {
-    background: #1e1e2e !important; /* Dark sleek background */
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: #cdd6f4 !important;
+.dark .training-modal-content {
+    background: var(--card-bg-premium) !important;
+    border: 1px solid var(--glass-border) !important;
+    color: var(--text-primary) !important;
 }
 
-.training-tabs {
-    background: #181825 !important;
-    border-bottom: 1px solid #313244 !important;
+.dark .training-tabs {
+    background: rgba(255,255,255,0.03) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
 }
 
-.training-tab {
-    background: #1e1e2e !important;
-    border: 1px solid #313244 !important;
-    color: #a6adc8 !important;
+.dark .training-tab {
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid var(--glass-border) !important;
+    color: var(--text-secondary) !important;
 }
-.training-tab:hover {
-    background: #313244 !important;
+.dark .training-tab:hover {
+    background: rgba(255,255,255,0.1) !important;
 }
-.training-tab.active {
-    background: linear-gradient(135deg, #89b4fa 0%, #b4befe 100%) !important;
-    color: #11111b !important;
-    box-shadow: 0 8px 16px rgba(137, 180, 250, 0.2) !important;
-}
-
-#globalTrainingSettings {
-    background: #181825 !important;
-    border-bottom: 1px solid #313244 !important;
-}
-#globalTrainingSettings label {
-    color: #cdd6f4 !important;
-}
-#globalTrainingSettings .tag-filter select,
-#globalTrainingSettings .progress-filter select,
-#globalTrainingSettings .count-filter input {
-    background: #313244 !important;
-    color: #cdd6f4 !important;
-    border-color: #45475a !important;
-}
-#globalTrainingSettings input[type="checkbox"] {
-    background: #45475a !important;
-}
-#globalTrainingSettings input[type="checkbox"]:checked {
-    background: #a6e3a1 !important; /* Soft green */
+.dark .training-tab.active {
+    background: var(--accent) !important;
+    color: #111 !important;
+    box-shadow: 0 8px 16px rgba(230, 126, 34, 0.2) !important;
 }
 
-.training-tab-content {
-    background: #1e1e2e !important;
+.dark #globalTrainingSettings {
+    background: rgba(255,255,255,0.02) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
 }
-#quizTab h2, .training-tab-content h2, .training-tab-content h3 {
-    color: #cdd6f4 !important;
+.dark #globalTrainingSettings label {
+    color: var(--text-primary) !important;
+}
+.dark #globalTrainingSettings .tag-filter select,
+.dark #globalTrainingSettings .progress-filter select,
+.dark #globalTrainingSettings .count-filter input {
+    background: rgba(255,255,255,0.05) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--glass-border) !important;
+}
+.dark #globalTrainingSettings input[type="checkbox"] {
+    background: rgba(255,255,255,0.1) !important;
+}
+.dark #globalTrainingSettings input[type="checkbox"]:checked {
+    background: var(--accent) !important;
 }
 
-.quiz-option {
-    background: #313244 !important;
-    border: 2px solid #45475a !important;
-    color: #cdd6f4 !important;
+.dark .training-tab-content {
+    background: transparent !important;
 }
-.quiz-option:hover {
-    border-color: #89b4fa !important;
-    background: #45475a !important;
+.dark #quizTab h2, .dark .training-tab-content h2, .dark .training-tab-content h3 {
+    color: var(--text-primary) !important;
+}
+
+.dark .quiz-option {
+    background: rgba(255,255,255,0.05) !important;
+    border: 2px solid var(--glass-border) !important;
+    color: var(--text-primary) !important;
+}
+.dark .quiz-option:hover {
+    border-color: var(--accent) !important;
+    background: rgba(255,255,255,0.08) !important;
 }
 
 /* Beautiful Start Buttons across all training games */
-.training-tab-content button:not(.quiz-option):not(.sen-option) {
-    background: linear-gradient(135deg, #89b4fa 0%, #b4befe 100%) !important;
-    color: #11111b !important;
+.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn) {
+    background: #1575c9 !important;
+    color: white !important;
     border: none !important;
     border-radius: 12px !important;
     padding: 14px 28px !important;
@@ -4729,20 +4729,27 @@ body.dark @keyframes pulse-glow {
     font-weight: bold !important;
     cursor: pointer !important;
     transition: all 0.2s !important;
-    box-shadow: 0 4px 10px rgba(137, 180, 250, 0.2) !important;
+    box-shadow: 0 4px 10px rgba(21, 117, 201, 0.2) !important;
     margin-top: 15px !important;
     display: inline-block !important;
 }
 
-.training-tab-content button:not(.quiz-option):not(.sen-option):hover {
+.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 6px 15px rgba(137, 180, 250, 0.4) !important;
+    box-shadow: 0 6px 15px rgba(21, 117, 201, 0.4) !important;
 }
+
+.dark .training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn) {
+    background: var(--accent) !important;
+    color: #111 !important;
+    box-shadow: 0 4px 10px rgba(230, 126, 34, 0.2) !important;
+}
+
 /* =========================================
    TEXT COLOR FIXES & ENLARGEMENT
    ========================================= */
 
-/* Fix black text */
+/* Fix black text for Light Mode */
 .training-modal-content,
 .training-tab-content,
 .training-tab-content p,
@@ -4752,12 +4759,27 @@ body.dark @keyframes pulse-glow {
 #quizTab h2, 
 #quizTab h3,
 .quiz-container {
-    color: #cdd6f4 !important;
+    color: #333 !important;
+}
+
+/* Fix text for Dark Mode */
+.dark .training-modal-content,
+.dark .training-tab-content,
+.dark .training-tab-content p,
+.dark .training-tab-content span,
+.dark .training-tab-content div,
+.dark .quiz-progress,
+.dark #quizTab h2, 
+.dark #quizTab h3,
+.dark .quiz-container {
+    color: var(--text-primary) !important;
 }
 
 /* Ensure options have their own color when active */
 .quiz-option.correct, .sen-option.correct,
-.quiz-option.incorrect, .sen-option.incorrect {
+.quiz-option.incorrect, .sen-option.incorrect,
+.training-tab-content button.mix-btn.correct,
+.training-tab-content button.mix-btn.incorrect {
     color: white !important;
 }
 
@@ -4780,7 +4802,7 @@ body.dark @keyframes pulse-glow {
     border-radius: 16px !important;
 }
 
-.training-tab-content button:not(.quiz-option):not(.sen-option) {
+.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn) {
     font-size: 22px !important;
     padding: 18px 36px !important;
     border-radius: 16px !important;
@@ -4807,9 +4829,9 @@ body.dark @keyframes pulse-glow {
    ========================================= */
 
 .training-tab-content button.mix-btn {
-    background: #313244 !important;
-    border: 2px solid #45475a !important;
-    color: #cdd6f4 !important;
+    background: rgba(0,0,0,0.03) !important;
+    border: 2px solid rgba(0,0,0,0.05) !important;
+    color: #333 !important;
     font-size: 18px !important;
     padding: 16px 20px !important;
     border-radius: 12px !important;
@@ -4820,16 +4842,34 @@ body.dark @keyframes pulse-glow {
 }
 
 .training-tab-content button.mix-btn:hover {
-    border-color: #89b4fa !important;
-    background: #45475a !important;
+    border-color: #1575c9 !important;
+    background: rgba(0,0,0,0.05) !important;
 }
 
 .training-tab-content button.mix-btn.selected {
-    background: #89b4fa !important;
-    color: #11111b !important;
-    border-color: #89b4fa !important;
+    background: #1575c9 !important;
+    color: white !important;
+    border-color: #1575c9 !important;
     transform: scale(1.02) !important;
-    box-shadow: 0 4px 12px rgba(137, 180, 250, 0.4) !important;
+    box-shadow: 0 4px 12px rgba(21, 117, 201, 0.4) !important;
+}
+
+.dark .training-tab-content button.mix-btn {
+    background: rgba(255,255,255,0.05) !important;
+    border: 2px solid var(--glass-border) !important;
+    color: var(--text-primary) !important;
+}
+
+.dark .training-tab-content button.mix-btn:hover {
+    border-color: var(--accent) !important;
+    background: rgba(255,255,255,0.08) !important;
+}
+
+.dark .training-tab-content button.mix-btn.selected {
+    background: var(--accent) !important;
+    color: #111 !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 4px 12px rgba(230, 126, 34, 0.4) !important;
 }
 
 .training-tab-content button.mix-btn.correct {
@@ -4840,52 +4880,6 @@ body.dark @keyframes pulse-glow {
 }
 
 .training-tab-content button.mix-btn.incorrect {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-    color: white !important;
-    border-color: transparent !important;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
-}
-
-/* =========================================
-   SPECIFICITY FIX FOR MIX & MATCH BUTTONS
-   ========================================= */
-
-#mixContainer button.mix-btn {
-    background: #313244 !important;
-    border: 2px solid #45475a !important;
-    color: #cdd6f4 !important;
-    font-size: 18px !important;
-    padding: 16px 20px !important;
-    border-radius: 12px !important;
-    box-shadow: none !important;
-    transform: none !important;
-    margin-bottom: 12px !important;
-    width: 100% !important;
-    font-weight: 500 !important;
-}
-
-#mixContainer button.mix-btn:hover {
-    border-color: #89b4fa !important;
-    background: #45475a !important;
-}
-
-#mixContainer button.mix-btn.selected {
-    background: linear-gradient(135deg, #f9e2af 0%, #fab387 100%) !important; /* Bright Yellow/Orange to stand out! */
-    color: #11111b !important;
-    border-color: transparent !important;
-    transform: scale(1.04) !important;
-    box-shadow: 0 6px 16px rgba(250, 179, 135, 0.4) !important;
-    font-weight: 800 !important;
-}
-
-#mixContainer button.mix-btn.correct {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-    color: white !important;
-    border-color: transparent !important;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
-}
-
-#mixContainer button.mix-btn.incorrect {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
     color: white !important;
     border-color: transparent !important;
