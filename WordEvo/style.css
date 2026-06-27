@@ -2477,6 +2477,13 @@ textarea {
 .nav-btn:hover {
 
     background-color: rgba(0, 119, 204, 0.24);
+    transform: translateY(-50%) scale(1.05);
+
+}
+
+.nav-btn:active {
+
+    transform: translateY(-50%) scale(0.95);
 
 }
 
