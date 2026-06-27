@@ -7134,20 +7134,19 @@ body.dark #trainingBtn {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
-    padding: 0 10px;
+    padding: 25px 10px; /* Added 25px padding top/bottom so it's not glued to header */
     max-width: 100%;
     overflow-x: hidden;
 }
 
 .card-container.list-view .card {
     display: grid;
-    grid-template-columns: 220px 1fr minmax(150px, auto) auto auto;
+    grid-template-columns: minmax(150px, max-content) minmax(150px, 1fr) auto auto auto;
+    column-gap: 20px; /* Use grid column gap for clean spacing */
     align-items: center;
     width: 100%;
     max-width: 100%;
     padding: 12px 20px;
-    gap: 15px;
-    height: auto;
     box-sizing: border-box;
 }
 
@@ -7155,12 +7154,14 @@ body.dark #trainingBtn {
 @supports (grid-template-columns: subgrid) {
     .card-container.list-view {
         display: grid;
-        grid-template-columns: max-content 1fr minmax(auto, 400px) auto auto;
+        grid-template-columns: minmax(100px, max-content) minmax(150px, 1fr) auto auto auto;
+        column-gap: 25px; /* Ensures nothing is glued to each other globally */
     }
     .card-container.list-view .card {
         grid-template-columns: subgrid;
         grid-column: 1 / -1;
-        gap: 0; /* managed by parent grid, but we add padding/margins inside cells */
+        gap: 0; 
+        padding: 12px 20px; /* Padding for the card row */
     }
 }
 
@@ -7169,14 +7170,13 @@ body.dark #trainingBtn {
     display: contents;
 }
 
-/* Force all grid items to the first row since their DOM order is mixed */
+/* 1. Main Word */
 .card-container.list-view .card-title-group {
     grid-column: 1;
     grid-row: 1;
     display: flex;
     align-items: center !important;
     gap: 12px !important;
-    margin-right: 15px; /* Gap from longest word */
 }
 .card-container.list-view .card-title-group h2.word {
     font-size: 1.2rem;
@@ -7185,6 +7185,7 @@ body.dark #trainingBtn {
     word-break: break-word;
 }
 
+/* 2. Translation */
 .card-container.list-view p.translation {
     grid-column: 2;
     grid-row: 1;
@@ -7195,28 +7196,49 @@ body.dark #trainingBtn {
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    align-self: center; /* Center vertically */
+    align-self: center;
 }
 
+/* 3. Tags */
 .card-container.list-view .tags {
     grid-column: 3;
     grid-row: 1;
     display: flex;
-    justify-content: flex-end; /* Align tags to right in their space */
-    flex-wrap: wrap; 
+    justify-content: flex-end; 
+    flex-wrap: nowrap; /* Force 1 line */
+    overflow: hidden;
     gap: 5px;
-    margin: 0 15px;
     align-self: center;
+    max-width: 400px;
 }
 
-/* Visibility logic for tags based on view */
-.card-container:not(.list-view) .hidden-in-grid {
+/* Grid View Visibility (shows max 3 tags) */
+.card-container:not(.list-view) .tag-idx-3,
+.card-container:not(.list-view) .tag-idx-4,
+.card-container:not(.list-view) .tag-idx-5,
+.card-container:not(.list-view) .tag-idx-6,
+.card-container:not(.list-view) .tag-idx-7,
+.card-container:not(.list-view) .tag-idx-8,
+.card-container:not(.list-view) .tag-idx-9 {
     display: none !important;
 }
-.card-container.list-view .hidden-in-list {
+.card-container:not(.list-view) .badge-list {
     display: none !important;
 }
 
+/* List View Visibility (shows max 5 tags) */
+.card-container.list-view .tag-idx-5,
+.card-container.list-view .tag-idx-6,
+.card-container.list-view .tag-idx-7,
+.card-container.list-view .tag-idx-8,
+.card-container.list-view .tag-idx-9 {
+    display: none !important;
+}
+.card-container.list-view .badge-grid {
+    display: none !important;
+}
+
+/* 4. Progress */
 .card-container.list-view .progress-bar-container {
     grid-column: 4;
     grid-row: 1;
@@ -7227,7 +7249,6 @@ body.dark #trainingBtn {
     border-radius: 0;
     display: flex;
     align-items: center;
-    margin-right: 15px;
     align-self: center;
 }
 .card-container.list-view .progress-bar {
@@ -7248,6 +7269,7 @@ body.dark #trainingBtn {
     border: 1px solid rgba(255,255,255,0.1);
 }
 
+/* 5. Actions */
 .card-container.list-view .card-actions {
     grid-column: 5;
     grid-row: 1;

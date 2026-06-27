@@ -834,16 +834,20 @@ function renderCardTagsHTML(allTags, activeTags = []) {
     
     let html = sortedTags.map((tag, index) => {
         const color = getColorForTag(tag);
-        let classes = 'card-tag';
+        let classes = `card-tag tag-idx-${index}`;
         if (activeTags.includes(tag)) classes += ' filtered';
-        if (index >= maxVisibleTags) classes += ' hidden-in-grid';
         return `<span class="${classes}" style="background-color: ${color}">${tag}</span>`;
     }).join('');
     
-    if (totalTags > maxVisibleTags) {
-        const hiddenCount = totalTags - maxVisibleTags;
-        const hiddenTags = sortedTags.slice(maxVisibleTags).join(', ');
-        html += ` <span class="card-tag-more hidden-in-list" title="${hiddenTags}">+${hiddenCount}</span>`;
+    if (totalTags > 3) {
+        const hiddenCount3 = totalTags - 3;
+        const hiddenTags3 = sortedTags.slice(3).join(', ');
+        html += ` <span class="card-tag-more badge-grid" title="${hiddenTags3}">+${hiddenCount3}</span>`;
+    }
+    if (totalTags > 5) {
+        const hiddenCount5 = totalTags - 5;
+        const hiddenTags5 = sortedTags.slice(5).join(', ');
+        html += ` <span class="card-tag-more badge-list" title="${hiddenTags5}">+${hiddenCount5}</span>`;
     }
     return html;
 }
