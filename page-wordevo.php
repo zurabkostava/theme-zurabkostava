@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
 Template Name: App - WordEvo
 */
@@ -647,7 +647,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         </button>
     </div>
     <div class="modal-overlay" id="statsModal" style="display:none;">
-        <div class="modal stats-modal-premium" style="max-width:600px;">
+        <div class="modal" style="max-width:600px;">
             <div class="modal-header">
                 <h2>📊 Statistics</h2>
                 <button class="close-button" id="closeStatsBtn">×</button>
