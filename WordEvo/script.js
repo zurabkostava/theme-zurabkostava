@@ -1075,7 +1075,9 @@ data-lang="ka">
                 if (englishSentences[i]) {
                     const pEn = document.createElement('p');
                     pEn.className = 'en-sentence';
-                    pEn.innerHTML = `<span class="prefix">${i + 1}. </span>${englishSentences[i]} <button class="speak-btn" title="Read English" data-text="${englishSentences[i]}" data-lang="en"><i class="fas fa-volume-up"></i></button>`;
+                    const safeEn = (englishSentences[i] || '').replace(/"/g, '&quot;');
+                    const safeGe = (georgianSentences[i] || '').replace(/"/g, '&quot;');
+                    pEn.innerHTML = `<span class="prefix">${i + 1}. </span>${englishSentences[i]} <button class="speak-btn" title="წაიკითხე ორივე ენაზე" data-read-both="true" data-text-en="${safeEn}" data-text-ge="${safeGe}"><i class="fas fa-volume-up"></i></button>`;
                     div.appendChild(pEn);
                 }
                 if (georgianSentences[i]) {
@@ -1084,7 +1086,7 @@ data-lang="ka">
                     pGe.style.color = 'var(--text-secondary)';
                     pGe.style.marginTop = '4px';
                     pGe.style.paddingLeft = '20px';
-                    pGe.innerHTML = `${georgianSentences[i]} <button class="speak-btn" title="წაიკითხე ქართულად" data-text="${georgianSentences[i]}" data-lang="ka"><i class="fas fa-volume-up"></i></button>`;
+                    pGe.innerHTML = `${georgianSentences[i]}`;
                     div.appendChild(pGe);
                 }
                 combinedBlock.appendChild(div);

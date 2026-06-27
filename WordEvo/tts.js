@@ -460,11 +460,20 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
     }
 }
 
-document.addEventListener('click', (e) => {
+document.addEventListener('click', async (e) => {
     const speakBtn = e.target.closest('.speak-btn');
     if (!speakBtn) return;
 
     e.stopPropagation();
+
+    if (speakBtn.dataset.readBoth === 'true') {
+        const textEn = speakBtn.dataset.textEn;
+        const textGe = speakBtn.dataset.textGe;
+        if (textEn) await speakWithVoice(textEn, selectedVoice, speakBtn);
+        if (textEn && textGe) await delay(800);
+        if (textGe) await speakWithVoice(textGe, selectedGeorgianVoice, speakBtn);
+        return;
+    }
 
     const text = speakBtn.dataset.text || speakBtn.dataset.word;
     const extraText = speakBtn.dataset.extra || null;
