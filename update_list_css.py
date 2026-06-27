@@ -53,9 +53,10 @@ css_to_add = '''/* =========================================
     display: contents;
 }
 
-/* 1. Main Word */
+/* Force all grid items to the first row since their DOM order is mixed */
 .card-container.list-view .card-title-group {
     grid-column: 1;
+    grid-row: 1;
     display: flex;
     align-items: center !important;
     gap: 12px !important;
@@ -68,9 +69,9 @@ css_to_add = '''/* =========================================
     word-break: break-word;
 }
 
-/* 2. Translation */
 .card-container.list-view p.translation {
     grid-column: 2;
+    grid-row: 1;
     margin: 0;
     font-size: 0.95rem;
     display: -webkit-box;
@@ -78,16 +79,18 @@ css_to_add = '''/* =========================================
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    align-self: center; /* Center vertically */
 }
 
-/* 3. Tags */
 .card-container.list-view .tags {
     grid-column: 3;
+    grid-row: 1;
     display: flex;
     justify-content: flex-end; /* Align tags to right in their space */
     flex-wrap: wrap; 
     gap: 5px;
     margin: 0 15px;
+    align-self: center;
 }
 
 /* Visibility logic for tags based on view */
@@ -98,9 +101,9 @@ css_to_add = '''/* =========================================
     display: none !important;
 }
 
-/* 4. Progress */
 .card-container.list-view .progress-bar-container {
     grid-column: 4;
+    grid-row: 1;
     position: relative;
     width: auto;
     height: auto;
@@ -109,6 +112,7 @@ css_to_add = '''/* =========================================
     display: flex;
     align-items: center;
     margin-right: 15px;
+    align-self: center;
 }
 .card-container.list-view .progress-bar {
     display: none;
@@ -128,11 +132,12 @@ css_to_add = '''/* =========================================
     border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* 5. Actions */
 .card-container.list-view .card-actions {
     grid-column: 5;
+    grid-row: 1;
     display: flex;
     gap: 10px;
+    align-self: center;
 }
 
 /* Hover effect on toggle button */
@@ -159,6 +164,15 @@ css_to_add = '''/* =========================================
         width: 100% !important;
         justify-content: space-between !important;
         align-items: center !important;
+    }
+    .card-container.list-view .card-title-group,
+    .card-container.list-view p.translation,
+    .card-container.list-view .tags,
+    .card-container.list-view .progress-bar-container,
+    .card-container.list-view .card-actions {
+        /* Reset grid row/column for mobile flex layout */
+        grid-column: auto;
+        grid-row: auto;
     }
     .card-container.list-view .card-title-group {
         margin: 0 !important;
