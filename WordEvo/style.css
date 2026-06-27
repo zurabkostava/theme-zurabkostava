@@ -6435,3 +6435,85 @@ body:not(.dark) .material-select > span,
 body:not(.dark) .material-input > span {
     color: #555 !important;
 }
+
+
+/* =========================================
+   NUCLEAR MOBILE HEADER/TOOLBAR REDESIGN
+   ========================================= */
+@media (max-width: 768px) {
+    /* Restore the Pill Shape & Stickiness for the Wrapper */
+    .header-wrapper {
+        position: sticky !important;
+        top: 10px !important;
+        width: calc(100% - 20px) !important;
+        margin: 10px auto 0 auto !important;
+        border-radius: 20px !important;
+        background: rgba(255, 255, 255, 0.4) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        z-index: 999999 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 10px !important;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    body.dark .header-wrapper, .dark .header-wrapper {
+        background: rgba(30, 30, 46, 0.6) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* Force inner wrappers to flow normally inside the pill */
+    .top, .card-toolbar, body.dark .top, body.dark .card-toolbar {
+        position: static !important;
+        width: 100% !important;
+        transform: none !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        box-shadow: none !important;
+        border-radius: 12px !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+    }
+
+    .card-toolbar, body.dark .card-toolbar {
+        padding: 10px !important;
+        margin: 10px 0 0 0 !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        background: rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    body.dark .card-toolbar {
+        background: rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Fix the inner top-bar layout */
+    .top-bar {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+
+    .top-left, .top-center, .top-right {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        gap: 10px !important;
+    }
+
+    /* Card container padding offset */
+    .card-container {
+        margin-top: 20px !important;
+        padding-top: 0 !important;
+    }
+}
