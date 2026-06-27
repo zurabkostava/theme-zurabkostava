@@ -6392,3 +6392,13 @@ body.dark .card-toolbar {
     width: calc(100% - 20px) !important;
     margin-top: 10px !important;
 }
+
+
+/* HEADER FLOATING MARGINS FIX */
+.header-wrapper {
+    margin: 10px auto 0 auto !important;
+    width: calc(100% - 20px) !important;
+    box-sizing: border-box !important;
+    left: 0 !important;
+    right: 0 !important;
+}
