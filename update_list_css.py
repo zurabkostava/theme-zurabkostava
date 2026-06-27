@@ -12,44 +12,54 @@ if start_idx != -1:
 css_to_add = '''/* =========================================
    LIST VIEW STYLES
    ========================================= */
+/* Default (fallback) grid for older browsers */
 .card-container.list-view {
     display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
     padding: 0 10px;
-    /* Prevent horizontal scroll */
     max-width: 100%;
     overflow-x: hidden;
-    box-sizing: border-box;
 }
 
 .card-container.list-view .card {
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 220px 1fr minmax(150px, auto) auto auto;
     align-items: center;
-    justify-content: flex-start;
     width: 100%;
     max-width: 100%;
     padding: 12px 20px;
-    gap: 20px;
+    gap: 15px;
     height: auto;
     box-sizing: border-box;
 }
 
-/* Flatten the .card-header so its children participate in .card flexbox */
+/* Modern browsers with subgrid support - PERFECT ALIGNMENT */
+@supports (grid-template-columns: subgrid) {
+    .card-container.list-view {
+        display: grid;
+        grid-template-columns: max-content 1fr minmax(auto, 400px) auto auto;
+    }
+    .card-container.list-view .card {
+        grid-template-columns: subgrid;
+        grid-column: 1 / -1;
+        gap: 0; /* managed by parent grid, but we add padding/margins inside cells */
+    }
+}
+
+/* Flatten the .card-header so its children participate in .card grid */
 .card-container.list-view .card-header {
     display: contents;
 }
 
 /* 1. Main Word */
 .card-container.list-view .card-title-group {
-    order: 1;
+    grid-column: 1;
     display: flex;
     align-items: center !important;
     gap: 12px !important;
-    flex: 0 0 200px; /* Fixed width to align nicely */
-    min-width: 150px;
+    margin-right: 15px; /* Gap from longest word */
 }
 .card-container.list-view .card-title-group h2.word {
     font-size: 1.2rem;
@@ -60,9 +70,7 @@ css_to_add = '''/* =========================================
 
 /* 2. Translation */
 .card-container.list-view p.translation {
-    order: 2;
-    flex: 1 1 0; /* Grow and shrink */
-    min-width: 0; /* VERY IMPORTANT to prevent flex blowout */
+    grid-column: 2;
     margin: 0;
     font-size: 0.95rem;
     display: -webkit-box;
@@ -74,27 +82,33 @@ css_to_add = '''/* =========================================
 
 /* 3. Tags */
 .card-container.list-view .tags {
-    order: 3;
-    flex: 0 1 350px; /* Allow ample space for tags */
-    min-width: 0;
-    margin: 0;
-    justify-content: flex-start; /* Align tags to left in their space */
-    flex-wrap: wrap; /* allow wrap if many tags */
+    grid-column: 3;
+    display: flex;
+    justify-content: flex-end; /* Align tags to right in their space */
+    flex-wrap: wrap; 
     gap: 5px;
+    margin: 0 15px;
+}
+
+/* Visibility logic for tags based on view */
+.card-container:not(.list-view) .hidden-in-grid {
+    display: none !important;
+}
+.card-container.list-view .hidden-in-list {
+    display: none !important;
 }
 
 /* 4. Progress */
 .card-container.list-view .progress-bar-container {
-    order: 4;
+    grid-column: 4;
     position: relative;
     width: auto;
     height: auto;
     background: transparent;
     border-radius: 0;
-    overflow: visible;
-    flex-shrink: 0;
     display: flex;
     align-items: center;
+    margin-right: 15px;
 }
 .card-container.list-view .progress-bar {
     display: none;
@@ -116,8 +130,7 @@ css_to_add = '''/* =========================================
 
 /* 5. Actions */
 .card-container.list-view .card-actions {
-    order: 5;
-    flex-shrink: 0;
+    grid-column: 5;
     display: flex;
     gap: 10px;
 }
@@ -129,44 +142,46 @@ css_to_add = '''/* =========================================
 
 /* Mobile responsiveness for list view */
 @media (max-width: 900px) {
+    .card-container.list-view {
+        display: flex !important;
+        flex-direction: column !important;
+    }
     .card-container.list-view .card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 15px !important;
     }
     
     .card-container.list-view .card-header {
-        display: flex; /* Revert display contents */
-        flex-direction: row;
-        width: 100%;
-        justify-content: space-between;
-        align-items: center;
-        order: 1; /* Whole header goes first */
+        display: flex !important;
+        flex-direction: row !important;
+        width: 100% !important;
+        justify-content: space-between !important;
+        align-items: center !important;
     }
     .card-container.list-view .card-title-group {
-        flex: 1;
-        min-width: 0;
+        margin: 0 !important;
+        flex: 1 !important;
     }
     .card-container.list-view .card-actions {
-        position: static; /* Flow normally inside card-header */
+        margin: 0 !important;
     }
 
     .card-container.list-view p.translation {
-        order: 2;
-        width: 100%;
-        -webkit-line-clamp: unset; /* show full translation on mobile */
+        width: 100% !important;
+        -webkit-line-clamp: unset !important;
     }
     .card-container.list-view .tags {
-        order: 3;
-        width: 100%;
-        flex: none;
-        justify-content: flex-start;
+        width: 100% !important;
+        justify-content: flex-start !important;
+        margin: 0 !important;
     }
     .card-container.list-view .progress-bar-container {
-        position: absolute;
-        bottom: 15px;
-        right: 15px;
-        margin: 0;
+        position: absolute !important;
+        bottom: 15px !important;
+        right: 15px !important;
+        margin: 0 !important;
     }
 }
 '''
