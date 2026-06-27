@@ -1,4 +1,4 @@
-﻿//quiz.js
+//quiz.js
 
 const quizTab = document.getElementById('quizTab');
 
@@ -125,7 +125,7 @@ function renderNextQuestion() {
     buttons.forEach(btn => {
         btn.addEventListener('click', () => {
             buttons.forEach(b => b.disabled = true);
-            const isCorrect = correctChoices.includes(btn.textContent);
+            const isCorrect = correctChoices.includes(btn.dataset.answer);
 
             // === სტატისტიკის დაუყოვნებლივ მიწოდება ===
             incrementStat('TOTAL_TESTS', 1);
@@ -147,7 +147,7 @@ function renderNextQuestion() {
                 btn.classList.add('incorrect');
                 if (realCard) updateCardProgress(realCard, -1);
                 buttons.forEach(b => {
-                    if (correctChoices.includes(b.textContent)) {
+                    if (correctChoices.includes(b.dataset.answer)) {
                         b.classList.add('correct');
                     }
                 });

@@ -1,4 +1,4 @@
-﻿//sentence.js
+//sentence.js
 let senCards = [], senCurrent = 0, senCorrect = 0;
 let senReverse = false;
 let senCount = 10;
@@ -64,17 +64,24 @@ function showNextSentence() {
 
     const game = document.getElementById('senGame');
     game.innerHTML = `
-        <h3>Question ${senCurrent + 1} / ${senCards.length}</h3>
-        <div id="senSentences">${displayedSentences.map((s, i) => `<p><strong>${i + 1}.</strong> ${s}</p>`).join('')}</div>
-        <div id="senOptions">
-            ${options.map(opt => `<button class="sen-option">${opt}</button>`).join('')}
+        <div class="game-question-animated">
+            <h3>Question ${senCurrent + 1} / ${senCards.length}</h3>
+            <div id="senSentences" style="margin: 20px 0; font-size: 20px; line-height: 1.6; color: var(--accent);">
+                ${displayedSentences.map((s, i) => `<p style="margin-bottom: 10px;"><strong>${i + 1}.</strong> ${s}</p>`).join('')}
+            </div>
+            <div id="senOptions" class="quiz-options">
+                ${options.map((opt, i) => `<button class="sen-option quiz-option" data-ans="${opt}"><span class="key-hint">${i + 1}</span>${opt}</button>`).join('')}
+            </div>
+            <div id="senFeedback" style="margin-top: 20px; font-size: 20px; font-weight: bold;"></div>
+            <div id="senEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>
         </div>
-        <div id="senFeedback" style="margin-top: 10px;"></div>
     `;
 
-    document.querySelectorAll('.sen-option').forEach(btn => {
+    const buttons = document.querySelectorAll('.sen-option');
+    buttons.forEach(btn => {
         btn.onclick = () => {
-            const val = btn.textContent.trim();
+            buttons.forEach(b => b.disabled = true);
+            const val = btn.dataset.ans.trim();
             const feedback = document.getElementById('senFeedback');
             const isCorrect = val.toLowerCase() === correctWord.toLowerCase();
 
@@ -99,18 +106,22 @@ function showNextSentence() {
             });
 
             applyCurrentSort?.();
-            document.querySelectorAll('.sen-option').forEach(b => {
-                b.disabled = true;
-                const bText = b.textContent.trim().toLowerCase();
+            buttons.forEach(b => {
+                const bText = b.dataset.ans.trim().toLowerCase();
                 const correctText = correctWord.toLowerCase();
 
                 if (bText === correctText) b.classList.add('correct');
                 if (b === btn && bText !== correctText) b.classList.add('incorrect');
             });
 
-            setTimeout(() => {
-                senCurrent++;
-                showNextSentence();
+            document.getElementById('senEnterHint').classList.add('visible');
+            window.senNextReady = true;
+            window.senTimeout = setTimeout(() => {
+                if (window.senNextReady) {
+                    window.senNextReady = false;
+                    senCurrent++;
+                    showNextSentence();
+                }
             }, 3000);
         };
     });
@@ -125,10 +136,16 @@ function updateCardByText(wordText, delta) {
 
 function showSentenceResult() {
     const game = document.getElementById('senGame');
+    const percentage = senCards.length > 0 ? Math.round((senCorrect / senCards.length) * 100) : 0;
     game.innerHTML = `
-        <h3>Results</h3>
-        <p>Correct answers: ${senCorrect} / ${senCards.length}</p>
+        <div class="beautiful-results">
+            <h3>Sentences Completed! 📝</h3>
+            <div class="score-circle">${percentage}%</div>
+            <p>Correct answers: <strong>${senCorrect} / ${senCards.length}</strong></p>
+            <button class="play-again-btn" onclick="startSentenceGame()">Play Again 🔄</button>
+        </div>
     `;
+    window.senNextReady = false;
 }
 
 function shuffleArray(arr) {
@@ -148,6 +165,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+document.addEventListener('keydown', (e) => {
+    if (document.getElementById('trainingModal')?.classList.contains('hidden')) return;
+    const activeTab = document.querySelector('.training-tab.active')?.dataset.tab;
+    if (activeTab !== 'tab6') return;
+
+    if (e.key >= '1' && e.key <= '5') {
+        const index = parseInt(e.key) - 1;
+        const btns = document.querySelectorAll('.sen-option');
+        if (btns[index] && !btns[index].disabled) {
+            btns[index].click();
+        }
+    } else if (e.key === 'Enter') {
+        if (window.senNextReady) {
+            clearTimeout(window.senTimeout);
+            window.senNextReady = false;
+            senCurrent++;
+            showNextSentence();
+        }
+    }
+});
+
+// Global Keyboard shortcuts for Sentence
 document.addEventListener('keydown', (e) => {
     if (document.getElementById('trainingModal')?.classList.contains('hidden')) return;
     const activeTab = document.querySelector('.training-tab.active')?.dataset.tab;
