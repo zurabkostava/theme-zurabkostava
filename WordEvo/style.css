@@ -6420,3 +6420,18 @@ body.dark optgroup {
     background-color: #1e1e1e !important;
     color: #aaaaaa !important;
 }
+
+
+/* LIGHT MODE TEXT COLOR FIX FOR MATERIAL INPUTS/SELECTS */
+body:not(.dark) .input-container .material-select > select,
+body:not(.dark) .input-container .material-input > input,
+body:not(.dark) .input-container .material-input > textarea {
+    color: #111 !important;
+}
+
+body:not(.dark) .input-container .material-select > span,
+body:not(.dark) .input-container .material-input > span,
+body:not(.dark) .material-select > span,
+body:not(.dark) .material-input > span {
+    color: #555 !important;
+}
