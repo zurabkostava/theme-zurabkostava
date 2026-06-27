@@ -139,12 +139,19 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <button class="toolbar-btn" id="toggleSidebarBtn" title="Tags">
                     <i class="fas fa-tags"></i>
                 </button>
-                <button class="toolbar-btn" id="statsBtn" title="Statistics">
-                    <i class="fas fa-chart-pie"></i>
-                </button>
-                <button class="toolbar-btn" id="notificationsBtn" title="Reminders">
-                    <i class="fas fa-bell"></i>
-                </button>
+                <div class="toolbar-dropdown" style="position: relative; display: inline-block;">
+                    <button class="toolbar-btn" id="toolbarMoreBtn" title="More Options">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="toolbar-dropdown-content" id="toolbarDropdownContent" style="display: none;">
+                        <button class="toolbar-btn" id="statsBtn" title="Statistics">
+                            <i class="fas fa-chart-pie"></i>
+                        </button>
+                        <button class="toolbar-btn" id="notificationsBtn" title="Reminders">
+                            <i class="fas fa-bell"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="toolbar-right" style="display: flex; align-items: center; margin-left: auto; gap: 12px; flex-wrap: wrap;">
                 <div class="sorting">
