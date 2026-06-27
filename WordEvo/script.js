@@ -1478,6 +1478,15 @@ async function deleteCard(card) {
     const tagInput = document.getElementById('tagInput');
     const addTagBtn = document.getElementById('addTagBtn');
     const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+    
+    // Mobile menu toggle
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const topBar = document.querySelector('.top-bar');
+    if (mobileMenuBtn && topBar) {
+        mobileMenuBtn.addEventListener('click', () => {
+            topBar.classList.toggle('show-mobile');
+        });
+    }
     const closeSidebarBtn = document.getElementById('closeSidebarBtn');
     const sidebar = document.getElementById('sidebar');
     const searchInput = document.getElementById('searchInput');

@@ -88,6 +88,12 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 <div id="mainAppContainer" style="display: none;">
     <div class="header-wrapper">
         <div class="top">
+        <div class="mobile-header" style="display: none;">
+            <div class="app-logo">Wordevo</div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
         <div class="top-bar">
             <div class="top-left">
                 <div class="app-logo">Wordevo</div>
