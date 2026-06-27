@@ -847,19 +847,22 @@ function renderCardTagsHTML(allTags, activeTags = []) {
 
 function filterCardsByTags() {
     const tagsArray = [...activeFilterTags];
-// NEW: წავიკითხოთ ჩამრთველის მდგომარეობაც
-    const hideMastered = document.getElementById('hideMasteredCheckbox').checked;
+    const mainProgressSelect = document.getElementById('mainProgressSelect');
+    const progressFilter = mainProgressSelect ? mainProgressSelect.value : "0-99"; // default hides learned
+
     document.querySelectorAll('.card').forEach(card => {
-// ვკითხულობთ თეგებს პირდაპირ dataset-დან, რადგან ზოგიერთი შეიძლება დამალული იყოს (+N)
         const tagObjects = JSON.parse(card.dataset.tagObjects || '[]');
         const cardTags = tagObjects.map(t => t.name);
-// 1. ვამოწმებთ, ემთხვევა თუ არა თეგებს
         const matchesTags = tagsArray.some(tag => cardTags.includes(tag)) || tagsArray.length === 0;
-// 2. ვამოწმებთ, ხომ არ არის "Learned" და ხომ არ ვმალავთ მას
-        const isMastered = parseFloat(card.dataset.progress || 0) >= 100;
-        const matchesMastered = !hideMastered || !isMastered; // (უნდა გამოჩნდეს, თუ "დამალვა" გამორთულია, ან თუ დამასტერებული არაა)
-// 3. cards ჩანს მხოლოდ იმ შემთხვევაში, თუ ორივე პირობას აკმაყოფილებს
-        card.style.display = (matchesTags && matchesMastered) ? 'block' : 'none';
+
+        const progress = parseFloat(card.dataset.progress || 0);
+        let matchesProgress = true;
+        if (progressFilter) {
+            const [minP, maxP] = progressFilter.split('-').map(parseFloat);
+            matchesProgress = (progress >= minP && progress <= maxP);
+        }
+
+        card.style.display = (matchesTags && matchesProgress) ? 'block' : 'none';
 
 // განვაახლოთ თეგების HTML (გაფილტრული თეგები წინ გადმოვა)
         const tagsContainer = card.querySelector('.tags');
@@ -2460,9 +2463,9 @@ async function deleteCard(card) {
         });
     }
 
-    const hideMasteredCheckbox = document.getElementById('hideMasteredCheckbox');
-    if (hideMasteredCheckbox) {
-        hideMasteredCheckbox.addEventListener('change', () => {
+    const mainProgressSelect = document.getElementById('mainProgressSelect');
+    if (mainProgressSelect) {
+        mainProgressSelect.addEventListener('change', () => {
             filterCardsByTags();
         });
     }
