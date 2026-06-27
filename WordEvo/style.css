@@ -6413,3 +6413,10 @@ body.dark option {
     background-color: #1e1e1e !important;
     color: #ffffff !important;
 }
+
+
+/* NATIVE DROPDOWN OPTGROUP DARK MODE FIX */
+body.dark optgroup {
+    background-color: #1e1e1e !important;
+    color: #aaaaaa !important;
+}
