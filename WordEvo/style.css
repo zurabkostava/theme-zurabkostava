@@ -1692,7 +1692,7 @@ body.dark ::-webkit-scrollbar-thumb:hover {
 
 .preview-modal { height: 75vh; max-height: 800px; width: 750px; overflow: hidden; padding: 30px !important; display: flex !important; flex-direction: column; }
 
-#previewSentencesContainer { flex-grow: 1; min-height: 0; overflow-y: auto; margin-top: 0 !important; padding-top: 30px; padding-bottom: 20px; -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30px); mask-image: linear-gradient(to bottom, transparent 0%, black 30px); }
+.sentence-preview { flex-grow: 1; min-height: 0; overflow-y: auto; margin-top: 0 !important; padding-top: 30px; padding-bottom: 20px; -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30px); mask-image: linear-gradient(to bottom, transparent 0%, black 30px); }
 
 .preview-modal .close-modal {
     position: sticky;
@@ -6110,6 +6110,7 @@ button:active, .btn:active {
 .dark button:active, .dark .btn:active {
     box-shadow: 0 2px 6px rgba(255, 255, 255, 0.05);
 }
+
 
 
 
