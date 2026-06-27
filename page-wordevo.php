@@ -734,33 +734,6 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             <div id="notificationListContainer">
                 <p class="notif-empty" style="text-align: center; color: #888;">No reminders.</p>
             </div>
-
-            
-                <div class="notif-form-row">
-                    <label>Dictionary:</label>
-                    <select id="notifDictSelect"></select>
-                </div>
-                <div class="notif-form-row">
-                    <label>Tags (Optional):</label>
-                    <select id="notifTagSelect" multiple></select>
-                </div>
-                <div class="notif-form-row">
-                    <label>Progress:</label>
-                    <select id="notifProgressSelect">
-                        <option value="">Global (All)</option>
-                        <option value="0-99">All (Except 100%)</option>
-                        <option value="0-30">0% - 30%</option>
-                        <option value="31-50">31% - 50%</option>
-                        <option value="51-70">51% - 70%</option>
-                        <option value="71-80">71% - 80%</option>
-                        <option value="81-99">81% - 99%</option>
-                        <option value="100-100">Learned (100%)</option>
-                    </select>
-                </div>
-                <div class="notif-form-actions">
-                    <button id="notifSaveBtn"><i class="fas fa-check"></i> Save</button>
-                    <button id="notifCancelBtn"><i class="fas fa-times"></i> Cancel</button>
-                </div>
             </div>
 
             </div> <!-- end body -->
@@ -801,9 +774,37 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <button type="button" class="weekday-btn" data-day="0">Sun</button>
                     </div>
                 </div>
+
+            
+                <div class="notif-form-row">
+                    <label>Dictionary:</label>
+                    <select id="notifDictSelect"></select>
+                </div>
+                <div class="notif-form-row">
+                    <label>Tags (Optional):</label>
+                    <select id="notifTagSelect" multiple></select>
+                </div>
+                <div class="notif-form-row">
+                    <label>Progress:</label>
+                    <select id="notifProgressSelect">
+                        <option value="">Global (All)</option>
+                        <option value="0-99">All (Except 100%)</option>
+                        <option value="0-30">0% - 30%</option>
+                        <option value="31-50">31% - 50%</option>
+                        <option value="51-70">51% - 70%</option>
+                        <option value="71-80">71% - 80%</option>
+                        <option value="81-99">81% - 99%</option>
+                        <option value="100-100">Learned (100%)</option>
+                    </select>
+                </div>
+                <div class="notif-form-actions">
+                    <button id="notifSaveBtn"><i class="fas fa-check"></i> Save</button>
+                    <button id="notifCancelBtn"><i class="fas fa-times"></i> Cancel</button>
+                </div>
             </div>
         </div>
     </div>
+</div>
     
     <h2 class="app-logo mobile-logo">Wordevo</h2>
     <div class="toast-container" id="toastContainer"></div>
