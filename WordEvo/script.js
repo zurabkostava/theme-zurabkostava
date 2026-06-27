@@ -1077,8 +1077,9 @@ data-lang="ka" style="margin-right: 8px; margin-left: 0; vertical-align: middle;
                     pEn.className = 'en-sentence';
                     pEn.style.display = 'flex';
                     pEn.style.justifyContent = 'space-between';
-                    pEn.style.alignItems = 'flex-start';
+                    pEn.style.alignItems = 'center';
                     pEn.style.gap = '8px';
+                    pEn.style.paddingRight = '8px'; // fix 45px padding
                     
                     const safeEn = (englishSentences[i] || '').replace(/"/g, '&quot;');
                     const safeGe = (georgianSentences[i] || '').replace(/"/g, '&quot;');
