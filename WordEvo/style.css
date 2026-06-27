@@ -7222,6 +7222,7 @@ body.dark #trainingBtn {
     overflow: hidden;
     gap: 5px;
     align-self: center;
+    margin-right: 20px; /* Safe space before progress */
 }
 
 /* Grid View Visibility (shows max 3 tags) */
@@ -7255,6 +7256,7 @@ body.dark #trainingBtn {
     grid-column: 4;
     grid-row: 1;
     position: relative;
+    transform: none !important; /* FIX OVERLAP */
     width: auto;
     height: auto;
     background: transparent;
