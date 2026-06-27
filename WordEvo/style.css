@@ -7429,7 +7429,7 @@ button.speak-btn.active {
 }
 
 .sentence-pair .speak-btn:hover {
-    transform: scale(1.05) !important; /* No translateY to avoid jumping */
+    transform: none !important; /* No translateY or scale to avoid ANY jumping */
 }
 
 .sentence-pair .speak-btn:active {
