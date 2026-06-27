@@ -6330,3 +6330,17 @@ body.dark #dictionarySelect:hover, body.dark .toolbar-select:hover { background:
     opacity: 0.7;
 }
 
+
+
+/* NUCLEAR BACKGROUND REMOVAL FOR INNER WRAPPERS */
+.top, body.dark .top, .dark .top {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+body.dark .top-bar, .dark .top-bar, 
+body.dark .card-toolbar, .dark .card-toolbar {
+    background: transparent !important;
+    box-shadow: none !important;
+}
