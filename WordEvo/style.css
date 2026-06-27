@@ -258,7 +258,7 @@ body.dark {
 
 .dark .sentence-list p {
 
-    background-color: #2a2a2a;
+    background-color: rgba(255, 255, 255, 0.04);
 
     color: #e0e0e0;
 
@@ -1825,6 +1825,11 @@ textarea {
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
+}
+
+.sentence-list button:hover {
+    transform: translateY(-50%);
+    scale: 0.9;
 }
 
 .sentence-list p strong {
