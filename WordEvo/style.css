@@ -7164,8 +7164,8 @@ body.dark #trainingBtn {
     display: flex;
     align-items: center !important;
     gap: 12px !important;
-    flex: 0 0 150px; /* Fixed width to align nicely, brought closer */
-    min-width: 140px;
+    flex: 0 0 110px; /* Fixed width to align nicely, brought closer */
+    min-width: 100px;
 }
 .card-container.list-view .card-title-group h2.word {
     font-size: 1.2rem;
@@ -7186,6 +7186,14 @@ body.dark #trainingBtn {
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Visibility logic for tags based on view */
+.card-container:not(.list-view) .hidden-in-grid {
+    display: none !important;
+}
+.card-container.list-view .hidden-in-list {
+    display: none !important;
 }
 
 /* 3. Tags */

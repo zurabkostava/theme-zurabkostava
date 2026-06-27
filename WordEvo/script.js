@@ -831,16 +831,19 @@ function renderCardTagsHTML(allTags, activeTags = []) {
     
     const maxVisibleTags = 3;
     const totalTags = sortedTags.length;
-    let html = sortedTags.slice(0, maxVisibleTags).map(tag => {
+    
+    let html = sortedTags.map((tag, index) => {
         const color = getColorForTag(tag);
-        const filteredClass = activeTags.includes(tag) ? ' filtered' : '';
-        return `<span class="card-tag${filteredClass}" style="background-color: ${color}">${tag}</span>`;
+        let classes = 'card-tag';
+        if (activeTags.includes(tag)) classes += ' filtered';
+        if (index >= maxVisibleTags) classes += ' hidden-in-grid';
+        return `<span class="${classes}" style="background-color: ${color}">${tag}</span>`;
     }).join('');
     
     if (totalTags > maxVisibleTags) {
         const hiddenCount = totalTags - maxVisibleTags;
         const hiddenTags = sortedTags.slice(maxVisibleTags).join(', ');
-        html += ` <span class="card-tag-more" title="${hiddenTags}">+${hiddenCount}</span>`;
+        html += ` <span class="card-tag-more hidden-in-list" title="${hiddenTags}">+${hiddenCount}</span>`;
     }
     return html;
 }
