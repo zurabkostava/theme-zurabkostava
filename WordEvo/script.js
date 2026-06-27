@@ -2753,3 +2753,22 @@ window.startActiveGame = function() {
 
 
 
+
+
+// New mobile header tags button logic
+document.addEventListener('DOMContentLoaded', () => {
+    const mobileToggleSidebarBtn = document.getElementById('mobileToggleSidebarBtn');
+    const sidebar = document.getElementById('sidebar');
+    const tagInput = document.getElementById('tagInput');
+    if (mobileToggleSidebarBtn && sidebar) {
+        mobileToggleSidebarBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            sidebar.classList.toggle('show');
+            sidebar.classList.toggle('active');
+            if ((sidebar.classList.contains('show') || sidebar.classList.contains('active')) && tagInput) {
+                tagInput.focus();
+            }
+        };
+    }
+});

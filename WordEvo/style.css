@@ -6464,7 +6464,7 @@ body:not(.dark) .material-input > span {
         border: 1px solid rgba(255, 255, 255, 0.05) !important;
     }
 
-    /* Mobile Header (Logo + Hamburger) */
+    /* Mobile Header (Logo + Hamburger + Tags) */
     .mobile-header {
         display: flex !important;
         justify-content: space-between;
@@ -6475,13 +6475,21 @@ body:not(.dark) .material-input > span {
     .mobile-header .app-logo {
         font-size: 1.5rem;
         margin: 0;
+        flex: 1;
+        text-align: center;
     }
-    .mobile-menu-btn {
+    .mobile-menu-btn, .mobile-tags-btn {
         background: transparent;
         border: none;
         font-size: 1.5rem;
         color: var(--text-color);
         cursor: pointer;
+        padding: 0 10px;
+    }
+
+    /* Hide the old blue slider button on mobile */
+    .mobile-toggle-btn, #showTopBtn {
+        display: none !important;
     }
 
     /* Hide the old logo in top-left */
