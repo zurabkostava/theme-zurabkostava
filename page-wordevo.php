@@ -734,10 +734,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             <div id="notificationListContainer">
                 <p class="notif-empty" style="text-align: center; color: #888;">No reminders.</p>
             </div>
-            </div>
-
             </div> <!-- end body -->
-            <div class="modal-footer modal-actions" style="margin-top: 20px; display: flex; gap: 10px;">
+            
+            <div class="modal-footer modal-actions" style="margin-top: 0; display: flex; gap: 10px;">
                 <button id="openAddNotificationModalBtn" style="background-color: #0077cc; color: white; flex: 1;">
                     <i class="fas fa-plus"></i> Add New Reminder
                 </button>
