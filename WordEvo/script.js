@@ -1015,10 +1015,13 @@ function showCardPreview(word, mainTranslations, extraTranslations, tags, englis
         }
     }
     const previewWordEl = document.getElementById('previewWord');
-    previewWordEl.innerHTML = `<button class="speak-btn" title="წაიკითხე სიტყვა" data-word="${word}" style="flex-shrink: 0; margin-top: 4px;"><i class="fas fa-volume-up"></i></button><span style="line-height: 1.3; word-break: break-word;">${word}</span>`;
-    previewWordEl.style.display = 'flex';
-    previewWordEl.style.alignItems = 'flex-start';
-    previewWordEl.style.gap = '12px';
+    previewWordEl.textContent = word;
+    previewWordEl.style.display = 'block'; // reset flex
+    
+    const speakerContainer = document.getElementById('previewWordSpeakerContainer');
+    if (speakerContainer) {
+        speakerContainer.innerHTML = `<button class="speak-btn" title="წაიკითხე სიტყვა" data-word="${word}" style="vertical-align: middle;"><i class="fas fa-volume-up"></i></button>`;
+    }
 
     const previewDateEl = document.getElementById('previewDate');
     if (previewDateEl) {

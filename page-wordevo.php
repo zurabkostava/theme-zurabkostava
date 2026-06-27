@@ -314,13 +314,16 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         </button>
         <div class="modal preview-modal">
             <div class="preview-sticky">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <h2 id="previewWord" style="margin: 0; padding-right: 20px;">
-                    </h2>
-                    <button class="close-button" id="closePreviewBtn" style="padding: 0;">
-                        ×
-                    </button>
-                </div>
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                      <h2 id="previewWord" style="margin: 0; padding-right: 20px; flex: 1; line-height: 1.3; word-break: break-word;">
+                      </h2>
+                      <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+                          <div id="previewWordSpeakerContainer"></div>
+                          <button class="close-button" id="closePreviewBtn" style="padding: 0;">
+                              ×
+                          </button>
+                      </div>
+                  </div>
                 <div id="previewDate" style="font-size: 13px; color: #888; margin-bottom: 10px;"></div>
                 <hr/>
                 <p id="previewTranslation">
