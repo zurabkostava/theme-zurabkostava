@@ -6478,13 +6478,27 @@ body:not(.dark) .material-input > span {
         flex: 1;
         text-align: center;
     }
-    .mobile-menu-btn, .mobile-tags-btn {
+    .mobile-menu-btn {
         background: transparent;
         border: none;
         font-size: 1.5rem;
         color: var(--text-color);
         cursor: pointer;
         padding: 0 10px;
+    }
+    
+    .mobile-tags-btn {
+        background: transparent;
+        border: none;
+        font-size: 1.2rem !important; /* Minimalistic */
+        color: var(--text-color) !important;
+        cursor: pointer;
+        padding: 0 10px;
+        opacity: 0.85; /* Modern, slightly muted */
+        transition: opacity 0.2s ease;
+    }
+    .mobile-tags-btn:active {
+        opacity: 1;
     }
 
     /* Hide the old blue slider button on mobile */
@@ -6530,6 +6544,9 @@ body:not(.dark) .material-input > span {
         transform: none !important;
         box-shadow: none !important;
         background: transparent !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
     }
 
     /* Flowed Toolbar inside the sticky header wrapper */

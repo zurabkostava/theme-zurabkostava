@@ -87,7 +87,6 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 </div>
 <div id="mainAppContainer" style="display: none;">
     <div class="header-wrapper">
-        <div class="top">
         <div class="mobile-header" style="display: none;">
             <button class="mobile-tags-btn" id="mobileToggleSidebarBtn" title="თეგები">
                 <i class="fas fa-tags"></i>
@@ -97,6 +96,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <i class="fas fa-bars"></i>
             </button>
         </div>
+        <div class="top">
         <div class="top-bar">
             <div class="top-left">
                 <div class="app-logo">Wordevo</div>
