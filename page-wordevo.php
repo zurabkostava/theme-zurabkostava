@@ -66,9 +66,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <div class="wordevo-spinner"></div>
 </div>
 <div class="auth-container" id="authContainer" style="display: none;">
-    <div class="auth-box">
+    <div class="auth-box" id="loginBox">
         <h2>Wordevo</h2>
-        <p>Login or Register</p>
+        <p>Welcome Back</p>
         <div class="input-container">
             <label class="material-input">
                 <input class="form-control" id="authEmail" placeholder=" " type="email"/>
@@ -81,12 +81,44 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <span>Password</span>
             </label>
         </div>
-        <div class="auth-actions">
-            <button id="loginBtn">Login</button>
-            <button id="registerBtn">Register</button>
+        <div class="auth-actions" style="justify-content: center;">
+            <button id="loginBtn" style="width: 100%;">Login</button>
         </div>
-        <button id="skipAuthBtn" style="margin-top:12px;padding:8px 24px;background:#e67e22;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">Skip Login (Offline)</button>
+        <div style="text-align: center; margin-top: 15px;">
+            <a href="#" id="showRegisterLink" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">Don't have an account? Sign up</a>
+        </div>
+        <button id="skipAuthBtn" style="margin-top:20px; width:100%; padding:10px 24px; background:var(--glass-bg); color:var(--text-color); border:1px solid var(--glass-border); border-radius:12px; cursor:pointer; font-size:14px; font-weight: 500; transition: all 0.3s ease;">Skip Login (Offline)</button>
         <div class="auth-message" id="authMessage"></div>
+    </div>
+
+    <div class="auth-box" id="registerBox" style="display: none;">
+        <h2>Wordevo</h2>
+        <p>Create an Account</p>
+        <div class="input-container">
+            <label class="material-input">
+                <input class="form-control" id="regEmail" placeholder=" " type="email"/>
+                <span>Email</span>
+            </label>
+        </div>
+        <div class="input-container">
+            <label class="material-input">
+                <input class="form-control" id="regPassword" placeholder=" " type="password"/>
+                <span>Password</span>
+            </label>
+        </div>
+        <div class="input-container">
+            <label class="material-input">
+                <input class="form-control" id="regPasswordConfirm" placeholder=" " type="password"/>
+                <span>Confirm Password</span>
+            </label>
+        </div>
+        <div class="auth-actions" style="justify-content: center;">
+            <button id="registerBtn" style="width: 100%;">Create Account</button>
+        </div>
+        <div style="text-align: center; margin-top: 15px;">
+            <a href="#" id="showLoginLink" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">Already have an account? Log in</a>
+        </div>
+        <div class="auth-message" id="regMessage"></div>
     </div>
 </div>
 <div id="mainAppContainer" style="display: none;">

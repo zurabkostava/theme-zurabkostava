@@ -1870,7 +1870,30 @@ async function deleteCard(card) {
         isAppInitialized = false; // NEW: ვანულებთ ალამს
     }
 // ==== 3c. ივენთების მიბმა (Event Listeners) ====
-// Auth
+    const loginBox = document.getElementById('loginBox');
+    const registerBox = document.getElementById('registerBox');
+    const showRegisterLink = document.getElementById('showRegisterLink');
+    const showLoginLink = document.getElementById('showLoginLink');
+    const regEmail = document.getElementById('regEmail');
+    const regPassword = document.getElementById('regPassword');
+    const regPasswordConfirm = document.getElementById('regPasswordConfirm');
+    const regMessage = document.getElementById('regMessage');
+
+    if (showRegisterLink) {
+        showRegisterLink.onclick = (e) => {
+            e.preventDefault();
+            loginBox.style.display = 'none';
+            registerBox.style.display = 'block';
+        };
+    }
+    if (showLoginLink) {
+        showLoginLink.onclick = (e) => {
+            e.preventDefault();
+            registerBox.style.display = 'none';
+            loginBox.style.display = 'block';
+        };
+    }
+
     loginBtn.onclick = async () => {
         authMessage.textContent = '';
         const {error} = await supabaseClient.auth.signInWithPassword({
@@ -1882,15 +1905,29 @@ async function deleteCard(card) {
         }
     };
     registerBtn.onclick = async () => {
-        authMessage.textContent = '';
+        regMessage.textContent = '';
+        if (regPassword.value !== regPasswordConfirm.value) {
+            regMessage.textContent = 'პაროლები არ ემთხვევა ერთმანეთს!';
+            return;
+        }
+        if (regPassword.value.length < 6) {
+            regMessage.textContent = 'პაროლი უნდა შეიცავდეს მინიმუმ 6 სიმბოლოს!';
+            return;
+        }
+
         const {data, error} = await supabaseClient.auth.signUp({
-            email: authEmail.value,
-            password: authPassword.value,
+            email: regEmail.value,
+            password: regPassword.value,
         });
+        
         if (error) {
-            authMessage.textContent = error.message;
+            regMessage.textContent = error.message;
         } else {
-            authMessage.textContent = 'Registration successful! გთხოვთ, დაადასტუროთ იმეილი და შემდეგ შეხვიდეთ სისტემაში.';
+            regMessage.textContent = 'Registration successful! შეგიძლიათ შეხვიდეთ სისტემაში.';
+            regMessage.style.color = '#4caf50';
+            setTimeout(() => {
+                showLoginLink.click();
+            }, 2000);
         }
     };
     logoutBtn.onclick = async () => {
