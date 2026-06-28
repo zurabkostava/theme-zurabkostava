@@ -1464,16 +1464,34 @@ async function loadDataFromSupabase(retryCount = 0) {
         return card;
     });
 // 5. ვხატავთ ბარათებს და ვავსებთ UI-ს
+    const cardElements = cardsWithTags.map(cardData => renderCardFromData(cardData, false));
+    
+    // Sort the elements in memory before appending
+    cardElements.sort((a, b) => {
+        let valA, valB;
+        if (currentSortMode === 'alphabetical') {
+            valA = a.querySelector('.word').textContent.trim().toLowerCase();
+            valB = b.querySelector('.word').textContent.trim().toLowerCase();
+        } else if (currentSortMode === 'updated') {
+            valA = parseInt(a.dataset.updated || 0);
+            valB = parseInt(b.dataset.updated || 0);
+        } else if (currentSortMode === 'progress') {
+            valA = parseFloat(a.dataset.progress || 0);
+            valB = parseFloat(b.dataset.progress || 0);
+        }
+        const result = valA > valB ? 1 : valA < valB ? -1 : 0;
+        return sortOrder === 'asc' ? result : -result;
+    });
+
     const fragment = document.createDocumentFragment();
-    cardsWithTags.forEach((cardData, index) => {
-        const cardEl = renderCardFromData(cardData, false);
+    cardElements.forEach((cardEl, index) => {
         // Stagger entrance for up to 30 items
         const delay = Math.min(index * 40, 1200);
         cardEl.style.animationDelay = `${delay}ms`;
         fragment.appendChild(cardEl);
     });
     document.getElementById('cardContainer').appendChild(fragment);
-    sortCards();
+    // Removed sortCards() call to prevent detaching/re-attaching which restarts the CSS animation
     renderSidebarTags();
     populateGlobalTags();
     if (document.getElementById('quizTab')) {
