@@ -199,7 +199,7 @@ function showWordhearResults() {
 document.addEventListener('keydown', (e) => {
     if (document.getElementById('trainingModal')?.classList.contains('hidden')) return;
     const activeTab = document.querySelector('.training-tab.active')?.dataset.tab;
-    if (activeTab !== 'wordhear') return;
+    if (activeTab !== 'tab2') return;
 
     if (e.key >= '1' && e.key <= '9') {
         const index = parseInt(e.key) - 1;
