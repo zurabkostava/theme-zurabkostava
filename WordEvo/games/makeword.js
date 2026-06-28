@@ -4,7 +4,7 @@ let mwCurrentIndex = 0;
 let mwCorrectAnswers = 0;
 let mwTotalQuestions = 10;
 let mwReverse = false;
-let mwFullBlankMode = false;
+let mwFullBlankMode = true;
 
 let mwContainer, mwResultContainer;
 
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tab.innerHTML = `
 <label style="margin-bottom:10px; display:inline-block;">
-            <input type="checkbox" id="mwFullBlankToggle" />
+            <input type="checkbox" id="mwFullBlankToggle" checked />
             All letters blank
         </label>
         <div id="mwContainer" style="margin-top: 1rem;"></div>
