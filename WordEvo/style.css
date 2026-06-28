@@ -8157,3 +8157,30 @@ body:not(.dark) .tag-add-container {
 .sidebar-tag-item.active .tag-count-badge {
     background-color: rgba(255,255,255,0.2) !important;
 }
+
+/* ============================================================
+   DISABLE HOVER EFFECTS ON CORRECT/INCORRECT SELECTED ITEMS
+   ============================================================ */
+
+/* Use pointer-events: none to completely stop any hover effects or cursor changes */
+.quiz-option.correct,
+.quiz-option.incorrect,
+.sen-option.correct,
+.sen-option.incorrect,
+.mix-btn.correct,
+.mix-btn.incorrect,
+.correct,
+.incorrect {
+    pointer-events: none !important;
+    transform: scale(1.02) !important; /* Keep the slightly popped-out look statically if wanted, or just none */
+}
+
+/* Ensure no scale jump on hover if pointer-events fails somehow */
+.quiz-option.correct:hover,
+.quiz-option.incorrect:hover,
+.sen-option.correct:hover,
+.sen-option.incorrect:hover,
+.mix-btn.correct:hover,
+.mix-btn.incorrect:hover {
+    transform: none !important;
+}
