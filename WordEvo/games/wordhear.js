@@ -114,7 +114,7 @@ async function showNextWordhear() {
             <h3>Question ${wordhearCurrentIndex + 1} / ${wordhearCards.length}</h3>
             <button id="repeatWordhearBtn" class="action-btn-secondary" style="margin-bottom: 15px;">🔁 Repeat Question</button>
             <div class="quiz-options">
-                ${options.map(opt => `<button class="quiz-option">${opt}</button>`).join('')}
+                ${options.map((opt, i) => `<button class="quiz-option" data-answer="${opt}"><span class="key-hint">${i + 1}</span>${opt}</button>`).join('')}
             </div>
             <div id="correctAnswerReveal" style="margin-top: 1rem; font-weight: bold;"></div>
             ${getAutoAdvanceHTML('wh')}
@@ -132,7 +132,7 @@ async function showNextWordhear() {
 
     document.querySelectorAll('.quiz-option').forEach(btn => {
         btn.addEventListener('click', () => {
-            const isCorrect = btn.textContent === answer;
+            const isCorrect = btn.dataset.answer === answer;
             btn.classList.add(isCorrect ? 'correct' : 'incorrect');
             document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
 
@@ -194,6 +194,29 @@ function showWordhearResults() {
 
 
 
+
+// Global Keyboard shortcuts for Wordhear
+document.addEventListener('keydown', (e) => {
+    if (document.getElementById('trainingModal')?.classList.contains('hidden')) return;
+    const activeTab = document.querySelector('.training-tab.active')?.dataset.tab;
+    if (activeTab !== 'wordhear') return;
+
+    if (e.key >= '1' && e.key <= '9') {
+        const index = parseInt(e.key) - 1;
+        const container = document.getElementById('whQuestionContainer');
+        if (container) {
+            const btns = container.querySelectorAll('.quiz-option');
+            if (btns[index] && !btns[index].disabled) {
+                btns[index].click();
+            }
+        }
+    } else if (e.key === 'Enter') {
+        if (window.whNextReady) {
+            const btn = document.getElementById('whNextBtn');
+            if (btn) btn.click(); // Using click triggers the existing handler properly
+        }
+    }
+});
 
 // Global Keyboard shortcuts for Wordhear
 document.addEventListener('keydown', (e) => {

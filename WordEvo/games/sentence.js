@@ -196,24 +196,3 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Global Keyboard shortcuts for Sentence
-document.addEventListener('keydown', (e) => {
-    if (document.getElementById('trainingModal')?.classList.contains('hidden')) return;
-    const activeTab = document.querySelector('.training-tab.active')?.dataset.tab;
-    if (activeTab !== 'tab6') return;
-
-    if (e.key >= '1' && e.key <= '9') {
-        const index = parseInt(e.key) - 1;
-        const btns = document.querySelectorAll('.sen-option');
-        if (btns[index] && !btns[index].disabled) {
-            btns[index].click();
-        }
-    } else if (e.key === 'Enter') {
-        if (window.senNextReady) {
-            clearTimeout(window.senTimeout);
-            window.senNextReady = false;
-            senCurrent++;
-            showNextSentence();
-        }
-    }
-});
