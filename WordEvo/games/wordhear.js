@@ -187,7 +187,7 @@ function showWordhearResults() {
     whResultContainer.innerHTML = `
         <h3>Results</h3>
         <p>Correct answers: ${wordhearCorrectAnswers} / ${wordhearCards.length}</p>
-        <p>არაCorrect answers: ${wordhearCards.length - wordhearCorrectAnswers}</p>
+        <p>Incorrect answers: ${wordhearCards.length - wordhearCorrectAnswers}</p>
     `;
 }
 

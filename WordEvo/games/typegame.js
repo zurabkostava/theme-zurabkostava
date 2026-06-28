@@ -84,7 +84,7 @@ function showNextTyping() {
             updateCardByText(word, 3);
             tiCorrect++;
         } else {
-            feedback.innerHTML = `<span style="color:red;">არაCorrect. სწორი პასუხია: <strong>${correctAnswers[0]}</strong></span>`;
+            feedback.innerHTML = `<span style="color:red;">❌ Incorrect! Correct answer: <strong>${correctAnswers[0]}</strong></span>`;
             updateCardByText(word, -3);
         }
         applyCurrentSort?.();

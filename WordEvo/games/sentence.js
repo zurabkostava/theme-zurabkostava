@@ -92,7 +92,7 @@ function showNextSentence() {
                 updateCardByText(correctWord, 4);
                 senCorrect++;
             } else {
-                feedback.innerHTML = `<span style="color:red;">არაCorrect. სწორი იყო: <strong>${correctWord}</strong></span>`;
+                feedback.innerHTML = `<span style="color:red;">❌ Incorrect! Correct word: <strong>${correctWord}</strong></span>`;
                 updateCardByText(correctWord, -4);
             }
 
