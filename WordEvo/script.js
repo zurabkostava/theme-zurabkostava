@@ -1901,7 +1901,7 @@ async function deleteCard(card) {
             password: authPassword.value,
         });
         if (error) {
-            authMessage.textContent = 'Email ან პაროლი არასწორია.';
+            authMessage.textContent = error.message; // ამოაგდებს ზუსტ მიზეზს (მაგ: Email not confirmed)
         }
     };
     registerBtn.onclick = async () => {
