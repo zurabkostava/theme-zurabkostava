@@ -8172,7 +8172,7 @@ body:not(.dark) .tag-add-container {
 .correct,
 .incorrect {
     pointer-events: none !important;
-    transform: scale(1.02) !important; /* Keep the slightly popped-out look statically if wanted, or just none */
+    transform: none !important;
 }
 
 /* Ensure no scale jump on hover if pointer-events fails somehow */
