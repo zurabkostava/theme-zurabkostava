@@ -129,11 +129,11 @@ function showNextMWQuestion() {
         ).join('')}
             </div>
             
-            <div id="mwHintSection" style="margin-bottom: 10px;">
-                <button id="showHintBtn" class="action-btn-secondary">
+            <div id="mwHintSection" style="min-height: 45px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+                <button id="showHintBtn" class="action-btn-secondary" style="display: ${mwFullBlankMode ? 'none' : 'block'}; margin: 0;">
                     Help
                 </button>
-                <div id="hintWord" style="display: ${mwFullBlankMode ? 'block' : 'none'}; margin-top: 15px;">
+                <div id="hintWord" style="display: ${mwFullBlankMode ? 'block' : 'none'};">
                     <span style="background-color: rgba(63, 131, 248, 0.1); color: #3f83f8; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-size: 18px; border: 1px solid rgba(63, 131, 248, 0.3); display: inline-block;">
                         💡 ${helperWord}
                     </span>
@@ -194,7 +194,7 @@ function showNextMWQuestion() {
     let hintUsed = mwFullBlankMode;
 
     showHintBtn?.addEventListener('click', () => {
-        hintWordEl.style.display = 'inline';
+        hintWordEl.style.display = 'block';
         showHintBtn.style.display = 'none';
 
         if (!hintUsed) {
