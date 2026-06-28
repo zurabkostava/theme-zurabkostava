@@ -222,7 +222,12 @@ function showNextMWQuestion() {
             updateRealCardProgress(correctWord, delta);
             applyCurrentSort?.();
 
-            document.getElementById('mwEnterHint').classList.add('visible');
+            const hintEl = document.getElementById('mwEnterHint');
+            hintEl.innerHTML = '✅ Correct! Moving to next...';
+            hintEl.style.color = '#4caf50';
+            hintEl.style.fontWeight = 'bold';
+            hintEl.classList.add('visible');
+
             window.mwNextReady = true;
             window.mwTimeout = setTimeout(() => {
                 if (window.mwNextReady) {
@@ -240,7 +245,12 @@ function showNextMWQuestion() {
             // Disable all buttons so user can't keep clicking while waiting
             document.querySelectorAll('.mw-char').forEach(btn => btn.disabled = true);
 
-            document.getElementById('mwEnterHint').classList.add('visible');
+            const hintEl = document.getElementById('mwEnterHint');
+            hintEl.innerHTML = '❌ Incorrect! Moving to next...';
+            hintEl.style.color = '#ff5252';
+            hintEl.style.fontWeight = 'bold';
+            hintEl.classList.add('visible');
+
             window.mwNextReady = true;
             window.mwTimeout = setTimeout(() => {
                 if (window.mwNextReady) {
