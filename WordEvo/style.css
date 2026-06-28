@@ -7929,3 +7929,131 @@ body:not(.dark) #sidebarTagList li:hover {
     background-color: rgba(255,255,255,0.2) !important;
     color: white !important;
 }
+
+/* ============================================================
+   SIDEBAR HEADER & ADD TAG BEAUTIFICATION
+   ============================================================ */
+
+/* Fix for .tags-header being fixed and overlapping */
+.tags-header {
+    position: static !important; /* Prevents overlap with scrollable content */
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    padding-bottom: 15px !important;
+    margin-bottom: 10px !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    background: transparent !important;
+}
+
+.tags-header h3 {
+    margin: 0 !important;
+    font-size: 1.2rem !important;
+    color: var(--text-primary) !important;
+    flex: 1 !important;
+}
+
+#closeSidebarBtn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: none !important;
+    color: var(--text-secondary) !important;
+    font-size: 16px !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    float: none !important; /* Override inline style */
+}
+
+#closeSidebarBtn:hover {
+    background: rgba(255, 0, 0, 0.1) !important;
+    color: #ff4757 !important;
+}
+
+.clear-tags-btn {
+    width: 100% !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    background: rgba(231, 76, 60, 0.1) !important;
+    color: #ff4757 !important;
+    border: 1px solid rgba(231, 76, 60, 0.2) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+
+.clear-tags-btn:hover {
+    background: #ff4757 !important;
+    color: white !important;
+}
+
+#sidebarTagList {
+    margin-top: 10px !important; /* Removed 100px padding since header is no longer fixed */
+}
+
+/* Add Tag Container */
+.tag-add-container {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-bottom: 15px !important;
+    padding: 6px !important;
+    background: rgba(0,0,0,0.02) !important;
+    border-radius: 12px !important;
+    border: 1px dashed var(--glass-border, rgba(0,0,0,0.1)) !important;
+}
+
+body.dark .tag-add-container {
+    background: rgba(255,255,255,0.02) !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+
+.tag-add-container input {
+    flex: 1 !important;
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid var(--glass-border, rgba(0,0,0,0.1)) !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    color: inherit !important;
+    font-size: 14px !important;
+    outline: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.tag-add-container input:focus {
+    border-color: var(--accent) !important;
+    background: rgba(255,255,255,0.08) !important;
+}
+
+.tag-add-container button {
+    background: var(--accent) !important;
+    color: white !important;
+    border: none !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.tag-add-container button:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3) !important;
+}
+
+/* Fix for stretched count badges */
+.tag-count-badge {
+    min-width: 24px !important;
+    text-align: center !important;
+    display: inline-block !important; /* Prevents flex items from stretching it horizontally */
+    flex-shrink: 0 !important;
+}
