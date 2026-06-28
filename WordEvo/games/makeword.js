@@ -266,7 +266,7 @@ function showNextMWQuestion() {
 
             const hintEl = document.getElementById('mwEnterHint');
             if (hintEl) {
-                hintEl.innerHTML = '❌ Incorrect! Moving to next...';
+                hintEl.innerHTML = `❌ არასწორია. სწორი იყო: <strong>${correctWord.toUpperCase()}</strong>`;
                 hintEl.style.color = '#ff5252';
                 hintEl.style.fontWeight = 'bold';
             }
