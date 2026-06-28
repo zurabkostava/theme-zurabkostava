@@ -123,7 +123,7 @@ function showNextMWQuestion() {
             
             <div class="mw-buttons" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px;">
                 ${buttons.map(ch =>
-            `<button class="mw-char mix-btn" data-char="${ch}" style="width: 50px; height: 50px; font-size: 24px; padding: 0; margin-bottom: 0;">${ch}</button>`
+            `<button class="mw-char mix-btn" data-char="${ch}" style="width: 50px; height: 50px; font-size: 24px; text-transform: uppercase; padding: 0; margin-bottom: 0;">${ch}</button>`
         ).join('')}
             </div>
             
