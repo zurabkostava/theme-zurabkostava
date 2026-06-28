@@ -199,8 +199,8 @@ function showNextMWQuestion() {
     });
 
     function checkMWAnswer() {
-        const result = [...document.querySelectorAll('.mw-letter')].map(el => el.textContent).join('');
-        const isComplete = result.length === correctWord.length;
+        const result = [...document.querySelectorAll('.mw-letter')].map(el => el.textContent.trim()).join('');
+        const isComplete = document.querySelectorAll('.mw-letter.missing:not(.inserted-letter)').length === 0;
         if (!isComplete) {
             // Reset color when user removes a letter to try again
             document.querySelectorAll('.mw-letter').forEach(el => el.style.color = '');
