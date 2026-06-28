@@ -6967,6 +6967,35 @@ body.dark #trainingBtn {
     box-shadow: 0 12px 25px rgba(230, 126, 34, 0.4) !important;
 }
 
+/* =========================================
+   MW-CHAR CUBES (FILL BUTTONS)
+   ========================================= */
+.mw-char.mix-btn {
+    border-radius: 8px !important;
+    border: 2px solid var(--border-color) !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 50px !important;
+    height: 50px !important;
+    padding: 0 !important;
+    font-size: 24px !important;
+}
+.mw-char.mix-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15) !important;
+    background: var(--card-hover-bg) !important;
+}
+.mw-char.mix-btn:disabled {
+    opacity: 0.3 !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
 /* Keyboard hint styles */
 .key-hint {
     display: inline-block;

@@ -201,35 +201,40 @@ function showNextMWQuestion() {
     function checkMWAnswer() {
         const result = [...document.querySelectorAll('.mw-letter')].map(el => el.textContent).join('');
         const isComplete = !result.includes('_');
-        if (!isComplete) return;
+        if (!isComplete) {
+            // Reset color when user removes a letter to try again
+            document.querySelectorAll('.mw-letter').forEach(el => el.style.color = '');
+            return;
+        }
 
         const isCorrect = result === correctWord;
         const delta = mwFullBlankMode ? 3 : 2;
-
-        incrementStat('TOTAL_TESTS', 1);
-        if (isCorrect) {
-            incrementStat('TOTAL_CORRECT', 1);
-            mwCorrectAnswers++;
-        } else {
-            incrementStat('TOTAL_WRONG', 1);
-        }
-
-        updateRealCardProgress(correctWord, isCorrect ? delta : -delta);
-        applyCurrentSort?.();
 
         document.querySelectorAll('.mw-letter').forEach(el => {
             el.style.color = isCorrect ? 'green' : 'red';
         });
 
-        document.getElementById('mwEnterHint').classList.add('visible');
-        window.mwNextReady = true;
-        window.mwTimeout = setTimeout(() => {
-            if (window.mwNextReady) {
-                window.mwNextReady = false;
-                mwCurrentIndex++;
-                showNextMWQuestion();
-            }
-        }, 1500);
+        if (isCorrect) {
+            incrementStat('TOTAL_TESTS', 1);
+            incrementStat('TOTAL_CORRECT', 1);
+            mwCorrectAnswers++;
+            
+            updateRealCardProgress(correctWord, delta);
+            applyCurrentSort?.();
+
+            document.getElementById('mwEnterHint').classList.add('visible');
+            window.mwNextReady = true;
+            window.mwTimeout = setTimeout(() => {
+                if (window.mwNextReady) {
+                    window.mwNextReady = false;
+                    mwCurrentIndex++;
+                    showNextMWQuestion();
+                }
+            }, 1500);
+        } else {
+            // If incorrect, do not advance and do not subtract progress.
+            // Let the user click the red letters to remove them and try again.
+        }
     }
 }
 
