@@ -8057,3 +8057,103 @@ body.dark .tag-add-container {
     display: inline-block !important; /* Prevents flex items from stretching it horizontally */
     flex-shrink: 0 !important;
 }
+
+/* ============================================================
+   SIDEBAR COMPACT, STICKY & ACTIVE COLOR
+   ============================================================ */
+
+/* 1. Make sidebar a flex column, header and list manage scrolling */
+.sidebar {
+    overflow: hidden !important; /* Hide global scroll */
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.tags-header {
+    flex-shrink: 0 !important;
+    padding-bottom: 10px !important;
+    margin-bottom: 0 !important;
+    border-bottom: none !important;
+}
+
+#sidebarTagList {
+    overflow-y: auto !important;
+    flex: 1 !important;
+    margin-top: 0 !important;
+    padding: 0 4px 10px 0 !important; /* padding for scrollbar */
+}
+
+/* 2. Make the add tag container sticky inside the scrollable ul */
+.tag-add-container {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    background: var(--card-bg-premium, #1a1a1c) !important;
+    backdrop-filter: blur(12px) !important;
+    margin: 0 0 10px 0 !important;
+    padding: 8px 4px !important;
+    border: none !important;
+    border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.1)) !important;
+    border-radius: 0 !important;
+}
+body:not(.dark) .tag-add-container {
+    background: #f1f1f1 !important;
+    border-bottom: 1px solid rgba(0,0,0,0.1) !important;
+}
+
+/* Compact inputs and buttons */
+.tag-add-container input {
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+}
+.tag-add-container button {
+    width: 32px !important;
+    height: 32px !important;
+}
+.clear-tags-btn {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+}
+
+/* 3. Compact tags */
+.sidebar-tag-item {
+    margin: 2px 0 !important;
+    padding: 5px 8px !important;
+    gap: 6px !important;
+    border-radius: 8px !important;
+}
+.sidebar-tag-item span {
+    font-size: 13px !important;
+}
+.sidebar-tag-item button {
+    padding: 4px !important;
+    font-size: 12px !important;
+}
+
+/* 4. Uniform badges in a straight column */
+.tag-count-badge {
+    min-width: 32px !important;
+    width: 32px !important;
+    text-align: center !important;
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+    padding: 4px 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 12px !important;
+    font-size: 11px !important;
+}
+
+/* 5. Active tag uses logo/primary color */
+.sidebar-tag-item.active {
+    background-color: var(--primary-color, #0077cc) !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(0, 119, 204, 0.3) !important;
+    transform: translateX(4px) !important;
+}
+.sidebar-tag-item.active:hover {
+    background-color: var(--primary-color, #0077cc) !important;
+    filter: brightness(1.15) !important;
+}
+.sidebar-tag-item.active .tag-count-badge {
+    background-color: rgba(255,255,255,0.2) !important;
+}
