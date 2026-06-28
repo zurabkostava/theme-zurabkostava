@@ -1,4 +1,4 @@
-﻿//typegame.js
+//typegame.js
 let tiCards = [], tiCurrent = 0, tiCorrect = 0;
 let tiReverse = false;
 let tiCount = 10;
@@ -53,18 +53,20 @@ function showNextTyping() {
 
     const game = document.getElementById('tiGame');
     game.innerHTML = `
-        <div class="game-question-animated">
+        <div class="game-question-animated" style="max-width: 600px; margin: 0 auto;">
             <h3>Question ${tiCurrent + 1} / ${tiCards.length}</h3>
-            <p style="font-size:26px; margin-bottom: 20px;"><strong>${shown}</strong></p>
+            <p style="font-size:26px; margin-bottom: 20px; text-align: center;"><strong>${shown}</strong></p>
             <div class="input-container" style="margin-bottom: 20px;">
                 <label class="material-input type-word-test">
                     <input type="text" id="tiInput" placeholder=" " autocomplete="off">
-                    <span>პასუხი</span>
+                    <span style="font-size: 18px;">პასუხი</span>
                 </label>
             </div>
-            <button id="tiCheck" style="margin-right: 10px;">Check <span class="key-hint" style="margin-left:5px; margin-right:0;">↵</span></button>
-            <button id="tiHint" class="mix-btn" style="width:auto; padding: 10px 15px; margin-bottom:0; font-size:14px; background:rgba(0,0,0,0.05); color:var(--text-primary); border:none;">💡 Hint</button>
-            <div id="tiFeedback" style="margin-top: 20px; font-size: 20px; font-weight: bold;"></div>
+            <div style="display: flex; gap: 10px; justify-content: center; align-items: stretch;">
+                <button id="tiCheck" style="flex: 1; max-width: 200px;">Check <span class="key-hint" style="margin-left:5px; margin-right:0;">↵</span></button>
+                <button id="tiHint" style="flex: 1; max-width: 200px; background: rgba(0,0,0,0.08) !important; color: var(--text-primary) !important; border: 2px solid var(--glass-border) !important; box-shadow: none !important;">💡 Hint</button>
+            </div>
+            <div id="tiFeedback" style="margin-top: 20px; font-size: 20px; font-weight: bold; text-align: center;"></div>
             <div id="tiEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>
         </div>
     `;
