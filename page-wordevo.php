@@ -62,7 +62,10 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<div class="auth-container" id="authContainer">
+<div id="globalLoadingScreen">
+    <div class="wordevo-spinner"></div>
+</div>
+<div class="auth-container" id="authContainer" style="display: none;">
     <div class="auth-box">
         <h2>Wordevo</h2>
         <p>Login or Register</p>

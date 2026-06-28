@@ -907,7 +907,7 @@ function getColorForTag(tag) {
     const hue = hash % 360;
     return `hsl(${hue}, 80%, 95%)`;
 }
-function renderCardFromData(data) {
+function renderCardFromData(data, appendAndSort = true) {
 // 1. მონაცემების გარდაქმნა
     const cardData = {
         id: data.id,
@@ -976,8 +976,12 @@ function renderCardFromData(data) {
         deleteCard(card);
     };
     addLongPressHandlers(card); // ეს უკვე შეიცავს preview-ს ლოგიკას
-    document.getElementById('cardContainer').appendChild(card);
-    sortCards();
+    
+    if (appendAndSort) {
+        document.getElementById('cardContainer').appendChild(card);
+        sortCards();
+    }
+    return card;
 }
 
 function speakWord(text, buttonEl) {
@@ -1460,9 +1464,13 @@ async function loadDataFromSupabase(retryCount = 0) {
         return card;
     });
 // 5. ვხატავთ ბარათებს და ვავსებთ UI-ს
-    cardsWithTags.forEach(card => {
-        renderCardFromData(card);
+    const fragment = document.createDocumentFragment();
+    cardsWithTags.forEach(cardData => {
+        const cardEl = renderCardFromData(cardData, false);
+        fragment.appendChild(cardEl);
     });
+    document.getElementById('cardContainer').appendChild(fragment);
+    sortCards();
     renderSidebarTags();
     populateGlobalTags();
     if (document.getElementById('quizTab')) {
@@ -1833,6 +1841,9 @@ async function deleteCard(card) {
 // ფუნქცია, რომელიც რთავს Auth UI-ს
 // ფუნქცია, რომელიც რთავს Auth UI-ს
     function showAuthScreen() {
+        const loadingScreen = document.getElementById('globalLoadingScreen');
+        if (loadingScreen) loadingScreen.classList.add('hidden');
+        
         mainAppContainer.style.display = 'none';
         authContainer.style.display = 'flex';
         userEmailDisplay.textContent = '';
@@ -2714,6 +2725,10 @@ async function deleteCard(card) {
         try {
             const { data: { session } } = await supabaseClient.auth.getSession();
             console.log('[Wordevo] startApp: session:', !!session);
+            
+            const loadingScreen = document.getElementById('globalLoadingScreen');
+            if (loadingScreen) loadingScreen.classList.add('hidden');
+            
             if (session) {
                 currentUser = session.user;
                 isAppInitialized = true;
