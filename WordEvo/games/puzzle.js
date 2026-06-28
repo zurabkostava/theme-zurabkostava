@@ -54,8 +54,8 @@ function showNextPuzzle() {
             
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button id="puzzleSubmit" disabled style="background: var(--primary-color);">Check <span class="key-hint" style="margin-left:5px; margin-right:0;">↵</span></button>
-                <button id="puzzleAutoHintBtn" class="action-btn-secondary">💡 Auto-fill</button>
-                <button id="puzzleHintBtn" class="action-btn-secondary">❓ Translation</button>
+                <button id="puzzleAutoHintBtn" class="action-btn-secondary">Auto-fill</button>
+                <button id="puzzleHintBtn" class="action-btn-secondary">Translation</button>
             </div>
             
             <div id="puzzleHint" style="margin-top: 15px; font-weight: bold; font-size: 18px; color: var(--accent);"></div>
@@ -179,7 +179,7 @@ function showNextPuzzle() {
 
     hintBtn.onclick = () => {
         const alt = oppositeSentences[0] || "(No translation found)";
-        document.getElementById('puzzleHint').textContent = `📘 Translation: ${alt}`;
+        document.getElementById('puzzleHint').textContent = `Translation: ${alt}`;
         updateCardByText(word, -0.4);
         hintBtn.disabled = true;
         applyCurrentSort?.();

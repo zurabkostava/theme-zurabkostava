@@ -64,7 +64,7 @@ function showNextTyping() {
             </div>
             <div style="display: flex; gap: 10px; justify-content: center; align-items: stretch;">
                 <button id="tiCheck" style="flex: 1; max-width: 200px;">Check <span class="key-hint" style="margin-left:5px; margin-right:0;">↵</span></button>
-                <button id="tiHint" class="action-btn-secondary" style="flex: 1; max-width: 200px;">💡 Hint</button>
+                <button id="tiHint" class="action-btn-secondary" style="flex: 1; max-width: 200px;">Hint</button>
             </div>
             <div id="tiFeedback" style="margin-top: 20px; font-size: 20px; font-weight: bold; text-align: center;"></div>
             <div id="tiEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>

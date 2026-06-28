@@ -4538,7 +4538,7 @@ body.dark @keyframes pulse-glow {
 .quiz-option {
     background: white !important;
     border: 2px solid #eef2f6 !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     padding: 16px 20px !important;
     font-size: 16px !important;
     font-weight: 500 !important;
@@ -4681,7 +4681,7 @@ body.dark @keyframes pulse-glow {
     background: #1575c9 !important;
     color: white !important;
     border: none !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     padding: 14px 28px !important;
     font-size: 16px !important;
     font-weight: bold !important;
@@ -4757,13 +4757,13 @@ body.dark @keyframes pulse-glow {
     font-size: 20px !important;
     padding: 20px 24px !important;
     margin-bottom: 16px !important;
-    border-radius: 16px !important;
+    border-radius: 14px !important;
 }
 
 .training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):not(.puzzle-word):not(.mw-char):not(.action-btn-secondary) {
-    font-size: 22px !important;
-    padding: 18px 36px !important;
-    border-radius: 16px !important;
+    font-size: 18px !important;
+    padding: 14px 28px !important;
+    border-radius: 14px !important;
 }
 
 .training-tab {
@@ -4792,7 +4792,7 @@ body.dark @keyframes pulse-glow {
     color: #333 !important;
     font-size: 18px !important;
     padding: 16px 20px !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     box-shadow: none !important;
     transform: none !important;
     margin-bottom: 12px !important;
@@ -4968,7 +4968,7 @@ body.dark @keyframes pulse-glow {
     font-size: 20px !important;
     padding: 20px 24px !important;
     margin-bottom: 16px !important;
-    border-radius: 16px !important;
+    border-radius: 14px !important;
     width: 100% !important;
     display: block !important;
     text-align: left !important;
@@ -5028,7 +5028,7 @@ body.dark @keyframes pulse-glow {
     background: linear-gradient(135deg, #89b4fa 0%, #b4befe 100%) !important;
     color: #11111b !important;
     border: none !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     padding: 10px 24px !important;
     font-size: 16px !important;
     font-weight: bold !important;
@@ -5152,7 +5152,7 @@ body.dark @keyframes pulse-glow {
     .quiz-option, .sen-option {
         font-size: 16px !important;
         padding: 14px 16px !important;
-        border-radius: 12px !important;
+        border-radius: 14px !important;
         margin-bottom: 12px !important;
     }
 }
@@ -5245,7 +5245,7 @@ body.dark @keyframes pulse-glow {
         gap: 8px !important;
         align-items: center !important;
         margin-top: 0 !important;
-        padding: 10px 15px !important;
+        padding: 14px 24px !important;
         background: rgba(255, 255, 255, 0.9) !important;
         backdrop-filter: blur(10px) !important;
         -webkit-backdrop-filter: blur(10px) !important;
@@ -5329,7 +5329,7 @@ body.dark @keyframes pulse-glow {
         width: 100% !important;
         padding: 14px !important;
         font-size: 16px !important;
-        border-radius: 12px !important;
+        border-radius: 14px !important;
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
@@ -5358,7 +5358,7 @@ body.dark @keyframes pulse-glow {
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     border: none !important;
     cursor: pointer !important;
     transition: all 0.2s !important;
@@ -5985,9 +5985,9 @@ h1, h2, h3, .app-logo {
 .input-container .material-select > select {
     width: 100% !important;
     padding: 14px 16px !important;
-    font-size: 15px !important;
+    font-size: 18px !important;
     border: 1px solid var(--glass-border) !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     background: rgba(255,255,255,0.03) !important;
     color: var(--text-primary) !important;
     transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
@@ -6030,7 +6030,7 @@ h1, h2, h3, .app-logo {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border) !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
     padding: 8px !important;
     overflow: hidden;
@@ -6180,9 +6180,9 @@ h1, h2, h3, .app-logo {
 .input-container .material-select > select {
     width: 100% !important;
     padding: 14px 16px !important;
-    font-size: 15px !important;
+    font-size: 18px !important;
     border: 1px solid var(--glass-border) !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     background: rgba(255,255,255,0.03) !important;
     color: var(--text-primary) !important;
     transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
@@ -6225,7 +6225,7 @@ h1, h2, h3, .app-logo {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border) !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
     padding: 8px !important;
     overflow: hidden;
@@ -6327,7 +6327,7 @@ button:active, .btn:active {
     border: 1px solid rgba(0, 0, 0, 0.05) !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05) !important;
     overflow: visible !important; /* Allow dropdowns to overflow */
-    padding: 10px 15px !important;
+    padding: 14px 24px !important;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -6441,7 +6441,7 @@ body.dark .modern-search-input:focus {
     cursor: pointer !important;
     transition: all 0.2s ease !important;
     padding: 0 !important;
-    font-size: 15px !important;
+    font-size: 18px !important;
 }
 
 body.dark .top-bar button, body.dark .card-toolbar .toolbar-btn {
@@ -6487,7 +6487,7 @@ body.dark .top-bar button:hover, body.dark .card-toolbar .toolbar-btn:hover {
 /* 7. Dropdowns and Checkboxes inside Toolbar */
 #dictionarySelect, .toolbar-select {
     padding: 8px 12px !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     border: 1px solid rgba(0,0,0,0.1) !important;
     background: rgba(0,0,0,0.03) !important;
     font-family: inherit;
@@ -6752,7 +6752,7 @@ body:not(.dark) .material-input > span {
         position: static !important;
         width: 100% !important;
         margin: 5px 0 0 0 !important;
-        border-radius: 12px !important;
+        border-radius: 14px !important;
         background: transparent !important;
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
@@ -6789,7 +6789,7 @@ body:not(.dark) .material-input > span {
     align-items: center !important;
     justify-content: center !important;
     font-size: 1.1rem !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     flex: none !important;
     max-width: none !important;
     background: rgba(0, 0, 0, 0.04) !important;
@@ -6822,7 +6822,7 @@ body.dark .top-left button, body.dark .top-right button {
     width: auto !important;
     height: 44px !important;
     padding: 0 24px !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     background: rgba(59, 130, 246, 0.15) !important;
     flex-shrink: 0 !important;
     color: #3b82f6 !important;
@@ -6953,7 +6953,7 @@ body.dark #trainingBtn {
     background: linear-gradient(135deg, var(--accent) 0%, #ff5e62 100%) !important;
     color: white !important;
     border: none !important;
-    border-radius: 16px !important;
+    border-radius: 14px !important;
     padding: 16px 36px !important;
     font-size: 20px !important;
     font-weight: bold !important;
@@ -7395,7 +7395,7 @@ button.speak-btn {
     border: 1px solid var(--glass-border, rgba(255,255,255,0.08)) !important;
     color: var(--text-secondary, #888) !important;
     padding: 8px 12px !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     font-size: 1.1rem !important;
     cursor: pointer !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -7801,9 +7801,9 @@ body.no-scroll {
     background: rgba(0,0,0,0.05) !important;
     border: 2px solid rgba(0,0,0,0.05) !important;
     color: var(--text-primary) !important;
-    border-radius: 12px !important;
-    padding: 10px 15px !important;
-    font-size: 15px !important;
+    border-radius: 14px !important;
+    padding: 14px 24px !important;
+    font-size: 18px !important;
     font-weight: 500 !important;
     box-shadow: none !important;
     cursor: pointer !important;

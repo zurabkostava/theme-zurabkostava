@@ -129,7 +129,7 @@ function showNextMWQuestion() {
             
             <div id="mwHintSection" style="margin-bottom: 10px;">
                 <button id="showHintBtn" class="action-btn-secondary">
-                    💡 Help
+                    Help
                 </button>
                 <div id="hintWord" style="display: ${mwFullBlankMode ? 'block' : 'none'}; margin-top: 10px; font-weight: bold; font-size: 20px; color: var(--accent);">
                     ${helperWord}
