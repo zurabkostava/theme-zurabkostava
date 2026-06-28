@@ -195,7 +195,7 @@ function showNextMWQuestion() {
 
     showHintBtn?.addEventListener('click', () => {
         hintWordEl.style.display = 'block';
-        showHintBtn.style.display = 'none';
+        showHintBtn.remove();
 
         if (!hintUsed) {
             updateRealCardProgress(correctWord, -0.5);
