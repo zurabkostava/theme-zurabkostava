@@ -6970,7 +6970,7 @@ body.dark #trainingBtn {
 /* =========================================
    MW-CHAR CUBES (FILL BUTTONS)
    ========================================= */
-.mw-char.mix-btn {
+#mwContainer button.mw-char.mix-btn {
     border-radius: 8px !important;
     border: 2px solid var(--border-color) !important;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
@@ -6982,15 +6982,17 @@ body.dark #trainingBtn {
     justify-content: center !important;
     width: 50px !important;
     height: 50px !important;
+    min-height: 50px !important;
     padding: 0 !important;
     font-size: 24px !important;
+    margin: 5px !important;
 }
-.mw-char.mix-btn:hover {
+#mwContainer button.mw-char.mix-btn:hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15) !important;
     background: var(--card-hover-bg) !important;
 }
-.mw-char.mix-btn:disabled {
+#mwContainer button.mw-char.mix-btn:disabled {
     opacity: 0.3 !important;
     transform: none !important;
     box-shadow: none !important;
