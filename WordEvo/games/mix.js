@@ -1,4 +1,4 @@
-﻿// mix.js ====
+// mix.js ====
 
 
 // ==== EXISTING CODE ====
@@ -127,6 +127,8 @@ function renderMixUI() {
                 incrementStat('TOTAL_TESTS', 1);
 
                 if (isMatch) {
+                    selectedLeft.button.classList.remove('selected');
+                    selectedRight.button.classList.remove('selected');
                     selectedLeft.button.classList.add('correct');
                     selectedRight.button.classList.add('correct');
                     selectedLeft.button.disabled = true;
@@ -146,6 +148,8 @@ function renderMixUI() {
                         setTimeout(showMixResults, 300);
                     }
                 } else {
+                    selectedLeft.button.classList.remove('selected');
+                    selectedRight.button.classList.remove('selected');
                     selectedLeft.button.classList.add('incorrect');
                     selectedRight.button.classList.add('incorrect');
                     updateCardProgressFromText(selectedLeft.text, selectedRight.text, -1);
@@ -158,8 +162,8 @@ function renderMixUI() {
                     selectedRight = null;
 
                     setTimeout(() => {
-                        prevLeft.button.classList.remove('incorrect', 'selected');
-                        prevRight.button.classList.remove('incorrect', 'selected');
+                        prevLeft.button.classList.remove('incorrect');
+                        prevRight.button.classList.remove('incorrect');
                     }, 1000);
                 }
             }
