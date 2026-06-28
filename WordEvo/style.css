@@ -6992,6 +6992,49 @@ body.dark #trainingBtn {
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15) !important;
     background: var(--card-hover-bg) !important;
 }
+
+/* =========================================
+   PUZZLE WORD CHIPS
+   ========================================= */
+#puzzleWords, #puzzleAnswer {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    align-items: center !important;
+}
+
+.puzzle-word {
+    width: auto !important;
+    display: inline-block !important;
+    padding: 10px 20px !important;
+    margin: 0 !important;
+    border-radius: 20px !important; /* Chip style */
+    background: rgba(0,0,0,0.05) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+    font-size: 18px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
+}
+
+.puzzle-word:hover {
+    background: var(--accent) !important;
+    color: #111 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
+    border-color: var(--accent) !important;
+}
+
+.dark .puzzle-word {
+    background: rgba(255,255,255,0.05) !important;
+}
+
+.dark .puzzle-word:hover {
+    background: var(--accent) !important;
+    color: #111 !important;
+}
 #mwContainer button.mw-char.mix-btn:disabled {
     opacity: 0.3 !important;
     transform: none !important;

@@ -1,4 +1,4 @@
-﻿//puzzle.js
+//puzzle.js
 let puzzleCards = [], puzzleCurrent = 0, puzzleCorrect = 0;
 let puzzleReverse = false;
 let puzzleCount = 10;
@@ -74,14 +74,7 @@ function showNextPuzzle() {
     shuffled.forEach((word, index) => {
         const btn = document.createElement('button');
         btn.textContent = word;
-        btn.className = 'puzzle-word mix-btn';
-        btn.style.display = 'inline-block';
-        btn.style.margin = '4px';
-        btn.style.margin = '0';
-        btn.style.width = 'auto';
-        btn.style.padding = '8px 16px';
-        btn.style.fontSize = '16px';
-        btn.style.marginBottom = '0';
+        btn.className = 'puzzle-word';
         btn.dataset.index = index;
 
         const clickFn = () => {
