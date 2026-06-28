@@ -1,4 +1,4 @@
-﻿//makeword.js
+//makeword.js
 let mwCards = [];
 let mwCurrentIndex = 0;
 let mwCorrectAnswers = 0;
@@ -286,8 +286,27 @@ document.addEventListener('keydown', (e) => {
             showNextMWQuestion();
         }
     } else if (/^[a-zA-Zა-ჰ]$/.test(e.key)) {
-        const char = e.key.toLowerCase();
-        const btn = [...document.querySelectorAll('.mw-char')].find(b => b.dataset.char.toLowerCase() === char && !b.disabled);
+        let char = e.key.toLowerCase();
+        
+        // Map English keys to Georgian letters in case user's layout is EN but they type Georgian words
+        const geoMap = {
+            'a': 'ა', 'b': 'ბ', 'c': 'ც', 'd': 'დ', 'e': 'ე', 'f': 'ფ', 'g': 'გ', 'h': 'ჰ', 'i': 'ი', 'j': 'ჯ', 'k': 'კ', 'l': 'ლ', 'm': 'მ', 'n': 'ნ', 'o': 'ო', 'p': 'პ', 'q': 'ქ', 'r': 'რ', 's': 'ს', 't': 'ტ', 'u': 'უ', 'v': 'ვ', 'w': 'წ', 'x': 'ხ', 'y': 'ყ', 'z': 'ზ'
+        };
+        const geoShiftMap = {
+            'w': 'ჭ', 'r': 'ღ', 't': 'თ', 'y': 'ყ', 'u': 'უ', 'i': 'ი', 'o': 'ო', 'p': 'პ', 's': 'შ', 'd': 'დ', 'f': 'ფ', 'g': 'გ', 'h': 'ჰ', 'j': 'ჟ', 'k': 'კ', 'l': 'ლ', 'z': 'ძ', 'x': 'ხ', 'c': 'ჩ', 'v': 'ვ', 'b': 'ბ', 'n': 'ნ', 'm': 'მ'
+        };
+        
+        // Check if the actual character exists in the buttons
+        let btn = [...document.querySelectorAll('.mw-char')].find(b => b.dataset.char.toLowerCase() === char && !b.disabled);
+        
+        // If not found, try mapping
+        if (!btn && /[a-z]/i.test(e.key)) {
+            const mappedChar = e.shiftKey ? (geoShiftMap[e.key.toLowerCase()] || geoMap[e.key.toLowerCase()]) : geoMap[e.key.toLowerCase()];
+            if (mappedChar) {
+                btn = [...document.querySelectorAll('.mw-char')].find(b => b.dataset.char.toLowerCase() === mappedChar && !b.disabled);
+            }
+        }
+        
         if (btn) btn.click();
     } else if (e.key === 'Backspace') {
         const inserted = [...document.querySelectorAll('.mw-letter.inserted-letter')];

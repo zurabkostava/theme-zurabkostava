@@ -2535,9 +2535,11 @@ async function deleteCard(card) {
 // Training Modal
     document.getElementById('trainingBtn').addEventListener('click', () => {
         document.getElementById('trainingModal').classList.remove('hidden');
+        document.body.classList.add('no-scroll');
     });
     document.querySelector('.training-close').addEventListener('click', () => {
         document.getElementById('trainingModal').classList.add('hidden');
+        document.body.classList.remove('no-scroll');
     });
     document.querySelectorAll('.training-tab').forEach(tab => {
         tab.addEventListener('click', () => {

@@ -1,4 +1,4 @@
-﻿// wordhear.js
+// wordhear.js
 
 let wordhearCards = [];
 let wordhearCurrentIndex = 0;
@@ -96,8 +96,6 @@ async function showNextWordhear() {
 
     window._wordhear_repeat_question = () => speakWithVoice(question, questionVoice);
 
-    await speakWithVoice(question, questionVoice);
-
     const allOptions = [...document.querySelectorAll('.card')]
         .map(card => {
             const w = card.querySelector('.word').textContent.trim();
@@ -114,13 +112,16 @@ async function showNextWordhear() {
     whQuestionContainer.innerHTML = `
         <div class="quiz-question">
             <h3>Question ${wordhearCurrentIndex + 1} / ${wordhearCards.length}</h3>
-            <button id="repeatWordhearBtn" style="margin-bottom: 10px;">🔁 გაიმეორე კითხვა</button>
+            <button id="repeatWordhearBtn" style="margin-bottom: 10px;">🔁 Repeat Question</button>
             <div class="quiz-options">
                 ${options.map(opt => `<button class="quiz-option">${opt}</button>`).join('')}
             </div>
             <div id="correctAnswerReveal" style="margin-top: 1rem; font-weight: bold;"></div>
         </div>
     `;
+    
+    // Speak AFTER rendering HTML so the question appears immediately
+    speakWithVoice(question, questionVoice);
 
     document.getElementById('repeatWordhearBtn').onclick = () => {
         if (typeof window._wordhear_repeat_question === 'function') {

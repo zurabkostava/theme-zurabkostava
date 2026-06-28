@@ -63,7 +63,7 @@ function showNextTyping() {
                 </label>
             </div>
             <button id="tiCheck" style="margin-right: 10px;">Check <span class="key-hint" style="margin-left:5px; margin-right:0;">↵</span></button>
-            <button id="tiHint" class="mix-btn" style="width:auto; padding: 10px 15px; margin-bottom:0; font-size:14px; background:rgba(0,0,0,0.05); color:var(--text-primary); border:none;">💡 მინიშნება</button>
+            <button id="tiHint" class="mix-btn" style="width:auto; padding: 10px 15px; margin-bottom:0; font-size:14px; background:rgba(0,0,0,0.05); color:var(--text-primary); border:none;">💡 Hint</button>
             <div id="tiFeedback" style="margin-top: 20px; font-size: 20px; font-weight: bold;"></div>
             <div id="tiEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>
         </div>

@@ -48,9 +48,9 @@ function showNextPuzzle() {
             <h3>Question ${puzzleCurrent + 1} / ${puzzleCards.length}</h3>
             <p style="font-size:18px; margin-bottom: 15px;">დააწკაპუნე სიტყვებზე სწორი თანმიმდევრობით:</p>
             
-            <div id="puzzleAnswer" style="min-height: 70px; background: rgba(0,0,0,0.03); border: 2px dashed var(--glass-border); border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 8px;"></div>
+            <div id="puzzleAnswer" style="min-height: 70px; background: rgba(0,0,0,0.03); border: 2px dashed var(--glass-border); border-radius: 12px; padding: 15px; margin-bottom: 20px;"></div>
             
-            <div id="puzzleWords" style="margin: 10px 0 25px 0; display: flex; flex-wrap: wrap; gap: 8px;"></div>
+            <div id="puzzleWords" style="margin: 10px 0 25px 0;"></div>
             
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button id="puzzleSubmit" disabled style="background: var(--primary-color);">Check <span class="key-hint" style="margin-left:5px; margin-right:0;">↵</span></button>
@@ -75,6 +75,8 @@ function showNextPuzzle() {
         const btn = document.createElement('button');
         btn.textContent = word;
         btn.className = 'puzzle-word mix-btn';
+        btn.style.display = 'inline-block';
+        btn.style.margin = '4px';
         btn.style.margin = '0';
         btn.style.width = 'auto';
         btn.style.padding = '8px 16px';
