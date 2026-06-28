@@ -232,8 +232,23 @@ function showNextMWQuestion() {
                 }
             }, 1500);
         } else {
-            // If incorrect, do not advance and do not subtract progress.
-            // Let the user click the red letters to remove them and try again.
+            incrementStat('TOTAL_TESTS', 1);
+            incrementStat('TOTAL_WRONG', 1);
+            updateRealCardProgress(correctWord, -delta);
+            applyCurrentSort?.();
+            
+            // Disable all buttons so user can't keep clicking while waiting
+            document.querySelectorAll('.mw-char').forEach(btn => btn.disabled = true);
+
+            document.getElementById('mwEnterHint').classList.add('visible');
+            window.mwNextReady = true;
+            window.mwTimeout = setTimeout(() => {
+                if (window.mwNextReady) {
+                    window.mwNextReady = false;
+                    mwCurrentIndex++;
+                    showNextMWQuestion();
+                }
+            }, 1500);
         }
     }
 }
