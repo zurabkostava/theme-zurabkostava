@@ -1465,8 +1465,11 @@ async function loadDataFromSupabase(retryCount = 0) {
     });
 // 5. ვხატავთ ბარათებს და ვავსებთ UI-ს
     const fragment = document.createDocumentFragment();
-    cardsWithTags.forEach(cardData => {
+    cardsWithTags.forEach((cardData, index) => {
         const cardEl = renderCardFromData(cardData, false);
+        // Stagger entrance for up to 30 items
+        const delay = Math.min(index * 40, 1200);
+        cardEl.style.animationDelay = `${delay}ms`;
         fragment.appendChild(cardEl);
     });
     document.getElementById('cardContainer').appendChild(fragment);
