@@ -116,7 +116,7 @@ function renderNextQuestion() {
             <div class="quiz-options">
                 ${options.map((opt, i) => `<button class="quiz-option" data-answer="${opt}"><span class="key-hint">${i + 1}</span>${opt}</button>`).join('')}
             </div>
-            <div id="quizEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>
+            ${getAutoAdvanceHTML("quiz")}
         </div>
     `;
 
@@ -130,8 +130,7 @@ function renderNextQuestion() {
             incrementStat('TOTAL_TESTS', 1);
             incrementStat(isCorrect ? 'TOTAL_CORRECT' : 'TOTAL_WRONG', 1);
 
-            const hint = document.getElementById('quizEnterHint');
-            if(hint) hint.classList.add('visible');
+            document.getElementById('quizActionArea').style.display = 'flex';
             window.quizNextReady = true;
 
             if (isCorrect) {
@@ -154,13 +153,23 @@ function renderNextQuestion() {
 
             applyCurrentSort?.();
 
-            window.quizTimeout = setTimeout(() => {
+            document.getElementById('quizNextBtn').onclick = () => {
+                if (window.quizTimeout) clearTimeout(window.quizTimeout);
                 if (window.quizNextReady) {
                     window.quizNextReady = false;
                     currentQuestionIndex++;
                     renderNextQuestion();
                 }
-            }, 1500);
+            };
+            if (document.getElementById('quizAutoAdvance').checked) {
+                window.quizTimeout = setTimeout(() => {
+                    if (window.quizNextReady) {
+                        window.quizNextReady = false;
+                        currentQuestionIndex++;
+                        renderNextQuestion();
+                    }
+                }, 1500);
+            }
         });
     });
 }

@@ -60,7 +60,7 @@ function showNextPuzzle() {
             
             <div id="puzzleHint" style="margin-top: 15px; font-weight: bold; font-size: 18px; color: var(--accent);"></div>
             <div id="puzzleFeedback" style="margin-top: 15px; font-size: 20px; font-weight: bold;"></div>
-            <div id="puzzleEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>
+            ${getAutoAdvanceHTML("puzzle")}
         </div>
     `;
 
@@ -166,15 +166,26 @@ function showNextPuzzle() {
         puzzleWords.querySelectorAll('button').forEach(b => b.disabled = true);
         puzzleSubmit.disabled = true;
 
-        document.getElementById('puzzleEnterHint').classList.add('visible');
+        document.getElementById('puzzleActionArea').style.display = 'flex';
         window.puzzleNextReady = true;
-        window.puzzleTimeout = setTimeout(() => {
-            if (window.puzzleNextReady) {
+        
+            document.getElementById('puzzleNextBtn').onclick = () => {
+                if (window.puzzleTimeout) clearTimeout(window.puzzleTimeout);
+                if (window.puzzleNextReady) {
                 window.puzzleNextReady = false;
                 puzzleCurrent++;
                 showNextPuzzle();
             }
-        }, 2500);
+            };
+            if (document.getElementById('puzzleAutoAdvance').checked) {
+                window.puzzleTimeout = setTimeout(() => {
+                    if (window.puzzleNextReady) {
+                window.puzzleNextReady = false;
+                puzzleCurrent++;
+                showNextPuzzle();
+            }
+                }, 1500);
+            }
     };
 
     hintBtn.onclick = () => {

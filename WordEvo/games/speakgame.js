@@ -135,7 +135,7 @@ function showSpeakCard() {
             <div id="speakFeedback" style="margin-top: 20px; font-size: 20px; font-weight: bold; text-align: center;"></div>
             <div id="speakTranscript" style="margin-top: 10px; font-size: 16px; font-style: italic; color: #888; text-align: center;"></div>
             
-            <div id="speakEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>
+            ${getAutoAdvanceHTML("speak")}
         </div>
     `;
 }
@@ -201,7 +201,7 @@ function handleSpeakResult(transcript) {
     
     showSpeakFeedback(fbText, fbColor);
     
-    document.getElementById('speakEnterHint').classList.add('visible');
+    document.getElementById('speakActionArea').style.display = 'flex';
     speakNextReady = true;
     speakTimeout = setTimeout(() => {
         if (speakNextReady) {

@@ -2912,3 +2912,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+
+function getAutoAdvanceHTML(prefix) {
+    const isChecked = localStorage.getItem('autoAdvance') !== 'false' ? 'checked' : '';
+    return `
+    <div id="${prefix}ActionArea" style="display: none; justify-content: flex-end; align-items: center; margin-top: 20px; background: rgba(0,0,0,0.03); padding: 10px 20px; border-radius: 14px; border: 2px dashed var(--glass-border); gap: 15px;">
+        <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 0;">
+            <input type="checkbox" id="${prefix}AutoAdvance" onchange="localStorage.setItem('autoAdvance', this.checked)" ${isChecked}> 
+            <span style="font-weight: 500; font-size: 16px;">Auto-advance</span>
+        </label>
+        <button id="${prefix}NextBtn" class="action-btn-secondary" style="margin: 0; padding: 8px 24px;">Next ↵</button>
+    </div>
+    `;
+}

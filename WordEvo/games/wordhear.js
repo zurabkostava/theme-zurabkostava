@@ -117,6 +117,7 @@ async function showNextWordhear() {
                 ${options.map(opt => `<button class="quiz-option">${opt}</button>`).join('')}
             </div>
             <div id="correctAnswerReveal" style="margin-top: 1rem; font-weight: bold;"></div>
+            ${getAutoAdvanceHTML('wh')}
         </div>
     `;
     
@@ -157,10 +158,26 @@ async function showNextWordhear() {
             reveal.innerHTML = `✔ სწორი პასუხი იყო: <span style="color: green;">${answer}</span>`;
             speakWithVoice(answer, answerVoice);
 
-            setTimeout(() => {
-                wordhearCurrentIndex++;
-                showNextWordhear();
-            }, 2000);
+            document.getElementById('whActionArea').style.display = 'flex';
+            window.whNextReady = true;
+            document.getElementById('whNextBtn').onclick = () => {
+                if (window.whTimeout) clearTimeout(window.whTimeout);
+                if (window.whNextReady) {
+                    window.whNextReady = false;
+                    wordhearCurrentIndex++;
+                    showNextWordhear();
+                }
+            };
+
+            if (document.getElementById('whAutoAdvance').checked) {
+                window.whTimeout = setTimeout(() => {
+                    if (window.whNextReady) {
+                        window.whNextReady = false;
+                        wordhearCurrentIndex++;
+                        showNextWordhear();
+                    }
+                }, 2000);
+            }
         });
     });
 }

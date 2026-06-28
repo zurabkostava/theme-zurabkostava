@@ -67,7 +67,7 @@ function showNextTyping() {
                 <button id="tiHint" class="action-btn-secondary" style="flex: 1; max-width: 200px;">Hint</button>
             </div>
             <div id="tiFeedback" style="margin-top: 20px; font-size: 20px; font-weight: bold; text-align: center;"></div>
-            <div id="tiEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>
+            ${getAutoAdvanceHTML("ti")}
         </div>
     `;
 
@@ -89,15 +89,26 @@ function showNextTyping() {
         }
         applyCurrentSort?.();
 
-        document.getElementById('tiEnterHint').classList.add('visible');
+        document.getElementById('tiActionArea').style.display = 'flex';
         window.tiNextReady = true;
-        window.tiTimeout = setTimeout(() => {
-            if (window.tiNextReady) {
+        
+            document.getElementById('tiNextBtn').onclick = () => {
+                if (window.tiTimeout) clearTimeout(window.tiTimeout);
+                if (window.tiNextReady) {
                 window.tiNextReady = false;
                 tiCurrent++;
                 showNextTyping();
             }
-        }, 1500);
+            };
+            if (document.getElementById('tiAutoAdvance').checked) {
+                window.tiTimeout = setTimeout(() => {
+                    if (window.tiNextReady) {
+                window.tiNextReady = false;
+                tiCurrent++;
+                showNextTyping();
+            }
+                }, 1500);
+            }
     };
 
     document.getElementById('tiHint').onclick = () => {

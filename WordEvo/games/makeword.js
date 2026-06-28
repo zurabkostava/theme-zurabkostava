@@ -4,7 +4,7 @@ let mwCurrentIndex = 0;
 let mwCorrectAnswers = 0;
 let mwTotalQuestions = 10;
 let mwReverse = false;
-let mwFullBlankMode = true;
+let mwFullBlankMode = false;
 
 let mwContainer, mwResultContainer;
 
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tab.innerHTML = `
 <label style="margin-bottom:10px; display:inline-block;">
-            <input type="checkbox" id="mwFullBlankToggle" checked />
+            <input type="checkbox" id="mwFullBlankToggle" />
             All letters blank
         </label>
         <div id="mwContainer" style="margin-top: 1rem;"></div>
@@ -136,7 +136,7 @@ function showNextMWQuestion() {
                 </div>
             </div>
             
-            <div id="mwEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>
+            ${getAutoAdvanceHTML("mw")}
         </div>
     `;
     
@@ -223,19 +223,32 @@ function showNextMWQuestion() {
             applyCurrentSort?.();
 
             const hintEl = document.getElementById('mwEnterHint');
-            hintEl.innerHTML = '✅ Correct! Moving to next...';
-            hintEl.style.color = '#4caf50';
-            hintEl.style.fontWeight = 'bold';
-            hintEl.classList.add('visible');
+            if (hintEl) {
+                hintEl.innerHTML = '✅ Correct! Moving to next...';
+                hintEl.style.color = '#4caf50';
+                hintEl.style.fontWeight = 'bold';
+            }
+            document.getElementById('mwActionArea').style.display = 'flex';
 
             window.mwNextReady = true;
-            window.mwTimeout = setTimeout(() => {
+            
+            document.getElementById('mwNextBtn').onclick = () => {
+                if (window.mwTimeout) clearTimeout(window.mwTimeout);
                 if (window.mwNextReady) {
                     window.mwNextReady = false;
                     mwCurrentIndex++;
                     showNextMWQuestion();
                 }
-            }, 1500);
+            };
+            if (document.getElementById('mwAutoAdvance').checked) {
+                window.mwTimeout = setTimeout(() => {
+                    if (window.mwNextReady) {
+                    window.mwNextReady = false;
+                    mwCurrentIndex++;
+                    showNextMWQuestion();
+                }
+                }, 1500);
+            }
         } else {
             incrementStat('TOTAL_TESTS', 1);
             incrementStat('TOTAL_WRONG', 1);
@@ -246,19 +259,32 @@ function showNextMWQuestion() {
             document.querySelectorAll('.mw-char').forEach(btn => btn.disabled = true);
 
             const hintEl = document.getElementById('mwEnterHint');
-            hintEl.innerHTML = '❌ Incorrect! Moving to next...';
-            hintEl.style.color = '#ff5252';
-            hintEl.style.fontWeight = 'bold';
-            hintEl.classList.add('visible');
+            if (hintEl) {
+                hintEl.innerHTML = '❌ Incorrect! Moving to next...';
+                hintEl.style.color = '#ff5252';
+                hintEl.style.fontWeight = 'bold';
+            }
+            document.getElementById('mwActionArea').style.display = 'flex';
 
             window.mwNextReady = true;
-            window.mwTimeout = setTimeout(() => {
+            
+            document.getElementById('mwNextBtn').onclick = () => {
+                if (window.mwTimeout) clearTimeout(window.mwTimeout);
                 if (window.mwNextReady) {
                     window.mwNextReady = false;
                     mwCurrentIndex++;
                     showNextMWQuestion();
                 }
-            }, 1500);
+            };
+            if (document.getElementById('mwAutoAdvance').checked) {
+                window.mwTimeout = setTimeout(() => {
+                    if (window.mwNextReady) {
+                    window.mwNextReady = false;
+                    mwCurrentIndex++;
+                    showNextMWQuestion();
+                }
+                }, 1500);
+            }
         }
     }
 }

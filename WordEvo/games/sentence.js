@@ -72,7 +72,7 @@ function showNextSentence() {
                 ${options.map((opt, i) => `<button class="sen-option quiz-option" data-ans="${opt}" style="margin: 0; width: 100%;"><span class="key-hint">${i + 1}</span>${opt}</button>`).join('')}
             </div>
             <div id="senFeedback" style="margin-top: 20px; font-size: 20px; font-weight: bold;"></div>
-            <div id="senEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>
+            ${getAutoAdvanceHTML("sen")}
         </div>
     `;
 
@@ -113,15 +113,26 @@ function showNextSentence() {
                 if (b === btn && bText !== correctText) b.classList.add('incorrect');
             });
 
-            document.getElementById('senEnterHint').classList.add('visible');
+            document.getElementById('senActionArea').style.display = 'flex';
             window.senNextReady = true;
-            window.senTimeout = setTimeout(() => {
+            
+            document.getElementById('senNextBtn').onclick = () => {
+                if (window.senTimeout) clearTimeout(window.senTimeout);
                 if (window.senNextReady) {
                     window.senNextReady = false;
                     senCurrent++;
                     showNextSentence();
                 }
-            }, 3000);
+            };
+            if (document.getElementById('senAutoAdvance').checked) {
+                window.senTimeout = setTimeout(() => {
+                    if (window.senNextReady) {
+                    window.senNextReady = false;
+                    senCurrent++;
+                    showNextSentence();
+                }
+                }, 1500);
+            }
         };
     });
 }
