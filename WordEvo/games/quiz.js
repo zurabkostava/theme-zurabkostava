@@ -206,7 +206,7 @@ document.addEventListener('keydown', (e) => {
     const activeTab = document.querySelector('.training-tab.active')?.dataset.tab;
     if (activeTab !== 'quiz') return;
 
-    if (e.key >= '1' && e.key <= '5') {
+    if (e.key >= '1' && e.key <= '9') {
         const index = parseInt(e.key) - 1;
         const btns = document.querySelectorAll('.quiz-option');
         if (btns[index] && !btns[index].disabled) {

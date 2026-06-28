@@ -194,3 +194,26 @@ function showWordhearResults() {
 
 
 
+
+// Global Keyboard shortcuts for Wordhear
+document.addEventListener('keydown', (e) => {
+    if (document.getElementById('trainingModal')?.classList.contains('hidden')) return;
+    const activeTab = document.querySelector('.training-tab.active')?.dataset.tab;
+    if (activeTab !== 'wordhear') return;
+
+    if (e.key >= '1' && e.key <= '9') {
+        const index = parseInt(e.key) - 1;
+        const container = document.getElementById('whQuestionContainer');
+        if (container) {
+            const btns = container.querySelectorAll('.quiz-option');
+            if (btns[index] && !btns[index].disabled) {
+                btns[index].click();
+            }
+        }
+    } else if (e.key === 'Enter') {
+        if (window.whNextReady) {
+            const btn = document.getElementById('whNextBtn');
+            if (btn) btn.click(); // Using click triggers the existing handler properly
+        }
+    }
+});
