@@ -68,8 +68,8 @@ function showNextSentence() {
             <div id="senSentences" style="margin: 20px 0; font-size: 20px; line-height: 1.6; color: var(--accent);">
                 ${displayedSentences.map((s, i) => `<p style="margin-bottom: 10px;"><strong>${i + 1}.</strong> ${s}</p>`).join('')}
             </div>
-            <div id="senOptions" class="quiz-options">
-                ${options.map((opt, i) => `<button class="sen-option quiz-option" data-ans="${opt}"><span class="key-hint">${i + 1}</span>${opt}</button>`).join('')}
+            <div id="senOptions" class="quiz-options" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                ${options.map((opt, i) => `<button class="sen-option quiz-option" data-ans="${opt}" style="margin: 0; width: 100%;"><span class="key-hint">${i + 1}</span>${opt}</button>`).join('')}
             </div>
             <div id="senFeedback" style="margin-top: 20px; font-size: 20px; font-weight: bold;"></div>
             <div id="senEnterHint" class="enter-hint-btn">Press ↵ Enter to continue</div>
