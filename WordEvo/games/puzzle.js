@@ -46,7 +46,7 @@ function showNextPuzzle() {
     container.innerHTML = `
         <div class="game-question-animated">
             <h3>Question ${puzzleCurrent + 1} / ${puzzleCards.length}</h3>
-            <p style="font-size:18px; margin-bottom: 15px;">დააწკაპუნე სიტყვებზე სწორი თანმიმდევრობით:</p>
+            <p style="font-size:18px; margin-bottom: 15px;">Click the words in the correct order:</p>
             
             <div id="puzzleAnswer" style="min-height: 70px; background: rgba(0,0,0,0.03); border: 2px dashed var(--glass-border); border-radius: 12px; padding: 15px; margin-bottom: 20px;"></div>
             
@@ -54,8 +54,8 @@ function showNextPuzzle() {
             
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button id="puzzleSubmit" disabled style="background: var(--primary-color);">Check <span class="key-hint" style="margin-left:5px; margin-right:0;">↵</span></button>
-                <button id="puzzleAutoHintBtn" class="mix-btn" style="width: auto; padding: 10px 15px; margin-bottom: 0; font-size: 14px; background: rgba(0,0,0,0.05); border: none; color: var(--text-primary);">💡 სიტყვის დამატება</button>
-                <button id="puzzleHintBtn" class="mix-btn" style="width: auto; padding: 10px 15px; margin-bottom: 0; font-size: 14px; background: rgba(0,0,0,0.05); border: none; color: var(--text-primary);">❓ თარგმანი</button>
+                <button id="puzzleAutoHintBtn" style="width: auto; padding: 10px 15px; margin-bottom: 0; font-size: 14px; background: rgba(0,0,0,0.05); border: none; color: var(--text-primary);">💡 Auto-fill</button>
+                <button id="puzzleHintBtn" style="width: auto; padding: 10px 15px; margin-bottom: 0; font-size: 14px; background: rgba(0,0,0,0.05); border: none; color: var(--text-primary);">❓ Translation</button>
             </div>
             
             <div id="puzzleHint" style="margin-top: 15px; font-weight: bold; font-size: 18px; color: var(--accent);"></div>
@@ -157,7 +157,7 @@ function showNextPuzzle() {
                 b.disabled = true;
             });
         } else {
-            feedback.innerHTML = `<span style="color: red;">არაCorrect. სწორი წინადადება:<br><strong>${originalSentence}</strong></span>`;
+            feedback.innerHTML = `<span style="color: red;">Incorrect. The correct sentence is:<br><strong>${originalSentence}</strong></span>`;
             updateCardByText(word, -3);
             puzzleAnswer.querySelectorAll('button').forEach(b => b.disabled = true);
         }
@@ -178,8 +178,8 @@ function showNextPuzzle() {
     };
 
     hintBtn.onclick = () => {
-        const alt = oppositeSentences[0] || "(ვერ მოიძებნა საპირისპირო წინადადება)";
-        document.getElementById('puzzleHint').textContent = `📘 სხვა ენაზე: ${alt}`;
+        const alt = oppositeSentences[0] || "(No translation found)";
+        document.getElementById('puzzleHint').textContent = `📘 Translation: ${alt}`;
         updateCardByText(word, -0.4);
         hintBtn.disabled = true;
         applyCurrentSort?.();
