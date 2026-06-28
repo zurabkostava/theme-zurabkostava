@@ -4677,7 +4677,7 @@ body.dark @keyframes pulse-glow {
 }
 
 /* Beautiful Start Buttons across all training games */
-.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn) {
+.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):not(.puzzle-word):not(.mw-char) {
     background: #1575c9 !important;
     color: white !important;
     border: none !important;
@@ -4692,12 +4692,12 @@ body.dark @keyframes pulse-glow {
     display: inline-block !important;
 }
 
-.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):hover {
+.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):not(.puzzle-word):not(.mw-char):hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 6px 15px rgba(21, 117, 201, 0.4) !important;
 }
 
-.dark .training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn) {
+.dark .training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):not(.puzzle-word):not(.mw-char) {
     background: var(--accent) !important;
     color: #111 !important;
     box-shadow: 0 4px 10px rgba(230, 126, 34, 0.2) !important;
@@ -4760,7 +4760,7 @@ body.dark @keyframes pulse-glow {
     border-radius: 16px !important;
 }
 
-.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn) {
+.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):not(.puzzle-word):not(.mw-char) {
     font-size: 22px !important;
     padding: 18px 36px !important;
     border-radius: 16px !important;
