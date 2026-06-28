@@ -7831,3 +7831,101 @@ body.no-scroll {
 
 .auth-box { animation: authFadeIn 0.4s ease forwards; }
 @keyframes authFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ============================================================
+   SIDEBAR & TAG ITEMS BEAUTIFICATION
+   ============================================================ */
+
+.sidebar-tag-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin: 6px 0 !important;
+    padding: 10px 14px !important;
+    border-radius: 12px !important;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    border: 1px solid transparent !important;
+}
+
+.sidebar-tag-item span {
+    flex: 1 !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+}
+
+.sidebar-tag-item input {
+    padding: 6px 10px !important;
+    font-size: 14px !important;
+    border-radius: 6px !important;
+    border: 1px solid var(--glass-border) !important;
+    background: rgba(255,255,255,0.05) !important;
+    color: inherit !important;
+    width: 100% !important;
+    outline: none !important;
+}
+
+.sidebar-tag-item input:focus {
+    border-color: var(--accent) !important;
+}
+
+.sidebar-tag-item button {
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    padding: 6px !important;
+    color: var(--text-secondary) !important;
+    transition: all 0.2s ease !important;
+    border-radius: 6px !important;
+}
+
+.sidebar-tag-item button:hover {
+    color: var(--text-primary) !important;
+    background: rgba(255,255,255,0.1) !important;
+}
+
+.tag-count-badge {
+    background-color: rgba(128, 128, 128, 0.15) !important;
+    color: var(--text-secondary) !important;
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+    border-radius: 20px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    transition: all 0.3s ease !important;
+    max-width: none !important;
+}
+
+body.dark .tag-count-badge {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+#sidebarTagList li {
+    border-bottom: none !important; /* Remove old border */
+}
+
+#sidebarTagList li:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    transform: translateX(4px) !important;
+    border-color: var(--glass-border) !important;
+}
+
+body:not(.dark) #sidebarTagList li:hover {
+    background-color: rgba(0, 0, 0, 0.03) !important;
+    border-color: rgba(0,0,0,0.05) !important;
+}
+
+.sidebar-tag-item.active {
+    background-color: var(--accent) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3) !important;
+    transform: translateX(4px) !important;
+    border-color: transparent !important;
+}
+
+.sidebar-tag-item.active .tag-count-badge {
+    background-color: rgba(255,255,255,0.2) !important;
+    color: white !important;
+}
