@@ -13,10 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tab) return;
 
     tab.innerHTML = `
-<label style="margin-bottom:10px; display:inline-block;">
-            <input type="checkbox" id="mwFullBlankToggle" />
-            All letters blank
-        </label>
+        <div style="text-align: center; margin-bottom: 15px; width: 100%;">
+            <label style="display:inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="mwFullBlankToggle" style="width: 18px; height: 18px;" />
+                <span style="font-weight: 500; font-size: 14px;">All letters blank</span>
+            </label>
+        </div>
         <div id="mwContainer" style="margin-top: 1rem;"></div>
         <div id="mwResultContainer" style="margin-top: 2rem;"></div>
     `;
