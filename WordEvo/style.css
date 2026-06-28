@@ -4677,7 +4677,7 @@ body.dark @keyframes pulse-glow {
 }
 
 /* Beautiful Start Buttons across all training games */
-.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):not(.puzzle-word):not(.mw-char) {
+.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):not(.puzzle-word):not(.mw-char):not(.action-btn-secondary) {
     background: #1575c9 !important;
     color: white !important;
     border: none !important;
@@ -4692,15 +4692,15 @@ body.dark @keyframes pulse-glow {
     display: inline-block !important;
 }
 
-.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):not(.puzzle-word):not(.mw-char):hover {
+.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):not(.puzzle-word):not(.mw-char):not(.action-btn-secondary):hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 6px 15px rgba(21, 117, 201, 0.4) !important;
 }
 
-.dark .training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):not(.puzzle-word):not(.mw-char) {
-    background: var(--accent) !important;
-    color: #111 !important;
-    box-shadow: 0 4px 10px rgba(230, 126, 34, 0.2) !important;
+.dark .training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):not(.puzzle-word):not(.mw-char):not(.action-btn-secondary) {
+    background: #1575c9 !important;
+    color: white !important;
+    box-shadow: 0 4px 10px rgba(21, 117, 201, 0.2) !important;
 }
 
 /* =========================================
@@ -4760,7 +4760,7 @@ body.dark @keyframes pulse-glow {
     border-radius: 16px !important;
 }
 
-.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):not(.puzzle-word):not(.mw-char) {
+.training-tab-content button:not(.quiz-option):not(.sen-option):not(.mix-btn):not(.puzzle-word):not(.mw-char):not(.action-btn-secondary) {
     font-size: 22px !important;
     padding: 18px 36px !important;
     border-radius: 16px !important;
@@ -7792,4 +7792,36 @@ body.no-scroll {
     border-color: #4caf50;
     color: #4caf50;
     background: rgba(76, 175, 80, 0.1);
+}
+
+/* =========================================
+   SECONDARY ACTION BUTTONS (Hints, Auto-fill, Repeat)
+   ========================================= */
+.action-btn-secondary {
+    background: rgba(0,0,0,0.05) !important;
+    border: 2px solid rgba(0,0,0,0.05) !important;
+    color: var(--text-primary) !important;
+    border-radius: 12px !important;
+    padding: 10px 15px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.action-btn-secondary:hover {
+    background: rgba(0,0,0,0.1) !important;
+    transform: translateY(-1px) !important;
+}
+.dark .action-btn-secondary {
+    background: rgba(255,255,255,0.05) !important;
+    border-color: var(--glass-border) !important;
+    color: var(--text-primary) !important;
+}
+.dark .action-btn-secondary:hover {
+    background: rgba(255,255,255,0.08) !important;
+    border-color: rgba(255,255,255,0.2) !important;
 }

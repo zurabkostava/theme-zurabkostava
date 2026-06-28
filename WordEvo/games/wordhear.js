@@ -112,7 +112,7 @@ async function showNextWordhear() {
     whQuestionContainer.innerHTML = `
         <div class="quiz-question">
             <h3>Question ${wordhearCurrentIndex + 1} / ${wordhearCards.length}</h3>
-            <button id="repeatWordhearBtn" style="margin-bottom: 10px;">🔁 Repeat Question</button>
+            <button id="repeatWordhearBtn" class="action-btn-secondary" style="margin-bottom: 15px;">🔁 Repeat Question</button>
             <div class="quiz-options">
                 ${options.map(opt => `<button class="quiz-option">${opt}</button>`).join('')}
             </div>

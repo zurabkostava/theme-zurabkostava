@@ -54,8 +54,8 @@ function showNextPuzzle() {
             
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button id="puzzleSubmit" disabled style="background: var(--primary-color);">Check <span class="key-hint" style="margin-left:5px; margin-right:0;">↵</span></button>
-                <button id="puzzleAutoHintBtn" style="width: auto; padding: 10px 15px; margin-bottom: 0; font-size: 14px; background: rgba(0,0,0,0.05); border: none; color: var(--text-primary);">💡 Auto-fill</button>
-                <button id="puzzleHintBtn" style="width: auto; padding: 10px 15px; margin-bottom: 0; font-size: 14px; background: rgba(0,0,0,0.05); border: none; color: var(--text-primary);">❓ Translation</button>
+                <button id="puzzleAutoHintBtn" class="action-btn-secondary">💡 Auto-fill</button>
+                <button id="puzzleHintBtn" class="action-btn-secondary">❓ Translation</button>
             </div>
             
             <div id="puzzleHint" style="margin-top: 15px; font-weight: bold; font-size: 18px; color: var(--accent);"></div>

@@ -128,7 +128,7 @@ function showNextMWQuestion() {
             </div>
             
             <div id="mwHintSection" style="margin-bottom: 10px;">
-                <button id="showHintBtn" class="mix-btn" style="width: auto; padding: 10px 15px; font-size: 14px; margin-bottom: 0;">
+                <button id="showHintBtn" class="action-btn-secondary">
                     💡 Help
                 </button>
                 <div id="hintWord" style="display: ${mwFullBlankMode ? 'block' : 'none'}; margin-top: 10px; font-weight: bold; font-size: 20px; color: var(--accent);">
