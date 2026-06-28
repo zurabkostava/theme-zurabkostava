@@ -200,7 +200,7 @@ function showNextMWQuestion() {
 
     function checkMWAnswer() {
         const result = [...document.querySelectorAll('.mw-letter')].map(el => el.textContent).join('');
-        const isComplete = !result.includes('_');
+        const isComplete = result.length === correctWord.length;
         if (!isComplete) {
             // Reset color when user removes a letter to try again
             document.querySelectorAll('.mw-letter').forEach(el => el.style.color = '');
