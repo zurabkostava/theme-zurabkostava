@@ -540,21 +540,9 @@ body.dark #toggleDarkModeBtn:hover {
 
 }
 
-.sen-option.correct {
 
-    background-color: #4caf50 !important; /* მწვანე */
 
-    color: white;
 
-}
-
-.sen-option.incorrect {
-
-    background-color: #f44336 !important; /* წითელი */
-
-    color: white;
-
-}
 
 .progress-bar {
 
@@ -4987,22 +4975,9 @@ body.dark @keyframes pulse-glow {
     box-shadow: 0 6px 12px rgba(137, 180, 250, 0.08) !important;
 }
 
-.sen-option.correct {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-    color: white !important;
-    border-color: transparent !important;
-    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3) !important;
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    transform: translateY(0) !important;
-}
 
-.sen-option.incorrect {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-    color: white !important;
-    border-color: transparent !important;
-    box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3) !important;
-    animation: shake 0.4s !important;
-}
+
+
 
 /* =========================================
    MIX & MATCH ALIGNMENT FIX
