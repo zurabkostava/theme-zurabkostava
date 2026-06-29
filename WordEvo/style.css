@@ -8326,3 +8326,6 @@ body:not(.dark) .library-manager-btn:hover {
 
 #currentLibraryName { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
 
+
+.fixed-player-wrapper { position: fixed !important; }
+
