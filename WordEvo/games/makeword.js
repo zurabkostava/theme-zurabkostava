@@ -317,6 +317,7 @@ function generateRandomMissingIndices(word) {
 }
 
 
+function showMakewordResults() {
     if(window.setGlobalGameRunning) window.setGlobalGameRunning(false);
     const percentage = mwCards.length > 0 ? Math.round((mwCorrectAnswers / mwCards.length) * 100) : 0;
     mwContainer.innerHTML = `

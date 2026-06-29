@@ -211,6 +211,7 @@ function updateCardByText(wordText, delta) {
 }
 
 
+function showPuzzleResults() {
     if(window.setGlobalGameRunning) window.setGlobalGameRunning(false);
     const container = document.getElementById('puzzleGame');
     const percentage = puzzleCards.length > 0 ? Math.round((puzzleCorrect / puzzleCards.length) * 100) : 0;

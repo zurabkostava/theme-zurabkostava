@@ -185,6 +185,7 @@ async function showNextWordhear() {
 }
 
 
+function showWordhearResults() {
     if(window.setGlobalGameRunning) window.setGlobalGameRunning(false);
     whQuestionContainer.innerHTML = '';
     whResultContainer.innerHTML = `

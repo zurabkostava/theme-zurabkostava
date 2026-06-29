@@ -156,6 +156,7 @@ function updateCardByText(wordText, delta) {
 }
 
 
+function showTypingResult() {
     if(window.setGlobalGameRunning) window.setGlobalGameRunning(false);
     const game = document.getElementById('tiGame');
     const percentage = tiCards.length > 0 ? Math.round((tiCorrect / tiCards.length) * 100) : 0;

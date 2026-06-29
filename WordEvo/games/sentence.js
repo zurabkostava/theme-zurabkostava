@@ -147,6 +147,7 @@ function updateCardByText(wordText, delta) {
 }
 
 
+function showSentenceResult() {
     if(window.setGlobalGameRunning) window.setGlobalGameRunning(false);
     const game = document.getElementById('senGame');
     const percentage = senCards.length > 0 ? Math.round((senCorrect / senCards.length) * 100) : 0;

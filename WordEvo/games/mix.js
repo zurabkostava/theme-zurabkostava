@@ -190,6 +190,7 @@ function updateCardProgressFromText(left, right, delta) {
 
 
 
+function showMixResults() {
     if(window.setGlobalGameRunning) window.setGlobalGameRunning(false);
     mixResultContainer.innerHTML = `
         <h3>Results</h3>
