@@ -247,11 +247,11 @@ document.addEventListener('keydown', (e) => {
             clearTimeout(speakTimeout);
             speakNextReady = false;
             speakCurrent++;
-            const tabBtn = document.querySelector('[data-tab="tab8"]');
-            if (tabBtn) tabBtn.classList.remove('pulse-animation');
-            if (speakTimeout) clearTimeout(speakTimeout);
+            showSpeakCard();
+        } else if (document.getElementById('speakMicBtn')) {
+            toggleSpeakRecording();
         }
-    });
+    }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
