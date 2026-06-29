@@ -2801,10 +2801,14 @@ async function deleteCard(card) {
         }
     });
 
-    // Start the app after all scripts are parsed
-    document.addEventListener('DOMContentLoaded', async () => {
+    // Start the app reliably
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await startApp();
+        });
+    } else {
         await startApp();
-    });
+    }
 })();
 window.isGameRunning = false;
 

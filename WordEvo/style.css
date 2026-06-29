@@ -8330,8 +8330,5 @@ body:not(.dark) .library-manager-btn:hover {
 .fixed-player-wrapper { position: fixed !important; }
 
 
-/* BRUTE FORCE VISIBILITY FIX */
-.modal-overlay { opacity: 1 !important; visibility: visible !important; }
-.fixed-player-wrapper { display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 999999999 !important; pointer-events: auto !important; }
-.player { display: flex !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; }
+
 
