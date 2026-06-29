@@ -118,9 +118,15 @@ function renderStatsChart(period) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     
-    if (statsChartInstance) {
-        statsChartInstance.destroy();
+    if (typeof Chart === 'undefined') {
+        console.error('[Wordevo] Chart.js is not loaded!');
+        return;
     }
+    
+    try {
+        if (statsChartInstance) {
+            statsChartInstance.destroy();
+        }
 
     let dailyStats = {};
     try {
@@ -190,6 +196,9 @@ function renderStatsChart(period) {
             }
         }
     });
+    } catch(err) {
+        console.error('[Wordevo] Error rendering stats chart:', err);
+    }
 }
 
 async function syncStatsFromSupabase() {
@@ -2792,8 +2801,10 @@ async function deleteCard(card) {
         }
     });
 
-    // Start the app
-    await startApp();
+    // Start the app after all scripts are parsed
+    document.addEventListener('DOMContentLoaded', async () => {
+        await startApp();
+    });
 })();
 window.isGameRunning = false;
 
