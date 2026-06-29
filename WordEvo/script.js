@@ -1386,19 +1386,101 @@ async function loadDictionaries() {
     const found = allDictionaries.find(d => d.id === savedId);
     currentDictionaryId = found ? found.id : allDictionaries[0].id;
     localStorage.setItem(DICTIONARY_KEY, currentDictionaryId);
-    renderDictionaryDropdown();
+    renderLibraryUI();
 }
 
-function renderDictionaryDropdown() {
-    const select = document.getElementById('dictionarySelect');
-    if (!select) return;
-    select.innerHTML = '';
+function renderLibraryUI() {
+    const listContainer = document.getElementById('libraryListContainer');
+    const currentNameSpan = document.getElementById('currentLibraryName');
+    
+    if (listContainer) listContainer.innerHTML = '';
+    
     allDictionaries.forEach(dict => {
-        const option = document.createElement('option');
-        option.value = dict.id;
-        option.textContent = dict.name;
-        if (dict.id === currentDictionaryId) option.selected = true;
-        select.appendChild(option);
+        if (dict.id === currentDictionaryId && currentNameSpan) {
+            currentNameSpan.textContent = dict.name;
+        }
+        
+        if (!listContainer) return;
+
+        const item = document.createElement('div');
+        item.className = 'library-item ' + (dict.id === currentDictionaryId ? 'active' : '');
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'library-item-name';
+        nameSpan.textContent = dict.name;
+        nameSpan.onclick = async () => {
+            if (dict.id === currentDictionaryId) {
+                document.getElementById('libraryModalOverlay').classList.add('hidden');
+                return;
+            }
+            currentDictionaryId = dict.id;
+            localStorage.setItem(DICTIONARY_KEY, currentDictionaryId);
+            document.getElementById('libraryModalOverlay').classList.add('hidden');
+            renderLibraryUI();
+            await loadDataFromSupabase();
+            sortCards();
+            if (typeof loadVoices === 'function') loadVoices();
+        };
+
+        const actions = document.createElement('div');
+        actions.className = 'library-actions';
+
+        const renameBtn = document.createElement('button');
+        renameBtn.className = 'library-action-btn';
+        renameBtn.innerHTML = '<i class="fas fa-pen"></i>';
+        renameBtn.title = 'Rename';
+        renameBtn.onclick = async (e) => {
+            e.stopPropagation();
+            const newName = prompt('Enter new name for ' + dict.name + ':', dict.name);
+            if (newName && newName.trim() && newName.trim() !== dict.name) {
+                const { error } = await supabaseClient
+                    .from('dictionaries')
+                    .update({ name: newName.trim() })
+                    .eq('id', dict.id);
+                if (error) {
+                    showToast('Failed to rename: ' + error.message, 'error');
+                } else {
+                    dict.name = newName.trim();
+                    renderLibraryUI();
+                }
+            }
+        };
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'library-action-btn delete-btn';
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.title = 'Delete';
+        deleteBtn.onclick = async (e) => {
+            e.stopPropagation();
+            if (allDictionaries.length <= 1) {
+                alert('Cannot delete the last dictionary.');
+                return;
+            }
+            if (confirm('Are you sure you want to delete "' + dict.name + '" and all its words?')) {
+                const { error } = await supabaseClient
+                    .from('dictionaries')
+                    .delete()
+                    .eq('id', dict.id);
+                if (error) {
+                    showToast('Failed to delete: ' + error.message, 'error');
+                } else {
+                    allDictionaries = allDictionaries.filter(d => d.id !== dict.id);
+                    if (currentDictionaryId === dict.id) {
+                        currentDictionaryId = allDictionaries[0].id;
+                        localStorage.setItem(DICTIONARY_KEY, currentDictionaryId);
+                        await loadDataFromSupabase();
+                        sortCards();
+                    }
+                    renderLibraryUI();
+                }
+            }
+        };
+
+        actions.appendChild(renameBtn);
+        actions.appendChild(deleteBtn);
+        item.appendChild(nameSpan);
+        item.appendChild(actions);
+        listContainer.appendChild(item);
     });
 }
 
@@ -1592,6 +1674,56 @@ async function deleteCard(card) {
     const minimizePlayerBtn = document.getElementById('minimizePlayerBtn');
     const playerMinimizedDisplay = document.getElementById('playerMinimizedDisplay');
     // --- END NEW ---
+    
+    // Dictionary switching & Management
+    const libraryManagerBtn = document.getElementById('libraryManagerBtn');
+    const libraryModalOverlay = document.getElementById('libraryModalOverlay');
+    const closeLibraryModalBtn = document.getElementById('closeLibraryModalBtn');
+    const createLibrarySubmitBtn = document.getElementById('createLibrarySubmitBtn');
+    const newLibraryNameInput = document.getElementById('newLibraryNameInput');
+
+    if (libraryManagerBtn) {
+        libraryManagerBtn.onclick = () => {
+            renderLibraryUI();
+            libraryModalOverlay.classList.remove('hidden');
+        };
+    }
+
+    if (closeLibraryModalBtn) {
+        closeLibraryModalBtn.onclick = () => {
+            libraryModalOverlay.classList.add('hidden');
+        };
+    }
+
+    if (createLibrarySubmitBtn && newLibraryNameInput) {
+        createLibrarySubmitBtn.onclick = async () => {
+            const name = newLibraryNameInput.value.trim();
+            if (!name) {
+                showToast('გთხოვთ შეიყვანოთ სახელი', 'error');
+                return;
+            }
+            const {data, error} = await supabaseClient
+                .from('dictionaries')
+                .insert({user_id: currentUser.id, name: name, lang1: 'en', lang2: 'ka'})
+                .select()
+                .single();
+
+            if (error) {
+                showToast(`Error: ${error.message}`, "error");
+                return;
+            }
+
+            allDictionaries.push(data);
+            currentDictionaryId = data.id;
+            localStorage.setItem(DICTIONARY_KEY, currentDictionaryId);
+            newLibraryNameInput.value = '';
+            renderLibraryUI();
+            await loadDataFromSupabase();
+            sortCards();
+            if (typeof loadVoices === 'function') loadVoices();
+        };
+    }
+
 // ==== 3b. ფუნქციები, რომლებიც იყენებენ ამ ელემენტებს ====
 // ფუნქცია, რომელიც ირთვება დალოგინების შემდეგ
 // ფუნქცია, რომელიც ირთვება დალოგინების შემდეგ
@@ -1644,142 +1776,7 @@ async function deleteCard(card) {
             await loadDataFromSupabase();
         }
         console.log('[Wordevo] Initial load complete. Dictionary:', currentDictionaryId, 'Cards:', document.querySelectorAll('.card').length);
-// Dictionary switching
-        const dictionarySelect = document.getElementById('dictionarySelect');
-        if (dictionarySelect) {
-            dictionarySelect.onchange = async () => {
-                currentDictionaryId = dictionarySelect.value;
-                localStorage.setItem(DICTIONARY_KEY, currentDictionaryId);
-                await loadDataFromSupabase();
-                sortCards();
-                if (typeof loadVoices === 'function') loadVoices();
-            };
-        }
-// Dictionary creation
-        const addDictionaryBtn = document.getElementById('addDictionaryBtn');
-        const addDictionaryModal = document.getElementById('addDictionaryModal');
-        const closeAddDictionaryBtn = document.getElementById('closeAddDictionaryBtn');
-        const saveNewDictionaryBtn = document.getElementById('saveNewDictionaryBtn');
-        const newDictName = document.getElementById('newDictName');
-        const newDictLang1Select = document.getElementById('newDictLang1Select');
-        const newDictLang2Select = document.getElementById('newDictLang2Select');
-
-        if (addDictionaryBtn) {
-            addDictionaryBtn.onclick = async () => {
-                newDictName.value = '';
-                
-                // Ensure piper voices are loaded to get the full language list
-                if (typeof fetchPiperVoices === 'function' && piperVoicesList.length === 0) {
-                    await fetchPiperVoices();
-                }
-                
-                const langs = typeof getAllLanguages === 'function' ? getAllLanguages() : [];
-                newDictLang1Select.innerHTML = '';
-                newDictLang2Select.innerHTML = '';
-                
-                langs.forEach(l => {
-                    const opt1 = document.createElement('option');
-                    opt1.value = l.code;
-                    opt1.textContent = l.name;
-                    newDictLang1Select.appendChild(opt1);
-                    
-                    const opt2 = document.createElement('option');
-                    opt2.value = l.code;
-                    opt2.textContent = l.name;
-                    newDictLang2Select.appendChild(opt2);
-                });
-                
-                if (langs.some(l => l.code === 'en')) newDictLang1Select.value = 'en';
-                if (langs.some(l => l.code === 'ka')) newDictLang2Select.value = 'ka';
-
-                addDictionaryModal.style.display = 'flex';
-            };
-        }
-
-        if (closeAddDictionaryBtn) {
-            closeAddDictionaryBtn.onclick = () => {
-                addDictionaryModal.style.display = 'none';
-            };
-        }
-
-        if (saveNewDictionaryBtn) {
-            saveNewDictionaryBtn.onclick = async () => {
-                const name = newDictName.value;
-                const lang1 = newDictLang1Select.value;
-                const lang2 = newDictLang2Select.value;
-
-                if (!name || !name.trim()) {
-                    showToast('გთხოვთ შეიყვანოთ სახელი', 'error');
-                    return;
-                }
-
-                const {data, error} = await supabaseClient
-                    .from('dictionaries')
-                    .insert({user_id: currentUser.id, name: name.trim(), lang1: lang1, lang2: lang2})
-                    .select()
-                    .single();
-
-                if (error) {
-                    showToast(`Error: ${error.message}`, "error");
-                    return;
-                }
-
-                allDictionaries.push(data);
-                currentDictionaryId = data.id;
-                
-                // Save language pair locally
-                localStorage.setItem('dict_langs_' + currentDictionaryId, JSON.stringify({ lang1, lang2 }));
-                
-                localStorage.setItem(DICTIONARY_KEY, currentDictionaryId);
-                renderDictionaryDropdown();
-                await loadDataFromSupabase();
-                sortCards();
-                
-                if (typeof loadVoices === 'function') loadVoices();
-
-                showToast(`ლექსიკონი "${name.trim()}" შეიქმნა`, "success");
-                addDictionaryModal.style.display = 'none';
-            };
-        }
-
-        const deleteDictionaryBtn = document.getElementById('deleteDictionaryBtn');
-        if (deleteDictionaryBtn) {
-            deleteDictionaryBtn.onclick = async () => {
-                if (allDictionaries.length <= 1) {
-                    showToast('ერთადერთი ლექსიკონის წაშლა შეუძლებელია.', 'error');
-                    return;
-                }
-                const dictToDelete = allDictionaries.find(d => d.id === currentDictionaryId);
-                if (!confirm(`ნამდვილად გსურთ ლექსიკონის "${dictToDelete.name}" წაშლა? მასში არსებული All სიტყვა წაიშლება.`)) {
-                    return;
-                }
-
-                const { error } = await supabaseClient
-                    .from('dictionaries')
-                    .delete()
-                    .eq('id', currentDictionaryId);
-
-                if (error) {
-                    showToast(`Error: ${error.message}`, "error");
-                    return;
-                }
-
-                localStorage.removeItem('dict_langs_' + currentDictionaryId);
-                localStorage.removeItem(VOICE_STORAGE_KEY + '_' + currentDictionaryId);
-                localStorage.removeItem(GEORGIAN_VOICE_KEY + '_' + currentDictionaryId);
-
-                allDictionaries = allDictionaries.filter(d => d.id !== currentDictionaryId);
-                currentDictionaryId = allDictionaries[0].id;
-                localStorage.setItem(DICTIONARY_KEY, currentDictionaryId);
-                
-                renderDictionaryDropdown();
-                await loadDataFromSupabase();
-                sortCards();
-                if (typeof loadVoices === 'function') loadVoices();
-                
-                showToast('ლექსიკონი წაიშალა', 'success');
-            };
-        }
+// Dictionary switching logic replaced by Modal UI
 // Notifications — register SW first so subscribeToPush can await navigator.serviceWorker.ready
         if (typeof registerNotificationSW === 'function') {
             await registerNotificationSW();

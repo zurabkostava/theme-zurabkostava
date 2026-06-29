@@ -136,9 +136,10 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         <div class="top-bar">
             <div class="top-left">
                 <div class="app-logo">Wordevo</div>
-                <select id="dictionarySelect"></select>
-                <button id="addDictionaryBtn" title="New Dictionary"><i class="fas fa-plus"></i></button>
-                <button id="deleteDictionaryBtn" title="Delete Dictionary" style="color: #ff4757; background: rgba(255, 71, 87, 0.1);"><i class="fas fa-trash"></i></button>
+                <button id="libraryManagerBtn" class="library-manager-btn" title="Manage Libraries">
+                    <span id="currentLibraryName">Loading...</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
             </div>
             <div class="top-center" style="display: flex !important; align-items: center !important; justify-content: center !important; gap: 20px !important;">
 
@@ -228,6 +229,25 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     </div>
     <div class="card-container" id="cardContainer">
     </div>
+
+    <div class="modal-overlay hidden" id="libraryModalOverlay">
+        <div class="modal library-modal" style="max-width: 500px; padding: 25px;">
+            <div class="modal-header" style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+                <h2 style="font-size: 20px; margin: 0;"><i class="fas fa-book" style="margin-right: 8px; color: var(--primary-color);"></i> Manage Libraries</h2>
+                <button class="close-button" id="closeLibraryModalBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="libraryListContainer" style="display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
+                    <!-- Library items injected here -->
+                </div>
+                <div class="add-library-section" style="display: flex; gap: 10px; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                    <input type="text" id="newLibraryNameInput" class="form-control" placeholder="New Library Name" style="flex: 1; padding: 10px; border-radius: 8px;" />
+                    <button id="createLibrarySubmitBtn" class="primary-btn" style="padding: 10px 20px; white-space: nowrap; border-radius: 8px;"><i class="fas fa-plus"></i> Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-header">
