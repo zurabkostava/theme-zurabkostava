@@ -615,15 +615,14 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                             <option value="100-100">Learned (100%)</option>
                         </select>
                     </div>
-                    <label>
-                        <input id="globalReverseToggle" type="checkbox"/>
-                        Reverse
-                    </label>
+                    <div class="checkbox-start-group" style="display: flex; align-items: center; gap: 15px; margin-left: auto;">
+                        <label>
+                            <input id="globalReverseToggle" type="checkbox"/>
+                            Reverse
+                        </label>
+                        <button id="globalStartBtn" class="global-start-btn" onclick="startActiveGame()">Start 🚀</button>
+                    </div>
                 </div>
-                <div class="global-start-container">
-                    <button id="globalStartBtn" class="global-start-btn" onclick="startActiveGame()">Start 🚀</button>
-                </div>
-            </div>
             <div class="training-tab-content" data-tab-content="quiz" id="quizTab">
                 <h2>
                     Quiz სექცია

@@ -4924,6 +4924,26 @@ body.dark @keyframes pulse-glow {
     box-sizing: border-box !important;
 }
 
+ze: 15px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    height: 38px !important;
+}
+
+.global-start-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4) !important;
+}
+
+.global-start-btn:active {
+    transform: translateY(1px) !important;
+}
+
 #mixContainer > div {
     flex: none !important;
     width: calc(50% - 20px) !important; /* Exactly 50% minus half of the 40px gap */
@@ -4998,17 +5018,7 @@ body.dark @keyframes pulse-glow {
     /* justify-content: flex-start !important; */
 }
 
-/* =========================================
-   GLOBAL START BUTTON
-   ========================================= */
-
-.global-start-btn {
-    background: linear-gradient(135deg, #89b4fa 0%, #b4befe 100%) !important;
-    color: #11111b !important;
-    border: none !important;
-    border-radius: 14px !important;
-    padding: 10px 24px !important;
-    font-size: 16px !important;
+ze: 16px !important;
     font-weight: bold !important;
     cursor: pointer !important;
     transition: all 0.2s !important;
@@ -8159,3 +8169,34 @@ body:not(.dark) .tag-add-container {
 .mix-btn.incorrect:hover {
     transform: none !important;
 }
+
+/* =========================================
+   GLOBAL START BUTTON
+   ========================================= */
+
+.global-start-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    height: 36px !important;
+}
+
+.global-start-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4) !important;
+}
+
+.global-start-btn:active {
+    transform: translateY(1px) !important;
+}
+
