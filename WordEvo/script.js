@@ -1653,14 +1653,14 @@ async function deleteCard(card) {
     const englishSentencesInput = document.getElementById('englishSentences');
     const georgianSentencesInput = document.getElementById('georgianSentences');
     const mnemonicInput = document.getElementById('mnemonicInput');
-    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsBtn = document.getElementById('openSettingsBtn');
     const settingsModal = document.getElementById('settingsModal');
     const closeSettingsBtn = document.getElementById('closeSettingsBtn');
     const saveVoiceBtn = document.getElementById('saveVoiceBtn');
     const prevBtn = document.querySelector('.player .fa-backward-step').closest('button');
     const nextBtn = document.querySelector('.player .fa-forward-step').closest('button');
     const mobileSidebarBtn = document.getElementById('mobileSidebarBtn');
-    const statsBtn = document.getElementById('statsBtn');
+    const statsBtn = document.getElementById('openStatsBtn');
     const statsModal = document.getElementById('statsModal');
     const closeStatsBtn = document.getElementById('closeStatsBtn');
     const shuffleBtn = document.querySelector('.player .fa-shuffle').closest('button');

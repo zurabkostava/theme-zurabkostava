@@ -242,9 +242,12 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <div id="libraryListContainer" style="display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
                     <!-- Library items injected here -->
                 </div>
-                <div class="add-library-section" style="display: flex; gap: 10px; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-                    <input type="text" id="newLibraryNameInput" class="form-control" placeholder="New Library Name" style="flex: 1; padding: 10px; border-radius: 8px;" />
-                    <button id="createLibrarySubmitBtn" class="primary-btn" style="padding: 10px 20px; white-space: nowrap; border-radius: 8px;"><i class="fas fa-plus"></i> Add</button>
+                <div class="add-library-section" style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                    <div style="font-size: 14px; color: var(--text-secondary); font-weight: 500;">Create New Library</div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="newLibraryNameInput" class="form-control" placeholder="New Library Name" style="flex: 1; padding: 10px; border-radius: 8px;" />
+                        <button id="createLibrarySubmitBtn" class="primary-btn" style="padding: 10px 20px; white-space: nowrap; border-radius: 8px;"><i class="fas fa-plus"></i> Add</button>
+                    </div>
                 </div>
             </div>
         </div>
