@@ -134,12 +134,14 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         </div>
         <div class="top">
         <div class="top-bar">
-            <div class="top-left">
+            <div class="top-left" style="display: flex; align-items: center; gap: 15px;">
                 <div class="app-logo">Wordevo</div>
-                <button id="libraryManagerBtn" class="library-manager-btn" title="Manage Libraries">
-                    <span id="currentLibraryName">Loading...</span>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
+                <div class="library-selector-wrapper">
+                    <button id="libraryManagerBtn" class="library-manager-btn" title="Manage Libraries">
+                        <span id="currentLibraryName">Loading...</span>
+                        <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 5px;"></i>
+                    </button>
+                </div>
             </div>
             <div class="top-center" style="display: flex !important; align-items: center !important; justify-content: center !important; gap: 20px !important;">
 
@@ -230,7 +232,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <div class="card-container" id="cardContainer">
     </div>
 
-    <div class="modal-overlay hidden" id="libraryModalOverlay">
+    <div class="modal-overlay" id="libraryModalOverlay" style="display: none;">
         <div class="modal library-modal" style="max-width: 500px; padding: 25px;">
             <div class="modal-header" style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
                 <h2 style="font-size: 20px; margin: 0;"><i class="fas fa-book" style="margin-right: 8px; color: var(--primary-color);"></i> Manage Libraries</h2>

@@ -1410,12 +1410,12 @@ function renderLibraryUI() {
         nameSpan.textContent = dict.name;
         nameSpan.onclick = async () => {
             if (dict.id === currentDictionaryId) {
-                document.getElementById('libraryModalOverlay').classList.add('hidden');
+                document.getElementById('libraryModalOverlay').style.display = 'none';
                 return;
             }
             currentDictionaryId = dict.id;
             localStorage.setItem(DICTIONARY_KEY, currentDictionaryId);
-            document.getElementById('libraryModalOverlay').classList.add('hidden');
+            document.getElementById('libraryModalOverlay').style.display = 'none';
             renderLibraryUI();
             await loadDataFromSupabase();
             sortCards();
@@ -1685,13 +1685,13 @@ async function deleteCard(card) {
     if (libraryManagerBtn) {
         libraryManagerBtn.onclick = () => {
             renderLibraryUI();
-            libraryModalOverlay.classList.remove('hidden');
+            libraryModalOverlay.style.display = 'flex';
         };
     }
 
     if (closeLibraryModalBtn) {
         closeLibraryModalBtn.onclick = () => {
-            libraryModalOverlay.classList.add('hidden');
+            libraryModalOverlay.style.display = 'none';
         };
     }
 
