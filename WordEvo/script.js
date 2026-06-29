@@ -2839,7 +2839,7 @@ window.getGamePlaceholderHTML = function(gameType) {
     };
     const info = data[gameType] || data.quiz;
     return `
-        <div class="game-empty-state" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 60px 20px; text-align:center; background: rgba(255,255,255,0.02); border-radius:16px; border: 1px dashed rgba(255,255,255,0.1); margin-top:20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.2); width: 100%; box-sizing: border-box;">
+        <div class="game-empty-state" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 60px 20px; text-align:center; background: rgba(255,255,255,0.02); border-radius:16px; border: 1px dashed rgba(255,255,255,0.1); margin-top:20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.2); width: 100% !important; box-sizing: border-box !important;">
             <i class="fas ${info.icon}" style="font-size: 64px; color: ${info.color}; margin-bottom: 20px; opacity: 0.9; filter: drop-shadow(0 0 15px ${info.color}66);"></i>
             <h3 style="font-size: 24px; margin-bottom: 10px; color: #fff; font-weight: 700;">${info.title}</h3>
             <p style="color: #9ca3af; margin-bottom: 30px; font-size: 16px;">Configure your settings above and start the training to test your skills!</p>
