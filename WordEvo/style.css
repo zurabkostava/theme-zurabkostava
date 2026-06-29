@@ -7499,7 +7499,7 @@ button.speak-btn.active {
     width: max-content !important;
     margin: 0 !important;
     border: none !important;
-    box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25), 0 -2px 15px rgba(0, 0, 0, 0.15) !important;
     pointer-events: auto !important;
     transition: background 0.3s ease, box-shadow 0.3s ease !important;
 }
@@ -7519,7 +7519,7 @@ body.dark .player {
     background: rgba(25, 25, 35, 0.9) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
-    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.4) !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8), 0 -4px 15px rgba(0, 0, 0, 0.6) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-left: 1px solid rgba(255, 255, 255, 0.04) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
