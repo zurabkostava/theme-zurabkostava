@@ -220,7 +220,8 @@ function showSpeakFeedback(text, color) {
     }
 }
 
-function showSpeakResult() {
+
+    if(window.setGlobalGameRunning) window.setGlobalGameRunning(false);
     const container = document.getElementById('speakTab');
     const maxPossible = speakCards.length * 2;
     const percentage = maxPossible > 0 ? Math.round((speakTotalScore / maxPossible) * 100) : 0;

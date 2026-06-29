@@ -176,7 +176,8 @@ function renderNextQuestion() {
     });
 }
 
-function showQuizResult() {
+
+    if(window.setGlobalGameRunning) window.setGlobalGameRunning(false);
     questionContainer.innerHTML = '';
     const percentage = quizCards.length > 0 ? Math.round((correctAnswers / quizCards.length) * 100) : 0;
     resultContainer.innerHTML = `

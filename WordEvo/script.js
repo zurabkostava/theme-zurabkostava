@@ -2575,11 +2575,17 @@ async function deleteCard(card) {
         document.body.classList.add('no-scroll');
     });
     document.querySelector('.training-close').addEventListener('click', () => {
+        if (window.isGameRunning && typeof window.stopActiveGame === 'function') {
+            window.stopActiveGame();
+        }
         document.getElementById('trainingModal').classList.add('hidden');
         document.body.classList.remove('no-scroll');
     });
     document.querySelectorAll('.training-tab').forEach(tab => {
         tab.addEventListener('click', () => {
+            if (window.isGameRunning && typeof window.stopActiveGame === 'function') {
+                window.stopActiveGame();
+            }
             document.querySelectorAll('.training-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             const selected = tab.dataset.tab;
@@ -2792,10 +2798,70 @@ async function deleteCard(card) {
     // Start the app
     await startApp();
 })();
+window.isGameRunning = false;
+
+window.setGlobalGameRunning = function(isRunning) {
+    window.isGameRunning = isRunning;
+    const btn = document.getElementById('globalStartBtn');
+    if (!btn) return;
+    if (isRunning) {
+        btn.innerHTML = 'Stop <i class="fas fa-stop"></i>';
+        btn.style.setProperty('background', 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)', 'important');
+        btn.style.setProperty('box-shadow', '0 4px 10px rgba(239, 68, 68, 0.3)', 'important');
+    } else {
+        btn.innerHTML = 'Start <i class="fas fa-play"></i>';
+        btn.style.background = '';
+        btn.style.boxShadow = '';
+    }
+};
+
+window.stopActiveGame = function() {
+    window.setGlobalGameRunning(false);
+    
+    // Stop speak recognition if active
+    if (typeof recognition !== 'undefined' && recognition && typeof isRecording !== 'undefined' && isRecording) {
+        try { recognition.stop(); } catch(e) {}
+        isRecording = false;
+    }
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    
+    const activeTab = document.querySelector('.training-tab.active');
+    if (!activeTab) return;
+    const tabId = activeTab.dataset.tab;
+    
+    if (tabId === 'quiz') {
+        const c = document.getElementById('quizQuestionContainer'); if(c) c.innerHTML = window.getGamePlaceholderHTML('quiz');
+        const r = document.getElementById('quizResultContainer'); if(r) r.innerHTML = '';
+    } else if (tabId === 'tab2') {
+        const c = document.getElementById('whQuestionContainer'); if(c) c.innerHTML = window.getGamePlaceholderHTML('hear');
+        const r = document.getElementById('whResultContainer'); if(r) r.innerHTML = '';
+    } else if (tabId === 'tab3') {
+        const c = document.getElementById('mixContainer'); if(c) c.innerHTML = window.getGamePlaceholderHTML('mix');
+        const r = document.getElementById('mixResultContainer'); if(r) r.innerHTML = '';
+    } else if (tabId === 'tab4') {
+        const c = document.getElementById('mwContainer'); if(c) c.innerHTML = window.getGamePlaceholderHTML('fill');
+        const r = document.getElementById('mwResultContainer'); if(r) r.innerHTML = '';
+    } else if (tabId === 'tab5') {
+        const c = document.getElementById('tiGame'); if(c) c.innerHTML = window.getGamePlaceholderHTML('type');
+    } else if (tabId === 'tab6') {
+        const c = document.getElementById('senGame'); if(c) c.innerHTML = window.getGamePlaceholderHTML('sentence');
+    } else if (tabId === 'tab7') {
+        const c = document.getElementById('puzzleGame'); if(c) c.innerHTML = window.getGamePlaceholderHTML('puzzle');
+    } else if (tabId === 'tab8') {
+        const c = document.getElementById('speakTab'); if(c) c.innerHTML = window.getGamePlaceholderHTML('speak');
+    }
+};
+
 window.startActiveGame = function() {
+    if (window.isGameRunning) {
+        window.stopActiveGame();
+        return;
+    }
+
     const activeTab = document.querySelector('.training-tab.active');
     if (!activeTab) return;
     
+    window.setGlobalGameRunning(true);
     const tabId = activeTab.dataset.tab;
     
     switch (tabId) {

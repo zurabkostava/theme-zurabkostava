@@ -316,7 +316,8 @@ function generateRandomMissingIndices(word) {
     return indices;
 }
 
-function showMakewordResults() {
+
+    if(window.setGlobalGameRunning) window.setGlobalGameRunning(false);
     const percentage = mwCards.length > 0 ? Math.round((mwCorrectAnswers / mwCards.length) * 100) : 0;
     mwContainer.innerHTML = `
         <div class="beautiful-results">
