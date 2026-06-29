@@ -1,4 +1,4 @@
-﻿// get-push-notification: called by service worker when push arrives
+// get-push-notification: called by service worker when push arrives
 // identifies user by their push endpoint, returns queued notification content
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -42,6 +42,7 @@ Deno.serve(async (req) => {
       .from('push_queue')
       .select('*')
       .eq('user_id', sub.user_id)
+      .eq('endpoint', endpoint)
       .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false })
       .limit(1)
