@@ -136,7 +136,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         <div class="top-bar">
             <div class="top-left" style="display: flex; align-items: center; gap: 15px;">
                 <div class="app-logo">Wordevo</div>
-                <div class="library-selector-wrapper">
+                <div class="library-selector-wrapper" style="flex-shrink: 0; min-width: 120px; white-space: nowrap;">
                     <button id="libraryManagerBtn" class="library-manager-btn" title="Manage Libraries">
                         <span id="currentLibraryName">Loading...</span>
                         <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 5px;"></i>
