@@ -2843,7 +2843,7 @@ window.getGamePlaceholderHTML = function(gameType) {
             <i class="fas ${info.icon}" style="font-size: 64px; color: ${info.color}; margin-bottom: 20px; opacity: 0.9; filter: drop-shadow(0 0 15px ${info.color}66);"></i>
             <h3 style="font-size: 24px; margin-bottom: 10px; color: #fff; font-weight: 700;">${info.title}</h3>
             <p style="color: #9ca3af; margin-bottom: 30px; font-size: 16px;">Configure your settings above and start the training to test your skills!</p>
-            <button onclick="startActiveGame()" style="background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%); border: none; padding: 12px 30px; border-radius: 8px; color: white; font-weight: bold; font-size: 16px; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);">Start Game <i class="fas fa-play"></i></button>
+            <button class="placeholder-start-btn" onclick="startActiveGame()">Start Game <i class="fas fa-play"></i></button>
         </div>
     `;
 };

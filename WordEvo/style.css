@@ -8200,3 +8200,35 @@ body:not(.dark) .tag-add-container {
     transform: translateY(1px) !important;
 }
 
+
+/* =========================================
+   PLACEHOLDER START BUTTON
+   ========================================= */
+.placeholder-start-btn {
+    background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 30px !important;
+    padding: 18px 45px !important;
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    box-shadow: 0 8px 25px rgba(236, 72, 153, 0.4) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    margin-top: 10px !important;
+}
+
+.placeholder-start-btn:hover {
+    transform: translateY(-4px) scale(1.05) !important;
+    box-shadow: 0 12px 35px rgba(236, 72, 153, 0.6) !important;
+}
+
+.placeholder-start-btn:active {
+    transform: translateY(2px) scale(0.98) !important;
+}
+
