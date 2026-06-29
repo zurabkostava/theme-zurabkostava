@@ -685,6 +685,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             </div>
         </div>
     </div>
+</div>
     <div class="fixed-player-wrapper">
         <div class="player-minimized-display" id="playerMinimizedDisplay" style="display: none;" title="გახსნა">
         </div>
