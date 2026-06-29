@@ -1614,7 +1614,7 @@ async function deleteCard(card) {
             if (btn) {
                 btn.addEventListener("click", () => {
                     const templateData = [
-                        ["Word", "MainTranslations", "ExtraTranslations", "Tags", "EnglishSentences", "GeorgianSentences"]
+                        ["Word", "MainTranslations", "ExtraTranslations", "Mnemonic", "Tags", "EnglishSentences", "GeorgianSentences"]
                     ];
                     const worksheet = XLSX.utils.aoa_to_sheet(templateData);
                     const workbook = XLSX.utils.book_new();
@@ -2600,6 +2600,7 @@ async function deleteCard(card) {
             const tagObjects = JSON.parse(card.dataset.tagObjects || '[]');
             const tags = tagObjects.map(tagObj => tagObj.name).join(', '); // ვწერთ სრულ სიას
             // --- END FIX ---
+            const mnemonic = card.dataset.mnemonic || '';
             const englishSentences = JSON.parse(card.dataset.english || '[]').join('<br>');
             // ...
             const georgianSentences = JSON.parse(card.dataset.georgian || '[]').join('<br>');
@@ -2610,6 +2611,7 @@ async function deleteCard(card) {
                 Word: word,
                 MainTranslations: mainText,
                 ExtraTranslations: extraText,
+                Mnemonic: mnemonic,
                 Tags: tags,
                 EnglishSentences: englishSentences,
                 GeorgianSentences: georgianSentences,
@@ -2618,64 +2620,13 @@ async function deleteCard(card) {
         });
         const worksheet = XLSX.utils.json_to_sheet(cards);
         worksheet['!cols'] = [
-            {wch: 20}, {wch: 30}, {wch: 30}, {wch: 25}, {wch: 80}, {wch: 80}, {wch: 10}
+            {wch: 20}, {wch: 30}, {wch: 30}, {wch: 30}, {wch: 25}, {wch: 80}, {wch: 80}, {wch: 10}
         ];
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Words");
         XLSX.writeFile(workbook, "english_words_with_progress.xlsx");
     };
-    // ==== NEW "MY DICTIONARY" EXPORT FUNCTION (V3 - FINAL) ====
-    document.getElementById('exportMyDictionaryBtn').onclick = () => {
-        const cards = [...document.querySelectorAll('.card')].map(card => {
-            // 1. ვიღებთ "სუფთა" მონაცემებს dataset-იდან
-            const word = card.querySelector('.word').textContent.trim();
-            const tagObjects = JSON.parse(card.dataset.tagObjects || '[]');
-            // === NEW: თეგებს ვაერთებთ ";" -ით ===
-            const tags = tagObjects.map(tagObj => tagObj.name).join('; '); //
-            // 2. ვიღებთ თარგმანებს (ცალ-ცალკე)
-            const mainText = card.querySelector('.translation').childNodes[0]?.textContent?.trim() || '';
-            const extraText = card.querySelector('.translation .extra')?.textContent?.trim() || '';
-            // 3. ვამრგვალებთ პროგრესს
-            const progress = Math.round(parseFloat(card.dataset.progress || '0')) + '%'; //
-            // 4. ვაწყვილებთ წინადადებებს (შენი მოთხოვნისამებრ)
-            const englishSentences = JSON.parse(card.dataset.english || '[]');
-            const georgianSentences = JSON.parse(card.dataset.georgian || '[]');
-            const pairedExamples = [];
-            const maxLen = Math.max(englishSentences.length, georgianSentences.length);
-            for (let i = 0; i < maxLen; i++) {
-                const en = englishSentences[i] || ''; // ვიღებთ ინგლისურს (ან ცარიელს)
-                const ge = georgianSentences[i] || ''; // ვიღებთ ქართულს (ან ცარიელს)
-                pairedExamples.push(`${en} — ${ge}`); // ვაწყვილებთ " — " ტირეთი
-            }
-            // ვაერთებთ ახალი ხაზით (\n), როგორც ექსელში (ALT+ENTER)
-            const examplesString = pairedExamples.join('\n'); //
-            // 5. ვაწყობთ ობიექტს ზუსტად შენი თანმიმდევრობით
-            return {
-                'Learned': progress,
-                'Tags': tags,
-                'Word': word,
-                'Transcription': '', // === NEW: დავამატეთ ცარიელი სვეტი ===
-                'Translation': mainText,
-                'Additional Translation': extraText,
-                'Examples': examplesString
-            };
-        });
-        const worksheet = XLSX.utils.json_to_sheet(cards);
-        // სვეტების სიგანეები (განახლებული)
-        worksheet['!cols'] = [
-            {wch: 10}, // Learned
-            {wch: 25}, // Tags
-            {wch: 20}, // Word
-            {wch: 15}, // Transcription (NEW)
-            {wch: 30}, // Translation
-            {wch: 30}, // Additional Translation
-            {wch: 80}  // Examples
-        ];
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "My Dictionary");
-        XLSX.writeFile(workbook, "my_dictionary_export.xlsx"); // ვიყენებთ .xlsx-ს
-    };
-    // ==== END NEW FUNCTION (V3 - FINAL) ====
+
     document.getElementById('importExcelInput').addEventListener('change', async function (e) { // <-- დავამატეთ ASYNC
         const file = e.target.files[0];
         if (!file) return;
@@ -2724,6 +2675,7 @@ async function deleteCard(card) {
                     word_input: word,
                     main_translations_input: (entry.MainTranslations || '').split(',').map(t => t.trim()).filter(Boolean),
                     extra_translations_input: (entry.ExtraTranslations || '').split(',').map(t => t.trim()).filter(Boolean),
+                    mnemonic_input: entry.Mnemonic || '',
                     tag_names_input: (entry.Tags || '').split(',').map(t => t.trim()).filter(Boolean),
                     english_sentences_input: english_sentences_input,
                     georgian_sentences_input: georgian_sentences_input,

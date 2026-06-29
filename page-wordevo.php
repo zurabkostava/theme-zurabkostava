@@ -500,9 +500,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                     <button class="settings-btn blue" id="exportExcelBtn">
                         📤 Export to Excel
                     </button>
-                    <button class="settings-btn" id="exportMyDictionaryBtn" style="background-color: #6a1b9a; color: white;">
-                        📤 Export for My Dictionary
-                    </button>
+
                     <label class="settings-btn settings-btn-force cyan" for="importExcelInput">
                     <label class="settings-btn settings-btn-force cyan" for="importExcelInput">
                         📥 Import from Excel
