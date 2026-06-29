@@ -8232,101 +8232,49 @@ body:not(.dark) .tag-add-container {
     transform: translateY(2px) scale(0.98) !important;
 }
 
+.premium-library-btn{
+    padding: 0 12px!important;
+}
 
 /* =========================================
    LIBRARY MANAGER UI
    ========================================= */
-.library-manager-btn.premium-library-btn {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: #f8fafc;
-    padding: 8px 18px 8px 16px;
-    border-radius: 16px;
-    font-size: 15px;
-    font-weight: 600;
+.library-manager-btn {
+    background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #e2e8f0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 12px;
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    flex-shrink: 0;
-    min-width: 140px;
-    white-space: nowrap;
+    gap: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
-
-.library-manager-btn.premium-library-btn:hover {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
-    border-color: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+.library-manager-btn:hover {
+    background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05));
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
-
-.library-manager-btn.premium-library-btn:active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.library-manager-btn.premium-library-btn .library-icon {
-    font-size: 14px;
-    color: #a78bfa;
-    transition: color 0.3s ease;
-}
-
-.library-manager-btn.premium-library-btn:hover .library-icon {
-    color: #c4b5fd;
-}
-
-.library-manager-btn.premium-library-btn .chevron-wrapper {
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.3s ease;
-}
-
-.library-manager-btn.premium-library-btn:hover .chevron-wrapper {
-    background: rgba(255, 255, 255, 0.15);
-}
-
-.library-manager-btn.premium-library-btn .chevron-wrapper i {
-    font-size: 11px;
-    color: #cbd5e1;
+.library-manager-btn i {
+    font-size: 10px;
+    color: #94a3b8;
     transition: transform 0.3s ease;
 }
-
-body:not(.dark) .library-manager-btn.premium-library-btn {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    color: #1e293b;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05), inset 0 -2px 0 rgba(0, 0, 0, 0.02);
+body:not(.dark) .library-manager-btn {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
-
-body:not(.dark) .library-manager-btn.premium-library-btn:hover {
-    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-    border-color: rgba(0, 0, 0, 0.15);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08), inset 0 -2px 0 rgba(0, 0, 0, 0.02);
-}
-
-body:not(.dark) .library-manager-btn.premium-library-btn .library-icon {
-    color: #8b5cf6;
-}
-
-body:not(.dark) .library-manager-btn.premium-library-btn .chevron-wrapper {
-    background: rgba(0, 0, 0, 0.04);
-}
-
-body:not(.dark) .library-manager-btn.premium-library-btn:hover .chevron-wrapper {
-    background: rgba(0, 0, 0, 0.08);
-}
-
-body:not(.dark) .library-manager-btn.premium-library-btn .chevron-wrapper i {
-    color: #64748b;
+body:not(.dark) .library-manager-btn:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
 }
 
 .library-item {
