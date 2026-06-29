@@ -8324,7 +8324,7 @@ body:not(.dark) .library-manager-btn:hover {
 }
 
 
-#currentLibraryName { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+#currentLibraryName { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; min-width: 60px; text-align: left; flex-grow: 1; }
 
 
 .fixed-player-wrapper { position: fixed !important; }
