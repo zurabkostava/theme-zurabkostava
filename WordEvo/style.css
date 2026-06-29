@@ -8236,6 +8236,10 @@ body:not(.dark) .tag-add-container {
 /* =========================================
    PREMIUM LIBRARY MANAGER UI
    ========================================= */
+.library-selector-wrapper {
+    flex-shrink: 0 !important;
+}
+
 .premium-library-btn {
     background: rgba(25, 30, 45, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.08);
