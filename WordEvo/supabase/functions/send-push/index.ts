@@ -135,14 +135,17 @@ Deno.serve(async () => {
       console.log(`subs for schedule ${s.id}: ${subs?.length ?? 0}`, subsErr?.message ?? '')
       if (!subs?.length) { errorDetails.push(`schedule ${s.id}: no subscriptions`); continue }
 
+      // Store ONE queue entry for all devices
+      const { error: qErr } = await db.from('push_queue').insert({
+        user_id: s.user_id, title, body, schedule_id: s.id,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      })
+      if (qErr) {
+          console.error(`queue insert FAILED: ${qErr.message}`)
+          errorDetails.push(`queue: ${qErr.message}`)
+      }
+
       for (const sub of subs) {
-        // Store one queue entry PER DEVICE so each gets its own notification
-        const { error: qErr } = await db.from('push_queue').insert({
-          user_id: s.user_id, title, body, schedule_id: s.id, endpoint: sub.endpoint,
-          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-        })
-        console.log(`queue insert for ${sub.endpoint.substring(0, 40)}: ${qErr ? 'FAILED: ' + qErr.message : 'OK'}`)
-        if (qErr) { errors++; errorDetails.push(`queue: ${qErr.message}`); continue }
 
         try {
           await sendPush(sub.endpoint)

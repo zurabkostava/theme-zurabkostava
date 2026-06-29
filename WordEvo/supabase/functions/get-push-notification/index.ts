@@ -42,7 +42,6 @@ Deno.serve(async (req) => {
       .from('push_queue')
       .select('*')
       .eq('user_id', sub.user_id)
-      .eq('endpoint', endpoint)
       .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false })
       .limit(1)
@@ -52,8 +51,9 @@ Deno.serve(async (req) => {
 
     if (!notif) return new Response(JSON.stringify(DEFAULT), { headers: CORS })
 
-    // Delete it so it's not shown twice
-    await db.from('push_queue').delete().eq('id', notif.id)
+    // We don't delete the notification here anymore.
+    // This allows multiple devices to fetch the same notification.
+    // Expired entries are cleaned up by pg_cron in send-push.
 
     return new Response(
       JSON.stringify({ title: notif.title, body: notif.body, schedule_id: notif.schedule_id }),
