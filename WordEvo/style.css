@@ -8234,62 +8234,137 @@ body:not(.dark) .tag-add-container {
 
 
 /* =========================================
-   LIBRARY MANAGER UI
+   PREMIUM LIBRARY MANAGER UI
    ========================================= */
-.library-manager-btn {
-    background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #e2e8f0;
-    padding: 6px 14px;
-    border-radius: 12px;
+.premium-library-btn {
+    background: rgba(25, 30, 45, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+    padding: 6px 6px 6px 12px;
+    border-radius: 16px;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 0.3px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 10px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    min-width: 130px;
+    gap: 12px;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+    min-width: 140px;
     white-space: nowrap;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    position: relative;
+    overflow: hidden;
 }
-.library-manager-btn:hover {
-    background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05));
-    border-color: rgba(255, 255, 255, 0.3);
+
+.premium-library-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+    transform: skewX(-20deg);
+    transition: all 0.6s ease;
+}
+
+.premium-library-btn:hover {
+    background: rgba(35, 42, 60, 0.8);
+    border-color: rgba(255, 255, 255, 0.15);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3), 0 0 15px rgba(79, 172, 254, 0.2), inset 0 1px 0 rgba(255,255,255,0.1);
 }
-.library-manager-btn i.library-icon {
-    font-size: 14px;
-    color: var(--primary-color, #4facfe);
-    background: rgba(79, 172, 254, 0.15);
-    padding: 6px;
-    border-radius: 8px;
+
+.premium-library-btn:hover::before {
+    left: 200%;
+}
+
+.premium-library-btn:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+.premium-library-btn i.library-icon {
+    font-size: 13px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    padding: 8px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 10px rgba(79, 172, 254, 0.4);
 }
-.library-manager-btn i.dropdown-icon {
-    font-size: 12px;
+
+#currentLibraryName {
+    flex: 1;
+    text-align: left;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.chevron-wrapper {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.premium-library-btn:hover .chevron-wrapper {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.premium-library-btn i.fa-chevron-down {
+    font-size: 10px;
     color: #94a3b8;
-    transition: transform 0.3s ease;
-    margin-left: auto;
+    transition: transform 0.3s ease, color 0.3s ease;
 }
-body:not(.dark) .library-manager-btn {
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(0, 0, 0, 0.08);
+
+.premium-library-btn:hover i.fa-chevron-down {
+    color: #ffffff;
+}
+
+/* Light Mode Overrides */
+body:not(.dark) .premium-library-btn {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 0, 0, 0.06);
     color: #1e293b;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,1);
 }
-body:not(.dark) .library-manager-btn:hover {
+
+body:not(.dark) .premium-library-btn::before {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+}
+
+body:not(.dark) .premium-library-btn:hover {
     background: #ffffff;
-    border-color: rgba(0, 0, 0, 0.15);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    border-color: rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08), 0 0 15px rgba(79, 172, 254, 0.15);
 }
-body:not(.dark) .library-manager-btn i.library-icon {
-    background: rgba(79, 172, 254, 0.1);
+
+body:not(.dark) #currentLibraryName {
+    text-shadow: none;
+}
+
+body:not(.dark) .chevron-wrapper {
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+body:not(.dark) .premium-library-btn:hover .chevron-wrapper {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+body:not(.dark) .premium-library-btn i.fa-chevron-down {
+    color: #64748b;
+}
+body:not(.dark) .premium-library-btn:hover i.fa-chevron-down {
+    color: #0f172a;
 }
 
 .library-item {

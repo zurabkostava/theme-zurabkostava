@@ -137,10 +137,12 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             <div class="top-left" style="display: flex; align-items: center; gap: 15px;">
                 <div class="app-logo">Wordevo</div>
                 <div class="library-selector-wrapper">
-                    <button id="libraryManagerBtn" class="library-manager-btn" title="Manage Libraries">
+                    <button id="libraryManagerBtn" class="library-manager-btn premium-library-btn" title="Manage Libraries">
                         <i class="fas fa-book library-icon"></i>
-                        <span id="currentLibraryName">Loading...</span>
-                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                        <span id="currentLibraryName">EN-GE</span>
+                        <div class="chevron-wrapper">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
                     </button>
                 </div>
             </div>
