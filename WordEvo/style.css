@@ -8241,37 +8241,55 @@ body:not(.dark) .tag-add-container {
     border: 1px solid rgba(255, 255, 255, 0.15);
     color: #e2e8f0;
     padding: 6px 14px;
-    border-radius: 20px;
+    border-radius: 12px;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    min-width: 130px;
+    white-space: nowrap;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 .library-manager-btn:hover {
     background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05));
     border-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
 }
-.library-manager-btn i {
-    font-size: 10px;
+.library-manager-btn i.library-icon {
+    font-size: 14px;
+    color: var(--primary-color, #4facfe);
+    background: rgba(79, 172, 254, 0.15);
+    padding: 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.library-manager-btn i.dropdown-icon {
+    font-size: 12px;
     color: #94a3b8;
     transition: transform 0.3s ease;
+    margin-left: auto;
 }
 body:not(.dark) .library-manager-btn {
-    background: linear-gradient(135deg, #ffffff, #f8fafc);
-    border: 1px solid #e2e8f0;
-    color: #334155;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: #1e293b;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 body:not(.dark) .library-manager-btn:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+body:not(.dark) .library-manager-btn i.library-icon {
+    background: rgba(79, 172, 254, 0.1);
 }
 
 .library-item {
