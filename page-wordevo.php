@@ -620,7 +620,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                             <input id="globalReverseToggle" type="checkbox"/>
                             Reverse
                         </label>
-                        <button id="globalStartBtn" class="global-start-btn" onclick="startActiveGame()">Start 🚀</button>
+                        <button id="globalStartBtn" class="global-start-btn" onclick="startActiveGame()">Start <i class="fas fa-play"></i></button>
                     </div>
                 </div>
             <div class="training-tab-content" data-tab-content="quiz" id="quizTab">
