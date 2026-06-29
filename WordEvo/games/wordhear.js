@@ -20,7 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tab) return;
 
     tab.innerHTML = `
-<div id="whQuestionContainer"></div>
+<div id="whQuestionContainer">
+            ${window.getGamePlaceholderHTML('hear')}
+        </div>
         <div id="whResultContainer" style="margin-top: 2rem;"></div>
     `;
 

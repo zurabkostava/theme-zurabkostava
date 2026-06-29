@@ -6,7 +6,9 @@ let senCount = 10;
 function initSentenceGame() {
     const tab = document.querySelector('[data-tab-content="tab6"]');
     tab.innerHTML = `
-<div id="senGame"></div>
+<div id="senGame">
+    ${window.getGamePlaceholderHTML('sentence')}
+</div>
     `;
 }
 

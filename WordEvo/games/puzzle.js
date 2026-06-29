@@ -6,7 +6,9 @@ let puzzleCount = 10;
 function initPuzzleGame() {
     const tab = document.querySelector('[data-tab-content="tab7"]');
     tab.innerHTML = `
-<div id="puzzleGame" style="margin-top: 1rem;"></div>
+<div id="puzzleGame" style="margin-top: 1rem;">
+    ${window.getGamePlaceholderHTML('puzzle')}
+</div>
     `;
 }
 

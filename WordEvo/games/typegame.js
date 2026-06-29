@@ -9,7 +9,9 @@ let tiHintIndex = 0;
 function initTypingGame() {
     const tab = document.querySelector('[data-tab-content="tab5"]');
     tab.innerHTML = `
-<div id="tiGame"></div>
+<div id="tiGame">
+    ${window.getGamePlaceholderHTML('type')}
+</div>
     `;
 
     const tagSelect = document.getElementById('tiTag');

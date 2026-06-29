@@ -2826,9 +2826,27 @@ window.startActiveGame = function() {
     }
 };
 
-
-
-
+window.getGamePlaceholderHTML = function(gameType) {
+    const data = {
+        quiz: { icon: 'fa-list-check', title: 'Quiz', color: '#10b981' },
+        hear: { icon: 'fa-headphones', title: 'Hear & Answer', color: '#8b5cf6' },
+        mix: { icon: 'fa-shuffle', title: 'Mix Translation', color: '#f59e0b' },
+        fill: { icon: 'fa-keyboard', title: 'Fill the Word', color: '#ec4899' },
+        type: { icon: 'fa-pen-to-square', title: 'Type Translation', color: '#3b82f6' },
+        sentence: { icon: 'fa-align-left', title: 'Sentence Builder', color: '#f43f5e' },
+        puzzle: { icon: 'fa-puzzle-piece', title: 'Puzzle Maker', color: '#14b8a6' },
+        speak: { icon: 'fa-microphone', title: 'Speaking Practice', color: '#d946ef' }
+    };
+    const info = data[gameType] || data.quiz;
+    return `
+        <div class="game-empty-state" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 60px 20px; text-align:center; background: rgba(255,255,255,0.02); border-radius:16px; border: 1px dashed rgba(255,255,255,0.1); margin-top:20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.2);">
+            <i class="fas ${info.icon}" style="font-size: 64px; color: ${info.color}; margin-bottom: 20px; opacity: 0.9; filter: drop-shadow(0 0 15px ${info.color}66);"></i>
+            <h3 style="font-size: 24px; margin-bottom: 10px; color: #fff; font-weight: 700;">${info.title}</h3>
+            <p style="color: #9ca3af; margin-bottom: 30px; font-size: 16px;">Configure your settings above and start the training to test your skills!</p>
+            <button onclick="startActiveGame()" style="background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%); border: none; padding: 12px 30px; border-radius: 8px; color: white; font-weight: bold; font-size: 16px; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);">Start Game <i class="fas fa-play"></i></button>
+        </div>
+    `;
+};
 
 
 // New mobile header tags button logic

@@ -247,9 +247,16 @@ document.addEventListener('keydown', (e) => {
             clearTimeout(speakTimeout);
             speakNextReady = false;
             speakCurrent++;
-            showSpeakCard();
-        } else if (document.getElementById('speakMicBtn')) {
-            toggleSpeakRecording();
+            const tabBtn = document.querySelector('[data-tab="tab8"]');
+            if (tabBtn) tabBtn.classList.remove('pulse-animation');
+            if (speakTimeout) clearTimeout(speakTimeout);
         }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const tab = document.getElementById('speakTab');
+    if (tab) {
+        tab.innerHTML = window.getGamePlaceholderHTML('speak');
     }
 });

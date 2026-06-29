@@ -16,7 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tab) return;
 
     tab.innerHTML = `
-<div id="mixContainer" class="mix-columns" style="display: flex; gap: 40px; flex-wrap: wrap;"></div>
+<div id="mixContainer" class="mix-columns" style="display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;">
+            ${window.getGamePlaceholderHTML('mix')}
+        </div>
         <div id="mixResultContainer" style="margin-top: 2rem;"></div>
     `;
 

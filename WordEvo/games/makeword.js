@@ -19,7 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span style="font-weight: 500; font-size: 14px;">All letters blank</span>
             </label>
         </div>
-        <div id="mwContainer" style="margin-top: 1rem;"></div>
+        <div id="mwContainer" style="margin-top: 1rem;">
+            ${window.getGamePlaceholderHTML('fill')}
+        </div>
         <div id="mwResultContainer" style="margin-top: 2rem;"></div>
     `;
 
