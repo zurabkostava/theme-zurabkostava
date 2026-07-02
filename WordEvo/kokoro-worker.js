@@ -3,11 +3,14 @@ import { KokoroTTS } from 'https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/dist/kok
 let tts = null;
 
 function float32ToWav(buffer, sampleRate) {
+    if (!buffer) throw new Error("Buffer is undefined");
+    if (buffer.data && buffer.data instanceof Float32Array) buffer = buffer.data; // Handle Tensor
     const numChannels = 1;
     const bytesPerSample = 2;
     const dataLength = buffer.length * bytesPerSample;
     const headerLength = 44;
     const totalLength = headerLength + dataLength;
+    if (isNaN(totalLength)) throw new Error("Invalid totalLength: " + totalLength);
     const wav = new ArrayBuffer(totalLength);
     const view = new DataView(wav);
 
@@ -43,7 +46,7 @@ self.onmessage = async (e) => {
 
     if (msg.kind === 'init') {
         try {
-            self.postMessage({ kind: 'status', message: 'Downloading Kokoro (80MB)...' });
+            self.postMessage({ kind: 'status', message: 'Downloading Kokoro Model (~80MB)...' });
             
             tts = await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
                 dtype: 'q8',
@@ -56,7 +59,7 @@ self.onmessage = async (e) => {
 
             self.postMessage({ kind: 'ready' });
         } catch (err) {
-            self.postMessage({ kind: 'error', message: err.toString() });
+            self.postMessage({ kind: 'error', message: "Init Error: " + err.toString() });
         }
     } 
     else if (msg.kind === 'synthesize') {
@@ -66,16 +69,21 @@ self.onmessage = async (e) => {
         }
 
         try {
+            self.postMessage({ kind: 'status', message: 'Synthesizing...' });
             const result = await tts.generate(msg.text, {
                 voice: msg.voicePath,
             });
 
-            // result is an Audio object with .audio (Float32Array) and .sampling_rate
+            if (!result || !result.audio) {
+                self.postMessage({ kind: 'error', message: "result.audio is missing. Keys: " + Object.keys(result || {}).join(',') });
+                return;
+            }
+
             const wavBlob = float32ToWav(result.audio, result.sampling_rate || 24000);
             self.postMessage({ kind: 'output', wav: wavBlob });
 
         } catch (err) {
-            self.postMessage({ kind: 'error', message: err.toString() });
+            self.postMessage({ kind: 'error', message: "Synth Error: " + err.toString() });
         }
     }
 };
