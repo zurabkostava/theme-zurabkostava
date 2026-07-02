@@ -646,28 +646,7 @@ function showDropZone() {
 </div>`;
 }
 // Helpers
-async function fetchPiperVoices() {
-    try {
-        const cached = localStorage.getItem('piper_voices_cache');
-        if (cached) { piperVoicesList = JSON.parse(cached); return piperVoicesList; }
-        const res = await fetch('https://huggingface.co/rhasspy/piper-voices/raw/main/voices.json');
-        const json = await res.json();
-        const mapped = Object.keys(json).map(k => {
-            const v = json[k];
-            const onnxFile = Object.keys(v.files).find(f => f.endsWith('.onnx'));
-            if (!onnxFile) return null;
-            return {
-                isPiper: true, key: v.key,
-                name: `☁️ Piper — ${v.language.name_english} (${v.name}, ${v.quality})`,
-                lang: v.language.code.split('_')[0],
-                path: onnxFile.replace('.onnx', '')
-            };
-        }).filter(Boolean);
-        piperVoicesList = mapped.sort((a, b) => a.name.localeCompare(b.name));
-        localStorage.setItem('piper_voices_cache', JSON.stringify(piperVoicesList));
-        return piperVoicesList;
-    } catch (e) { console.error('Failed to fetch piper voices', e); return []; }
-}
+
 
 function initPiperWorker(langCode, voicePath) {
     if (!piperWorkers[langCode]) piperWorkers[langCode] = { worker: null, ready: false, initializing: false, currentAudio: null, voicePath: null };
