@@ -134,10 +134,10 @@ async function populateDropdowns() {
         const nativeGroup = document.createElement('optgroup');
         nativeGroup.label = "Native Browser Voices";
         const safeLang1 = lang1 || '';
-        speechSynthesis.getVoices().filter(v => v && v.lang && v.lang.startsWith(safeLang1)).forEach(voice => {
+        speechSynthesis.getVoices().filter(v => v && v.name && (v.lang.startsWith(safeLang1) || v.name.toLowerCase().includes('multilingual'))).forEach(voice => {
             const option = document.createElement('option');
             option.value = voice.name;
-            option.textContent = voice.name;
+            option.textContent = voice.name.toLowerCase().includes('multilingual') ? `🌐 ${voice.name}` : voice.name;
             nativeGroup.appendChild(option);
         });
         voiceSelect.appendChild(nativeGroup);
@@ -172,10 +172,10 @@ async function populateDropdowns() {
         const nativeGroupKa = document.createElement('optgroup');
         nativeGroupKa.label = "Native Browser Voices";
         const safeLang2 = lang2 || '';
-        speechSynthesis.getVoices().filter(v => v && v.lang && v.lang.startsWith(safeLang2)).forEach(voice => {
+        speechSynthesis.getVoices().filter(v => v && v.name && (v.lang.startsWith(safeLang2) || v.name.toLowerCase().includes('multilingual'))).forEach(voice => {
             const option = document.createElement('option');
             option.value = voice.name;
-            option.textContent = voice.name;
+            option.textContent = voice.name.toLowerCase().includes('multilingual') ? `🌐 ${voice.name}` : voice.name;
             nativeGroupKa.appendChild(option);
         });
         geoSelect.appendChild(nativeGroupKa);

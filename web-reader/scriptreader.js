@@ -758,13 +758,14 @@ function rebuildDynamicSettings() {
             const select = wrapper.querySelector('select');
             if (!select) return;
 
-            const nativeVoices = nativeList.filter(v => langMatches(v.lang, langCode));
+            const nativeVoices = nativeList.filter(v => langMatches(v.lang, langCode) || (v.name && v.name.toLowerCase().includes('multilingual')));
             if (nativeVoices.length > 0) {
                 const optGroup = document.createElement('optgroup');
                 optGroup.label = "Native Browser Voices";
                 nativeVoices.forEach(v => {
                     const opt = document.createElement('option');
-                    opt.value = v.name; opt.textContent = v.name;
+                    opt.value = v.name; 
+                    opt.textContent = v.name.toLowerCase().includes('multilingual') ? `🌐 ${v.name}` : v.name;
                     optGroup.appendChild(opt);
                 });
                 select.appendChild(optGroup);
