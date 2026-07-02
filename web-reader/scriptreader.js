@@ -1330,7 +1330,7 @@ function piperSynthesize(state, text) {
         if (!text) { resolve(null); return; }
         if (!state || !state.worker || !state.ready) { reject(new Error('Piper worker not ready')); return; }
         state.pending.push({ resolve: resolve, reject: reject });
-        state.worker.postMessage({ kind: 'synthesize', text: text });
+        state.worker.postMessage({ kind: 'synthesize', text: text, voicePath: state.voicePath });
     });
 }
 

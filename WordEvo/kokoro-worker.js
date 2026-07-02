@@ -4,7 +4,7 @@ let tts = null;
 
 function float32ToWav(buffer, sampleRate) {
     if (!buffer) throw new Error("Buffer is undefined");
-    if (buffer.data && buffer.data instanceof Float32Array) buffer = buffer.data; // Handle Tensor
+    if (buffer.data && buffer.data instanceof Float32Array) buffer = buffer.data; 
     const numChannels = 1;
     const bytesPerSample = 2;
     const dataLength = buffer.length * bytesPerSample;
@@ -48,14 +48,33 @@ self.onmessage = async (e) => {
         try {
             self.postMessage({ kind: 'status', message: 'Downloading Kokoro Model (~80MB)...' });
             
-            tts = await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
-                dtype: 'q8',
-                progress_callback: (x) => {
-                    if (x.status === 'downloading' || x.status === 'progress') {
-                        self.postMessage({ kind: 'progress', data: x });
+            let device = 'wasm';
+            if (navigator.gpu) {
+                device = 'webgpu';
+            }
+
+            try {
+                tts = await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
+                    dtype: 'q8',
+                    device: device,
+                    progress_callback: (x) => {
+                        if (x.status === 'downloading' || x.status === 'progress') {
+                            self.postMessage({ kind: 'progress', data: x });
+                        }
                     }
-                }
-            });
+                });
+            } catch (err1) {
+                console.warn("WebGPU init failed, falling back to WASM:", err1);
+                tts = await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
+                    dtype: 'q8',
+                    device: 'wasm',
+                    progress_callback: (x) => {
+                        if (x.status === 'downloading' || x.status === 'progress') {
+                            self.postMessage({ kind: 'progress', data: x });
+                        }
+                    }
+                });
+            }
 
             self.postMessage({ kind: 'ready' });
         } catch (err) {
@@ -80,9 +99,11 @@ self.onmessage = async (e) => {
             }
 
             const wavBlob = float32ToWav(result.audio, result.sampling_rate || 24000);
+            self.postMessage({ kind: 'status', message: null });
             self.postMessage({ kind: 'output', wav: wavBlob });
 
         } catch (err) {
+            self.postMessage({ kind: 'status', message: null });
             self.postMessage({ kind: 'error', message: "Synth Error: " + err.toString() });
         }
     }

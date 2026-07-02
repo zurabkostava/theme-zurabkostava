@@ -1,0 +1,1 @@
+import { KokoroTTS } from './node_modules/kokoro-js/dist/kokoro.web.js'; async function run() { const tts = await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {dtype:'q8'}); const result = await tts.generate('hello', {voice:'af_heart'}); console.log(Object.keys(result)); } run();
