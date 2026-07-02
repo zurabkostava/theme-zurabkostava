@@ -23,8 +23,17 @@ async function fetchPiperVoices() {
     try {
         const cached = localStorage.getItem('piper_voices_cache');
         if (cached) {
-            piperVoicesList = JSON.parse(cached);
-            return piperVoicesList;
+            try {
+                let parsed = JSON.parse(cached);
+                if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].isPiper && parsed[0].lang.includes('_')) {
+                    piperVoicesList = parsed;
+                    return piperVoicesList;
+                } else {
+                    localStorage.removeItem('piper_voices_cache');
+                }
+            } catch(e) {
+                localStorage.removeItem('piper_voices_cache');
+            }
         }
         const res = await fetch('https://huggingface.co/rhasspy/piper-voices/raw/main/voices.json');
         const json = await res.json();
@@ -711,7 +720,7 @@ function rebuildDynamicSettings() {
         
         const select = document.getElementById(voiceSelectId);
         
-        const nativeVoices = voices.filter(v => v.lang.startsWith(langCode));
+        const nativeVoices = (Array.isArray(voices) ? voices : []).filter(v => v && v.lang && v.lang.startsWith(langCode));
         if (nativeVoices.length > 0) {
             const optGroup = document.createElement('optgroup');
             optGroup.label = "Native Browser Voices";
@@ -723,7 +732,8 @@ function rebuildDynamicSettings() {
             select.appendChild(optGroup);
         }
         
-        const piperForLang = piperVoicesList.filter(v => v.lang.startsWith(langCode));
+        if (!Array.isArray(piperVoicesList)) piperVoicesList = [];
+        const piperForLang = piperVoicesList.filter(v => v && v.lang && v.lang.startsWith(langCode));
         if (piperForLang.length > 0) {
             const optGroup = document.createElement('optgroup');
             optGroup.label = "High-Quality Piper Voices";
