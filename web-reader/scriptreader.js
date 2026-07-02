@@ -738,8 +738,12 @@ function rebuildDynamicSettings() {
 
             const voiceSelectId = `voice-${langCode}`;
             const rateInputId = `rate-${langCode}`;
-            const savedVoice = localStorage.getItem(voiceSelectId) || '';
-            const savedRate = localStorage.getItem(rateInputId) || '1';
+            let savedVoice = '';
+            let savedRate = '1';
+            try {
+                savedVoice = localStorage.getItem(voiceSelectId) || '';
+                savedRate = localStorage.getItem(rateInputId) || '1';
+            } catch(e) {}
 
             wrapper.innerHTML = `
                 <div class="setting-group" style="margin-bottom: 12px;">
@@ -797,7 +801,7 @@ function rebuildDynamicSettings() {
             }
 
             select.addEventListener('change', (e) => {
-                localStorage.setItem(voiceSelectId, e.target.value);
+                try { localStorage.setItem(voiceSelectId, e.target.value); } catch(err) {}
                 const chosen = piperList.find(v => v.name === e.target.value);
                 if (chosen) initPiperWorker(langCode, chosen.path);
             });
@@ -807,7 +811,7 @@ function rebuildDynamicSettings() {
             if (slider) {
                 slider.addEventListener('input', (e) => {
                     if (rateVal) rateVal.textContent = e.target.value + 'x';
-                    localStorage.setItem(rateInputId, e.target.value);
+                    try { localStorage.setItem(rateInputId, e.target.value); } catch(err) {}
                 });
             }
         } catch (err) {
