@@ -100,14 +100,14 @@
     </div>
 
     <div class="controls-overlay">
-        <div class="controls">
-            <button id="prev-btn" class="ctrl-btn sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
-            <button id="play-btn" class="ctrl-btn play">
-                <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                <svg id="pause-icon" class="hidden" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+        <div class="controls premium-controls">
+            <button id="prev-btn" class="ctrl-btn sm premium-btn" title="Previous"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><polygon points="17 20 7 12 17 4 17 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+            <button id="play-btn" class="ctrl-btn play premium-play" title="Play/Pause">
+                <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round" style="width:26px;height:26px; margin-left: 4px;"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+                <svg id="pause-icon" class="hidden" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="width:26px;height:26px;"><rect x="6" y="4" width="4" height="16" rx="2"></rect><rect x="14" y="4" width="4" height="16" rx="2"></rect></svg>
             </button>
-            <button id="stop-btn" class="ctrl-btn stop"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="4" y="4" width="16" height="16"></rect></svg></button>
-            <button id="next-btn" class="ctrl-btn sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
+            <button id="stop-btn" class="ctrl-btn stop premium-btn" title="Stop"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style="width:20px;height:20px;"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg></button>
+            <button id="next-btn" class="ctrl-btn sm premium-btn" title="Next"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><polygon points="7 4 17 12 7 20 7 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
         </div>
     </div>
 
@@ -688,64 +688,91 @@
         pointer-events: auto;
         display: flex;
         align-items: center;
-        gap: 16px;
-        background: rgba(30, 41, 59, 0.7);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        padding: 10px 24px;
-        border-radius: 24px;
-        border: 1px solid var(--border);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        gap: 20px;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(24px) saturate(150%);
+        -webkit-backdrop-filter: blur(24px) saturate(150%);
+        padding: 12px 32px;
+        border-radius: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .controls:hover {
+        background: rgba(15, 23, 42, 0.75);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
     }
 
     /* Control Buttons Override */
     #neural-app-root .ctrl-btn {
         background: transparent !important;
-        border: 1px solid var(--border) !important;
+        border: none !important;
         color: var(--text-main) !important;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: var(--transition);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border-radius: 50% !important;
-        margin: 0 8px !important;
+        margin: 0 !important;
+        position: relative;
+        overflow: hidden;
     }
 
-    #neural-app-root .ctrl-btn.sm {
-        width: 40px !important;
-        height: 40px !important;
-        color: var(--text-muted) !important;
-        background: rgba(0,0,0,0.2) !important;
+    #neural-app-root .ctrl-btn.sm.premium-btn {
+        width: 44px !important;
+        height: 44px !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
     }
-    #neural-app-root .ctrl-btn.sm:hover {
-        background: rgba(255,255,255,0.1) !important;
-        color: var(--text-main) !important;
+    #neural-app-root .ctrl-btn.sm.premium-btn:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+        color: #fff !important;
+        transform: scale(1.05);
+    }
+    #neural-app-root .ctrl-btn.sm.premium-btn:active {
+        transform: scale(0.95);
     }
 
     /* Play Button */
-    #neural-app-root .ctrl-btn.play {
-        width: 56px !important;
-        height: 56px !important;
-        background: var(--primary) !important;
-        color: var(--bg-dark) !important;
+    #neural-app-root .ctrl-btn.play.premium-play {
+        width: 64px !important;
+        height: 64px !important;
+        background: linear-gradient(135deg, #38bdf8, #0284c7) !important;
+        color: #fff !important;
         border: none !important;
-        box-shadow: 0 0 20px var(--primary-glow) !important;
+        box-shadow: 0 10px 25px rgba(2, 132, 199, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.3) !important;
+        z-index: 2;
     }
-    #neural-app-root .ctrl-btn.play:hover {
-        transform: scale(1.05);
-        background: #7dd3fc !important;
+    #neural-app-root .ctrl-btn.play.premium-play:hover {
+        transform: scale(1.08) translateY(-2px);
+        background: linear-gradient(135deg, #7dd3fc, #0ea5e9) !important;
+        box-shadow: 0 15px 35px rgba(2, 132, 199, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.4) !important;
+    }
+    #neural-app-root .ctrl-btn.play.premium-play:active {
+        transform: scale(0.98);
     }
 
     /* Stop Button */
-    #neural-app-root .ctrl-btn.stop {
-        width: 40px !important;
-        height: 40px !important;
-        color: #ef4444 !important;
-        border-color: rgba(239, 68, 68, 0.3) !important;
-    }
-    #neural-app-root .ctrl-btn.stop:hover {
+    #neural-app-root .ctrl-btn.stop.premium-btn {
+        width: 44px !important;
+        height: 44px !important;
+        color: #fca5a5 !important;
         background: rgba(239, 68, 68, 0.1) !important;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
+    }
+    #neural-app-root .ctrl-btn.stop.premium-btn:hover {
+        background: rgba(239, 68, 68, 0.25) !important;
+        color: #ef4444 !important;
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
+    }
+    #neural-app-root .ctrl-btn.stop.premium-btn:active {
+        transform: scale(0.95);
     }
 
     .hidden { display: none !important; }
