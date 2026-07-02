@@ -1,4 +1,4 @@
-import { KokoroTTS } from 'https://esm.sh/kokoro-js@1.2.1';
+import { KokoroTTS } from 'https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/dist/kokoro.web.js';
 
 let tts = null;
 
