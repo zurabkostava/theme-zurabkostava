@@ -401,6 +401,8 @@
     }
 
     /* --- PROGRESS & CONTENT --- */
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    
     #progress-container {
         flex: 0 0 auto;
         width: 100%;

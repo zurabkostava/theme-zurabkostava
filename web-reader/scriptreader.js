@@ -715,9 +715,38 @@ function initPiperWorker(langCode, voicePath) {
     if (state.worker) state.worker.terminate();
     state.ready = false; state.initializing = true; state.voicePath = voicePath;
     state.worker = new Worker('/wp-content/themes/zurabkostava/WordEvo/piper-worker.js');
+    
+    const ttsIndicator = document.getElementById('tts-status-indicator');
+    const ttsStatusText = document.getElementById('tts-status-text');
+    
+    if (ttsIndicator && ttsStatusText) {
+        ttsIndicator.classList.remove('hidden');
+        ttsStatusText.textContent = "Initializing Neural Voice...";
+    }
+
     state.worker.onmessage = (e) => {
         const msg = e.data;
-        if (msg.kind === 'ready') { state.ready = true; state.initializing = false; }
+        if (msg.kind === 'status') {
+            if (ttsIndicator && ttsStatusText) {
+                ttsIndicator.classList.remove('hidden');
+                ttsStatusText.textContent = msg.message;
+            }
+        }
+        else if (msg.kind === 'ready') { 
+            state.ready = true; 
+            state.initializing = false; 
+            if (ttsIndicator) ttsIndicator.classList.add('hidden');
+        }
+        else if (msg.kind === 'error') {
+            state.initializing = false;
+            console.error("Piper Error:", msg.message);
+            if (ttsIndicator && ttsStatusText) {
+                ttsStatusText.textContent = "Error: " + msg.message;
+                setTimeout(() => ttsIndicator.classList.add('hidden'), 5000);
+            }
+            stopReading(); // გააჩეროს გაჭედილი attemptPlay ციკლი
+            alert("Neural Voice ერორი: " + msg.message);
+        }
         else if (msg.kind === 'output' && msg.wav) {
             if (state.onWav) state.onWav(msg.wav);
         }
