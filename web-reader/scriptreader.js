@@ -19,52 +19,67 @@ ghostAudio.preload = 'auto';
 ghostAudio.volume = 0.1;
 let wakeLock = null;
 
-async function fetchPiperVoices() {
+const PIPER_FALLBACK_VOICES = [
+    { isPiper: true, key: 'ka_GE-natia-medium', name: '☁️ Piper — Georgian (Natia, medium)', lang: 'ka_GE', path: 'ka/ka_GE/natia/medium/ka_GE-natia-medium' },
+    { isPiper: true, key: 'en_US-lessac-medium', name: '☁️ Piper — English (Lessac, medium)', lang: 'en_US', path: 'en/en_US/lessac/medium/en_US-lessac-medium' }
+];
+
+function isValidPiperEntry(v) {
+    return !!v && v.isPiper === true
+        && typeof v.name === 'string' && v.name.length > 0
+        && typeof v.lang === 'string' && v.lang.length > 0
+        && typeof v.path === 'string' && v.path.length > 0;
+}
+
+async function fetchPiperVoices(forceRefresh = false) {
+    if (forceRefresh) {
+        try { localStorage.removeItem('piper_voices_cache'); } catch (e) {}
+    }
     try {
         const cached = localStorage.getItem('piper_voices_cache');
         if (cached) {
             try {
-                let parsed = JSON.parse(cached);
-                if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].isPiper && parsed[0].lang.includes('_')) {
+                const parsed = JSON.parse(cached);
+                // Every entry must be well-formed, otherwise the cache is corrupt — drop it and refetch
+                if (Array.isArray(parsed) && parsed.length > 0 && parsed.every(isValidPiperEntry) && parsed[0].lang.includes('_')) {
                     piperVoicesList = parsed;
                     return piperVoicesList;
-                } else {
-                    localStorage.removeItem('piper_voices_cache');
                 }
+                localStorage.removeItem('piper_voices_cache');
             } catch(e) {
                 localStorage.removeItem('piper_voices_cache');
             }
         }
         const res = await fetch('https://huggingface.co/rhasspy/piper-voices/raw/main/voices.json');
+        if (!res.ok) throw new Error('voices.json HTTP ' + res.status);
         const json = await res.json();
         const mapped = Object.keys(json).map(k => {
             const v = json[k];
+            if (!v || !v.files || !v.language || !v.language.code) return null;
             const onnxFile = Object.keys(v.files).find(f => f.endsWith('.onnx'));
             if (!onnxFile) return null;
             return {
                 isPiper: true,
-                key: v.key,
-                name: `☁️ Piper — ${v.language.name_english} (${v.name}, ${v.quality})`,
-                lang: v.language.code,
+                key: v.key || k,
+                name: `☁️ Piper — ${v.language.name_english || v.language.code} (${v.name || k}, ${v.quality || 'medium'})`,
+                lang: String(v.language.code),
                 path: onnxFile.replace('.onnx', '')
             };
-        }).filter(Boolean);
-        
+        }).filter(isValidPiperEntry);
+        if (mapped.length === 0) throw new Error('voices.json parsed to 0 usable voices');
+
         piperVoicesList = mapped.sort((a, b) => a.name.localeCompare(b.name));
-        
+
         const hasGeorgian = piperVoicesList.some(v => v.key === 'ka_GE-natia-medium');
         if (!hasGeorgian) {
-            piperVoicesList.push({ isPiper: true, key: 'ka_GE-natia-medium', name: '☁️ Piper — Georgian (Natia, medium)', lang: 'ka_GE', path: 'ka/ka_GE/natia/medium/ka_GE-natia-medium' });
+            piperVoicesList.push(PIPER_FALLBACK_VOICES[0]);
         }
-        
-        localStorage.setItem('piper_voices_cache', JSON.stringify(piperVoicesList));
+
+        try { localStorage.setItem('piper_voices_cache', JSON.stringify(piperVoicesList)); } catch (e) {}
         return piperVoicesList;
     } catch (e) {
         console.error('Failed to fetch piper voices', e);
-        piperVoicesList = [
-            { isPiper: true, key: 'ka_GE-natia-medium', name: '☁️ Piper — Georgian (Natia, medium)', lang: 'ka_GE', path: 'ka/ka_GE/natia/medium/ka_GE-natia-medium' },
-            { isPiper: true, key: 'en_US-lessac-medium', name: '☁️ Piper — English (Lessac, medium)', lang: 'en_US', path: 'en/en_US/lessac/medium/en_US-lessac-medium' }
-        ];
+        piperVoicesList = PIPER_FALLBACK_VOICES.slice();
         return piperVoicesList;
     }
 }
@@ -159,7 +174,8 @@ const uploadBtn = document.getElementById('upload-btn');
 const fileInput = document.getElementById('file-input');
 const dropZone = document.getElementById('drop-zone');
 // --- 3. MEDIA SESSION ---
-document.getElementById('refresh-voices-btn').onclick = async () => { await fetchPiperVoices(); loadVoices(); rebuildDynamicSettings(); };
+const refreshVoicesBtn = document.getElementById('refresh-voices-btn');
+if (refreshVoicesBtn) refreshVoicesBtn.onclick = async () => { await fetchPiperVoices(true); loadVoices(); };
 
 function initMediaSession() {
     if ('mediaSession' in navigator) {
@@ -680,98 +696,136 @@ function stopPiperAudio() {
     });
 }
 
+// 'ka_GE', 'ka-GE', 'KA-ge' → all normalize to 'ka-ge' so they match langCode 'ka'
+function normalizeLang(code) {
+    return String(code || '').toLowerCase().replace(/_/g, '-').trim();
+}
+function langMatches(voiceLang, langCode) {
+    const v = normalizeLang(voiceLang);
+    const base = normalizeLang(langCode);
+    if (!v || !base) return false;
+    return v === base || v.startsWith(base + '-');
+}
+
 function rebuildDynamicSettings() {
-    if (!dynamicVoiceSettings) return;
-    dynamicVoiceSettings.innerHTML = '';
+    const container = dynamicVoiceSettings || document.getElementById('dynamic-voice-settings');
+    if (!container) {
+        console.warn('rebuildDynamicSettings: #dynamic-voice-settings container not found in DOM');
+        return;
+    }
+    container.innerHTML = '';
+
+    const nativeList = (Array.isArray(voices) ? voices : Array.from(voices || [])).filter(v => v && typeof v.name === 'string' && typeof v.lang === 'string');
+    if (!Array.isArray(piperVoicesList)) piperVoicesList = [];
+    const piperList = piperVoicesList.filter(isValidPiperEntry);
+
     Array.from(detectedBookLanguages).sort().forEach(langCode => {
-        const wrapper = document.createElement('div');
-        wrapper.style.marginBottom = '16px';
-        wrapper.style.padding = '12px';
-        wrapper.style.background = 'rgba(255,255,255,0.02)';
-        wrapper.style.borderRadius = '12px';
-        wrapper.style.border = '1px solid rgba(255,255,255,0.05)';
-        
-        let flag = '🌐';
-        if(langCode === 'ka') flag = '🇬🇪';
-        if(langCode === 'en') flag = '🇺🇸';
-        if(langCode === 'ru') flag = '🇷🇺';
-        
-        let langName = langCode.toUpperCase();
-        try { langName = new Intl.DisplayNames(['en'], { type: 'language' }).of(langCode); } catch(e){}
-        
-        const voiceSelectId = `voice-${langCode}`;
-        const rateInputId = `rate-${langCode}`;
-        const savedVoice = localStorage.getItem(voiceSelectId) || '';
-        const savedRate = localStorage.getItem(rateInputId) || '1';
-        
-        wrapper.innerHTML = `
-            <div class="setting-group" style="margin-bottom: 12px;">
-                <label style="color: #38bdf8;"><span>${flag}</span> ${langName} Voice</label>
-                <div class="select-wrapper">
-                    <select id="${voiceSelectId}"></select>
+        try {
+            const wrapper = document.createElement('div');
+            wrapper.style.marginBottom = '16px';
+            wrapper.style.padding = '12px';
+            wrapper.style.background = 'rgba(255,255,255,0.02)';
+            wrapper.style.borderRadius = '12px';
+            wrapper.style.border = '1px solid rgba(255,255,255,0.05)';
+
+            let flag = '🌐';
+            if(langCode === 'ka') flag = '🇬🇪';
+            if(langCode === 'en') flag = '🇺🇸';
+            if(langCode === 'ru') flag = '🇷🇺';
+
+            let langName = String(langCode).toUpperCase();
+            try { langName = new Intl.DisplayNames(['en'], { type: 'language' }).of(langCode) || langName; } catch(e){}
+
+            const voiceSelectId = `voice-${langCode}`;
+            const rateInputId = `rate-${langCode}`;
+            const savedVoice = localStorage.getItem(voiceSelectId) || '';
+            const savedRate = localStorage.getItem(rateInputId) || '1';
+
+            wrapper.innerHTML = `
+                <div class="setting-group" style="margin-bottom: 12px;">
+                    <label style="color: #38bdf8;"><span>${flag}</span> ${langName} Voice</label>
+                    <div class="select-wrapper">
+                        <select id="${voiceSelectId}"></select>
+                    </div>
                 </div>
-            </div>
-            <div class="setting-group">
-                <label>${langName.substring(0,3).toUpperCase()} Speed <span id="${rateInputId}-val">${savedRate}x</span></label>
-                <input type="range" id="${rateInputId}" min="0.5" max="2" step="0.1" value="${savedRate}">
-            </div>
-        `;
-        dynamicVoiceSettings.appendChild(wrapper);
-        
-        const select = document.getElementById(voiceSelectId);
-        
-        const nativeVoices = (Array.isArray(voices) ? voices : []).filter(v => v && v.lang && v.lang.startsWith(langCode));
-        if (nativeVoices.length > 0) {
-            const optGroup = document.createElement('optgroup');
-            optGroup.label = "Native Browser Voices";
-            nativeVoices.forEach(v => {
+                <div class="setting-group">
+                    <label>${langName.substring(0,3).toUpperCase()} Speed <span id="${rateInputId}-val">${savedRate}x</span></label>
+                    <input type="range" id="${rateInputId}" min="0.5" max="2" step="0.1" value="${savedRate}">
+                </div>
+            `;
+            container.appendChild(wrapper);
+
+            const select = wrapper.querySelector('select');
+            if (!select) return;
+
+            const nativeVoices = nativeList.filter(v => langMatches(v.lang, langCode));
+            if (nativeVoices.length > 0) {
+                const optGroup = document.createElement('optgroup');
+                optGroup.label = "Native Browser Voices";
+                nativeVoices.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.name; opt.textContent = v.name;
+                    optGroup.appendChild(opt);
+                });
+                select.appendChild(optGroup);
+            }
+
+            const piperForLang = piperList.filter(v => langMatches(v.lang, langCode));
+            if (piperForLang.length > 0) {
+                const optGroup = document.createElement('optgroup');
+                optGroup.label = "High-Quality Piper Voices";
+                piperForLang.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.name; opt.textContent = v.name;
+                    optGroup.appendChild(opt);
+                });
+                select.appendChild(optGroup);
+            }
+
+            if (select.options.length === 0) {
                 const opt = document.createElement('option');
-                opt.value = v.name; opt.textContent = v.name;
-                optGroup.appendChild(opt);
+                opt.value = '';
+                opt.textContent = `⚠️ No voices found for ${langName}`;
+                opt.disabled = true;
+                opt.selected = true;
+                select.appendChild(opt);
+            } else {
+                const hasSaved = savedVoice && Array.from(select.options).some(o => o.value === savedVoice);
+                if (hasSaved) select.value = savedVoice;
+                else select.selectedIndex = 0;
+            }
+
+            select.addEventListener('change', (e) => {
+                localStorage.setItem(voiceSelectId, e.target.value);
+                const chosen = piperList.find(v => v.name === e.target.value);
+                if (chosen) initPiperWorker(langCode, chosen.path);
             });
-            select.appendChild(optGroup);
+
+            const slider = wrapper.querySelector(`input[type="range"]`);
+            const rateVal = wrapper.querySelector(`#${rateInputId}-val`);
+            if (slider) {
+                slider.addEventListener('input', (e) => {
+                    if (rateVal) rateVal.textContent = e.target.value + 'x';
+                    localStorage.setItem(rateInputId, e.target.value);
+                });
+            }
+        } catch (err) {
+            console.error(`rebuildDynamicSettings failed for language "${langCode}"`, err);
         }
-        
-        if (!Array.isArray(piperVoicesList)) piperVoicesList = [];
-        const piperForLang = piperVoicesList.filter(v => v && v.lang && v.lang.startsWith(langCode));
-        if (piperForLang.length > 0) {
-            const optGroup = document.createElement('optgroup');
-            optGroup.label = "High-Quality Piper Voices";
-            piperForLang.forEach(v => {
-                const opt = document.createElement('option');
-                opt.value = v.name; opt.textContent = v.name;
-                optGroup.appendChild(opt);
-            });
-            select.appendChild(optGroup);
-        }
-        
-        if (select.options.length === 0) {
-            const opt = document.createElement('option');
-            opt.text = "No voice found"; select.add(opt);
-        }
-        
-        select.value = savedVoice;
-        if(select.selectedIndex === -1 && select.options.length > 0) select.selectedIndex = 0;
-        
-        select.addEventListener('change', (e) => {
-            localStorage.setItem(voiceSelectId, e.target.value);
-            const chosen = piperVoicesList.find(v => v.name === e.target.value);
-            if (chosen) initPiperWorker(langCode, chosen.path);
-        });
-        
-        const slider = document.getElementById(rateInputId);
-        slider.addEventListener('input', (e) => {
-            document.getElementById(`${rateInputId}-val`).textContent = e.target.value + 'x';
-            localStorage.setItem(rateInputId, e.target.value);
-        });
     });
 }
 
+let voiceLoadAttempts = 0;
 function loadVoices() {
-    voices = synthesis.getVoices();
+    let list = [];
+    try { list = synthesis ? synthesis.getVoices() : []; } catch (e) { console.warn('getVoices failed', e); }
+    voices = Array.from(list || []).filter(v => v && typeof v.name === 'string');
     rebuildDynamicSettings();
-    if (voices.length < 5) {
-        setTimeout(loadVoices, 1000);
+    // Chrome loads native voices async; retry a few times, but never loop forever —
+    // Piper voices already populate the dropdowns even with zero native voices.
+    if (voices.length === 0 && voiceLoadAttempts < 10) {
+        voiceLoadAttempts++;
+        setTimeout(loadVoices, 500);
     }
 }
 
@@ -955,7 +1009,7 @@ function playMergedQueue() {
                 let spoken = raw;
                 if (raw === '—' || raw === '–') { spoken = ","; }
                 else if (emojiRegex.test(raw)) { spoken = "."; }
-                else if (chunk.lang === 'ka-GE') {
+                else if (chunk.lang === 'ka') {
                     spoken = preprocessGeorgianText(raw);
                     if (/[a-zA-Z]/.test(spoken)) { spoken = transliterateToGeorgian(spoken); }
                 }
@@ -972,8 +1026,8 @@ function playMergedQueue() {
         const selectedVoiceName = localStorage.getItem(voiceSelectId) || (selectEl ? selectEl.value : null);
         const rate = parseFloat(localStorage.getItem(rateInputId) || '1');
         
-        const piperVoice = piperVoicesList.find(v => v.name === selectedVoiceName);
-        const nativeVoice = voices.find(v => v.name === selectedVoiceName) || voices.find(v => v.lang.startsWith(chunk.lang)) || voices[0];
+        const piperVoice = piperVoicesList.find(v => v && v.name === selectedVoiceName);
+        const nativeVoice = voices.find(v => v && v.name === selectedVoiceName) || voices.find(v => v && langMatches(v.lang, chunk.lang)) || voices[0];
         
         if (piperVoice) {
             sentenceMap.forEach(item => { item.element.classList.add('active'); if (item.element.offsetTop > 0) item.element.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
@@ -1172,8 +1226,10 @@ function setupModalClosing() {
 }
 setupModalClosing();
 function init() {
-    fetchPiperVoices().then(() => loadVoices());
-    if (speechSynthesis.onvoiceschanged !== undefined) {
+    // Build the panel immediately so selects are never blank while Piper voices download
+    rebuildDynamicSettings();
+    fetchPiperVoices().then(() => loadVoices()).catch(e => { console.error('init voices failed', e); loadVoices(); });
+    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
         speechSynthesis.onvoiceschanged = loadVoices;
     }
     initMediaSession();
@@ -1264,7 +1320,6 @@ async function loadBookFromUrl(url) {
         const fileName = url.split('/').pop();
         const file = new File([blob], fileName, { type: "application/epub+zip" });
         loadEpub(file);
-        loadEpub(file);
     } catch (error) { console.error("Error loading book:", error); alert("Error loading book. Check console."); document.getElementById('book-title-text').textContent = "Error"; }
 }
 async function sha256(message) { const msgBuffer = new TextEncoder().encode(message); const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer); const hashArray = Array.from(new Uint8Array(hashBuffer)); return hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); }
@@ -1287,10 +1342,6 @@ stopBtn.onclick = stopReading;
 nextBtn.onclick = () => navigateSentence(1);
 prevBtn.onclick = () => navigateSentence(-1);
 settingsBtn.onclick = () => settingsPanel.classList.toggle('hidden');
-voiceSelectKa.onchange = (e) => localStorage.setItem('voice_ka', e.target.value);
-voiceSelectEn.onchange = (e) => localStorage.setItem('voice_en', e.target.value);
-rateInputKa.oninput = (e) => { document.getElementById('rate-ka-val').textContent = e.target.value + 'x'; localStorage.setItem('rate_ka', e.target.value); };
-rateInputEn.oninput = (e) => { document.getElementById('rate-en-val').textContent = e.target.value + 'x'; localStorage.setItem('rate_en', e.target.value); };
 const globalMetaBtn = document.getElementById('book-meta-container');
 if(globalMetaBtn) { const newBtn = globalMetaBtn.cloneNode(true); globalMetaBtn.parentNode.replaceChild(newBtn, globalMetaBtn); newBtn.onclick = (e) => { console.log("🔘 Meta Container Clicked - Opening Modal Forcefully"); e.preventDefault(); e.stopPropagation(); handleMetaClick(); }; window.activeMetaBtn = newBtn; }
 init();

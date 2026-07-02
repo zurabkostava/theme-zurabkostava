@@ -63,25 +63,8 @@
     </div>
 
     <div id="settings-panel" class="settings-panel hidden">
+        <div id="dynamic-voice-settings"></div>
         <button id="refresh-voices-btn" class="ctrl-btn sm" style="width:100%; margin-top:10px;">Refresh Voices ↻</button>
-        <div class="setting-group">
-            <label><span>🇬🇪</span> Georgian Voice</label>
-            <div class="select-wrapper"><select id="voice-ka"></select></div>
-        </div>
-        <div class="setting-group">
-            <label><span>🇺🇸</span> English Voice</label>
-            <div class="select-wrapper"><select id="voice-en"></select></div>
-        </div>
-        <div class="setting-row">
-            <div class="setting-group half">
-                <label>GEO Speed <span id="rate-ka-val">1.0x</span></label>
-                <input type="range" id="rate-ka" min="0.5" max="2" step="0.1" value="1">
-            </div>
-            <div class="setting-group half">
-                <label>ENG Speed <span id="rate-en-val">1.0x</span></label>
-                <input type="range" id="rate-en" min="0.5" max="2" step="0.1" value="1">
-            </div>
-        </div>
     </div>
 
     <div id="progress-container">
