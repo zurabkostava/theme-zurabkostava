@@ -40,12 +40,7 @@
                 <div class="book-text-info">
                     <span id="book-title-text">Book Title</span>
                     <span id="book-author-text">Author Name</span>
-                    <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
-                        <div id="header-progress-badge" class="progress-badge hidden" style="margin-top:0;">0%</div>
-                        <button id="reset-progress-btn" class="icon-btn hidden" title="Reset Progress" style="width: 22px; height: 22px; padding: 3px; color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-                        </button>
-                    </div>
+                    <div id="header-progress-badge" class="progress-badge hidden">0%</div>
                 </div>
             </div>
         </div>

@@ -1312,10 +1312,46 @@ function drawBooksToGrid(booksList) {
         const randomHue = Math.floor(Math.random() * 360);
         const fileName = book.url.split('/').pop();
         const savedPerc = localStorage.getItem('epub_perc_' + fileName);
-        const percHtml = savedPerc ? `<div class="card-progress-overlay">${savedPerc}%</div>` : '';
+        
+        let percHtml = '';
+        if (savedPerc) {
+            percHtml = `
+            <div class="card-progress-overlay" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>${savedPerc}%</span>
+                <button class="reset-book-btn" title="Reset Progress" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:2px; height:18px; width:18px;">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                </button>
+            </div>`;
+        }
+
         const placeholderHtml = `${percHtml}<div class="book-card-cover placeholder" style="background: hsl(${randomHue}, 30%, 20%); border: 1px solid hsl(${randomHue}, 40%, 30%); display:flex; align-items:center; justify-content:center;"><span style="font-size: 2rem; opacity:0.5;">📖</span></div>`;
         card.innerHTML = `${placeholderHtml}<div class="book-card-title" title="${book.title}">${book.title}</div><div class="book-card-author" title="${book.author}">${book.author}</div>`;
-        card.onclick = () => loadBookFromUrl(book.url);
+        
+        card.onclick = (e) => {
+            const btn = e.target.closest('.reset-book-btn');
+            if (btn) {
+                e.stopPropagation();
+                if (!confirm("ნამდვილად გსურთ ამ წიგნის პროგრესის განულება?")) return;
+                
+                localStorage.removeItem('epub_progress_' + fileName);
+                localStorage.removeItem('epub_idx_' + fileName);
+                localStorage.removeItem('epub_perc_' + fileName);
+                
+                fetch(`/wp-json/neural/v1/progress?book=${encodeURIComponent(fileName)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ href: '', idx: 0, perc: '0.00' })
+                }).catch(err => console.error(err));
+                
+                btn.closest('.card-progress-overlay').remove();
+                if (window.currentRawEpubFile && window.currentRawEpubFile.name === fileName) {
+                    location.reload();
+                }
+                return;
+            }
+            loadBookFromUrl(book.url);
+        };
+        
         libraryGrid.appendChild(card);
         extractCoverForCard(book.url, uniqueId);
     });
@@ -1378,29 +1414,6 @@ libraryBtn.onclick = async () => {
 };
 closeLibraryBtn.onclick = () => libraryModal.classList.add('hidden');
 libraryModal.onclick = (e) => { if(e.target === libraryModal) libraryModal.classList.add('hidden'); };
-const resetProgressBtn = document.getElementById('reset-progress-btn');
-if (resetProgressBtn) {
-    resetProgressBtn.onclick = async () => {
-        if (!window.currentRawEpubFile) return;
-        if (!confirm("ნამდვილად გსურთ წიგნის პროგრესის განულება?")) return;
-        
-        const bookName = window.currentRawEpubFile.name;
-        localStorage.removeItem('epub_progress_' + bookName);
-        localStorage.removeItem('epub_idx_' + bookName);
-        localStorage.removeItem('epub_perc_' + bookName);
-        
-        try {
-            await fetch(`/wp-json/neural/v1/progress?book=${encodeURIComponent(bookName)}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ href: '', idx: 0, perc: '0.00' })
-            });
-        } catch(e) {}
-        
-        alert("პროგრესი განულებულია! წიგნი თავიდან ჩაიტვირთება.");
-        location.reload();
-    };
-}
 
 playBtn.onclick = togglePlay;
 stopBtn.onclick = stopReading;
