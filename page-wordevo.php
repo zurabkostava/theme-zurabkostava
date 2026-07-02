@@ -554,42 +554,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         </div>
     </div>
 
-    <!-- New Dictionary Modal -->
-    <div class="modal-overlay" id="addDictionaryModal" style="display: none; z-index: 2000;">
-        <div class="modal">
-            <div class="modal-header">
-                <h2>New Dictionary</h2>
-                <button class="close-button" id="closeAddDictionaryBtn">×</button>
-            </div>
-            <div class="modal-body">
-            <div class="input-container">
-                <label class="material-input validation">
-                    <input class="form-control" id="newDictName" placeholder=" " required="" type="text" />
-                    <span>Dictionary Name</span>
-                </label>
-            </div>
-            <div class="input-container">
-                <label class="material-input material-select">
-                    <select id="newDictLang1Select" required=""></select>
-                    <span>Select Main Language (Lang 1)</span>
-                    <i class="fas fa-chevron-down select-arrow-icon"></i>
-                </label>
-            </div>
-            <div class="input-container">
-                <label class="material-input material-select">
-                    <select id="newDictLang2Select" required=""></select>
-                    <span>Select Translation Language (Lang 2)</span>
-                    <i class="fas fa-chevron-down select-arrow-icon"></i>
-                </label>
-            </div>
-            </div> <!-- end modal-body -->
-            <div class="modal-footer modal-actions" style="margin-top: 20px;">
-                <button id="saveNewDictionaryBtn" style="background-color: #28a745; color: white;">
-                    Create
-                </button>
-            </div>
-        </div>
-    </div>
+
     <div class="training-modal hidden" id="trainingModal">
         <div class="training-modal-content">
             <div class="training-wrapper">
