@@ -1690,10 +1690,35 @@ async function deleteCard(card) {
     const closeLibraryModalBtn = document.getElementById('closeLibraryModalBtn');
     const createLibrarySubmitBtn = document.getElementById('createLibrarySubmitBtn');
     const newLibraryNameInput = document.getElementById('newLibraryNameInput');
+    const newDictLang1Select = document.getElementById('newDictLang1Select');
+    const newDictLang2Select = document.getElementById('newDictLang2Select');
 
     if (libraryManagerBtn) {
-        libraryManagerBtn.onclick = () => {
+        libraryManagerBtn.onclick = async () => {
             renderLibraryUI();
+
+            if (newDictLang1Select && newDictLang2Select) {
+                if (typeof fetchPiperVoices === 'function' && typeof piperVoicesList !== 'undefined' && piperVoicesList.length === 0) {
+                    await fetchPiperVoices();
+                }
+                const langs = typeof getAllLanguages === 'function' ? getAllLanguages() : [];
+                newDictLang1Select.innerHTML = '';
+                newDictLang2Select.innerHTML = '';
+                langs.forEach(l => {
+                    const opt1 = document.createElement('option');
+                    opt1.value = l.code;
+                    opt1.textContent = l.name;
+                    newDictLang1Select.appendChild(opt1);
+                    
+                    const opt2 = document.createElement('option');
+                    opt2.value = l.code;
+                    opt2.textContent = l.name;
+                    newDictLang2Select.appendChild(opt2);
+                });
+                if (langs.some(l => l.code === 'en')) newDictLang1Select.value = 'en';
+                if (langs.some(l => l.code === 'ka')) newDictLang2Select.value = 'ka';
+            }
+
             libraryModalOverlay.style.display = 'flex';
         };
     }
@@ -1707,13 +1732,16 @@ async function deleteCard(card) {
     if (createLibrarySubmitBtn && newLibraryNameInput) {
         createLibrarySubmitBtn.onclick = async () => {
             const name = newLibraryNameInput.value.trim();
+            const lang1 = newDictLang1Select ? newDictLang1Select.value : 'en';
+            const lang2 = newDictLang2Select ? newDictLang2Select.value : 'ka';
+
             if (!name) {
                 showToast('გთხოვთ შეიყვანოთ სახელი', 'error');
                 return;
             }
             const {data, error} = await supabaseClient
                 .from('dictionaries')
-                .insert({user_id: currentUser.id, name: name, lang1: 'en', lang2: 'ka'})
+                .insert({user_id: currentUser.id, name: name, lang1: lang1, lang2: lang2})
                 .select()
                 .single();
 
@@ -1724,6 +1752,7 @@ async function deleteCard(card) {
 
             allDictionaries.push(data);
             currentDictionaryId = data.id;
+            localStorage.setItem('dict_langs_' + currentDictionaryId, JSON.stringify({ lang1, lang2 }));
             localStorage.setItem(DICTIONARY_KEY, currentDictionaryId);
             newLibraryNameInput.value = '';
             renderLibraryUI();

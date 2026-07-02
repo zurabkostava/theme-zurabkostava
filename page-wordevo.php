@@ -247,8 +247,10 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 </div>
                 <div class="add-library-section" style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
                     <div style="font-size: 14px; color: var(--text-secondary); font-weight: 500;">Create New Library</div>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="text" id="newLibraryNameInput" class="form-control" placeholder="New Library Name" style="flex: 1; padding: 10px; border-radius: 8px;" />
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="newLibraryNameInput" class="form-control" placeholder="New Library Name" style="flex: 1; padding: 10px; border-radius: 8px; min-width: 150px;" />
+                        <select id="newDictLang1Select" class="form-control" style="padding: 10px; border-radius: 8px; max-width: 120px;" title="Target Language"></select>
+                        <select id="newDictLang2Select" class="form-control" style="padding: 10px; border-radius: 8px; max-width: 120px;" title="Native Language"></select>
                         <button id="createLibrarySubmitBtn" class="primary-btn" style="padding: 10px 20px; white-space: nowrap; border-radius: 8px;"><i class="fas fa-plus"></i> Add</button>
                     </div>
                 </div>
