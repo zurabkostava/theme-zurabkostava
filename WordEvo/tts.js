@@ -133,7 +133,8 @@ async function populateDropdowns() {
         voiceSelect.innerHTML = '';
         const nativeGroup = document.createElement('optgroup');
         nativeGroup.label = "Native Browser Voices";
-        speechSynthesis.getVoices().filter(v => v.lang.startsWith(lang1)).forEach(voice => {
+        const safeLang1 = lang1 || '';
+        speechSynthesis.getVoices().filter(v => v && v.lang && v.lang.startsWith(safeLang1)).forEach(voice => {
             const option = document.createElement('option');
             option.value = voice.name;
             option.textContent = voice.name;
@@ -143,7 +144,8 @@ async function populateDropdowns() {
 
         const piperGroup = document.createElement('optgroup');
         piperGroup.label = "Piper TTS Voices (Downloads Locally)";
-        piperVoicesList.filter(pv => pv.lang.startsWith(lang1)).forEach(pv => {
+        if (!Array.isArray(piperVoicesList)) piperVoicesList = [];
+        piperVoicesList.filter(pv => pv && pv.lang && pv.lang.startsWith(safeLang1)).forEach(pv => {
             const option = document.createElement('option');
             option.value = 'piper:' + pv.key;
             option.textContent = pv.name;
@@ -167,25 +169,27 @@ async function populateDropdowns() {
 
     if (geoSelect) {
         geoSelect.innerHTML = '';
-        const nativeGroup = document.createElement('optgroup');
-        nativeGroup.label = "Native Browser Voices";
-        speechSynthesis.getVoices().filter(v => v.lang.startsWith(lang2)).forEach(voice => {
+        const nativeGroupKa = document.createElement('optgroup');
+        nativeGroupKa.label = "Native Browser Voices";
+        const safeLang2 = lang2 || '';
+        speechSynthesis.getVoices().filter(v => v && v.lang && v.lang.startsWith(safeLang2)).forEach(voice => {
             const option = document.createElement('option');
             option.value = voice.name;
             option.textContent = voice.name;
-            nativeGroup.appendChild(option);
+            nativeGroupKa.appendChild(option);
         });
-        geoSelect.appendChild(nativeGroup);
+        geoSelect.appendChild(nativeGroupKa);
 
-        const piperGroup = document.createElement('optgroup');
-        piperGroup.label = "Piper TTS Voices (Downloads Locally)";
-        piperVoicesList.filter(pv => pv.lang.startsWith(lang2)).forEach(pv => {
+        const piperGroupKa = document.createElement('optgroup');
+        piperGroupKa.label = "Piper TTS Voices (Downloads Locally)";
+        if (!Array.isArray(piperVoicesList)) piperVoicesList = [];
+        piperVoicesList.filter(pv => pv && pv.lang && pv.lang.startsWith(safeLang2)).forEach(pv => {
             const option = document.createElement('option');
             option.value = 'piper:' + pv.key;
             option.textContent = pv.name;
-            piperGroup.appendChild(option);
+            piperGroupKa.appendChild(option);
         });
-        geoSelect.appendChild(piperGroup);
+        geoSelect.appendChild(piperGroupKa);
         
         const storedGeo = localStorage.getItem(GEORGIAN_VOICE_KEY + '_' + localStorage.getItem('wordevo_current_dictionary'));
         if (storedGeo) {
