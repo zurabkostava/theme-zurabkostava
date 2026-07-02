@@ -1081,6 +1081,33 @@
 
     .book-card { position: relative; } /* აუცილებელია პოზიციონირებისთვის */
 
+    /* --- MOBILE RESPONSIVENESS --- */
+    @media (max-width: 768px) {
+        .header { padding: 12px 16px; }
+        .logo { font-size: 0.85rem; }
+        .settings-panel { padding: 15px; }
+        .setting-row { flex-direction: column; gap: 15px; }
+        .setting-group.half { width: 100%; }
+        #content-area { padding: 15px; padding-bottom: 120px; font-size: 1rem; }
+        .paragraph { margin-bottom: 16px; }
+        .controls-overlay {
+            padding: 15px;
+            padding-bottom: calc(15px + env(safe-area-inset-bottom));
+        }
+        .controls {
+            padding: 10px 20px;
+            gap: 15px;
+            width: 100%;
+            justify-content: space-evenly;
+        }
+        .info-modal-content {
+            width: 95%;
+            margin: 20px auto;
+            padding: 20px;
+            max-height: 80vh;
+        }
+    }
+
 </style>
 
-<script src="<?php echo get_template_directory_uri(); ?>/web-reader/scriptreader.js"></script>
+<script src="<?php echo get_template_directory_uri(); ?>/web-reader/scriptreader.js?v=<?php echo time(); ?>"></script>
