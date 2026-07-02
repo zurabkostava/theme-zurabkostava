@@ -544,6 +544,8 @@ function updateProgressPercentage() {
     if (badge) {
         badge.textContent = displayPercentage.toFixed(2) + '%';
         badge.classList.remove('hidden'); // 🔥 ეს აჩენს ჰედერში ეგრევე
+        const resetBtn = document.getElementById('reset-progress-btn');
+        if (resetBtn) resetBtn.classList.remove('hidden');
     }
 
     // 6. 💾 SAVE FOR LIBRARY (აი ეს გვაკლდა!)
@@ -1376,6 +1378,30 @@ libraryBtn.onclick = async () => {
 };
 closeLibraryBtn.onclick = () => libraryModal.classList.add('hidden');
 libraryModal.onclick = (e) => { if(e.target === libraryModal) libraryModal.classList.add('hidden'); };
+const resetProgressBtn = document.getElementById('reset-progress-btn');
+if (resetProgressBtn) {
+    resetProgressBtn.onclick = async () => {
+        if (!window.currentRawEpubFile) return;
+        if (!confirm("ნამდვილად გსურთ წიგნის პროგრესის განულება?")) return;
+        
+        const bookName = window.currentRawEpubFile.name;
+        localStorage.removeItem('epub_progress_' + bookName);
+        localStorage.removeItem('epub_idx_' + bookName);
+        localStorage.removeItem('epub_perc_' + bookName);
+        
+        try {
+            await fetch(`/wp-json/neural/v1/progress?book=${encodeURIComponent(bookName)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ href: '', idx: 0, perc: '0.00' })
+            });
+        } catch(e) {}
+        
+        alert("პროგრესი განულებულია! წიგნი თავიდან ჩაიტვირთება.");
+        location.reload();
+    };
+}
+
 playBtn.onclick = togglePlay;
 stopBtn.onclick = stopReading;
 nextBtn.onclick = () => navigateSentence(1);
