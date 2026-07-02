@@ -1,6 +1,6 @@
-import { pipeline } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0';
+import { KokoroTTS } from 'https://esm.sh/kokoro-js@1.2.1';
 
-let synthesizer = null;
+let tts = null;
 
 function float32ToWav(buffer, sampleRate) {
     const numChannels = 1;
@@ -28,7 +28,7 @@ function float32ToWav(buffer, sampleRate) {
     writeStr(36, 'data');
     view.setUint32(40, dataLength, true);
 
-    const VOLUME_MULTIPLIER = 2.0; // Boost volume slightly
+    const VOLUME_MULTIPLIER = 2.0; 
     for (let i = 0; i < buffer.length; i++) {
         let sample = buffer[i] * VOLUME_MULTIPLIER;
         if (sample > 1.0) sample = 1.0;
@@ -43,10 +43,15 @@ self.onmessage = async (e) => {
 
     if (msg.kind === 'init') {
         try {
-            self.postMessage({ kind: 'status', message: 'Downloading/Loading Kokoro (80MB)...' });
+            self.postMessage({ kind: 'status', message: 'Downloading Kokoro (80MB)...' });
             
-            synthesizer = await pipeline('text-to-audio', 'onnx-community/Kokoro-82M-v1.0-ONNX', {
+            tts = await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
                 dtype: 'q8',
+                progress_callback: (x) => {
+                    if (x.status === 'downloading' || x.status === 'progress') {
+                        self.postMessage({ kind: 'progress', data: x });
+                    }
+                }
             });
 
             self.postMessage({ kind: 'ready' });
@@ -55,17 +60,18 @@ self.onmessage = async (e) => {
         }
     } 
     else if (msg.kind === 'synthesize') {
-        if (!synthesizer) {
+        if (!tts) {
             self.postMessage({ kind: 'error', message: 'Kokoro not initialized' });
             return;
         }
 
         try {
-            const result = await synthesizer(msg.text, {
-                voice: msg.voicePath, // voice name, e.g., 'af_heart'
+            const result = await tts.generate(msg.text, {
+                voice: msg.voicePath,
             });
 
-            const wavBlob = float32ToWav(result.audio, result.sampling_rate);
+            // result is an Audio object with .audio (Float32Array) and .sampling_rate
+            const wavBlob = float32ToWav(result.audio, result.sampling_rate || 24000);
             self.postMessage({ kind: 'output', wav: wavBlob });
 
         } catch (err) {
