@@ -2970,4 +2970,56 @@ add_action('do_feed_atom_comments', 'zk_disable_feeds', 1);
 
 function zk_disable_feeds() {
     wp_die( __('No feed available, please visit the homepage!', 'zurabkostava'), '', array('response' => 410) );
+}
+
+// Register custom endpoint for Neural Web Reader
+add_action('rest_api_init', function () {
+    register_rest_route('neural/v1', '/books', array(
+        'methods' => 'GET',
+        'callback' => 'neural_get_books',
+        'permission_callback' => '__return_true',
+    ));
+});
+
+function neural_get_books() {
+    $args = array(
+        'post_type'      => 'attachment',
+        'post_mime_type' => 'application/epub+zip',
+        'post_status'    => 'inherit',
+        'posts_per_page' => -1,
+    );
+    $query = new WP_Query($args);
+    $books = array();
+
+    if ($query->have_posts()) {
+        foreach ($query->posts as $post) {
+            $books[] = array(
+                'title'  => $post->post_title,
+                'author' => get_post_meta($post->ID, 'book_author', true) ?: 'Unknown Author',
+                'url'    => wp_get_attachment_url($post->ID),
+            );
+        }
+    }
+    
+    // Fallback: Check if there is a 'books' folder in wp-content/uploads/books
+    if (empty($books)) {
+        $upload_dir = wp_upload_dir();
+        $books_dir = $upload_dir['basedir'] . '/books';
+        $books_url = $upload_dir['baseurl'] . '/books';
+        
+        if (file_exists($books_dir) && is_dir($books_dir)) {
+            $files = glob($books_dir . '/*.epub');
+            foreach ($files as $file) {
+                $filename = basename($file);
+                $title = pathinfo($filename, PATHINFO_FILENAME);
+                $books[] = array(
+                    'title'  => str_replace(array('-', '_'), ' ', $title),
+                    'author' => 'Unknown Author',
+                    'url'    => $books_url . '/' . $filename,
+                );
+            }
+        }
+    }
+
+    return rest_ensure_response($books);
 }
