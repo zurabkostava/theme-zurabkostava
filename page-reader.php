@@ -422,6 +422,7 @@
         overflow-y: auto;
         overscroll-behavior: contain;
         padding: 24px;
+        position: relative; /* კრიტიკულია offsetTop-ის სწორად დასათვლელად */
 
         /* გავზარდეთ 100px-დან 140px-მდე მობილურის უსაფრთხოებისთვის */
         padding-bottom: 115px;
