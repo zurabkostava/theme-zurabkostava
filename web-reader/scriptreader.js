@@ -736,6 +736,16 @@ function initPiperWorker(langCode, voicePath) {
             state.ready = true; 
             state.initializing = false; 
             if (ttsIndicator) ttsIndicator.classList.add('hidden');
+            
+            const dlBtn = document.getElementById(`download-${langCode}`);
+            if (dlBtn) {
+                dlBtn.textContent = "✅ Voice Ready";
+                dlBtn.style.opacity = "0.5";
+                dlBtn.disabled = true;
+                dlBtn.style.background = "transparent";
+                dlBtn.style.border = "1px solid rgba(255,255,255,0.1)";
+                dlBtn.style.color = "var(--text-muted)";
+            }
         }
         else if (msg.kind === 'error') {
             state.initializing = false;
@@ -815,6 +825,7 @@ function rebuildDynamicSettings() {
                     <div class="select-wrapper">
                         <select id="${voiceSelectId}"></select>
                     </div>
+                    <button id="download-${langCode}" class="hidden" style="width: 100%; margin-top: 10px; font-size: 0.95rem; padding: 10px; border-radius: 8px; justify-content: center; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; cursor: pointer; transition: all 0.2s;">📥 Download / Init Voice</button>
                 </div>
                 <div class="setting-group">
                     <label>${langName.substring(0,3).toUpperCase()} Speed <span id="${rateInputId}-val">${savedRate}x</span></label>
@@ -824,6 +835,7 @@ function rebuildDynamicSettings() {
             container.appendChild(wrapper);
 
             const select = wrapper.querySelector('select');
+            const dlBtn = wrapper.querySelector(`#download-${langCode}`);
             if (!select) return;
 
             const nativeVoices = nativeList.filter(v => langMatches(v.lang, langCode) || (v.name && v.name.toLowerCase().includes('multilingual')));
@@ -864,11 +876,47 @@ function rebuildDynamicSettings() {
                 else select.selectedIndex = 0;
             }
 
+            function updateDlBtn() {
+                const chosen = piperList.find(v => v.name === select.value);
+                if (chosen) {
+                    dlBtn.classList.remove('hidden');
+                    const state = piperWorkers[langCode];
+                    if (state && state.voicePath === chosen.path && state.ready) {
+                        dlBtn.textContent = "✅ Voice Ready";
+                        dlBtn.style.opacity = "0.5";
+                        dlBtn.disabled = true;
+                        dlBtn.style.background = "transparent";
+                        dlBtn.style.border = "1px solid rgba(255,255,255,0.1)";
+                        dlBtn.style.color = "var(--text-muted)";
+                    } else {
+                        dlBtn.textContent = "📥 Download / Init Voice";
+                        dlBtn.style.opacity = "1";
+                        dlBtn.disabled = false;
+                        dlBtn.style.background = "rgba(56, 189, 248, 0.1)";
+                        dlBtn.style.border = "1px solid rgba(56, 189, 248, 0.3)";
+                        dlBtn.style.color = "#38bdf8";
+                    }
+                } else {
+                    dlBtn.classList.add('hidden');
+                }
+            }
+
             select.addEventListener('change', (e) => {
                 try { localStorage.setItem(voiceSelectId, e.target.value); } catch(err) {}
-                const chosen = piperList.find(v => v.name === e.target.value);
-                if (chosen) initPiperWorker(langCode, chosen.path);
+                updateDlBtn();
             });
+
+            dlBtn.addEventListener('click', () => {
+                const chosen = piperList.find(v => v.name === select.value);
+                if (chosen) {
+                    initPiperWorker(langCode, chosen.path);
+                    dlBtn.textContent = "⏳ Initializing...";
+                    dlBtn.disabled = true;
+                    dlBtn.style.opacity = "0.7";
+                }
+            });
+
+            updateDlBtn(); // Call on render
 
             const slider = wrapper.querySelector(`input[type="range"]`);
             const rateVal = wrapper.querySelector(`#${rateInputId}-val`);
@@ -1100,8 +1148,13 @@ function playMergedQueue() {
         
         if (piperVoice) {
             sentenceMap.forEach(item => { item.element.classList.add('active'); if (item.element.offsetTop > 0) item.element.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
-            initPiperWorker(chunk.lang, piperVoice.path);
+            
             const state = piperWorkers[chunk.lang];
+            if (!state || !state.ready || state.voicePath !== piperVoice.path) {
+                stopReading();
+                alert(`გთხოვთ, პარამეტრებიდან ჯერ ჩამოტვირთოთ/გაააქტიუროთ ხმა:\n"${piperVoice.name}"`);
+                return;
+            }
             
             const attemptPlay = () => {
                 if (!state.ready) { if(!isPlaying) return; setTimeout(attemptPlay, 100); return; }
