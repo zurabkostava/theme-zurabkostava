@@ -753,7 +753,7 @@ function setTtsStatus(message) {
 
 function getKokoroWorkerUrl() {
     const base = window.THEME_URI || '/wp-content/themes/zurabkostava';
-    return base + '/WordEvo/kokoro-worker.js';
+    return base + '/WordEvo/kokoro-worker.js?v=' + Date.now();
 }
 
 function initKokoroWorker(langCode, voicePath) {
