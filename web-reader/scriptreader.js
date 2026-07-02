@@ -708,35 +708,79 @@ function showDropZone() {
 // Helpers
 
 
+function getPiperWorkerUrl() {
+    // Same resolution strategy as WordEvo (WORDEVO_ASSET_PATH): PHP injects THEME_URI,
+    // hardcoded path only as a last-resort fallback
+    const base = window.THEME_URI || '/wp-content/themes/zurabkostava';
+    return base + '/WordEvo/piper-worker.js';
+}
+
+function setTtsStatus(message) {
+    const ttsIndicator = document.getElementById('tts-status-indicator');
+    const ttsStatusText = document.getElementById('tts-status-text');
+    if (!ttsIndicator || !ttsStatusText) return;
+    if (message) {
+        ttsIndicator.classList.remove('hidden');
+        ttsStatusText.textContent = message;
+    } else {
+        ttsIndicator.classList.add('hidden');
+    }
+}
+
 function initPiperWorker(langCode, voicePath) {
     if (!piperWorkers[langCode]) piperWorkers[langCode] = { worker: null, ready: false, initializing: false, currentAudio: null, voicePath: null };
     const state = piperWorkers[langCode];
-    if (state.voicePath === voicePath && state.worker) return;
+    // Reuse the worker only while it's healthy (ready or still initializing).
+    // After a failure the state is wiped below, so a re-click actually retries.
+    if (state.voicePath === voicePath && state.worker && (state.ready || state.initializing)) return;
     if (state.worker) state.worker.terminate();
     state.ready = false; state.initializing = true; state.voicePath = voicePath;
-    state.worker = new Worker('/wp-content/themes/zurabkostava/WordEvo/piper-worker.js');
-    
-    const ttsIndicator = document.getElementById('tts-status-indicator');
-    const ttsStatusText = document.getElementById('tts-status-text');
-    
-    if (ttsIndicator && ttsStatusText) {
-        ttsIndicator.classList.remove('hidden');
-        ttsStatusText.textContent = "Initializing Neural Voice...";
-    }
 
-    state.worker.onmessage = (e) => {
-        const msg = e.data;
-        if (msg.kind === 'status') {
-            if (ttsIndicator && ttsStatusText) {
-                ttsIndicator.classList.remove('hidden');
-                ttsStatusText.textContent = msg.message;
-            }
+    const failInit = (message) => {
+        state.initializing = false;
+        state.ready = false;
+        if (state.worker) { state.worker.terminate(); state.worker = null; }
+        state.voicePath = null; // allows a clean retry via the Download button
+        console.error("Piper init failed:", message);
+        setTtsStatus("❌ " + message);
+        setTimeout(() => setTtsStatus(null), 6000);
+        const dlBtn = document.getElementById(`download-${langCode}`);
+        if (dlBtn) {
+            dlBtn.textContent = "🔁 Retry Download";
+            dlBtn.disabled = false;
+            dlBtn.style.opacity = "1";
         }
-        else if (msg.kind === 'ready') { 
-            state.ready = true; 
-            state.initializing = false; 
-            if (ttsIndicator) ttsIndicator.classList.add('hidden');
-            
+        stopReading(); // გააჩეროს გაჭედილი attemptPlay ციკლი
+    };
+
+    let worker;
+    try {
+        worker = new Worker(getPiperWorkerUrl());
+    } catch (e) {
+        failInit("Worker creation failed: " + (e.message || e));
+        return;
+    }
+    state.worker = worker;
+    setTtsStatus("Initializing Neural Voice...");
+
+    // Fires when the worker script itself can't load (404/MIME/network) or throws at top level.
+    // Without this the UI waits for a 'ready' message that will never come.
+    worker.onerror = (e) => {
+        failInit(e.message || "Voice worker script failed to load — check " + getPiperWorkerUrl());
+    };
+
+    worker.onmessage = (e) => {
+        const msg = e.data || {};
+        if (msg.kind === 'status') {
+            setTtsStatus(msg.message);
+            const dlBtn = document.getElementById(`download-${langCode}`);
+            if (dlBtn && !state.ready) dlBtn.textContent = "⏳ " + msg.message;
+        }
+        else if (msg.kind === 'ready') {
+            state.ready = true;
+            state.initializing = false;
+            setTtsStatus(null);
+
             const dlBtn = document.getElementById(`download-${langCode}`);
             if (dlBtn) {
                 dlBtn.textContent = "✅ Voice Ready";
@@ -748,20 +792,22 @@ function initPiperWorker(langCode, voicePath) {
             }
         }
         else if (msg.kind === 'error') {
-            state.initializing = false;
-            console.error("Piper Error:", msg.message);
-            if (ttsIndicator && ttsStatusText) {
-                ttsStatusText.textContent = "Error: " + msg.message;
-                setTimeout(() => ttsIndicator.classList.add('hidden'), 5000);
+            if (!state.ready) {
+                // Error during init (model download, WASM load...) — reset so retry works
+                failInit(msg.message);
+            } else {
+                // Runtime synthesis error on an already-working voice
+                console.error("Piper Error:", msg.message);
+                setTtsStatus("Error: " + msg.message);
+                setTimeout(() => setTtsStatus(null), 5000);
+                stopReading();
             }
-            stopReading(); // გააჩეროს გაჭედილი attemptPlay ციკლი
-            alert("Neural Voice ერორი: " + msg.message);
         }
         else if (msg.kind === 'output' && msg.wav) {
             if (state.onWav) state.onWav(msg.wav);
         }
     };
-    state.worker.postMessage({ kind: 'init', voicePath: voicePath });
+    worker.postMessage({ kind: 'init', voicePath: voicePath });
 }
 
 function stopPiperAudio() {

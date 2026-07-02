@@ -83,6 +83,11 @@
         </div>
     </div>
 
+    <div id="tts-status-indicator" class="tts-status-indicator hidden">
+        <span class="tts-spinner"></span>
+        <span id="tts-status-text">Initializing Neural Voice...</span>
+    </div>
+
     <div class="controls-overlay">
         <div class="controls premium-controls">
             <button id="prev-btn" class="ctrl-btn sm premium-btn" title="Previous"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><polygon points="17 20 7 12 17 4 17 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
@@ -789,6 +794,41 @@
     }
 
     .hidden { display: none !important; }
+
+    /* --- TTS LOADING INDICATOR --- */
+    .tts-status-indicator {
+        position: absolute;
+        bottom: 115px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        color: #7dd3fc;
+        padding: 10px 18px;
+        border-radius: 99px;
+        font-size: 0.85rem;
+        max-width: 90vw;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        z-index: 30;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    .tts-spinner {
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(56, 189, 248, 0.25);
+        border-top-color: #38bdf8;
+        border-radius: 50%;
+        animation: tts-spin 0.8s linear infinite;
+        flex: 0 0 auto;
+    }
+    @keyframes tts-spin { to { transform: rotate(360deg); } }
     /* --- INFO MODAL --- */
     .info-modal-overlay {
         position: fixed !important;
@@ -1137,4 +1177,5 @@
 
 </style>
 
+<script>window.THEME_URI = '<?php echo get_template_directory_uri(); ?>';</script>
 <script src="<?php echo get_template_directory_uri(); ?>/web-reader/scriptreader.js?v=<?php echo time(); ?>"></script>
