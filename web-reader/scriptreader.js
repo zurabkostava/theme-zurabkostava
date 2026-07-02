@@ -728,12 +728,15 @@ function setTtsStatus(message) {
 }
 
 function initPiperWorker(langCode, voicePath) {
-    if (!piperWorkers[langCode]) piperWorkers[langCode] = { worker: null, ready: false, initializing: false, currentAudio: null, voicePath: null };
+    if (!piperWorkers[langCode]) piperWorkers[langCode] = { worker: null, ready: false, initializing: false, currentAudio: null, voicePath: null, pending: [] };
     const state = piperWorkers[langCode];
+    if (!Array.isArray(state.pending)) state.pending = [];
+    const rejectPending = (err) => { while (state.pending.length) { try { state.pending.shift().reject(err); } catch (e) {} } };
     // Reuse the worker only while it's healthy (ready or still initializing).
     // After a failure the state is wiped below, so a re-click actually retries.
     if (state.voicePath === voicePath && state.worker && (state.ready || state.initializing)) return;
     if (state.worker) state.worker.terminate();
+    rejectPending(new Error('Piper worker restarted'));
     state.ready = false; state.initializing = true; state.voicePath = voicePath;
 
     const failInit = (message) => {
@@ -741,6 +744,7 @@ function initPiperWorker(langCode, voicePath) {
         state.ready = false;
         if (state.worker) { state.worker.terminate(); state.worker = null; }
         state.voicePath = null; // allows a clean retry via the Download button
+        rejectPending(new Error(message));
         console.error("Piper init failed:", message);
         setTtsStatus("❌ " + message);
         setTimeout(() => setTtsStatus(null), 6000);
@@ -796,15 +800,22 @@ function initPiperWorker(langCode, voicePath) {
                 // Error during init (model download, WASM load...) — reset so retry works
                 failInit(msg.message);
             } else {
-                // Runtime synthesis error on an already-working voice
+                // Runtime synthesis error: reject only the affected sentence request,
+                // the playback loop decides whether to retry/skip — don't kill playback here
                 console.error("Piper Error:", msg.message);
-                setTtsStatus("Error: " + msg.message);
-                setTimeout(() => setTtsStatus(null), 5000);
-                stopReading();
+                const p = state.pending.shift();
+                if (p) {
+                    p.reject(new Error(msg.message));
+                } else {
+                    setTtsStatus("Error: " + msg.message);
+                    setTimeout(() => setTtsStatus(null), 5000);
+                    stopReading();
+                }
             }
         }
         else if (msg.kind === 'output' && msg.wav) {
-            if (state.onWav) state.onWav(msg.wav);
+            const p = state.pending.shift();
+            if (p) p.resolve(msg.wav);
         }
     };
     worker.postMessage({ kind: 'init', voicePath: voicePath });
@@ -1140,11 +1151,215 @@ function processText(rawText) {
     updateProgressBar();
     rebuildDynamicSettings();
 }
-function playMergedQueue() {
+// --- SEQUENTIAL PLAYBACK ENGINE ---
+// Incremented on every play/stop/seek: any in-flight loop holding an old token dies quietly
+let playbackToken = 0;
+
+const EMOJI_TEST_RE = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/u;
+
+// Builds the spoken text for ONE sentence + char offsets of each visual word within it.
+// `raw` keeps the trailing space so offsets concatenate cleanly for native utterances.
+function buildSpokenSentence(sent, lang) {
+    const visualWords = sent.element.querySelectorAll('.word');
+    const wordRanges = [];
+    let text = "";
+    visualWords.forEach(wordEl => {
+        let raw = wordEl.innerText.trim();
+        let spoken = raw;
+        if (raw === '—' || raw === '–') { spoken = ","; }
+        else if (EMOJI_TEST_RE.test(raw)) { spoken = "."; }
+        else if (lang === 'ka') {
+            spoken = preprocessGeorgianText(raw);
+            if (/[a-zA-Z]/.test(spoken)) { spoken = transliterateToGeorgian(spoken); }
+        }
+        const start = text.length;
+        text += spoken + " ";
+        wordRanges.push({ el: wordEl, start: start, end: text.length });
+    });
+    return { text: text.trim(), raw: text, wordRanges: wordRanges, totalChars: text.length };
+}
+
+function piperSynthesize(state, text) {
+    return new Promise((resolve, reject) => {
+        if (!text) { resolve(null); return; }
+        if (!state || !state.worker || !state.ready) { reject(new Error('Piper worker not ready')); return; }
+        state.pending.push({ resolve: resolve, reject: reject });
+        state.worker.postMessage({ kind: 'synthesize', text: text });
+    });
+}
+
+function waitForPiperReady(state, token) {
+    return new Promise((resolve) => {
+        const check = () => {
+            if (token !== playbackToken || !isPlaying) return resolve(false);
+            if (state.ready) return resolve(true);
+            if (!state.worker && !state.initializing) return resolve(false); // init failed
+            setTimeout(check, 100);
+        };
+        check();
+    });
+}
+
+// A phonemizer crash ("memory access out of bounds") can leave the WASM instance
+// corrupted — rebuild the worker (model reloads from Cache API, so it's fast) and retry once.
+async function synthesizeSentence(langCode, text, token) {
+    let state = piperWorkers[langCode];
+    try {
+        return await piperSynthesize(state, text);
+    } catch (e) {
+        console.warn('Piper synth error, rebuilding worker:', e.message);
+        const path = state ? state.voicePath : null;
+        if (!path || token !== playbackToken) return null;
+        state.voicePath = null;
+        initPiperWorker(langCode, path);
+        state = piperWorkers[langCode];
+        const ok = await waitForPiperReady(state, token);
+        if (!ok) return null;
+        try { return await piperSynthesize(state, text); }
+        catch (e2) { console.error('Piper synth failed after worker rebuild, skipping sentence:', e2.message); return null; }
+    }
+}
+
+// Piper has no onboundary events, so word karaoke is estimated:
+// playback position is mapped linearly onto spoken-character offsets.
+function runWordHighlights(audio, spoken, token) {
+    let lastEl = null;
+    const step = () => {
+        if (token !== playbackToken || audio.ended) {
+            if (lastEl) { lastEl.classList.remove('active'); lastEl.classList.add('read'); }
+            return;
+        }
+        const dur = audio.duration;
+        if (isFinite(dur) && dur > 0 && spoken.totalChars > 0) {
+            const pos = (audio.currentTime / dur) * spoken.totalChars;
+            let range = null;
+            for (const r of spoken.wordRanges) { if (pos >= r.start && pos < r.end) { range = r; break; } }
+            if (range && lastEl !== range.el) {
+                if (lastEl) { lastEl.classList.remove('active'); lastEl.classList.add('read'); }
+                range.el.classList.add('active');
+                lastEl = range.el;
+            }
+        }
+        requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+}
+
+function playPiperAudio(state, wavBlob, rate, spoken, token) {
+    return new Promise((resolve) => {
+        const url = URL.createObjectURL(wavBlob);
+        const audio = new Audio(url);
+        audio.playbackRate = Math.max(0.5, Math.min(rate, 2));
+        state.currentAudio = audio;
+        let done = false;
+        const finish = () => {
+            if (done) return;
+            done = true;
+            clearInterval(guard);
+            URL.revokeObjectURL(url);
+            if (state.currentAudio === audio) state.currentAudio = null;
+            resolve();
+        };
+        // stop/pause/seek invalidate the token or isPlaying — kill this audio then
+        const guard = setInterval(() => {
+            if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
+        }, 100);
+        audio.onended = finish;
+        audio.onerror = finish;
+        runWordHighlights(audio, spoken, token);
+        audio.play().catch(finish);
+    });
+}
+
+async function playPiperChunk(chunk, rate, token) {
+    const state = piperWorkers[chunk.lang];
+    const ready = await waitForPiperReady(state, token);
+    if (!ready) return false;
+
+    const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
+    let wavPromise = synthesizeSentence(chunk.lang, spokenList[0].text, token);
+
+    for (let i = 0; i < chunk.sentences.length; i++) {
+        if (token !== playbackToken || !isPlaying) return false;
+        const wav = await wavPromise; // synthesizeSentence never rejects, returns null on failure
+        // Prefetch the next sentence's audio while the current one plays — no gaps
+        if (i + 1 < chunk.sentences.length) {
+            wavPromise = synthesizeSentence(chunk.lang, spokenList[i + 1].text, token);
+        }
+        if (token !== playbackToken || !isPlaying) return false;
+
+        currentIdx = chunk.sentences[i].index;
+        highlightSentence(currentIdx, true);
+        updateMediaPosition();
+
+        if (wav) await playPiperAudio(piperWorkers[chunk.lang], wav, rate, spokenList[i], token);
+    }
+    return token === playbackToken && isPlaying;
+}
+
+function playNativeChunk(chunk, nativeVoice, rate, token) {
+    return new Promise((resolve) => {
+        let combinedText = "";
+        const sentenceMap = [];
+        chunk.sentences.forEach(sent => {
+            const spoken = buildSpokenSentence(sent, chunk.lang);
+            const offset = combinedText.length;
+            const wordRanges = spoken.wordRanges.map(r => ({ el: r.el, start: r.start + offset, end: r.end + offset }));
+            combinedText += spoken.raw;
+            sentenceMap.push({ idx: sent.index, element: sent.element, wordRanges: wordRanges, sentenceEndChar: combinedText.length });
+        });
+
+        const utt = new SpeechSynthesisUtterance(combinedText);
+        if (nativeVoice) utt.voice = nativeVoice;
+        utt.rate = rate;
+        utt.lang = chunk.lang;
+        let lastActiveWord = null;
+        utt.onboundary = (event) => {
+            if (event.name === 'word') {
+                const charPos = event.charIndex;
+                const currentSent = sentenceMap.find(s => charPos < s.sentenceEndChar);
+
+                if (currentSent) {
+                    if (currentSent.idx !== currentIdx) {
+                        currentIdx = currentSent.idx;
+                        highlightSentence(currentIdx, true);
+                        updateMediaPosition();
+                        lastActiveWord = null;
+                    }
+
+                    const currentWordRange = currentSent.wordRanges.find(r => charPos >= r.start && charPos < r.end);
+                    if (currentWordRange && lastActiveWord !== currentWordRange.el) {
+                        if (lastActiveWord) {
+                            lastActiveWord.classList.remove('active');
+                            lastActiveWord.classList.add('read');
+                        }
+                        currentWordRange.el.classList.add('active');
+                        lastActiveWord = currentWordRange.el;
+                    }
+                }
+            }
+        };
+        const settle = () => {
+            if (lastActiveWord) {
+                lastActiveWord.classList.remove('active');
+                lastActiveWord.classList.add('read');
+            }
+            resolve(token === playbackToken && isPlaying);
+        };
+        utt.onend = settle;
+        utt.onerror = settle;
+        window.utterances.push(utt);
+        synthesis.speak(utt);
+    });
+}
+
+async function playMergedQueue() {
     synthesis.cancel(); stopPiperAudio();
     window.utterances = [];
     isPlaying = true;
     updatePlayIcon(true);
+    const token = ++playbackToken;
+
     let chunks = [];
     let currentChunk = null;
     const SAFE_CHAR_LIMIT = 4000;
@@ -1160,112 +1375,34 @@ function playMergedQueue() {
         currentChunk.sentences.push(item);
         currentChunk.textLength += item.textForUI.length;
     }
-    chunks.forEach((chunk, chunkIndex) => {
-        let combinedText = "";
-        let sentenceMap = [];
-        const emojiRegex = new RegExp(`[\\u{1F000}-\\u{1FFFF}\\u{2600}-\\u{27BF}\\u{1F300}-\\u{1F5FF}\\u{1F680}-\\u{1F6FF}\\u{1F1E0}-\\u{1F1FF}]`, 'gu');
-        chunk.sentences.forEach(sent => {
-            const visualWords = sent.element.querySelectorAll('.word');
-            const wordRanges = [];
-            visualWords.forEach(wordEl => {
-                let raw = wordEl.innerText.trim();
-                let spoken = raw;
-                if (raw === '—' || raw === '–') { spoken = ","; }
-                else if (emojiRegex.test(raw)) { spoken = "."; }
-                else if (chunk.lang === 'ka') {
-                    spoken = preprocessGeorgianText(raw);
-                    if (/[a-zA-Z]/.test(spoken)) { spoken = transliterateToGeorgian(spoken); }
-                }
-                const start = combinedText.length;
-                combinedText += spoken + " ";
-                const end = combinedText.length;
-                wordRanges.push({ el: wordEl, start: start, end: end });
-            });
-            sentenceMap.push({ idx: sent.index, element: sent.element, wordRanges: wordRanges, sentenceEndChar: combinedText.length });
-        });
+
+    for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+        if (token !== playbackToken || !isPlaying) return;
+        const chunk = chunks[chunkIndex];
         const voiceSelectId = `voice-${chunk.lang}`;
         const rateInputId = `rate-${chunk.lang}`;
         const selectEl = document.getElementById(voiceSelectId);
         const selectedVoiceName = localStorage.getItem(voiceSelectId) || (selectEl ? selectEl.value : null);
         const rate = parseFloat(localStorage.getItem(rateInputId) || '1');
-        
+
         const piperVoice = piperVoicesList.find(v => v && v.name === selectedVoiceName);
-        const nativeVoice = voices.find(v => v && v.name === selectedVoiceName) || voices.find(v => v && langMatches(v.lang, chunk.lang)) || voices[0];
-        
+
         if (piperVoice) {
-            sentenceMap.forEach(item => { item.element.classList.add('active'); if (item.element.offsetTop > 0) item.element.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
-            
             const state = piperWorkers[chunk.lang];
-            if (!state || !state.ready || state.voicePath !== piperVoice.path) {
+            if (!state || state.voicePath !== piperVoice.path) {
                 stopReading();
                 alert(`გთხოვთ, პარამეტრებიდან ჯერ ჩამოტვირთოთ/გაააქტიუროთ ხმა:\n"${piperVoice.name}"`);
                 return;
             }
-            
-            const attemptPlay = () => {
-                if (!state.ready) { if(!isPlaying) return; setTimeout(attemptPlay, 100); return; }
-                state.onWav = (wavBlob) => {
-                    if (!isPlaying) return;
-                    const audio = new Audio(URL.createObjectURL(wavBlob));
-                    audio.playbackRate = Math.max(0.5, Math.min(rate, 2));
-                    state.currentAudio = audio;
-                    audio.play().catch(e => console.error(e));
-                    audio.onended = () => {
-                        state.currentAudio = null;
-                        if (!isPlaying) return;
-                        sentenceMap.forEach(item => { item.element.classList.remove('active'); item.element.classList.add('read'); });
-                        if (chunkIndex === chunks.length - 1) {
-                            handleNextChapterLogic();
-                        }
-                    };
-                };
-                state.worker.postMessage({ kind: 'synthesize', text: combinedText });
-            };
-            attemptPlay();
+            const ok = await playPiperChunk(chunk, rate, token);
+            if (!ok) return;
         } else {
-            const utt = new SpeechSynthesisUtterance(combinedText);
-            if (nativeVoice) utt.voice = nativeVoice;
-            utt.rate = rate;
-            utt.lang = chunk.lang;
-            let lastActiveWord = null;
-            utt.onboundary = (event) => {
-                if (event.name === 'word') {
-                    const charPos = event.charIndex;
-                    const currentSent = sentenceMap.find(s => charPos < s.sentenceEndChar);
-    
-                    if (currentSent) {
-                        if (currentSent.idx !== currentIdx) {
-                            currentIdx = currentSent.idx;
-                            highlightSentence(currentIdx, true);
-                            updateMediaPosition();
-                            lastActiveWord = null;
-                        }
-    
-                        const currentWordRange = currentSent.wordRanges.find(r => charPos >= r.start && charPos < r.end);
-                        if (currentWordRange && lastActiveWord !== currentWordRange.el) {
-                            if (lastActiveWord) {
-                                lastActiveWord.classList.remove('active');
-                                lastActiveWord.classList.add('read');
-                            }
-                            currentWordRange.el.classList.add('active');
-                            lastActiveWord = currentWordRange.el;
-                        }
-                    }
-                }
-            };
-            utt.onend = () => {
-                if (lastActiveWord) {
-                    lastActiveWord.classList.remove('active');
-                    lastActiveWord.classList.add('read');
-                }
-                if (chunkIndex === chunks.length - 1) {
-                    handleNextChapterLogic();
-                }
-            };
-            window.utterances.push(utt);
-            synthesis.speak(utt);
+            const nativeVoice = voices.find(v => v && v.name === selectedVoiceName) || voices.find(v => v && langMatches(v.lang, chunk.lang)) || voices[0];
+            const ok = await playNativeChunk(chunk, nativeVoice, rate, token);
+            if (!ok) return;
         }
-    });
+    }
+    if (token === playbackToken && isPlaying) handleNextChapterLogic();
 }
 function updatePlayIcon(isPlayingState) {
     const playIcon = document.getElementById('play-icon');
@@ -1312,6 +1449,7 @@ function togglePlay() {
     }
 }
 function stopReading() {
+    playbackToken++; // kill any in-flight playback loop
     synthesis.cancel(); stopPiperAudio();
     window.utterances = [];
     ghostAudio.pause();
