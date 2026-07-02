@@ -8,6 +8,25 @@ let isPlaying = false;
 let voices = [];
 let isEditMode = false;
 window.utterances = [];
+
+let cloudSaveTimeout = null;
+function syncProgressToCloud() {
+    if (!window.currentRawEpubFile) return;
+    const bookName = window.currentRawEpubFile.name;
+    const idx = localStorage.getItem('epub_idx_' + bookName) || 0;
+    const href = localStorage.getItem('epub_progress_' + bookName) || '';
+    const perc = localStorage.getItem('epub_perc_' + bookName) || '';
+    
+    clearTimeout(cloudSaveTimeout);
+    cloudSaveTimeout = setTimeout(() => {
+        fetch(`/wp-json/neural/v1/progress?book=${encodeURIComponent(bookName)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ href, idx, perc })
+        }).catch(e => console.error('Cloud sync error', e));
+    }, 2000);
+}
+
 // EPUB Globals
 let currentBook = null;
 let currentSpineIndex = 0; // ეს არის ის, რასაც ვუყურებთ
@@ -305,9 +324,22 @@ async function handleMetaClick() {
     }
 }
 
-function loadEpub(file) {
-    window.currentRawEpubFile = file;
+async function loadEpub(file) {
     const bookName = file.name;
+    
+    try {
+        const res = await fetch(`/wp-json/neural/v1/progress?book=${encodeURIComponent(bookName)}`);
+        if (res.ok) {
+            const data = await res.json();
+            if (data && (data.href || data.idx || data.perc)) {
+                if (data.href) localStorage.setItem('epub_progress_' + bookName, data.href);
+                if (data.idx) localStorage.setItem('epub_idx_' + bookName, data.idx);
+                if (data.perc) localStorage.setItem('epub_perc_' + bookName, data.perc);
+            }
+        }
+    } catch(e) { console.error('Cloud progress fetch error', e); }
+
+    window.currentRawEpubFile = file;
 
     if (currentBook) {
         currentBook.destroy();
@@ -518,6 +550,7 @@ function updateProgressPercentage() {
     // რადგან ჩვენ ვითვლით "შენახულ" (Real) ინდექსზე დაყრდნობით,
     // ამ შედეგების შენახვა უსაფრთხოა ბიბლიოთეკისთვის.
     localStorage.setItem('epub_perc_' + window.currentRawEpubFile.name, displayPercentage.toFixed(2));
+    syncProgressToCloud();
 }
 function displayChapter(href, delay = 0) {
     if (!currentBook) return;
@@ -1214,6 +1247,7 @@ function highlightSentence(idx, saveToStorage = false) {
         // 3. ვაახლებთ პროცენტებს და საიდბარს (რადგან რეალური პოზიცია შეიცვალა)
         updateProgressPercentage();
         updateSidebarStyling();
+        syncProgressToCloud();
     }
 
     updateProgressBar();

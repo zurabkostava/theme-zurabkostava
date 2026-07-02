@@ -3022,4 +3022,53 @@ function neural_get_books() {
     }
 
     return rest_ensure_response($books);
-}
+}
+add_action("rest_api_init", function () {
+    register_rest_route("neural/v1", "/progress", array(
+        array(
+            "methods" => "GET",
+            "callback" => "neural_get_progress",
+            "permission_callback" => "__return_true"
+        ),
+        array(
+            "methods" => "POST",
+            "callback" => "neural_save_progress",
+            "permission_callback" => "__return_true"
+        )
+    ));
+});
+
+function neural_get_progress($request) {
+    $book = $request->get_param("book");
+    if (!$book) return rest_ensure_response(array());
+    
+    $user_id = get_current_user_id();
+    if ($user_id) {
+        $progress = get_user_meta($user_id, "neural_progress_" . md5($book), true);
+    } else {
+        $progress = get_option("neural_global_progress_" . md5($book));
+    }
+    return rest_ensure_response(is_array($progress) ? $progress : array());
+}
+
+function neural_save_progress($request) {
+    $book = $request->get_param("book");
+    $data = $request->get_json_params();
+    if (!$book || empty($data)) return rest_ensure_response(array("success" => false));
+    
+    $payload = array(
+        "href" => sanitize_text_field($data["href"] ?? ""),
+        "idx" => intval($data["idx"] ?? 0),
+        "perc" => sanitize_text_field($data["perc"] ?? "")
+    );
+    
+    $user_id = get_current_user_id();
+    if ($user_id) {
+        update_user_meta($user_id, "neural_progress_" . md5($book), $payload);
+    } else {
+        update_option("neural_global_progress_" . md5($book), $payload, false);
+    }
+    
+    return rest_ensure_response(array("success" => true));
+}
+
