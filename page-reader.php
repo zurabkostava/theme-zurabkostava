@@ -571,13 +571,16 @@
         position: absolute;
         top: 0;
         left: 0;
-        width: 280px;
+        width: 320px;
+        max-width: 85vw;
         height: 100%;
-        background: rgba(15, 23, 42, 0.98);
-        backdrop-filter: blur(20px);
-        border-right: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 15, 30, 0.98) 100%);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 20px 0 50px rgba(0,0,0,0.5);
         transform: translateX(-100%);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         z-index: 100;
         display: flex;
         flex-direction: column;
@@ -594,27 +597,48 @@
         color: var(--primary);
     }
 
-    .toc-list { flex: 1; overflow-y: auto; padding: 10px; }
+    .toc-list { 
+        flex: 1; 
+        overflow-y: auto; 
+        padding: 15px 10px; 
+    }
+    
+    /* Custom Scrollbar for TOC */
+    .toc-list::-webkit-scrollbar { width: 6px; }
+    .toc-list::-webkit-scrollbar-track { background: transparent; }
+    .toc-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    .toc-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
     .toc-item {
-        padding: 12px 16px;
+        padding: 14px 18px;
+        margin-bottom: 4px;
         cursor: pointer;
-        border-radius: 6px;
+        border-radius: 12px;
         color: var(--text-muted);
-        transition: all 0.2s;
+        transition: all 0.3s ease;
         font-size: 0.95rem;
-        white-space: nowrap;
+        line-height: 1.4;
+        display: flex;
+        align-items: center;
+        position: relative;
         overflow: hidden;
-        text-overflow: ellipsis;
     }
-    .toc-item:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
-    .toc-item.active { background: rgba(56, 189, 248, 0.1); color: var(--primary); border-left: 2px solid var(--primary); }
-    /* ეს არის ჩამქრალი (განვლილი) თავების სტილი */
+    .toc-item:hover {
+        background: rgba(255,255,255,0.05);
+        color: var(--text-main);
+        transform: translateX(4px);
+    }
+    .toc-item.active {
+        background: rgba(56, 189, 248, 0.15);
+        color: var(--primary);
+        font-weight: 600;
+        box-shadow: inset 3px 0 0 var(--primary);
+    }
+    
+    /* ოდნავ ჩამქრალი განვლილი თავები */
     .toc-item.read-chapter {
         opacity: 0.4;
-        color: #9ca3af; /* ნაცრისფერი */
     }
-
     /* თუ განვლილი თავი თან აქტიურია (იშვიათია, მაგრამ მაინც), ფერი შეინარჩუნოს */
     .toc-item.read-chapter.active {
         opacity: 1;
