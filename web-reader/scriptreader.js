@@ -1173,18 +1173,40 @@ const EMOJI_TEST_RE = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{1F300}-\u{1F5FF}\
 
 // Builds the spoken text for ONE sentence + char offsets of each visual word within it.
 // `raw` keeps the trailing space so offsets concatenate cleanly for native utterances.
-function buildSpokenSentence(sent, lang) {
+function transliterateToEnglish(text) {
+    const geoToEng = {
+        'ა': 'a', 'ბ': 'b', 'გ': 'g', 'დ': 'd', 'ე': 'e', 'ვ': 'v', 'ზ': 'z', 'თ': 't',
+        'ი': 'i', 'კ': 'k', 'ლ': 'l', 'მ': 'm', 'ნ': 'n', 'ო': 'o', 'პ': 'p', 'ჟ': 'zh',
+        'რ': 'r', 'ს': 's', 'ტ': 't', 'უ': 'u', 'ფ': 'p', 'ქ': 'k', 'ღ': 'gh', 'ყ': 'q',
+        'შ': 'sh', 'ჩ': 'ch', 'ც': 'ts', 'ძ': 'dz', 'წ': 'ts', 'ჭ': 'ch', 'ხ': 'kh', 'ჯ': 'j', 'ჰ': 'h'
+    };
+    return text.split('').map(char => geoToEng[char] || char).join('');
+}
+
+function buildSpokenSentence(sent, textLang, voiceLang) {
     const visualWords = sent.element.querySelectorAll('.word');
     const wordRanges = [];
     let text = "";
+    
+    let vLang = voiceLang ? voiceLang.substring(0, 2).toLowerCase() : textLang;
+
     visualWords.forEach(wordEl => {
         let raw = wordEl.innerText.trim();
         let spoken = raw;
         if (raw === '—' || raw === '–') { spoken = ","; }
         else if (EMOJI_TEST_RE.test(raw)) { spoken = "."; }
-        else if (lang === 'ka') {
-            spoken = preprocessGeorgianText(raw);
-            if (/[a-zA-Z]/.test(spoken)) { spoken = transliterateToGeorgian(spoken); }
+        else {
+            if (vLang === 'ka') {
+                spoken = preprocessGeorgianText(raw);
+                if (/[a-zA-Z]/.test(spoken)) { spoken = transliterateToGeorgian(spoken); }
+            } else if (vLang === 'en') {
+                if (/[\u10D0-\u10FA]/.test(spoken)) { spoken = transliterateToEnglish(spoken); }
+            } else {
+                if (textLang === 'ka') {
+                    spoken = preprocessGeorgianText(raw);
+                    if (/[a-zA-Z]/.test(spoken)) { spoken = transliterateToGeorgian(spoken); }
+                }
+            }
         }
         const start = text.length;
         text += spoken + " ";
@@ -1285,12 +1307,12 @@ function playPiperAudio(state, wavBlob, rate, spoken, token) {
     });
 }
 
-async function playPiperChunk(chunk, rate, token) {
+async function playPiperChunk(chunk, voiceLang, rate, token) {
     const state = piperWorkers[chunk.lang];
     const ready = await waitForPiperReady(state, token);
     if (!ready) return false;
 
-    const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
+    const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang, voiceLang));
     let wavPromise = synthesizeSentence(chunk.lang, spokenList[0].text, token);
 
     for (let i = 0; i < chunk.sentences.length; i++) {
@@ -1316,7 +1338,7 @@ function playNativeChunk(chunk, nativeVoice, rate, token) {
         let combinedText = "";
         const sentenceMap = [];
         chunk.sentences.forEach(sent => {
-            const spoken = buildSpokenSentence(sent, chunk.lang);
+            const spoken = buildSpokenSentence(sent, chunk.lang, nativeVoice ? nativeVoice.lang : chunk.lang);
             const offset = combinedText.length;
             const wordRanges = spoken.wordRanges.map(r => ({ el: r.el, start: r.start + offset, end: r.end + offset }));
             combinedText += spoken.raw;
@@ -1408,7 +1430,7 @@ async function playMergedQueue() {
                 alert(`გთხოვთ, პარამეტრებიდან ჯერ ჩამოტვირთოთ/გაააქტიუროთ ხმა:\n"${piperVoice.name}"`);
                 return;
             }
-            const ok = await playPiperChunk(chunk, rate, token);
+            const ok = await playPiperChunk(chunk, piperVoice.lang, rate, token);
             if (!ok) return;
         } else {
             const nativeVoice = voices.find(v => v && v.name === selectedVoiceName) || voices.find(v => v && langMatches(v.lang, chunk.lang)) || voices[0];
