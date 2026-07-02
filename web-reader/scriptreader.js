@@ -744,12 +744,7 @@ function loadVoices() {
         setTimeout(loadVoices, 1000);
     }
 }
-function loadSettings() {
-    const rateKa = localStorage.getItem('rate_ka');
-    const rateEn = localStorage.getItem('rate_en');
-    if(rateKa) { rateInputKa.value = rateKa; document.getElementById('rate-ka-val').textContent = rateKa + 'x'; }
-    if(rateEn) { rateInputEn.value = rateEn; document.getElementById('rate-en-val').textContent = rateEn + 'x'; }
-}
+
 function numToGeorgian(num) {
     if (parseInt(num) === 0) return "ნული";
     const units = ["", "ერთ", "ორ", "სამ", "ოთხ", "ხუთ", "ექვს", "შვიდ", "რვ", "ცხრ"];
@@ -896,6 +891,7 @@ function processText(rawText) {
 
     currentIdx = 0;
     updateProgressBar();
+    rebuildDynamicSettings();
 }
 function playMergedQueue() {
     synthesis.cancel(); stopPiperAudio();
@@ -1146,11 +1142,10 @@ function setupModalClosing() {
 }
 setupModalClosing();
 function init() {
-    loadVoices();
+    fetchPiperVoices().then(() => loadVoices());
     if (speechSynthesis.onvoiceschanged !== undefined) {
         speechSynthesis.onvoiceschanged = loadVoices;
     }
-    loadSettings();
     initMediaSession();
 }
 // ... (LIBRARY LOGIC იგივე რჩება) ...
