@@ -1,4 +1,4 @@
-﻿// ==== tts.js ====
+// ==== tts.js ====
 
 const VOICE_STORAGE_KEY = 'selected_voice_name';
 const GEORGIAN_VOICE_KEY = 'selected_georgian_voice';
@@ -19,8 +19,17 @@ async function fetchPiperVoices() {
     try {
         const cached = localStorage.getItem('piper_voices_cache');
         if (cached) {
-            piperVoicesList = JSON.parse(cached);
-            return piperVoicesList;
+            try {
+                let parsed = JSON.parse(cached);
+                if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].isPiper && parsed[0].lang.includes('_')) {
+                    piperVoicesList = parsed;
+                    return piperVoicesList;
+                } else {
+                    localStorage.removeItem('piper_voices_cache');
+                }
+            } catch(e) {
+                localStorage.removeItem('piper_voices_cache');
+            }
         }
         const res = await fetch('https://huggingface.co/rhasspy/piper-voices/raw/main/voices.json');
         const json = await res.json();
@@ -39,6 +48,12 @@ async function fetchPiperVoices() {
         }).filter(Boolean);
         
         piperVoicesList = mapped.sort((a, b) => a.name.localeCompare(b.name));
+        
+        const hasGeorgian = piperVoicesList.some(v => v.key === 'ka_GE-natia-medium');
+        if (!hasGeorgian) {
+            piperVoicesList.push({ isPiper: true, key: 'ka_GE-natia-medium', name: '☁️ Piper — Georgian (Natia, medium)', lang: 'ka_GE', path: 'ka/ka_GE/natia/medium/ka_GE-natia-medium' });
+        }
+        
         localStorage.setItem('piper_voices_cache', JSON.stringify(piperVoicesList));
         return piperVoicesList;
     } catch (e) {
