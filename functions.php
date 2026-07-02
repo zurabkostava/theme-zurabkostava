@@ -3042,12 +3042,9 @@ function neural_get_progress($request) {
     $book = $request->get_param("book");
     if (!$book) return rest_ensure_response(array());
     
-    $user_id = get_current_user_id();
-    if ($user_id) {
-        $progress = get_user_meta($user_id, "neural_progress_" . md5($book), true);
-    } else {
-        $progress = get_option("neural_global_progress_" . md5($book));
-    }
+    // ყოველთვის ვიყენებთ გლობალურ პროგრესს, მიუხედავად იმისა, 
+    // დალოგინებულია თუ არა მომხმარებელი (რომ ტელეფონს და კომპიუტერს შორის პრობლემა არ შეიქმნას)
+    $progress = get_option("neural_global_progress_" . md5($book));
     return rest_ensure_response(is_array($progress) ? $progress : array());
 }
 
@@ -3062,12 +3059,7 @@ function neural_save_progress($request) {
         "perc" => sanitize_text_field($data["perc"] ?? "")
     );
     
-    $user_id = get_current_user_id();
-    if ($user_id) {
-        update_user_meta($user_id, "neural_progress_" . md5($book), $payload);
-    } else {
-        update_option("neural_global_progress_" . md5($book), $payload, false);
-    }
+    update_option("neural_global_progress_" . md5($book), $payload, false);
     
     return rest_ensure_response(array("success" => true));
 }
