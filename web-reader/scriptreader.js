@@ -1,4 +1,7 @@
 let synthesis = window.speechSynthesis;
+let piperVoicesList = [];
+let detectedBookLanguages = new Set(['en', 'ka']);
+let piperWorkers = {};
 let parsedContent = [];
 let currentIdx = 0;
 let isPlaying = false;
@@ -88,10 +91,7 @@ const nextBtn = document.getElementById('next-btn');
 const prevBtn = document.getElementById('prev-btn');
 const settingsBtn = document.getElementById('settings-btn');
 const settingsPanel = document.getElementById('settings-panel');
-const voiceSelectKa = document.getElementById('voice-ka');
-const voiceSelectEn = document.getElementById('voice-en');
-const rateInputKa = document.getElementById('rate-ka');
-const rateInputEn = document.getElementById('rate-en');
+const dynamicVoiceSettings = document.getElementById('dynamic-voice-settings');
 // --- LIBRARY ELEMENTS ---
 const libraryBtn = document.getElementById('library-btn');
 const libraryModal = document.getElementById('library-modal');
@@ -109,7 +109,7 @@ const uploadBtn = document.getElementById('upload-btn');
 const fileInput = document.getElementById('file-input');
 const dropZone = document.getElementById('drop-zone');
 // --- 3. MEDIA SESSION ---
-document.getElementById('refresh-voices-btn').onclick = loadVoices;
+document.getElementById('refresh-voices-btn').onclick = async () => { await fetchPiperVoices(); loadVoices(); rebuildDynamicSettings(); };
 
 function initMediaSession() {
     if ('mediaSession' in navigator) {
@@ -130,7 +130,7 @@ function initMediaSession() {
                 let targetIdx = Math.floor(details.seekTime / SCALE_FACTOR);
                 if (targetIdx < 0) targetIdx = 0;
                 if (targetIdx >= parsedContent.length) targetIdx = parsedContent.length - 1;
-                synthesis.cancel();
+                synthesis.cancel(); stopPiperAudio();
                 currentIdx = targetIdx;
                 highlightSentence(currentIdx);
                 updateMediaPosition();
@@ -605,23 +605,144 @@ function showDropZone() {
 </div>`;
 }
 // Helpers
+async function fetchPiperVoices() {
+    try {
+        const cached = localStorage.getItem('piper_voices_cache');
+        if (cached) { piperVoicesList = JSON.parse(cached); return piperVoicesList; }
+        const res = await fetch('https://huggingface.co/rhasspy/piper-voices/raw/main/voices.json');
+        const json = await res.json();
+        const mapped = Object.keys(json).map(k => {
+            const v = json[k];
+            const onnxFile = Object.keys(v.files).find(f => f.endsWith('.onnx'));
+            if (!onnxFile) return null;
+            return {
+                isPiper: true, key: v.key,
+                name: `☁️ Piper — ${v.language.name_english} (${v.name}, ${v.quality})`,
+                lang: v.language.code.split('_')[0],
+                path: onnxFile.replace('.onnx', '')
+            };
+        }).filter(Boolean);
+        piperVoicesList = mapped.sort((a, b) => a.name.localeCompare(b.name));
+        localStorage.setItem('piper_voices_cache', JSON.stringify(piperVoicesList));
+        return piperVoicesList;
+    } catch (e) { console.error('Failed to fetch piper voices', e); return []; }
+}
+
+function initPiperWorker(langCode, voicePath) {
+    if (!piperWorkers[langCode]) piperWorkers[langCode] = { worker: null, ready: false, initializing: false, currentAudio: null, voicePath: null };
+    const state = piperWorkers[langCode];
+    if (state.voicePath === voicePath && state.worker) return;
+    if (state.worker) state.worker.terminate();
+    state.ready = false; state.initializing = true; state.voicePath = voicePath;
+    state.worker = new Worker('/wp-content/themes/zurabkostava/WordEvo/piper-worker.js');
+    state.worker.onmessage = (e) => {
+        const msg = e.data;
+        if (msg.kind === 'ready') { state.ready = true; state.initializing = false; }
+        else if (msg.kind === 'output' && msg.wav) {
+            if (state.onWav) state.onWav(msg.wav);
+        }
+    };
+    state.worker.postMessage({ kind: 'init', voicePath: voicePath });
+}
+
+function stopPiperAudio() {
+    Object.values(piperWorkers).forEach(state => {
+        if (state.currentAudio) { state.currentAudio.pause(); state.currentAudio = null; }
+    });
+}
+
+function rebuildDynamicSettings() {
+    if (!dynamicVoiceSettings) return;
+    dynamicVoiceSettings.innerHTML = '';
+    Array.from(detectedBookLanguages).sort().forEach(langCode => {
+        const wrapper = document.createElement('div');
+        wrapper.style.marginBottom = '16px';
+        wrapper.style.padding = '12px';
+        wrapper.style.background = 'rgba(255,255,255,0.02)';
+        wrapper.style.borderRadius = '12px';
+        wrapper.style.border = '1px solid rgba(255,255,255,0.05)';
+        
+        let flag = '🌐';
+        if(langCode === 'ka') flag = '🇬🇪';
+        if(langCode === 'en') flag = '🇺🇸';
+        if(langCode === 'ru') flag = '🇷🇺';
+        
+        let langName = langCode.toUpperCase();
+        try { langName = new Intl.DisplayNames(['en'], { type: 'language' }).of(langCode); } catch(e){}
+        
+        const voiceSelectId = `voice-${langCode}`;
+        const rateInputId = `rate-${langCode}`;
+        const savedVoice = localStorage.getItem(voiceSelectId) || '';
+        const savedRate = localStorage.getItem(rateInputId) || '1';
+        
+        wrapper.innerHTML = `
+            <div class="setting-group" style="margin-bottom: 12px;">
+                <label style="color: #38bdf8;"><span>${flag}</span> ${langName} Voice</label>
+                <div class="select-wrapper">
+                    <select id="${voiceSelectId}"></select>
+                </div>
+            </div>
+            <div class="setting-group">
+                <label>${langName.substring(0,3).toUpperCase()} Speed <span id="${rateInputId}-val">${savedRate}x</span></label>
+                <input type="range" id="${rateInputId}" min="0.5" max="2" step="0.1" value="${savedRate}">
+            </div>
+        `;
+        dynamicVoiceSettings.appendChild(wrapper);
+        
+        const select = document.getElementById(voiceSelectId);
+        
+        const nativeVoices = voices.filter(v => v.lang.startsWith(langCode));
+        if (nativeVoices.length > 0) {
+            const optGroup = document.createElement('optgroup');
+            optGroup.label = "Native Browser Voices";
+            nativeVoices.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.name; opt.textContent = v.name;
+                optGroup.appendChild(opt);
+            });
+            select.appendChild(optGroup);
+        }
+        
+        const piperForLang = piperVoicesList.filter(v => v.lang === langCode);
+        if (piperForLang.length > 0) {
+            const optGroup = document.createElement('optgroup');
+            optGroup.label = "High-Quality Piper Voices";
+            piperForLang.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.name; opt.textContent = v.name;
+                optGroup.appendChild(opt);
+            });
+            select.appendChild(optGroup);
+        }
+        
+        if (select.options.length === 0) {
+            const opt = document.createElement('option');
+            opt.text = "No voice found"; select.add(opt);
+        }
+        
+        select.value = savedVoice;
+        if(select.selectedIndex === -1 && select.options.length > 0) select.selectedIndex = 0;
+        
+        select.addEventListener('change', (e) => {
+            localStorage.setItem(voiceSelectId, e.target.value);
+            const chosen = piperVoicesList.find(v => v.name === e.target.value);
+            if (chosen) initPiperWorker(langCode, chosen.path);
+        });
+        
+        const slider = document.getElementById(rateInputId);
+        slider.addEventListener('input', (e) => {
+            document.getElementById(`${rateInputId}-val`).textContent = e.target.value + 'x';
+            localStorage.setItem(rateInputId, e.target.value);
+        });
+    });
+}
+
 function loadVoices() {
     voices = synthesis.getVoices();
-    fillVoiceSelect(voiceSelectKa, 'ka', 'Georgian');
-    fillVoiceSelect(voiceSelectEn, 'en', 'English');
+    rebuildDynamicSettings();
     if (voices.length < 5) {
         setTimeout(loadVoices, 1000);
     }
-}
-function fillVoiceSelect(select, langCode, fallbackName) {
-    select.innerHTML = '';
-    const relevantVoices = voices.filter(v => v.lang.includes(langCode) || v.name.includes(fallbackName) || v.name.toLowerCase().includes('multilingual'));
-    if(relevantVoices.length === 0) { const opt = document.createElement('option'); opt.text = "Default / No specific voice found"; select.add(opt); }
-    else { relevantVoices.forEach(voice => { const option = document.createElement('option'); option.value = voice.name; const label = voice.name.toLowerCase().includes('multilingual') ? `🌐 ${voice.name}` : `${voice.name} (${voice.lang})`; option.textContent = label; select.appendChild(option); }); }
-    const savedVoiceKa = localStorage.getItem('voice_ka');
-    const savedVoiceEn = localStorage.getItem('voice_en');
-    if(langCode === 'ka' && savedVoiceKa) select.value = savedVoiceKa;
-    if(langCode === 'en' && savedVoiceEn) select.value = savedVoiceEn;
 }
 function loadSettings() {
     const rateKa = localStorage.getItem('rate_ka');
@@ -715,15 +836,18 @@ function processText(rawText) {
             const originalDisplay = restoredText.trim();
             if(!originalDisplay) return;
             const words = originalDisplay.split(/(\s+|—|–)/g).filter(w => w.trim().length > 0 || w === '—' || w === '–');
-            let detectedLang = /[ა-ჰ]/.test(originalDisplay) ? 'ka-GE' : 'en-US';
-            if (isParaPrimarilyGeorgian && detectedLang === 'en-US' && words.length <= 10) { detectedLang = 'ka-GE'; }
+            let detectedLang = 'en';
+            if (/[ა-ჰ]/.test(originalDisplay)) detectedLang = 'ka';
+            else if (/[А-Яа-я]/.test(originalDisplay)) detectedLang = 'ru';
+            else if (/[A-Za-z]/.test(originalDisplay)) detectedLang = 'en';
+            detectedBookLanguages.add(detectedLang);
             const sSpan = document.createElement('span');
             sSpan.className = 'sentence';
             sSpan.dataset.idx = sCounter;
             sSpan.innerHTML = words.map(w => `<span class="word">${w}</span>`).join(' ') + ' ';
             sSpan.addEventListener('click', (e) => {
                 e.preventDefault(); e.stopPropagation();
-                synthesis.cancel();
+                synthesis.cancel(); stopPiperAudio();
                 currentIdx = parseInt(sSpan.dataset.idx);
 
                 // 🔥 მხოლოდ აქ ხდება შენახვა! (დაკლიკებისას)
@@ -774,7 +898,7 @@ function processText(rawText) {
     updateProgressBar();
 }
 function playMergedQueue() {
-    synthesis.cancel();
+    synthesis.cancel(); stopPiperAudio();
     window.utterances = [];
     isPlaying = true;
     updatePlayIcon(true);
@@ -816,50 +940,83 @@ function playMergedQueue() {
             });
             sentenceMap.push({ idx: sent.index, element: sent.element, wordRanges: wordRanges, sentenceEndChar: combinedText.length });
         });
-        const utt = new SpeechSynthesisUtterance(combinedText);
-        const voiceName = chunk.lang === 'ka-GE' ? voiceSelectKa.value : voiceSelectEn.value;
-        const selectedVoice = voices.find(v => v.name === voiceName);
-        if (selectedVoice) utt.voice = selectedVoice;
-        if (chunk.lang === 'ka-GE') utt.rate = parseFloat(rateInputKa.value);
-        else utt.rate = parseFloat(rateInputEn.value);
-        let lastActiveWord = null;
-        utt.onboundary = (event) => {
-            if (event.name === 'word') {
-                const charPos = event.charIndex;
-                const currentSent = sentenceMap.find(s => charPos < s.sentenceEndChar);
-
-                if (currentSent) {
-                    if (currentSent.idx !== currentIdx) {
-                        currentIdx = currentSent.idx;
-                        // 🔥 აქაც ინახავს, რადგან კითხვა მიდის
-                        highlightSentence(currentIdx, true);
-                        updateMediaPosition();
-                        lastActiveWord = null;
-                    }
-
-                    const currentWordRange = currentSent.wordRanges.find(r => charPos >= r.start && charPos < r.end);
-                    if (currentWordRange && lastActiveWord !== currentWordRange.el) {
-                        if (lastActiveWord) {
-                            lastActiveWord.classList.remove('active');
-                            lastActiveWord.classList.add('read');
+        const voiceSelectId = `voice-${chunk.lang}`;
+        const rateInputId = `rate-${chunk.lang}`;
+        const selectEl = document.getElementById(voiceSelectId);
+        const selectedVoiceName = localStorage.getItem(voiceSelectId) || (selectEl ? selectEl.value : null);
+        const rate = parseFloat(localStorage.getItem(rateInputId) || '1');
+        
+        const piperVoice = piperVoicesList.find(v => v.name === selectedVoiceName);
+        const nativeVoice = voices.find(v => v.name === selectedVoiceName) || voices.find(v => v.lang.startsWith(chunk.lang)) || voices[0];
+        
+        if (piperVoice) {
+            sentenceMap.forEach(item => { item.element.classList.add('active'); if (item.element.offsetTop > 0) item.element.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+            initPiperWorker(chunk.lang, piperVoice.path);
+            const state = piperWorkers[chunk.lang];
+            
+            const attemptPlay = () => {
+                if (!state.ready) { if(!isPlaying) return; setTimeout(attemptPlay, 100); return; }
+                state.onWav = (wavBlob) => {
+                    if (!isPlaying) return;
+                    const audio = new Audio(URL.createObjectURL(wavBlob));
+                    audio.playbackRate = Math.max(0.5, Math.min(rate, 2));
+                    state.currentAudio = audio;
+                    audio.play().catch(e => console.error(e));
+                    audio.onended = () => {
+                        state.currentAudio = null;
+                        if (!isPlaying) return;
+                        sentenceMap.forEach(item => { item.element.classList.remove('active'); item.element.classList.add('read'); });
+                        if (chunkIndex === chunks.length - 1) {
+                            handleNextChapterLogic();
                         }
-                        currentWordRange.el.classList.add('active');
-                        lastActiveWord = currentWordRange.el;
+                    };
+                };
+                state.worker.postMessage({ kind: 'synthesize', text: combinedText });
+            };
+            attemptPlay();
+        } else {
+            const utt = new SpeechSynthesisUtterance(combinedText);
+            if (nativeVoice) utt.voice = nativeVoice;
+            utt.rate = rate;
+            utt.lang = chunk.lang;
+            let lastActiveWord = null;
+            utt.onboundary = (event) => {
+                if (event.name === 'word') {
+                    const charPos = event.charIndex;
+                    const currentSent = sentenceMap.find(s => charPos < s.sentenceEndChar);
+    
+                    if (currentSent) {
+                        if (currentSent.idx !== currentIdx) {
+                            currentIdx = currentSent.idx;
+                            highlightSentence(currentIdx, true);
+                            updateMediaPosition();
+                            lastActiveWord = null;
+                        }
+    
+                        const currentWordRange = currentSent.wordRanges.find(r => charPos >= r.start && charPos < r.end);
+                        if (currentWordRange && lastActiveWord !== currentWordRange.el) {
+                            if (lastActiveWord) {
+                                lastActiveWord.classList.remove('active');
+                                lastActiveWord.classList.add('read');
+                            }
+                            currentWordRange.el.classList.add('active');
+                            lastActiveWord = currentWordRange.el;
+                        }
                     }
                 }
-            }
-        };
-        utt.onend = () => {
-            if (lastActiveWord) {
-                lastActiveWord.classList.remove('active');
-                lastActiveWord.classList.add('read');
-            }
-            if (chunkIndex === chunks.length - 1) {
-                handleNextChapterLogic();
-            }
-        };
-        window.utterances.push(utt);
-        synthesis.speak(utt);
+            };
+            utt.onend = () => {
+                if (lastActiveWord) {
+                    lastActiveWord.classList.remove('active');
+                    lastActiveWord.classList.add('read');
+                }
+                if (chunkIndex === chunks.length - 1) {
+                    handleNextChapterLogic();
+                }
+            };
+            window.utterances.push(utt);
+            synthesis.speak(utt);
+        }
     });
 }
 function updatePlayIcon(isPlayingState) {
@@ -907,7 +1064,7 @@ function togglePlay() {
     }
 }
 function stopReading() {
-    synthesis.cancel();
+    synthesis.cancel(); stopPiperAudio();
     window.utterances = [];
     ghostAudio.pause();
     ghostAudio.currentTime = 0;
@@ -920,7 +1077,7 @@ function stopReading() {
     }
 }
 function navigateSentence(dir) {
-    synthesis.cancel();
+    synthesis.cancel(); stopPiperAudio();
     let newIdx = currentIdx + dir;
     if (newIdx < 0) newIdx = 0;
     if (newIdx >= parsedContent.length) newIdx = parsedContent.length - 1;
