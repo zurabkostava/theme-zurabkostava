@@ -355,13 +355,9 @@ async function loadEpub(file) {
         currentBook = ePub(bookData);
         window.currentBook = currentBook;
 
-        // 🏗️ 1. Locations დაგენერირება
+        // 🏗️ 1. Locations დაგენერირება - შეცვლილია ჩვენი ზუსტი მთვლელით
         currentBook.ready.then(() => {
-            return currentBook.locations.generate(1000);
-        }).then(() => {
-            console.log("📍 Locations generated successfully!");
-            // 🔥 აი აქ! როგორც კი დაითვლის, ეგრევე განაახლოს პროცენტი (0%-იც რომ იყოს)
-            updateProgressPercentage();
+            return calculateGlobalChapterWeights();
         });
 
         // 🏗️ 2. Metadata
@@ -464,62 +460,80 @@ function updateSidebarStyling() {
     });
 }
 
+async function calculateGlobalChapterWeights() {
+    if (!currentBook || !window.currentRawEpubFile) return;
+    const cacheKey = 'epub_weights_' + window.currentRawEpubFile.name;
+    const cached = localStorage.getItem(cacheKey);
+    
+    if (cached) {
+        try {
+            window.chapterWeights = JSON.parse(cached);
+            updateProgressPercentage();
+            return;
+        } catch(e) {}
+    }
+    
+    console.log("📍 Calculating true global chapter weights...");
+    const weights = [];
+    let totalLength = 0;
+    
+    // Process sequentially so we don't crash or block
+    for (let i = 0; i < currentBook.spine.length; i++) {
+        const item = currentBook.spine.get(i);
+        if (!item) {
+            weights.push(0);
+            continue;
+        }
+        try {
+            const doc = await currentBook.load(item.href);
+            const text = extractTextFromDoc(doc);
+            const len = text ? text.length : 0;
+            weights.push(len);
+            totalLength += len;
+        } catch(e) {
+            weights.push(100);
+            totalLength += 100;
+        }
+    }
+    
+    window.chapterWeights = { weights, totalLength };
+    try { localStorage.setItem(cacheKey, JSON.stringify(window.chapterWeights)); } catch(e) {}
+    console.log("✅ Global weights calculated!");
+    updateProgressPercentage();
+}
+
 function updateProgressPercentage() {
     if (!currentBook || !window.currentRawEpubFile) return;
 
-    // 1. ვიღებთ რეალურ შენახულ პოზიციას
     let activeIndex = getRealSavedIndex();
-
-    // 🚩 ახალი წიგნის ლოგიკა:
-    // თუ წიგნი ახალია და შენახული პოზიცია არ აქვს (-1),
-    // ჩავთვალოთ რომ არის დასაწყისში (0).
     if (activeIndex === -1) activeIndex = 0;
 
-    // შიდა ინდექსი (წინადადების)
     let activeSentenceIdx = parseInt(localStorage.getItem('epub_idx_' + window.currentRawEpubFile.name) || 0);
 
     const badge = document.getElementById('header-progress-badge');
     let finalFraction = 0;
-    let isCalculated = false;
 
-    // 2. გამოთვლა
-    try {
-        if (currentBook.locations && currentBook.locations.length() > 0) {
-            const currentSpineItem = currentBook.spine.get(activeIndex);
-            let startPercent = currentBook.locations.percentageFromCfi(currentSpineItem.cfi);
-            if (startPercent === undefined || startPercent === null) {
-                startPercent = currentBook.locations.percentageFromCfi(currentSpineItem.href);
-            }
-
-            if (startPercent !== undefined && startPercent !== null) {
-                let endPercent = 1;
-                if (activeIndex < currentBook.spine.length - 1) {
-                    const nextItem = currentBook.spine.get(activeIndex + 1);
-                    const nextPerc = currentBook.locations.percentageFromCfi(nextItem.cfi || nextItem.href);
-                    if (nextPerc) endPercent = nextPerc;
-                }
-
-                const chapterWeight = endPercent - startPercent;
-
-                // აქაც ვიყენებთ activeSentenceIdx-ს (ანუ შენახულ პოზიციას)
-                // თუ activeIndex არის ის, რასაც ვუყურებთ (active === currentSpineIndex) და გვაქვს კონტენტი,
-                // მაშინ ვითვლით ზუსტად. თუ არა და, უბრალოდ დასაწყისია.
-                let progressInChapter = 0;
-
-                if (activeIndex === currentSpineIndex && parsedContent.length > 0) {
-                    progressInChapter = activeSentenceIdx / parsedContent.length;
-                }
-
-                finalFraction = startPercent + (chapterWeight * progressInChapter);
-                isCalculated = true;
-            }
+    // 1. Precise Global Calculation
+    if (window.chapterWeights && window.chapterWeights.totalLength > 0) {
+        const { weights, totalLength } = window.chapterWeights;
+        
+        let previousLength = 0;
+        for (let i = 0; i < activeIndex; i++) {
+            previousLength += (weights[i] || 0);
         }
-    } catch (err) {
-        console.warn("Smart percentage failed", err);
-    }
-
-    // 3. Fallback (მარტივი დათვლა)
-    if (!isCalculated || isNaN(finalFraction)) {
+        
+        let currentChapterLength = weights[activeIndex] || 0;
+        let progressInChapter = 0;
+        
+        if (activeIndex === currentSpineIndex && parsedContent.length > 0) {
+            progressInChapter = activeSentenceIdx / parsedContent.length;
+        }
+        
+        let currentProgressLength = currentChapterLength * progressInChapter;
+        finalFraction = (previousLength + currentProgressLength) / totalLength;
+    } 
+    // 2. Fallback (Simple Chapter-based)
+    else {
         const totalChapters = currentBook.spine.length;
         if (totalChapters > 0) {
             const currentChapterWeight = 1 / totalChapters;
