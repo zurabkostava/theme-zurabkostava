@@ -414,3 +414,38 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* დამალული ელემენტი */
 .hidden { display: none !important; }
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 768px) {
+    .header { padding: 12px 16px; }
+    .logo { font-size: 0.85rem; }
+    .settings-panel { padding: 15px; }
+    
+    /* Stack settings rows vertically instead of side-by-side */
+    .setting-row { flex-direction: column; gap: 15px; }
+    .setting-group.half { width: 100%; }
+    
+    /* Reader content */
+    #content-area { padding: 15px; padding-bottom: 120px; font-size: 1rem; }
+    .paragraph { margin-bottom: 16px; }
+    
+    /* Player Controls */
+    .controls-overlay {
+        padding: 15px;
+        padding-bottom: calc(15px + env(safe-area-inset-bottom));
+    }
+    .controls {
+        padding: 10px 20px;
+        gap: 15px;
+        width: 100%;
+        justify-content: space-evenly;
+    }
+    
+    /* Modals */
+    .info-modal-content {
+        width: 95%;
+        margin: 20px auto;
+        padding: 20px;
+        max-height: 80vh;
+    }
+}
+
