@@ -2,16 +2,6 @@ let synthesis = window.speechSynthesis;
 let piperVoicesList = [];
 let detectedBookLanguages = new Set(['en', 'ka']);
 let piperWorkers = {};
-let kokoroWorkers = {};
-
-const KOKORO_VOICES = [
-    { key: 'af_heart', name: 'Kokoro - af_heart (US Female)', lang: 'en-US', type: 'kokoro' },
-    { key: 'af_bella', name: 'Kokoro - af_bella (US Female)', lang: 'en-US', type: 'kokoro' },
-    { key: 'am_adam', name: 'Kokoro - am_adam (US Male)', lang: 'en-US', type: 'kokoro' },
-    { key: 'bf_emma', name: 'Kokoro - bf_emma (UK Female)', lang: 'en-GB', type: 'kokoro' },
-    { key: 'bm_george', name: 'Kokoro - bm_george (UK Male)', lang: 'en-GB', type: 'kokoro' }
-];
-
 let parsedContent = [];
 let currentIdx = 0;
 let isPlaying = false;
@@ -751,85 +741,6 @@ function setTtsStatus(message) {
     }
 }
 
-function getKokoroWorkerUrl() {
-    const base = window.THEME_URI || '/wp-content/themes/zurabkostava';
-    return base + '/WordEvo/kokoro-worker.js?v=' + Date.now();
-}
-
-function initKokoroWorker(langCode, voicePath) {
-    if (!kokoroWorkers[langCode]) kokoroWorkers[langCode] = { worker: null, ready: false, initializing: false, currentAudio: null, voicePath: null, pending: [] };
-    const state = kokoroWorkers[langCode];
-    if (!Array.isArray(state.pending)) state.pending = [];
-    const rejectPending = (err) => { while (state.pending.length) { try { state.pending.shift().reject(err); } catch (e) {} } };
-
-    if (state.voicePath === voicePath && state.worker && (state.ready || state.initializing)) return;
-    if (state.worker) state.worker.terminate();
-    rejectPending(new Error('Kokoro worker restarted'));
-    
-    state.ready = false; state.initializing = true; state.voicePath = voicePath;
-
-    const failInit = (message) => {
-        state.initializing = false; state.ready = false;
-        if (state.worker) { state.worker.terminate(); state.worker = null; }
-        state.voicePath = null; 
-        rejectPending(new Error(message));
-        console.error("Kokoro init failed:", message);
-        setTtsStatus("❌ " + message);
-        setTimeout(() => setTtsStatus(null), 6000);
-        const dlBtn = document.getElementById(`download-kokoro-${langCode}`);
-        if (dlBtn) {
-            dlBtn.textContent = "🔁 Retry Download";
-            dlBtn.disabled = false;
-            dlBtn.style.opacity = "1";
-        }
-        stopReading();
-    };
-
-    let worker;
-    try {
-        worker = new Worker(getKokoroWorkerUrl(), { type: 'module' });
-    } catch (e) {
-        failInit("Worker creation failed: " + (e.message || e));
-        return;
-    }
-    state.worker = worker;
-    setTtsStatus("⏳ Kokoro Model Loading...");
-
-    worker.onmessage = (e) => {
-        const msg = e.data;
-        if (msg.kind === 'status') {
-            setTtsStatus(msg.message);
-        }
-        else if (msg.kind === 'progress') {
-            // Optional: Handle progress events from transformers.js
-        }
-        else if (msg.kind === 'ready') { 
-            state.ready = true; 
-            state.initializing = false; 
-            setTtsStatus(null);
-            
-            const dlBtn = document.getElementById(`download-kokoro-${langCode}`);
-            if (dlBtn) {
-                dlBtn.textContent = "✅ Voice Ready";
-                dlBtn.style.opacity = "0.5";
-                dlBtn.disabled = true;
-                dlBtn.style.background = "transparent";
-                dlBtn.style.border = "1px solid rgba(255,255,255,0.1)";
-                dlBtn.style.color = "var(--text-muted)";
-            }
-        }
-        else if (msg.kind === 'error') {
-            failInit(msg.message);
-            alert("Kokoro Error: " + msg.message);
-        }
-        else if (msg.kind === 'output' && msg.wav) {
-            const p = state.pending.shift();
-            if (p) p.resolve(msg.wav);
-        }
-    };
-    state.worker.postMessage({ kind: 'init' });
-}
-
 function initPiperWorker(langCode, voicePath) {
     if (!piperWorkers[langCode]) piperWorkers[langCode] = { worker: null, ready: false, initializing: false, currentAudio: null, voicePath: null, pending: [] };
     const state = piperWorkers[langCode];
@@ -928,9 +839,6 @@ function stopPiperAudio() {
     Object.values(piperWorkers).forEach(state => {
         if (state.currentAudio) { state.currentAudio.pause(); state.currentAudio = null; }
     });
-    Object.values(kokoroWorkers).forEach(state => {
-        if (state.currentAudio) { state.currentAudio.pause(); state.currentAudio = null; }
-    });
 }
 
 // 'ka_GE', 'ka-GE', 'KA-ge' → all normalize to 'ka-ge' so they match langCode 'ka'
@@ -1026,18 +934,6 @@ function rebuildDynamicSettings() {
                 select.appendChild(optGroup);
             }
 
-            const kokoroForLang = KOKORO_VOICES.filter(v => langMatches(v.lang, langCode));
-            if (kokoroForLang.length > 0) {
-                const optGroup = document.createElement('optgroup');
-                optGroup.label = "✨ Next-Gen Kokoro Voices";
-                kokoroForLang.forEach(v => {
-                    const opt = document.createElement('option');
-                    opt.value = v.name; opt.textContent = v.name;
-                    optGroup.appendChild(opt);
-                });
-                select.appendChild(optGroup);
-            }
-
             if (select.options.length === 0) {
                 const opt = document.createElement('option');
                 opt.value = '';
@@ -1051,33 +947,12 @@ function rebuildDynamicSettings() {
                 else select.selectedIndex = 0;
             }
 
-            // Also update the button ID to something generic or change it dynamically
-            dlBtn.id = `download-voice-btn-${langCode}`;
-
             function updateDlBtn() {
-                const chosenPiper = piperList.find(v => v.name === select.value);
-                const chosenKokoro = KOKORO_VOICES.find(v => v.name === select.value);
-                
-                if (chosenPiper || chosenKokoro) {
+                const chosen = piperList.find(v => v.name === select.value);
+                if (chosen) {
                     dlBtn.classList.remove('hidden');
-                    
-                    let state;
-                    let isReady = false;
-                    let voicePath = chosenPiper ? chosenPiper.path : chosenKokoro.key;
-                    
-                    if (chosenPiper) {
-                        state = piperWorkers[langCode];
-                        dlBtn.id = `download-${langCode}`; // Legacy ID for failInit matching
-                    } else {
-                        state = kokoroWorkers[langCode];
-                        dlBtn.id = `download-kokoro-${langCode}`;
-                    }
-                    
-                    if (state && state.voicePath === voicePath && state.ready) {
-                        isReady = true;
-                    }
-
-                    if (isReady) {
+                    const state = piperWorkers[langCode];
+                    if (state && state.voicePath === chosen.path && state.ready) {
                         dlBtn.textContent = "✅ Voice Ready";
                         dlBtn.style.opacity = "0.5";
                         dlBtn.disabled = true;
@@ -1103,16 +978,9 @@ function rebuildDynamicSettings() {
             });
 
             dlBtn.addEventListener('click', () => {
-                const chosenPiper = piperList.find(v => v.name === select.value);
-                const chosenKokoro = KOKORO_VOICES.find(v => v.name === select.value);
-                
-                if (chosenPiper) {
-                    initPiperWorker(langCode, chosenPiper.path);
-                    dlBtn.textContent = "⏳ Initializing...";
-                    dlBtn.disabled = true;
-                    dlBtn.style.opacity = "0.7";
-                } else if (chosenKokoro) {
-                    initKokoroWorker(langCode, chosenKokoro.key);
+                const chosen = piperList.find(v => v.name === select.value);
+                if (chosen) {
+                    initPiperWorker(langCode, chosen.path);
                     dlBtn.textContent = "⏳ Initializing...";
                     dlBtn.disabled = true;
                     dlBtn.style.opacity = "0.7";
@@ -1330,7 +1198,7 @@ function piperSynthesize(state, text) {
         if (!text) { resolve(null); return; }
         if (!state || !state.worker || !state.ready) { reject(new Error('Piper worker not ready')); return; }
         state.pending.push({ resolve: resolve, reject: reject });
-        state.worker.postMessage({ kind: 'synthesize', text: text, voicePath: state.voicePath });
+        state.worker.postMessage({ kind: 'synthesize', text: text });
     });
 }
 
@@ -1443,50 +1311,6 @@ async function playPiperChunk(chunk, rate, token) {
     return token === playbackToken && isPlaying;
 }
 
-// ======================= KOKORO PLAYBACK =======================
-async function synthesizeKokoroSentence(langCode, text, token) {
-    let state = kokoroWorkers[langCode];
-    try {
-        return await piperSynthesize(state, text); // we can reuse piperSynthesize since message format is the same
-    } catch (e) {
-        console.warn('Kokoro synth error, rebuilding worker:', e.message);
-        const path = state ? state.voicePath : null;
-        if (!path || token !== playbackToken) return null;
-        state.voicePath = null;
-        initKokoroWorker(langCode, path);
-        state = kokoroWorkers[langCode];
-        const ok = await waitForPiperReady(state, token); // waitForPiperReady works for any state object
-        if (!ok) return null;
-        try { return await piperSynthesize(state, text); }
-        catch (e2) { console.error('Kokoro synth failed after worker rebuild:', e2.message); return null; }
-    }
-}
-
-async function playKokoroChunk(chunk, rate, token) {
-    const state = kokoroWorkers[chunk.lang];
-    const ready = await waitForPiperReady(state, token);
-    if (!ready) return false;
-
-    const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
-    let wavPromise = synthesizeKokoroSentence(chunk.lang, spokenList[0].text, token);
-
-    for (let i = 0; i < chunk.sentences.length; i++) {
-        if (token !== playbackToken || !isPlaying) return false;
-        const wav = await wavPromise; 
-        if (i + 1 < chunk.sentences.length) {
-            wavPromise = synthesizeKokoroSentence(chunk.lang, spokenList[i + 1].text, token);
-        }
-        if (token !== playbackToken || !isPlaying) return false;
-
-        currentIdx = chunk.sentences[i].index;
-        highlightSentence(currentIdx, true);
-        updateMediaPosition();
-
-        if (wav) await playPiperAudio(kokoroWorkers[chunk.lang], wav, rate, spokenList[i], token);
-    }
-    return token === playbackToken && isPlaying;
-}
-
 function playNativeChunk(chunk, nativeVoice, rate, token) {
     return new Promise((resolve) => {
         let combinedText = "";
@@ -1576,25 +1400,15 @@ async function playMergedQueue() {
         const rate = parseFloat(localStorage.getItem(rateInputId) || '1');
 
         const piperVoice = piperVoicesList.find(v => v && v.name === selectedVoiceName);
-        const kokoroVoice = KOKORO_VOICES.find(v => v && v.name === selectedVoiceName);
 
         if (piperVoice) {
             const state = piperWorkers[chunk.lang];
-            if (!state || !state.ready || state.voicePath !== piperVoice.path) {
+            if (!state || state.voicePath !== piperVoice.path) {
                 stopReading();
                 alert(`გთხოვთ, პარამეტრებიდან ჯერ ჩამოტვირთოთ/გაააქტიუროთ ხმა:\n"${piperVoice.name}"`);
                 return;
             }
             const ok = await playPiperChunk(chunk, rate, token);
-            if (!ok) return;
-        } else if (kokoroVoice) {
-            const state = kokoroWorkers[chunk.lang];
-            if (!state || !state.ready || state.voicePath !== kokoroVoice.key) {
-                stopReading();
-                alert(`გთხოვთ, პარამეტრებიდან ჯერ ჩამოტვირთოთ/გაააქტიუროთ ხმა:\n"${kokoroVoice.name}"`);
-                return;
-            }
-            const ok = await playKokoroChunk(chunk, rate, token);
             if (!ok) return;
         } else {
             const nativeVoice = voices.find(v => v && v.name === selectedVoiceName) || voices.find(v => v && langMatches(v.lang, chunk.lang)) || voices[0];
