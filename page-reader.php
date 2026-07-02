@@ -139,20 +139,22 @@
 </div>
 
 <div id="library-modal" class="info-modal-overlay hidden">
-    <div class="info-modal-content" style="max-width: 800px;">
+    <div class="info-modal-content premium-modal" style="max-width: 900px;">
         <button id="close-library-btn" class="icon-btn close-modal">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
 
-        <div class="modal-header">
-            <div class="modal-title-group">
-                <h2>📚 Library <span id="total-books-count" class="count-badge">...</span></h2>
-                <h3>Select a book to read</h3>
+        <div class="modal-header premium-header">
+            <div class="modal-title-group" style="text-align: center; width: 100%;">
+                <h2 class="premium-title">📚 Your Library <span id="total-books-count" class="count-badge">...</span></h2>
+                <h3 class="premium-subtitle">Select a book to read</h3>
             </div>
         </div>
-        <div style="margin-bottom: 20px; position: sticky; top: 0; z-index: 10; background: #1e293b; padding-bottom: 10px;">
-            <input type="text" id="library-search-input" placeholder="🔍 Type to search..."
-                   style="width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #f8fafc; outline: none; font-size: 0.95rem; transition: border 0.3s;">
+        <div class="sticky-search-wrapper">
+            <div class="search-icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+            <input type="text" id="library-search-input" class="premium-search-input" placeholder="Search by title or author...">
         </div>
         <div id="library-grid" class="library-grid">
         </div>
@@ -815,6 +817,17 @@
         transform: scale(1);
         transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
+    
+    .info-modal-content.premium-modal {
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(24px) saturate(150%);
+        -webkit-backdrop-filter: blur(24px) saturate(150%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
 
     .info-modal-overlay.hidden .info-modal-content {
         transform: scale(0.95);
@@ -906,77 +919,146 @@
         opacity: 0.7;
         font-size: 0.9em;
     }
+    /* Premium Modal Header */
+    .premium-header {
+        margin-bottom: 30px;
+        flex-direction: column;
+        align-items: center;
+        border-bottom: none;
+    }
+    .premium-title {
+        font-size: 2rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 8px !important;
+        background: linear-gradient(135deg, #f8fafc, #94a3b8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.5px;
+    }
+    .premium-subtitle {
+        color: #94a3b8 !important;
+        font-size: 1rem !important;
+        font-weight: 400 !important;
+        margin: 0 !important;
+    }
+
+    /* Premium Search */
+    .sticky-search-wrapper {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        margin-bottom: 24px;
+        padding: 10px 0 20px 0;
+        background: linear-gradient(to bottom, rgba(15, 23, 42, 0.95) 60%, rgba(15, 23, 42, 0.5) 85%, transparent);
+    }
+    .search-icon-wrapper {
+        position: absolute;
+        left: 16px;
+        top: 23px;
+        color: #94a3b8;
+        width: 18px;
+        height: 18px;
+        pointer-events: none;
+    }
+    .premium-search-input {
+        width: 100%;
+        padding: 14px 20px 14px 44px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: rgba(0, 0, 0, 0.4) !important;
+        color: #f8fafc !important;
+        outline: none;
+        font-size: 1rem;
+        transition: all 0.3s;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .premium-search-input:focus {
+        border-color: var(--primary) !important;
+        background: rgba(0, 0, 0, 0.6) !important;
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1), inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+
     /* --- LIBRARY GRID STYLES --- */
     .library-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 24px;
         padding-top: 10px;
     }
 
     .book-card {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 10px;
+        background: rgba(30, 41, 59, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 12px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
+        position: relative;
     }
 
     .book-card:hover {
-        background: rgba(56, 189, 248, 0.1);
-        border-color: var(--primary);
-        transform: translateY(-5px);
+        background: rgba(30, 41, 59, 0.8);
+        border-color: rgba(56, 189, 248, 0.3);
+        transform: translateY(-6px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(56, 189, 248, 0.1);
     }
 
     .book-card-cover {
         width: 100%;
         aspect-ratio: 2/3;
-        background: #0f172a;
-        border-radius: 4px;
-        margin-bottom: 10px;
+        background: #0f172a !important;
+        border-radius: 8px;
+        margin-bottom: 16px;
         object-fit: cover;
         display: flex;
         align-items: center;
         justify-content: center;
         color: var(--text-muted);
         font-size: 2rem;
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.05) !important;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .book-card:hover .book-card-cover {
+        box-shadow: 0 12px 24px rgba(0,0,0,0.5);
+    }
+    
+    .book-card-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
     }
 
-    /* --- UPDATED CARD TYPOGRAPHY --- */
     .book-card-title {
-        font-size: 0.95rem;      /* ოდნავ გავზარდეთ */
-        font-weight: 700;        /* უფრო მსუქანი (Bold) */
-        color: #f8fafc;          /* მკვეთრი თეთრი */
-        margin-bottom: 6px;      /* დაშორება ავტორამდე */
-        line-height: 1.3;
-
-        /* ტექსტის შეკვეცა 2 ხაზზე */
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #f8fafc;
+        margin-bottom: 4px;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
+        line-height: 1.3;
     }
 
     .book-card-author {
-        font-size: 0.75rem;      /* პატარა ზომა */
-        color: #94a3b8;          /* ნაცრისფერი (Muted) */
-        font-weight: 500;
-        text-transform: uppercase; /* დიდი ასოებით (სტილისთვის) */
-        letter-spacing: 0.5px;     /* ასოების დაშორება */
-
-        /* ტექსტის შეკვეცა 1 ხაზზე */
+        color: #94a3b8;
+        font-size: 0.8rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        width: 100%;
+        max-width: 100%;
     }
+
+    /* Removed duplicate typography to avoid overriding premium card styles */
 
     .publisher-info.hidden {
         display: none;
@@ -1000,14 +1082,17 @@
         position: absolute;
         top: 8px;
         right: 8px;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        font-size: 0.65rem;
-        padding: 2px 6px;
-        border-radius: 4px;
-        backdrop-filter: blur(4px);
+        background: rgba(15, 23, 42, 0.85);
+        color: #38bdf8;
+        font-weight: 700;
+        font-size: 0.7rem;
+        padding: 4px 8px;
+        border-radius: 6px;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         z-index: 5;
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
 
     .book-card { position: relative; } /* აუცილებელია პოზიციონირებისთვის */
