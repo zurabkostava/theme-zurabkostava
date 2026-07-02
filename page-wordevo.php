@@ -145,6 +145,10 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         </div>
                     </button>
                 </div>
+                <a href="<?php echo home_url('/reader'); ?>" class="library-manager-btn premium-library-btn" style="text-decoration: none; display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 20px;">
+                    <i class="fas fa-book-reader"></i>
+                    <span>Reader</span>
+                </a>
             </div>
             <div class="top-center" style="display: flex !important; align-items: center !important; justify-content: center !important; gap: 20px !important;">
 
