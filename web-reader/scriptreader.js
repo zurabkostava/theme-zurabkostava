@@ -2,6 +2,19 @@ let synthesis = window.speechSynthesis;
 let piperVoicesList = [];
 let detectedBookLanguages = new Set(['en', 'ka']);
 let piperWorkers = {};
+
+let parsedContent = [];
+let currentIdx = 0;
+let isPlaying = false;
+let voices = [];
+let isEditMode = false;
+window.utterances = [];
+// EPUB Globals
+let currentBook = null;
+let currentSpineIndex = 0; // ეს არის ის, რასაც ვუყურებთ
+let tocHrefSet = new Set();
+// --- GHOST PLAYER (Android Fix) ---
+
 let parsedContent = [];
 let currentIdx = 0;
 let isPlaying = false;
@@ -20,6 +33,47 @@ ghostAudio.volume = 0.1;
 let wakeLock = null;
 
 // --- 🧠 CORE HELPER: რეალური პოზიციის გაგება ---
+async function fetchPiperVoices() {
+    try {
+        const cached = localStorage.getItem('piper_voices_cache');
+        if (cached) {
+            piperVoicesList = JSON.parse(cached);
+            return piperVoicesList;
+        }
+        const res = await fetch('https://huggingface.co/rhasspy/piper-voices/raw/main/voices.json');
+        const json = await res.json();
+        const mapped = Object.keys(json).map(k => {
+            const v = json[k];
+            const onnxFile = Object.keys(v.files).find(f => f.endsWith('.onnx'));
+            if (!onnxFile) return null;
+            return {
+                isPiper: true,
+                key: v.key,
+                name: `☁️ Piper — ${v.language.name_english} (${v.name}, ${v.quality})`,
+                lang: v.language.code,
+                path: onnxFile.replace('.onnx', '')
+            };
+        }).filter(Boolean);
+        
+        piperVoicesList = mapped.sort((a, b) => a.name.localeCompare(b.name));
+        
+        const hasGeorgian = piperVoicesList.some(v => v.key === 'ka_GE-natia-medium');
+        if (!hasGeorgian) {
+            piperVoicesList.push({ isPiper: true, key: 'ka_GE-natia-medium', name: '☁️ Piper — Georgian (Natia, medium)', lang: 'ka_GE', path: 'ka/ka_GE/natia/medium/ka_GE-natia-medium' });
+        }
+        
+        localStorage.setItem('piper_voices_cache', JSON.stringify(piperVoicesList));
+        return piperVoicesList;
+    } catch (e) {
+        console.error('Failed to fetch piper voices', e);
+        piperVoicesList = [
+            { isPiper: true, key: 'ka_GE-natia-medium', name: '☁️ Piper — Georgian (Natia, medium)', lang: 'ka_GE', path: 'ka/ka_GE/natia/medium/ka_GE-natia-medium' },
+            { isPiper: true, key: 'en_US-lessac-medium', name: '☁️ Piper — English (Lessac, medium)', lang: 'en_US', path: 'en/en_US/lessac/medium/en_US-lessac-medium' }
+        ];
+        return piperVoicesList;
+    }
+}
+
 function getRealSavedIndex() {
     if (!currentBook || !window.currentRawEpubFile) return -1;
     const savedHref = localStorage.getItem('epub_progress_' + window.currentRawEpubFile.name);
@@ -109,7 +163,7 @@ const uploadBtn = document.getElementById('upload-btn');
 const fileInput = document.getElementById('file-input');
 const dropZone = document.getElementById('drop-zone');
 // --- 3. MEDIA SESSION ---
-document.getElementById('refresh-voices-btn').onclick = async () => { await fetchPiperVoices(); loadVoices(); rebuildDynamicSettings(); };
+document.getElementById('refresh-voices-btn').onclick = async () => { await fetchPiperVoices(); fetchPiperVoices().then(() => loadVoices()); rebuildDynamicSettings(); };
 
 function initMediaSession() {
     if ('mediaSession' in navigator) {
@@ -605,28 +659,6 @@ function showDropZone() {
 </div>`;
 }
 // Helpers
-async function fetchPiperVoices() {
-    try {
-        const cached = localStorage.getItem('piper_voices_cache');
-        if (cached) { piperVoicesList = JSON.parse(cached); return piperVoicesList; }
-        const res = await fetch('https://huggingface.co/rhasspy/piper-voices/raw/main/voices.json');
-        const json = await res.json();
-        const mapped = Object.keys(json).map(k => {
-            const v = json[k];
-            const onnxFile = Object.keys(v.files).find(f => f.endsWith('.onnx'));
-            if (!onnxFile) return null;
-            return {
-                isPiper: true, key: v.key,
-                name: `☁️ Piper — ${v.language.name_english} (${v.name}, ${v.quality})`,
-                lang: v.language.code.split('_')[0],
-                path: onnxFile.replace('.onnx', '')
-            };
-        }).filter(Boolean);
-        piperVoicesList = mapped.sort((a, b) => a.name.localeCompare(b.name));
-        localStorage.setItem('piper_voices_cache', JSON.stringify(piperVoicesList));
-        return piperVoicesList;
-    } catch (e) { console.error('Failed to fetch piper voices', e); return []; }
-}
 
 function initPiperWorker(langCode, voicePath) {
     if (!piperWorkers[langCode]) piperWorkers[langCode] = { worker: null, ready: false, initializing: false, currentAudio: null, voicePath: null };
@@ -637,12 +669,13 @@ function initPiperWorker(langCode, voicePath) {
     state.worker = new Worker('/wp-content/themes/zurabkostava/WordEvo/piper-worker.js');
     state.worker.onmessage = (e) => {
         const msg = e.data;
-        if (msg.kind === 'ready') { state.ready = true; state.initializing = false; }
-        else if (msg.kind === 'output' && msg.wav) {
-            if (state.onWav) state.onWav(msg.wav);
+        if (msg.type === 'initDone') { state.ready = true; state.initializing = false; }
+        else if (msg.type === 'audio' && msg.audio) {
+            const audioBlob = new Blob([msg.audio], { type: 'audio/wav' });
+            if (state.onWav) state.onWav(audioBlob);
         }
     };
-    state.worker.postMessage({ kind: 'init', voicePath: voicePath });
+    state.worker.postMessage({ type: 'init', voice: voicePath });
 }
 
 function stopPiperAudio() {
@@ -654,6 +687,8 @@ function stopPiperAudio() {
 function rebuildDynamicSettings() {
     if (!dynamicVoiceSettings) return;
     dynamicVoiceSettings.innerHTML = '';
+    
+    // For each detected language, build UI
     Array.from(detectedBookLanguages).sort().forEach(langCode => {
         const wrapper = document.createElement('div');
         wrapper.style.marginBottom = '16px';
@@ -667,8 +702,7 @@ function rebuildDynamicSettings() {
         if(langCode === 'en') flag = '🇺🇸';
         if(langCode === 'ru') flag = '🇷🇺';
         
-        let langName = langCode.toUpperCase();
-        try { langName = new Intl.DisplayNames(['en'], { type: 'language' }).of(langCode); } catch(e){}
+        const langName = new Intl.DisplayNames(['en'], { type: 'language' }).of(langCode) || langCode.toUpperCase();
         
         const voiceSelectId = `voice-${langCode}`;
         const rateInputId = `rate-${langCode}`;
@@ -690,41 +724,12 @@ function rebuildDynamicSettings() {
         dynamicVoiceSettings.appendChild(wrapper);
         
         const select = document.getElementById(voiceSelectId);
+        fillVoiceSelect(select, langCode, "");
         
-        const nativeVoices = voices.filter(v => v.lang.startsWith(langCode));
-        if (nativeVoices.length > 0) {
-            const optGroup = document.createElement('optgroup');
-            optGroup.label = "Native Browser Voices";
-            nativeVoices.forEach(v => {
-                const opt = document.createElement('option');
-                opt.value = v.name; opt.textContent = v.name;
-                optGroup.appendChild(opt);
-            });
-            select.appendChild(optGroup);
-        }
-        
-        const piperForLang = piperVoicesList.filter(v => v.lang === langCode);
-        if (piperForLang.length > 0) {
-            const optGroup = document.createElement('optgroup');
-            optGroup.label = "High-Quality Piper Voices";
-            piperForLang.forEach(v => {
-                const opt = document.createElement('option');
-                opt.value = v.name; opt.textContent = v.name;
-                optGroup.appendChild(opt);
-            });
-            select.appendChild(optGroup);
-        }
-        
-        if (select.options.length === 0) {
-            const opt = document.createElement('option');
-            opt.text = "No voice found"; select.add(opt);
-        }
-        
-        select.value = savedVoice;
-        if(select.selectedIndex === -1 && select.options.length > 0) select.selectedIndex = 0;
-        
+        // Event Listeners
         select.addEventListener('change', (e) => {
             localStorage.setItem(voiceSelectId, e.target.value);
+            // Preload piper if selected
             const chosen = piperVoicesList.find(v => v.name === e.target.value);
             if (chosen) initPiperWorker(langCode, chosen.path);
         });
@@ -744,7 +749,46 @@ function loadVoices() {
         setTimeout(loadVoices, 1000);
     }
 }
+function fillVoiceSelect(select, langCode, fallbackName) {
+    select.innerHTML = '';
+    
+    const nativeGroup = document.createElement('optgroup');
+    nativeGroup.label = "Native Browser Voices";
+    const relevantVoices = voices.filter(v => v.lang.includes(langCode) || v.name.includes(fallbackName) || v.name.toLowerCase().includes('multilingual'));
+    if(relevantVoices.length === 0) { 
+        const opt = document.createElement('option'); opt.text = "Default / No specific voice found"; nativeGroup.appendChild(opt); 
+    } else { 
+        relevantVoices.forEach(voice => { 
+            const option = document.createElement('option'); option.value = voice.name; 
+            const label = voice.name.toLowerCase().includes('multilingual') ? `🌐 ${voice.name}` : `${voice.name} (${voice.lang})`; 
+            option.textContent = label; nativeGroup.appendChild(option); 
+        }); 
+    }
+    select.appendChild(nativeGroup);
 
+    if (piperVoicesList && piperVoicesList.length > 0) {
+        const piperGroup = document.createElement('optgroup');
+        piperGroup.label = "Premium AI Voices (Piper)";
+        const langPrefix = langCode.split('-')[0];
+        piperVoicesList.filter(pv => pv.lang.startsWith(langPrefix)).forEach(pv => {
+            const option = document.createElement('option');
+            option.value = 'piper:' + pv.key;
+            option.textContent = pv.name;
+            piperGroup.appendChild(option);
+        });
+        if (piperGroup.children.length > 0) select.appendChild(piperGroup);
+    }
+    
+    const savedVoiceKa = localStorage.getItem('voice_ka');
+    const savedVoiceEn = localStorage.getItem('voice_en');
+    if(langCode === 'ka' && savedVoiceKa) select.value = savedVoiceKa;
+    if(langCode === 'en' && savedVoiceEn) select.value = savedVoiceEn;
+}
+function loadSettings() {
+    const rateKa = localStorage.getItem('rate_ka');
+    const rateEn = localStorage.getItem('rate_en');
+    // ...
+}
 function numToGeorgian(num) {
     if (parseInt(num) === 0) return "ნული";
     const units = ["", "ერთ", "ორ", "სამ", "ოთხ", "ხუთ", "ექვს", "შვიდ", "რვ", "ცხრ"];
@@ -831,11 +875,14 @@ function processText(rawText) {
             const originalDisplay = restoredText.trim();
             if(!originalDisplay) return;
             const words = originalDisplay.split(/(\s+|—|–)/g).filter(w => w.trim().length > 0 || w === '—' || w === '–');
+            
             let detectedLang = 'en';
             if (/[ა-ჰ]/.test(originalDisplay)) detectedLang = 'ka';
             else if (/[А-Яа-я]/.test(originalDisplay)) detectedLang = 'ru';
             else if (/[A-Za-z]/.test(originalDisplay)) detectedLang = 'en';
+            
             detectedBookLanguages.add(detectedLang);
+
             const sSpan = document.createElement('span');
             sSpan.className = 'sentence';
             sSpan.dataset.idx = sCounter;
@@ -891,7 +938,6 @@ function processText(rawText) {
 
     currentIdx = 0;
     updateProgressBar();
-    rebuildDynamicSettings();
 }
 function playMergedQueue() {
     synthesis.cancel(); stopPiperAudio();
@@ -925,7 +971,7 @@ function playMergedQueue() {
                 let spoken = raw;
                 if (raw === '—' || raw === '–') { spoken = ","; }
                 else if (emojiRegex.test(raw)) { spoken = "."; }
-                else if (chunk.lang === 'ka-GE') {
+                else if (chunk.lang === 'ka') {
                     spoken = preprocessGeorgianText(raw);
                     if (/[a-zA-Z]/.test(spoken)) { spoken = transliterateToGeorgian(spoken); }
                 }
@@ -936,22 +982,43 @@ function playMergedQueue() {
             });
             sentenceMap.push({ idx: sent.index, element: sent.element, wordRanges: wordRanges, sentenceEndChar: combinedText.length });
         });
+        
         const voiceSelectId = `voice-${chunk.lang}`;
         const rateInputId = `rate-${chunk.lang}`;
-        const selectEl = document.getElementById(voiceSelectId);
-        const selectedVoiceName = localStorage.getItem(voiceSelectId) || (selectEl ? selectEl.value : null);
+        const selectedVoiceVal = localStorage.getItem(voiceSelectId) || (document.getElementById(voiceSelectId) ? document.getElementById(voiceSelectId).value : null);
         const rate = parseFloat(localStorage.getItem(rateInputId) || '1');
         
-        const piperVoice = piperVoicesList.find(v => v.name === selectedVoiceName);
-        const nativeVoice = voices.find(v => v.name === selectedVoiceName) || voices.find(v => v.lang.startsWith(chunk.lang)) || voices[0];
+        let piperVoice = null;
+        let nativeVoice = null;
+        
+        if (selectedVoiceVal && selectedVoiceVal.startsWith('piper:')) {
+            const key = selectedVoiceVal.split('piper:')[1];
+            piperVoice = piperVoicesList.find(v => v.key === key);
+        } else {
+            nativeVoice = voices.find(v => v.name === selectedVoiceVal) || voices.find(v => v.lang.startsWith(chunk.lang)) || voices[0];
+        }
+        
+        // HIGHLIGHT ALL SENTENCES for PIPER
+        const highlightChunk = () => {
+            sentenceMap.forEach(item => {
+                item.element.classList.add('active');
+                if (item.element.offsetTop > 0) {
+                    item.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        };
         
         if (piperVoice) {
-            sentenceMap.forEach(item => { item.element.classList.add('active'); if (item.element.offsetTop > 0) item.element.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+            highlightChunk();
             initPiperWorker(chunk.lang, piperVoice.path);
             const state = piperWorkers[chunk.lang];
             
             const attemptPlay = () => {
-                if (!state.ready) { if(!isPlaying) return; setTimeout(attemptPlay, 100); return; }
+                if (!state.ready) {
+                    if(!isPlaying) return;
+                    setTimeout(attemptPlay, 100);
+                    return;
+                }
                 state.onWav = (wavBlob) => {
                     if (!isPlaying) return;
                     const audio = new Audio(URL.createObjectURL(wavBlob));
@@ -962,194 +1029,25 @@ function playMergedQueue() {
                         state.currentAudio = null;
                         if (!isPlaying) return;
                         sentenceMap.forEach(item => { item.element.classList.remove('active'); item.element.classList.add('read'); });
-                        if (chunkIndex === chunks.length - 1) {
-                            handleNextChapterLogic();
+                        if (currentIdx < parsedContent.length - 1) {
+                            currentIdx = chunk.sentences[chunk.sentences.length - 1].index + 1;
+                            playNextChunk(); // Assuming helper, or just continue loop
+                        } else {
+                            isPlaying = false;
+                            updateControlsState();
                         }
                     };
                 };
-                state.worker.postMessage({ kind: 'synthesize', text: combinedText });
+                state.worker.postMessage({ type: 'synthesize', text: combinedText });
             };
             attemptPlay();
+            
         } else {
+            // NATIVE TTS
             const utt = new SpeechSynthesisUtterance(combinedText);
             if (nativeVoice) utt.voice = nativeVoice;
             utt.rate = rate;
             utt.lang = chunk.lang;
-            let lastActiveWord = null;
-            utt.onboundary = (event) => {
-                if (event.name === 'word') {
-                    const charPos = event.charIndex;
-                    const currentSent = sentenceMap.find(s => charPos < s.sentenceEndChar);
-    
-                    if (currentSent) {
-                        if (currentSent.idx !== currentIdx) {
-                            currentIdx = currentSent.idx;
-                            highlightSentence(currentIdx, true);
-                            updateMediaPosition();
-                            lastActiveWord = null;
-                        }
-    
-                        const currentWordRange = currentSent.wordRanges.find(r => charPos >= r.start && charPos < r.end);
-                        if (currentWordRange && lastActiveWord !== currentWordRange.el) {
-                            if (lastActiveWord) {
-                                lastActiveWord.classList.remove('active');
-                                lastActiveWord.classList.add('read');
-                            }
-                            currentWordRange.el.classList.add('active');
-                            lastActiveWord = currentWordRange.el;
-                        }
-                    }
-                }
-            };
-            utt.onend = () => {
-                if (lastActiveWord) {
-                    lastActiveWord.classList.remove('active');
-                    lastActiveWord.classList.add('read');
-                }
-                if (chunkIndex === chunks.length - 1) {
-                    handleNextChapterLogic();
-                }
-            };
-            window.utterances.push(utt);
-            synthesis.speak(utt);
-        }
-    });
-}
-function updatePlayIcon(isPlayingState) {
-    const playIcon = document.getElementById('play-icon');
-    const pauseIcon = document.getElementById('pause-icon');
-    if (isPlayingState) {
-        playIcon.classList.add('hidden');
-        pauseIcon.classList.remove('hidden');
-        if('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
-    } else {
-        playIcon.classList.remove('hidden');
-        pauseIcon.classList.add('hidden');
-        if('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
-    }
-}
-function togglePlay() {
-    if (parsedContent.length === 0) return;
-
-    if (isPlaying) {
-        synthesis.pause();
-        ghostAudio.pause();
-        isPlaying = false;
-        updatePlayIcon(false);
-        releaseWakeLock();
-        if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
-    } else {
-        ghostAudio.play().then(() => {
-            updateMediaSessionMetadata();
-            if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
-            updateMediaPosition();
-            requestWakeLock();
-            if (synthesis.paused) {
-                synthesis.resume();
-            } else {
-                playMergedQueue();
-            }
-            isPlaying = true;
-            updatePlayIcon(true);
-        }).catch(e => {
-            console.error("Audio Play failed:", e);
-            playMergedQueue();
-            isPlaying = true;
-            updatePlayIcon(true);
-        });
-    }
-}
-function stopReading() {
-    synthesis.cancel(); stopPiperAudio();
-    window.utterances = [];
-    ghostAudio.pause();
-    ghostAudio.currentTime = 0;
-    isPlaying = false;
-    updatePlayIcon(false);
-    clearHighlights();
-    releaseWakeLock();
-    if('mediaSession' in navigator) {
-        navigator.mediaSession.playbackState = "none";
-    }
-}
-function navigateSentence(dir) {
-    synthesis.cancel(); stopPiperAudio();
-    let newIdx = currentIdx + dir;
-    if (newIdx < 0) newIdx = 0;
-    if (newIdx >= parsedContent.length) newIdx = parsedContent.length - 1;
-    currentIdx = newIdx;
-    // ღილაკით გადასვლა ინახავს!
-    highlightSentence(currentIdx, true);
-    updateMediaPosition();
-    if (isPlaying) playMergedQueue();
-}
-
-// 🔥 განახლებული Highlight Sentence - შენახვის ცენტრი
-function highlightSentence(idx, saveToStorage = false) {
-    if (!parsedContent || parsedContent.length === 0) return;
-
-    // ვიზუალი
-    parsedContent.forEach((item, i) => {
-        const el = item.element;
-        const words = el.querySelectorAll('.word');
-
-        if (i < idx) {
-            el.classList.add('read');
-            el.classList.remove('active');
-            words.forEach(w => { w.classList.add('read'); w.classList.remove('active'); });
-        }
-        else if (i === idx) {
-            el.classList.remove('read');
-            el.classList.add('active');
-            words.forEach(w => { w.classList.remove('read', 'active'); });
-            scrollToCenter(contentArea, el);
-        }
-        else {
-            el.classList.remove('read', 'active');
-            words.forEach(w => { w.classList.remove('read', 'active'); });
-        }
-    });
-
-    // 📍 შენახვის ლოგიკა - მხოლოდ თუ saveToStorage არის True
-    if (saveToStorage && window.currentRawEpubFile && currentBook) {
-        // 1. ვინახავთ წინადადების ნომერს
-        localStorage.setItem('epub_idx_' + window.currentRawEpubFile.name, idx);
-
-        // 2. ვინახავთ თავის მისამართს (HREF) - ეს არის მთავარი!
-        // ეს ხდება "Max Chapter"-ის მსგავსად, ახლა ესაა აქტიური თავი.
-        const currentItem = currentBook.spine.get(currentSpineIndex);
-        if (currentItem) {
-            localStorage.setItem('epub_progress_' + window.currentRawEpubFile.name, currentItem.href);
-        }
-
-        // 3. ვაახლებთ პროცენტებს და საიდბარს (რადგან რეალური პოზიცია შეიცვალა)
-        updateProgressPercentage();
-        updateSidebarStyling();
-    }
-
-    updateProgressBar();
-}
-
-function scrollToCenter(container, element) { const elementTop = element.offsetTop; const elementHeight = element.offsetHeight; const containerHeight = container.clientHeight; let targetScroll = elementTop - (containerHeight / 2) + (elementHeight / 2); if (targetScroll < 0) { targetScroll = 0; } container.scrollTo({ top: targetScroll, behavior: 'smooth' }); }
-function clearHighlights() { document.querySelectorAll('.sentence.active').forEach(el => el.classList.remove('active')); document.querySelectorAll('.word.active').forEach(el => el.classList.remove('active')); document.querySelectorAll('.word.read').forEach(el => el.classList.remove('read')); }
-function setupModalClosing() {
-    const modalOverlay = document.getElementById('book-info-modal');
-    const closeBtn = document.getElementById('close-modal-btn');
-    if (closeBtn && modalOverlay) {
-        closeBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); modalOverlay.classList.add('hidden'); };
-        modalOverlay.onclick = (e) => { if (e.target === modalOverlay) { modalOverlay.classList.add('hidden'); } };
-    }
-}
-setupModalClosing();
-function init() {
-    fetchPiperVoices().then(() => loadVoices());
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-        speechSynthesis.onvoiceschanged = loadVoices;
-    }
-    initMediaSession();
-}
-// ... (LIBRARY LOGIC იგივე რჩება) ...
-// Library Logic-ის ქვემოთ კოდი იგივეა, არაფერი შეცვლილა.
 // უბრალოდ სრული კოდის გამო აქაც იყოს:
 // (LIBRARY LOGIC)
 async function renderLibrary() {
@@ -1257,10 +1155,7 @@ stopBtn.onclick = stopReading;
 nextBtn.onclick = () => navigateSentence(1);
 prevBtn.onclick = () => navigateSentence(-1);
 settingsBtn.onclick = () => settingsPanel.classList.toggle('hidden');
-voiceSelectKa.onchange = (e) => localStorage.setItem('voice_ka', e.target.value);
-voiceSelectEn.onchange = (e) => localStorage.setItem('voice_en', e.target.value);
-rateInputKa.oninput = (e) => { document.getElementById('rate-ka-val').textContent = e.target.value + 'x'; localStorage.setItem('rate_ka', e.target.value); };
-rateInputEn.oninput = (e) => { document.getElementById('rate-en-val').textContent = e.target.value + 'x'; localStorage.setItem('rate_en', e.target.value); };
+ localStorage.setItem('rate_en', e.target.value); };
 const globalMetaBtn = document.getElementById('book-meta-container');
 if(globalMetaBtn) { const newBtn = globalMetaBtn.cloneNode(true); globalMetaBtn.parentNode.replaceChild(newBtn, globalMetaBtn); newBtn.onclick = (e) => { console.log("🔘 Meta Container Clicked - Opening Modal Forcefully"); e.preventDefault(); e.stopPropagation(); handleMetaClick(); }; window.activeMetaBtn = newBtn; }
 init();
