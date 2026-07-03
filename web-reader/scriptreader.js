@@ -10,22 +10,35 @@ let isEditMode = false;
 window.utterances = [];
 
 let cloudSaveTimeout = null;
-function syncProgressToCloud() {
+function syncProgressToCloud(force = false) {
     if (!window.currentRawEpubFile) return;
     const bookName = window.currentRawEpubFile.name;
     const idx = localStorage.getItem('epub_idx_' + bookName) || 0;
     const href = localStorage.getItem('epub_progress_' + bookName) || '';
     const perc = localStorage.getItem('epub_perc_' + bookName) || '';
     
-    clearTimeout(cloudSaveTimeout);
-    cloudSaveTimeout = setTimeout(() => {
+    const sendData = () => {
         fetch(`/wp-json/neural/v1/progress?book=${encodeURIComponent(bookName)}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ href, idx, perc })
         }).catch(e => console.error('Cloud sync error', e));
-    }, 2000);
+    };
+
+    clearTimeout(cloudSaveTimeout);
+    
+    if (force) {
+        sendData();
+    } else {
+        cloudSaveTimeout = setTimeout(sendData, 2000);
+    }
 }
+
+window.addEventListener('beforeunload', () => {
+    if (window.currentRawEpubFile) {
+        syncProgressToCloud(true);
+    }
+});
 
 // EPUB Globals
 let currentBook = null;
@@ -581,7 +594,7 @@ function updateProgressPercentage() {
     // რადგან ჩვენ ვითვლით "შენახულ" (Real) ინდექსზე დაყრდნობით,
     // ამ შედეგების შენახვა უსაფრთხოა ბიბლიოთეკისთვის.
     localStorage.setItem('epub_perc_' + window.currentRawEpubFile.name, displayPercentage.toFixed(2));
-    syncProgressToCloud();
+    syncProgressToCloud(true); // Force sync to guarantee library gets latest percent
 }
 function displayChapter(href, delay = 0) {
     if (!currentBook) return;
@@ -1544,7 +1557,7 @@ function highlightSentence(idx, saveToStorage = false) {
         // 3. ვაახლებთ პროცენტებს და საიდბარს (რადგან რეალური პოზიცია შეიცვალა)
         updateProgressPercentage();
         updateSidebarStyling();
-        syncProgressToCloud();
+        syncProgressToCloud(true);
     }
 
     updateProgressBar();
