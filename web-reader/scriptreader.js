@@ -1718,31 +1718,5 @@ settingsBtn.onclick = () => settingsPanel.classList.toggle('hidden');
 const globalMetaBtn = document.getElementById('book-meta-container');
 if(globalMetaBtn) { const newBtn = globalMetaBtn.cloneNode(true); globalMetaBtn.parentNode.replaceChild(newBtn, globalMetaBtn); newBtn.onclick = (e) => { console.log("🔘 Meta Container Clicked - Opening Modal Forcefully"); e.preventDefault(); e.stopPropagation(); handleMetaClick(); }; window.activeMetaBtn = newBtn; }
 init();
-// === SCROLL TRACKING FOR MANUAL READING SYNC ===
-let scrollTimeout = null;
-contentArea.addEventListener('scroll', () => {
-    if (isPlaying) return; // TTS controls progress when playing
-    if (!parsedContent || parsedContent.length === 0) return;
-    
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(() => {
-        let topVisible = null;
-        for (let i = 0; i < parsedContent.length; i++) {
-            const el = parsedContent[i].element;
-            // Check if element is around the top of the visible area
-            if (el.offsetTop >= contentArea.scrollTop - 30) {
-                topVisible = i;
-                break;
-            }
-        }
-        
-        if (topVisible !== null && topVisible !== currentIdx) {
-            currentIdx = topVisible;
-            if (window.currentRawEpubFile) {
-                localStorage.setItem('epub_idx_' + window.currentRawEpubFile.name, currentIdx);
-                updateProgressPercentage();
-            }
-        }
-    }, 500); // 500ms debounce
-});
+
 
