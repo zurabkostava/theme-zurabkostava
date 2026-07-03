@@ -1606,6 +1606,11 @@ function drawBooksToGrid(booksList) {
         card.id = uniqueId;
         const randomHue = Math.floor(Math.random() * 360);
         const fileName = book.url.split('/').pop();
+        
+        if (book.perc !== undefined && book.perc !== null) {
+            localStorage.setItem('epub_perc_' + fileName, book.perc);
+        }
+        
         const savedPerc = localStorage.getItem('epub_perc_' + fileName);
         
         let percHtml = '';

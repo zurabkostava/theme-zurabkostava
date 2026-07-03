@@ -2993,10 +2993,13 @@ function neural_get_books() {
 
     if ($query->have_posts()) {
         foreach ($query->posts as $post) {
+            $filename = basename(wp_get_attachment_url($post->ID));
+            $progress = get_option("neural_global_progress_" . md5($filename));
             $books[] = array(
                 'title'  => $post->post_title,
                 'author' => get_post_meta($post->ID, 'book_author', true) ?: 'Unknown Author',
                 'url'    => wp_get_attachment_url($post->ID),
+                'perc'   => is_array($progress) && isset($progress['perc']) ? $progress['perc'] : null
             );
         }
     }
@@ -3011,11 +3014,13 @@ function neural_get_books() {
             $files = glob($books_dir . '/*.epub');
             foreach ($files as $file) {
                 $filename = basename($file);
+                $progress = get_option("neural_global_progress_" . md5($filename));
                 $title = pathinfo($filename, PATHINFO_FILENAME);
                 $books[] = array(
                     'title'  => str_replace(array('-', '_'), ' ', $title),
                     'author' => 'Unknown Author',
                     'url'    => $books_url . '/' . $filename,
+                    'perc'   => is_array($progress) && isset($progress['perc']) ? $progress['perc'] : null
                 );
             }
         }
