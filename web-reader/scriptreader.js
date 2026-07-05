@@ -928,7 +928,7 @@ function rebuildDynamicSettings() {
                 </div>
                 <div class="setting-group">
                     <label>${langName.substring(0,3).toUpperCase()} Speed <span id="${rateInputId}-val">${savedRate}x</span></label>
-                    <input type="range" id="${rateInputId}" min="0.5" max="2" step="0.1" value="${savedRate}">
+                    <input type="range" id="${rateInputId}" min="0.5" max="4" step="0.1" value="${savedRate}">
                 </div>
             `;
             container.appendChild(wrapper);
@@ -1291,7 +1291,7 @@ function playPiperAudio(state, wavBlob, rate, spoken, token) {
     return new Promise((resolve) => {
         const url = URL.createObjectURL(wavBlob);
         const audio = new Audio(url);
-        audio.playbackRate = Math.max(0.5, Math.min(rate, 2));
+        audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
         state.currentAudio = audio;
         let done = false;
         const finish = () => {
