@@ -1,153 +1,122 @@
 <?php
 // ==========================================
-// NUVIO (STREMIO) SUBTITLE ADDON REST API
+// NUVIO (STREMIO) RAW SUBTITLE ADDON
 // ==========================================
 
-add_action('rest_api_init', function () {
-    // 1. Manifest Endpoint
-    register_rest_route('nuvio/v1', '/manifest.json', array(
-        'methods' => 'GET',
-        'callback' => 'nuvio_get_manifest',
-        'permission_callback' => '__return_true'
-    ));
-
-    // 2. Subtitles Endpoint
-    // Matches /nuvio/v1/subtitles/movie/tt1234567.json or /nuvio/v1/subtitles/series/tt1234567:1:1.json
-    register_rest_route('nuvio/v1', '/subtitles/(?P<type>movie|series)/(?P<id>[^/]+)\.json', array(
-        'methods' => 'GET',
-        'callback' => 'nuvio_get_subtitles',
-        'permission_callback' => '__return_true'
-    ));
-
-    // 3. SRT Stream Endpoint (with CORS headers for TV/Web)
-    register_rest_route('nuvio/v1', '/stream/(?P<id>\d+)\.srt', array(
-        'methods' => 'GET',
-        'callback' => 'nuvio_stream_subtitle',
-        'permission_callback' => '__return_true'
-    ));
-});
-
-function nuvio_get_manifest() {
-    file_put_contents(get_template_directory() . '/nuvio-log.txt', date('Y-m-d H:i:s') . " - MANIFEST - " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown UA') . "\n", FILE_APPEND);
-
-    $response = rest_ensure_response(array(
-        'id' => 'org.zurabkostava.geosubtitles',
-        'version' => '1.0.0',
-        'name' => 'Nuvio GeoSubtitles',
-        'description' => 'Georgian subtitles for movies and series automatically synced from the media library.',
-        'types' => array('movie', 'series'),
-        'resources' => array(
-            array(
-                'name' => 'subtitles',
-                'types' => array('movie', 'series'),
-                'idPrefixes' => array('tt')
-            )
-        ),
-        'catalogs' => array(),
-        'idPrefixes' => array('tt')
-    ));
-    $response->header('Access-Control-Allow-Origin', '*');
-    $response->header('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    $response->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    return $response;
-}
-
-function nuvio_get_subtitles($request) {
-    global $wpdb;
+add_action('init', function () {
+    $uri = $_SERVER['REQUEST_URI'] ?? '';
     
-    $type = $request->get_param('type');
-    $id = $request->get_param('id');
-    
-    file_put_contents(get_template_directory() . '/nuvio-log.txt', date('Y-m-d H:i:s') . " - SUBTITLES - $type - $id - " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown UA') . "\n", FILE_APPEND);
-
-    if (!$id) {
-        $response = rest_ensure_response(array('subtitles' => array()));
-        $response->header('Access-Control-Allow-Origin', '*');
-        $response->header('Access-Control-Allow-Methods', 'GET, OPTIONS');
-        $response->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-        return $response;
+    // Only intercept requests for /nuvio-addon/
+    if (strpos($uri, '/nuvio-addon/') === false) {
+        return;
     }
 
-    // Decode URL encoded characters if any
-    $id = urldecode($id);
-    
-    // Split by colon to handle Stremio's extra parameters
-    $parts = explode(':', $id);
-
-    // Format search term based on type
-    if ($type === 'series' && count($parts) >= 3) {
-        // Only take ttID:season:episode
-        $search_term = $parts[0] . '-' . $parts[1] . '-' . $parts[2];
-    } else {
-        // Only take ttID
-        $search_term = $parts[0];
+    // 1. Handle OPTIONS (Preflight) instantly
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, OPTIONS');
+        header('Access-Control-Allow-Headers: *');
+        header('HTTP/1.1 204 No Content');
+        exit;
     }
 
-    $like = $wpdb->esc_like($search_term) . '%';
-    
-    // Search for SRT files starting with the required pattern in either post_title, post_name, or guid
-    $sql = $wpdb->prepare("
-        SELECT ID, guid 
-        FROM {$wpdb->posts} 
-        WHERE post_type='attachment' 
-        AND guid LIKE %s 
-        AND (post_title LIKE %s OR post_name LIKE %s OR guid LIKE %s)
-    ", "%.srt", "%" . $like, "%" . $like, "%" . $like);
-    
-    $results = $wpdb->get_results($sql);
-    
-    $subtitles = array();
-    
-    foreach ($results as $file) {
-        $srt_url = home_url('/wp-json/nuvio/v1/stream/' . $file->ID . '.srt');
-        
-        // Force HTTPS. Stremio TV/Web silently drops HTTP URLs.
-        $srt_url = str_replace('http://', 'https://', $srt_url);
-        
-        $subtitles[] = array(
-            'id' => $id . '_ka',
-            'url' => $srt_url,
-            'lang' => 'ka'
-        );
-        $subtitles[] = array(
-            'id' => $id . '_kat',
-            'url' => $srt_url,
-            'lang' => 'kat'
-        );
-        $subtitles[] = array(
-            'id' => $id . '_geo',
-            'url' => $srt_url,
-            'lang' => 'geo'
-        );
-    }
-    
-    // In Stremio protocol, empty array inside 'subtitles' means no subs found
-    file_put_contents(get_template_directory() . '/nuvio-log.txt', date('Y-m-d H:i:s') . " - RESULT - Found " . count($subtitles) . " subtitles for ID: $id\n", FILE_APPEND);
-    
-    $response = rest_ensure_response(array('subtitles' => $subtitles));
-    $response->header('Access-Control-Allow-Origin', '*');
-    $response->header('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    $response->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    return $response;
-}
-
-function nuvio_stream_subtitle($request) {
-    $attachment_id = intval($request->get_param('id'));
-    
-    file_put_contents(get_template_directory() . '/nuvio-log.txt', date('Y-m-d H:i:s') . " - STREAM - $attachment_id - " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown UA') . "\n", FILE_APPEND);
-
-    $file_path = get_attached_file($attachment_id);
-    
-    if (!$file_path || !file_exists($file_path)) {
-        return new WP_Error('not_found', 'Subtitle not found', array('status' => 404));
-    }
-    
-    $content = file_get_contents($file_path);
-    
+    // Set standard CORS for all GET responses
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET, OPTIONS');
-    header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
-    header('Content-Type: application/x-subrip; charset=utf-8');
-    echo $content;
-    exit;
-}
+    header('Access-Control-Allow-Headers: *');
+
+    // 2. Manifest Endpoint
+    if (strpos($uri, '/nuvio-addon/manifest.json') !== false) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(array(
+            'id' => 'org.zurabkostava.geosubtitles.raw', // Changed ID to force new addon instance
+            'version' => '2.0.0',
+            'name' => 'Nuvio Geo Subs Pro',
+            'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
+            'types' => array('movie', 'series'),
+            'resources' => array(
+                array(
+                    'name' => 'subtitles',
+                    'types' => array('movie', 'series'),
+                    'idPrefixes' => array('tt')
+                )
+            ),
+            'catalogs' => array(),
+            'idPrefixes' => array('tt')
+        ));
+        exit;
+    }
+
+    // 3. Subtitles Endpoint
+    if (preg_match('/\/nuvio-addon\/subtitles\/(movie|series)\/([^\/]+)\.json/', $uri, $matches)) {
+        header('Content-Type: application/json; charset=utf-8');
+        global $wpdb;
+        
+        $type = $matches[1];
+        $id = urldecode($matches[2]);
+        
+        file_put_contents(get_template_directory() . '/nuvio-log.txt', date('Y-m-d H:i:s') . " - RAW SUBTITLES - $type - $id - " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown UA') . "\n", FILE_APPEND);
+
+        $parts = explode(':', $id);
+        if ($type === 'series' && count($parts) >= 3) {
+            $search_term = $parts[0] . '-' . $parts[1] . '-' . $parts[2];
+        } else {
+            $search_term = $parts[0];
+        }
+
+        $like = $wpdb->esc_like($search_term) . '%';
+        
+        $sql = $wpdb->prepare("
+            SELECT ID, guid 
+            FROM {$wpdb->posts} 
+            WHERE post_type='attachment' 
+            AND guid LIKE %s 
+            AND (post_title LIKE %s OR post_name LIKE %s OR guid LIKE %s)
+        ", "%.srt", "%" . $like, "%" . $like, "%" . $like);
+        
+        $results = $wpdb->get_results($sql);
+        $subtitles = array();
+        
+        foreach ($results as $file) {
+            // Use home_url dynamically to ensure exact domain match, force https
+            $srt_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID . '.srt'));
+            
+            $subtitles[] = array(
+                'id' => $id . '_ka',
+                'url' => $srt_url,
+                'lang' => 'ka'
+            );
+            $subtitles[] = array(
+                'id' => $id . '_kat',
+                'url' => $srt_url,
+                'lang' => 'kat'
+            );
+            $subtitles[] = array(
+                'id' => $id . '_geo',
+                'url' => $srt_url,
+                'lang' => 'geo'
+            );
+        }
+        
+        echo json_encode(array('subtitles' => $subtitles));
+        exit;
+    }
+
+    // 4. Stream Endpoint
+    if (preg_match('/\/nuvio-addon\/stream\/(\d+)\.srt/', $uri, $matches)) {
+        $attachment_id = intval($matches[1]);
+        $file_path = get_attached_file($attachment_id);
+        
+        file_put_contents(get_template_directory() . '/nuvio-log.txt', date('Y-m-d H:i:s') . " - RAW STREAM - $attachment_id - " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown UA') . "\n", FILE_APPEND);
+
+        if ($file_path && file_exists($file_path)) {
+            header('Content-Type: application/x-subrip; charset=utf-8');
+            header('Content-Length: ' . filesize($file_path)); // Crucial for ExoPlayer TV!
+            readfile($file_path);
+        } else {
+            header('HTTP/1.1 404 Not Found');
+            echo "Subtitle file not found.";
+        }
+        exit;
+    }
+});
