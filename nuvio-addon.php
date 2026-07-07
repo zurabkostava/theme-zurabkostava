@@ -18,6 +18,13 @@ add_action('rest_api_init', function () {
         'callback' => 'nuvio_get_subtitles',
         'permission_callback' => '__return_true'
     ));
+
+    // 3. SRT Stream Endpoint (with CORS headers for TV/Web)
+    register_rest_route('nuvio/v1', '/stream/(?P<id>\d+)', array(
+        'methods' => 'GET',
+        'callback' => 'nuvio_stream_subtitle',
+        'permission_callback' => '__return_true'
+    ));
 });
 
 function nuvio_get_manifest() {
@@ -59,7 +66,7 @@ function nuvio_get_subtitles($request) {
     
     // Search for SRT files starting with the required pattern in either post_title, post_name, or guid
     $sql = $wpdb->prepare("
-        SELECT guid 
+        SELECT ID, guid 
         FROM {$wpdb->posts} 
         WHERE post_type='attachment' 
         AND guid LIKE %s 
@@ -73,7 +80,7 @@ function nuvio_get_subtitles($request) {
     foreach ($results as $file) {
         $subtitles[] = array(
             'id' => $id,
-            'url' => $file->guid,
+            'url' => home_url('/wp-json/nuvio/v1/stream/' . $file->ID),
             'lang' => 'Georgian (GEO)'
         );
     }
@@ -82,4 +89,20 @@ function nuvio_get_subtitles($request) {
     $response = rest_ensure_response(array('subtitles' => $subtitles));
     $response->header('Access-Control-Allow-Origin', '*');
     return $response;
+}
+
+function nuvio_stream_subtitle($request) {
+    $attachment_id = intval($request->get_param('id'));
+    $file_path = get_attached_file($attachment_id);
+    
+    if (!$file_path || !file_exists($file_path)) {
+        return new WP_Error('not_found', 'Subtitle not found', array('status' => 404));
+    }
+    
+    $content = file_get_contents($file_path);
+    
+    header('Access-Control-Allow-Origin: *');
+    header('Content-Type: application/x-subrip; charset=utf-8');
+    echo $content;
+    exit;
 }
