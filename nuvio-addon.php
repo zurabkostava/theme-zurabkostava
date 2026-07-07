@@ -28,6 +28,8 @@ add_action('rest_api_init', function () {
 });
 
 function nuvio_get_manifest() {
+    file_put_contents(get_template_directory() . '/nuvio-log.txt', date('Y-m-d H:i:s') . " - MANIFEST - " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown UA') . "\n", FILE_APPEND);
+
     $response = rest_ensure_response(array(
         'id' => 'org.zurabkostava.geosubtitles',
         'version' => '1.0.0',
@@ -50,6 +52,8 @@ function nuvio_get_subtitles($request) {
     $type = $request->get_param('type');
     $id = $request->get_param('id');
     
+    file_put_contents(get_template_directory() . '/nuvio-log.txt', date('Y-m-d H:i:s') . " - SUBTITLES - $type - $id - " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown UA') . "\n", FILE_APPEND);
+
     if (!$id) {
         $response = rest_ensure_response(array('subtitles' => array()));
         $response->header('Access-Control-Allow-Origin', '*');
@@ -118,6 +122,9 @@ function nuvio_get_subtitles($request) {
 
 function nuvio_stream_subtitle($request) {
     $attachment_id = intval($request->get_param('id'));
+    
+    file_put_contents(get_template_directory() . '/nuvio-log.txt', date('Y-m-d H:i:s') . " - STREAM - $attachment_id - " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown UA') . "\n", FILE_APPEND);
+
     $file_path = get_attached_file($attachment_id);
     
     if (!$file_path || !file_exists($file_path)) {
