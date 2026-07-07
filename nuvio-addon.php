@@ -35,12 +35,8 @@ add_action('init', function () {
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
-            'resources' => array(
-                array(
-                    'name' => 'subtitles',
-                    'types' => array('movie', 'series')
-                )
-            ),
+            'resources' => array('subtitles'),
+            'idPrefixes' => array('tt', 'tmdb'),
             'catalogs' => array()
         ));
         exit;
