@@ -13,7 +13,7 @@ add_action('rest_api_init', function () {
 
     // 2. Subtitles Endpoint
     // Matches /nuvio/v1/subtitles/movie/tt1234567.json or /nuvio/v1/subtitles/series/tt1234567:1:1.json
-    register_rest_route('nuvio/v1', '/subtitles/(?P<type>movie|series)/(?P<id>[a-zA-Z0-9:]+)\.json', array(
+    register_rest_route('nuvio/v1', '/subtitles/(?P<type>movie|series)/(?P<id>[^/]+)\.json', array(
         'methods' => 'GET',
         'callback' => 'nuvio_get_subtitles',
         'permission_callback' => '__return_true'
@@ -54,12 +54,19 @@ function nuvio_get_subtitles($request) {
         return $response;
     }
 
+    // Decode URL encoded characters if any
+    $id = urldecode($id);
+    
+    // Split by colon to handle Stremio's extra parameters
+    $parts = explode(':', $id);
+
     // Format search term based on type
-    if ($type === 'series') {
-        // tt8690918:1:1 -> tt8690918-1-1
-        $search_term = str_replace(':', '-', $id);
+    if ($type === 'series' && count($parts) >= 3) {
+        // Only take ttID:season:episode
+        $search_term = $parts[0] . '-' . $parts[1] . '-' . $parts[2];
     } else {
-        $search_term = $id;
+        // Only take ttID
+        $search_term = $parts[0];
     }
 
     $like = $wpdb->esc_like($search_term) . '%';
