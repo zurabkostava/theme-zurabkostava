@@ -3069,9 +3069,13 @@ function neural_save_progress($request) {
     return rest_ensure_response(array("success" => true));
 }
 
-// Allow EPUB uploads in WordPress Media Library
+// Allow EPUB and SRT uploads in WordPress Media Library
 function custom_mime_types($mimes) {
     $mimes['epub'] = 'application/epub+zip';
+    $mimes['srt'] = 'text/plain';
     return $mimes;
 }
 add_filter('upload_mimes', 'custom_mime_types');
+
+// Include Nuvio Addon API
+require_once get_template_directory() . '/nuvio-addon.php';
