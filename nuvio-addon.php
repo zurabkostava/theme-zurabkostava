@@ -101,6 +101,9 @@ function nuvio_get_subtitles($request) {
     foreach ($results as $file) {
         $srt_url = home_url('/wp-json/nuvio/v1/stream/' . $file->ID . '.srt');
         
+        // Force HTTPS. Stremio TV/Web silently drops HTTP URLs.
+        $srt_url = str_replace('http://', 'https://', $srt_url);
+        
         $subtitles[] = array(
             'id' => $id . '_ka',
             'url' => $srt_url,
@@ -114,7 +117,7 @@ function nuvio_get_subtitles($request) {
         $subtitles[] = array(
             'id' => $id . '_geo',
             'url' => $srt_url,
-            'lang' => 'Georgian'
+            'lang' => 'geo'
         );
     }
     
