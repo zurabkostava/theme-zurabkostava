@@ -39,6 +39,8 @@ function nuvio_get_manifest() {
         'idPrefixes' => array('tt')
     ));
     $response->header('Access-Control-Allow-Origin', '*');
+    $response->header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    $response->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     return $response;
 }
 
@@ -51,6 +53,8 @@ function nuvio_get_subtitles($request) {
     if (!$id) {
         $response = rest_ensure_response(array('subtitles' => array()));
         $response->header('Access-Control-Allow-Origin', '*');
+        $response->header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        $response->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
         return $response;
     }
 
@@ -95,6 +99,8 @@ function nuvio_get_subtitles($request) {
     // In Stremio protocol, empty array inside 'subtitles' means no subs found
     $response = rest_ensure_response(array('subtitles' => $subtitles));
     $response->header('Access-Control-Allow-Origin', '*');
+    $response->header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    $response->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     return $response;
 }
 
@@ -109,6 +115,8 @@ function nuvio_stream_subtitle($request) {
     $content = file_get_contents($file_path);
     
     header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, OPTIONS');
+    header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
     header('Content-Type: application/x-subrip; charset=utf-8');
     echo $content;
     exit;
