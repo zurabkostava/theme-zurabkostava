@@ -37,12 +37,10 @@ add_action('init', function () {
             'resources' => array(
                 array(
                     'name' => 'subtitles',
-                    'types' => array('movie', 'series'),
-                    'idPrefixes' => array('tt')
+                    'types' => array('movie', 'series')
                 )
             ),
-            'catalogs' => array(),
-            'idPrefixes' => array('tt')
+            'catalogs' => array()
         ));
         exit;
     }
