@@ -36,7 +36,13 @@ function nuvio_get_manifest() {
         'name' => 'Nuvio GeoSubtitles',
         'description' => 'Georgian subtitles for movies and series automatically synced from the media library.',
         'types' => array('movie', 'series'),
-        'resources' => array('subtitles'),
+        'resources' => array(
+            array(
+                'name' => 'subtitles',
+                'types' => array('movie', 'series'),
+                'idPrefixes' => array('tt')
+            )
+        ),
         'catalogs' => array(),
         'idPrefixes' => array('tt')
     ));
