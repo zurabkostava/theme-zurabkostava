@@ -5,9 +5,10 @@
 
 add_action('init', function () {
     $uri = $_SERVER['REQUEST_URI'] ?? '';
+    $path = parse_url($uri, PHP_URL_PATH);
     
     // Only intercept requests for /nuvio-addon/
-    if (strpos($uri, '/nuvio-addon/') === false) {
+    if (strpos($path, '/nuvio-addon/') === false) {
         return;
     }
 
@@ -26,7 +27,7 @@ add_action('init', function () {
     header('Access-Control-Allow-Headers: *');
 
     // 2. Manifest Endpoint
-    if (strpos($uri, '/nuvio-addon/manifest.json') !== false) {
+    if (strpos($path, '/nuvio-addon/manifest.json') !== false) {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw', // Changed ID to force new addon instance
@@ -46,7 +47,7 @@ add_action('init', function () {
     }
 
     // 3. Subtitles Endpoint
-    if (preg_match('/\/nuvio-addon\/subtitles\/(movie|series)\/([^\/]+)\.json/', $uri, $matches)) {
+    if (preg_match('/\/nuvio-addon\/subtitles\/(movie|series)\/([^\/]+)\.json/', $path, $matches)) {
         header('Content-Type: application/json; charset=utf-8');
         global $wpdb;
         
@@ -79,21 +80,14 @@ add_action('init', function () {
             // Use home_url dynamically to ensure exact domain match, force https
             $srt_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID . '.srt'));
             
-            $subtitles[] = array(
-                'id' => $id . '_ka',
-                'url' => $srt_url,
-                'lang' => 'ka'
-            );
-            $subtitles[] = array(
-                'id' => $id . '_kat',
-                'url' => $srt_url,
-                'lang' => 'kat'
-            );
-            $subtitles[] = array(
-                'id' => $id . '_geo',
-                'url' => $srt_url,
-                'lang' => 'geo'
-            );
+            $subtitles[] = array('id' => $id . '_ka', 'url' => $srt_url, 'lang' => 'ka');
+            $subtitles[] = array('id' => $id . '_kat', 'url' => $srt_url, 'lang' => 'kat');
+            $subtitles[] = array('id' => $id . '_geo', 'url' => $srt_url, 'lang' => 'geo');
+            $subtitles[] = array('id' => $id . '_ge', 'url' => $srt_url, 'lang' => 'ge');
+            $subtitles[] = array('id' => $id . '_kar', 'url' => $srt_url, 'lang' => 'kar');
+            
+            // Adding English just for testing. If this shows up, we know the TV was blocking Georgian codes.
+            $subtitles[] = array('id' => $id . '_eng', 'url' => $srt_url, 'lang' => 'eng');
         }
         
         echo json_encode(array('subtitles' => $subtitles));
@@ -101,7 +95,7 @@ add_action('init', function () {
     }
 
     // 4. Stream Endpoint
-    if (preg_match('/\/nuvio-addon\/stream\/(\d+)\.srt/', $uri, $matches)) {
+    if (preg_match('/\/nuvio-addon\/stream\/(\d+)\.srt/', $path, $matches)) {
         $attachment_id = intval($matches[1]);
         $file_path = get_attached_file($attachment_id);
         
