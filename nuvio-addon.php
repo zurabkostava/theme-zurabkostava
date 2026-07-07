@@ -20,7 +20,7 @@ add_action('rest_api_init', function () {
     ));
 
     // 3. SRT Stream Endpoint (with CORS headers for TV/Web)
-    register_rest_route('nuvio/v1', '/stream/(?P<id>\d+)', array(
+    register_rest_route('nuvio/v1', '/stream/(?P<id>\d+)\.srt', array(
         'methods' => 'GET',
         'callback' => 'nuvio_stream_subtitle',
         'permission_callback' => '__return_true'
@@ -80,8 +80,8 @@ function nuvio_get_subtitles($request) {
     foreach ($results as $file) {
         $subtitles[] = array(
             'id' => $id,
-            'url' => home_url('/wp-json/nuvio/v1/stream/' . $file->ID),
-            'lang' => 'Georgian (GEO)'
+            'url' => home_url('/wp-json/nuvio/v1/stream/' . $file->ID . '.srt'),
+            'lang' => 'geo'
         );
     }
     
