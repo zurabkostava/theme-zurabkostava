@@ -113,6 +113,8 @@ function nuvio_get_subtitles($request) {
     }
     
     // In Stremio protocol, empty array inside 'subtitles' means no subs found
+    file_put_contents(get_template_directory() . '/nuvio-log.txt', date('Y-m-d H:i:s') . " - RESULT - Found " . count($subtitles) . " subtitles for ID: $id\n", FILE_APPEND);
+    
     $response = rest_ensure_response(array('subtitles' => $subtitles));
     $response->header('Access-Control-Allow-Origin', '*');
     $response->header('Access-Control-Allow-Methods', 'GET, OPTIONS');
