@@ -89,10 +89,22 @@ function nuvio_get_subtitles($request) {
     $subtitles = array();
     
     foreach ($results as $file) {
+        $srt_url = home_url('/wp-json/nuvio/v1/stream/' . $file->ID . '.srt');
+        
         $subtitles[] = array(
-            'id' => $id,
-            'url' => home_url('/wp-json/nuvio/v1/stream/' . $file->ID . '.srt'),
-            'lang' => 'geo'
+            'id' => $id . '_ka',
+            'url' => $srt_url,
+            'lang' => 'ka'
+        );
+        $subtitles[] = array(
+            'id' => $id . '_kat',
+            'url' => $srt_url,
+            'lang' => 'kat'
+        );
+        $subtitles[] = array(
+            'id' => $id . '_geo',
+            'url' => $srt_url,
+            'lang' => 'Georgian'
         );
     }
     
