@@ -17,11 +17,25 @@ add_action( 'after_setup_theme', 'zk_setup' );
 
 // 🔴 Allow uploading Subtitles (.srt, .vtt)
 function zk_allow_subtitle_uploads( $mimes ) {
-    $mimes['srt'] = 'application/x-subrip';
+    $mimes['srt'] = 'text/plain';
     $mimes['vtt'] = 'text/vtt';
     return $mimes;
 }
 add_filter( 'upload_mimes', 'zk_allow_subtitle_uploads' );
+
+// 🔴 Bypass strict MIME type checking for subtitles
+function zk_allow_subtitle_check( $data, $file, $filename, $mimes ) {
+    $ext = pathinfo( $filename, PATHINFO_EXTENSION );
+    if ( 'srt' === $ext ) {
+        $data['ext']  = 'srt';
+        $data['type'] = 'text/plain';
+    } elseif ( 'vtt' === $ext ) {
+        $data['ext']  = 'vtt';
+        $data['type'] = 'text/vtt';
+    }
+    return $data;
+}
+add_filter( 'wp_check_filetype_and_ext', 'zk_allow_subtitle_check', 10, 4 );
 
 function zk_resource_hints( $hints, $relation_type ) {
     if ( 'preconnect' === $relation_type ) {
