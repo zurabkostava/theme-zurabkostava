@@ -87,11 +87,8 @@ add_action('init', function () {
             $base_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID));
 
             // Primary: WebVTT — universally supported by TV players (ExoPlayer, Tizen, WebOS web engines)
-            $subtitles[] = array('id' => $id . '_ka',  'url' => $base_url . '.vtt', 'lang' => 'ka');
-            // ISO 639-2 variants (Stremio's built-in language table uses 3-letter codes)
-            $subtitles[] = array('id' => $id . '_kat', 'url' => $base_url . '.vtt', 'lang' => 'kat');
-            // Raw SRT variant for clients that render subtitles themselves (PC/Mobile — already working)
-            $subtitles[] = array('id' => $id . '_geo', 'url' => $base_url . '.srt', 'lang' => 'geo');
+            // ვტოვებთ მხოლოდ ერთ ჩანაწერს, რომ დუბლიკატები არ გამოჩნდეს.
+            $subtitles[] = array('id' => $id . '_geo',  'url' => $base_url . '.vtt', 'lang' => 'geo');
         }
 
         echo json_encode(array('subtitles' => $subtitles));
