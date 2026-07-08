@@ -15,6 +15,14 @@ function zk_setup() {
 }
 add_action( 'after_setup_theme', 'zk_setup' );
 
+// 🔴 Allow uploading Subtitles (.srt, .vtt)
+function zk_allow_subtitle_uploads( $mimes ) {
+    $mimes['srt'] = 'application/x-subrip';
+    $mimes['vtt'] = 'text/vtt';
+    return $mimes;
+}
+add_filter( 'upload_mimes', 'zk_allow_subtitle_uploads' );
+
 function zk_resource_hints( $hints, $relation_type ) {
     if ( 'preconnect' === $relation_type ) {
         $hints[] = 'https://fonts.googleapis.com';
