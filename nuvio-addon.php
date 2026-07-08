@@ -6,7 +6,7 @@
 add_action('init', function () {
     $uri = $_SERVER['REQUEST_URI'] ?? '';
     $path = parse_url($uri, PHP_URL_PATH);
-    
+
     // Only intercept requests for /nuvio-addon/
     if (strpos($path, '/nuvio-addon/') === false) {
         return;
@@ -15,27 +15,30 @@ add_action('init', function () {
     // 1. Handle OPTIONS (Preflight) instantly
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: GET, OPTIONS');
+        header('Access-Control-Allow-Methods: GET, HEAD, OPTIONS');
         header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Range');
+        header('Access-Control-Max-Age: 86400');
         header('HTTP/1.1 204 No Content');
         exit;
     }
 
     // Set standard CORS for all GET responses
     header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Methods: GET, OPTIONS');
+    header('Access-Control-Allow-Methods: GET, HEAD, OPTIONS');
     header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Range');
+    // TV players read these from cross-origin responses only if exposed
+    header('Access-Control-Expose-Headers: Content-Length, Content-Range, Accept-Ranges, Content-Type');
     header('Cache-Control: no-cache, must-revalidate, max-age=0'); // Prevent TV caching during tests
 
-    // Log every request to see if the TV is even reaching us
-    file_put_contents(__DIR__ . '/nuvio-tv-debug.log', date('Y-m-d H:i:s') . " - REQ - " . $path . " - UA: " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown') . "\n", FILE_APPEND);
+    // Log every request (full URI incl. extra args) to see exactly what each client asks for
+    file_put_contents(get_template_directory() . '/nuvio-log.txt', date('Y-m-d H:i:s') . " - REQ - " . $uri . " - UA: " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown') . "\n", FILE_APPEND);
 
     // 2. Manifest Endpoint
     if (strpos($path, '/nuvio-addon/manifest.json') !== false) {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
-            'id' => 'org.zurabkostava.geosubtitles.raw', // Changed ID to force new addon instance
-            'version' => '2.0.0',
+            'id' => 'org.zurabkostava.geosubtitles.raw',
+            'version' => '2.1.0', // bumped so clients refetch after the routing fix
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -47,14 +50,18 @@ add_action('init', function () {
     }
 
     // 3. Subtitles Endpoint
-    if (preg_match('/\/nuvio-addon\/subtitles\/(movie|series)\/([^\/]+)\.json/', $path, $matches)) {
+    // Stremio/Nuvio clients (especially on TV) request with an optional "extra" path segment:
+    //   /subtitles/movie/tt123.json
+    //   /subtitles/movie/tt123/videoHash=abc123&videoSize=456.json
+    //   /subtitles/movie/tt123/filename=Some.Movie.2024.mkv.json
+    // The old regex only matched the first form, so TV requests fell through to a WP 404 page.
+    if (preg_match('#/nuvio-addon/subtitles/(movie|series)/([^/]+?)(?:/([^/]+?))?\.json$#', $path, $matches)) {
         header('Content-Type: application/json; charset=utf-8');
         global $wpdb;
-        
+
         $type = $matches[1];
         $id = urldecode($matches[2]);
-        
-        file_put_contents(get_template_directory() . '/nuvio-log.txt', date('Y-m-d H:i:s') . " - RAW SUBTITLES - $type - $id - " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown UA') . "\n", FILE_APPEND);
+        // $matches[3] = extra args (videoHash, filename...) — accepted and ignored
 
         $parts = explode(':', $id);
         if ($type === 'series' && count($parts) >= 3) {
@@ -64,57 +71,118 @@ add_action('init', function () {
         }
 
         $like = $wpdb->esc_like($search_term) . '%';
-        
+
         $sql = $wpdb->prepare("
-            SELECT ID, guid 
-            FROM {$wpdb->posts} 
-            WHERE post_type='attachment' 
-            AND guid LIKE %s 
+            SELECT ID, guid
+            FROM {$wpdb->posts}
+            WHERE post_type='attachment'
+            AND guid LIKE %s
             AND (post_title LIKE %s OR post_name LIKE %s OR guid LIKE %s)
         ", "%.srt", "%" . $like, "%" . $like, "%" . $like);
-        
+
         $results = $wpdb->get_results($sql);
         $subtitles = array();
-        
+
         foreach ($results as $file) {
-            // Use home_url dynamically to ensure exact domain match, force https
-            $srt_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID . '.srt'));
-            
-            // 1. სტანდარტული ISO კოდები (მუშაობს კომპიუტერზე/მობილურზე)
-            $subtitles[] = array('id' => $id . '_ka', 'url' => $srt_url, 'lang' => 'ka');
-            $subtitles[] = array('id' => $id . '_geo', 'url' => $srt_url, 'lang' => 'geo');
-            
-            // 2. პირდაპირ სიტყვით მიწოდება (ზოგიერთი ტელევიზორი, რომელსაც ენის კოდი არ აქვს ბაზაში, პირდაპირ ამ სიტყვას გამოაჩენს)
-            $subtitles[] = array('id' => $id . '_full_en', 'url' => $srt_url, 'lang' => 'Georgian');
-            $subtitles[] = array('id' => $id . '_full_ka', 'url' => $srt_url, 'lang' => 'ქართული');
-            
-            // 3. დამატებითი არასტანდარტული ველები (ზოგიერთი პლეერი კითხულობს label-ს)
-            $subtitles[] = array('id' => $id . '_label', 'url' => $srt_url, 'lang' => 'ka', 'label' => 'Georgian', 'title' => 'Georgian');
-            
-            // 4. ფოლბექი: ინგლისურის კოდი, რადგან ტელევიზორები ამას ყოველთვის ცნობენ. 
-            // თუ ტელევიზორში 'Georgian' არ გამოჩნდა, გამოჩნდება კიდევ ერთი 'English' (ან English(Georgian)), რომელსაც თუ აირჩევთ - ქართული იქნება.
-            $subtitles[] = array('id' => $id . '_eng_fallback', 'url' => $srt_url, 'lang' => 'eng', 'label' => 'Georgian');
+            $base_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID));
+
+            // Primary: WebVTT — universally supported by TV players (ExoPlayer, Tizen, WebOS web engines)
+            $subtitles[] = array('id' => $id . '_ka',  'url' => $base_url . '.vtt', 'lang' => 'ka');
+            // ISO 639-2 variants (Stremio's built-in language table uses 3-letter codes)
+            $subtitles[] = array('id' => $id . '_kat', 'url' => $base_url . '.vtt', 'lang' => 'kat');
+            // Raw SRT variant for clients that render subtitles themselves (PC/Mobile — already working)
+            $subtitles[] = array('id' => $id . '_geo', 'url' => $base_url . '.srt', 'lang' => 'geo');
         }
-        
+
         echo json_encode(array('subtitles' => $subtitles));
         exit;
     }
 
-    // 4. Stream Endpoint
-    if (preg_match('/\/nuvio-addon\/stream\/(\d+)\.srt/', $path, $matches)) {
+    // 4. Stream Endpoint — serves .srt raw, or converts to .vtt on the fly
+    if (preg_match('#/nuvio-addon/stream/(\d+)\.(srt|vtt)$#', $path, $matches)) {
         $attachment_id = intval($matches[1]);
+        $format = $matches[2];
         $file_path = get_attached_file($attachment_id);
-        
-        file_put_contents(get_template_directory() . '/nuvio-log.txt', date('Y-m-d H:i:s') . " - RAW STREAM - $attachment_id - " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown UA') . "\n", FILE_APPEND);
 
-        if ($file_path && file_exists($file_path)) {
-            header('Content-Type: application/x-subrip; charset=utf-8');
-            header('Accept-Ranges: bytes'); // აუცილებელია ზოგიერთი Smart TV პლეერისთვის (მაგ. ExoPlayer)
-            header('Content-Length: ' . filesize($file_path)); // Crucial for ExoPlayer TV!
-            readfile($file_path);
-        } else {
+        if (!$file_path || !file_exists($file_path)) {
             header('HTTP/1.1 404 Not Found');
             echo "Subtitle file not found.";
+            exit;
+        }
+
+        $data = file_get_contents($file_path);
+
+        // Normalize encoding: strip UTF-8 BOM, convert UTF-16 if a BOM is present
+        if (substr($data, 0, 3) === "\xEF\xBB\xBF") {
+            $data = substr($data, 3);
+        } elseif (substr($data, 0, 2) === "\xFF\xFE") {
+            $data = mb_convert_encoding(substr($data, 2), 'UTF-8', 'UTF-16LE');
+        } elseif (substr($data, 0, 2) === "\xFE\xFF") {
+            $data = mb_convert_encoding(substr($data, 2), 'UTF-8', 'UTF-16BE');
+        }
+
+        if ($format === 'vtt') {
+            // SRT -> WebVTT, block by block. Some source files contain corrupted timing
+            // lines (e.g. "1632:29,369 --> ...") which make strict VTT parsers abort at
+            // that cue — so invalid blocks are dropped instead of passed through.
+            $data = str_replace(array("\r\n", "\r"), "\n", $data);
+            $blocks = preg_split('/\n{2,}/', trim($data));
+            $out = array();
+            foreach ($blocks as $block) {
+                $lines = explode("\n", $block);
+                // Optional numeric cue index on the first line
+                if (isset($lines[0]) && preg_match('/^\d+$/', trim($lines[0]))) {
+                    array_shift($lines);
+                }
+                if (empty($lines)) {
+                    continue;
+                }
+                $timing = trim($lines[0]);
+                if (preg_match('/^(\d{2}:\d{2}:\d{2}),(\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}),(\d{3})/', $timing, $t)) {
+                    array_shift($lines);
+                    $text = trim(implode("\n", $lines));
+                    if ($text !== '') {
+                        $out[] = "{$t[1]}.{$t[2]} --> {$t[3]}.{$t[4]}\n" . $text;
+                    }
+                } elseif (strpos($block, '-->') !== false) {
+                    continue; // corrupted timing line — skip the whole cue
+                } else {
+                    // Plain text block: a blank line inside the previous cue's text
+                    // (common in these files) — merge it back into that cue.
+                    $text = trim($block);
+                    if ($text !== '' && !empty($out)) {
+                        $out[count($out) - 1] .= "\n" . $text;
+                    }
+                }
+            }
+            $data = "WEBVTT\n\n" . implode("\n\n", $out) . "\n";
+            header('Content-Type: text/vtt; charset=utf-8');
+        } else {
+            header('Content-Type: application/x-subrip; charset=utf-8');
+        }
+
+        header('Content-Disposition: inline');
+        header('Accept-Ranges: bytes');
+
+        $total = strlen($data);
+
+        // Honor Range requests at origin (ExoPlayer probes tracks with ranged GETs)
+        if (isset($_SERVER['HTTP_RANGE']) && preg_match('/bytes=(\d*)-(\d*)/', $_SERVER['HTTP_RANGE'], $range)) {
+            $start = ($range[1] !== '') ? intval($range[1]) : 0;
+            $end   = ($range[2] !== '') ? intval($range[2]) : $total - 1;
+            if ($start > $end || $start >= $total) {
+                header('HTTP/1.1 416 Range Not Satisfiable');
+                header("Content-Range: bytes */$total");
+                exit;
+            }
+            $end = min($end, $total - 1);
+            header('HTTP/1.1 206 Partial Content');
+            header("Content-Range: bytes $start-$end/$total");
+            header('Content-Length: ' . ($end - $start + 1));
+            echo substr($data, $start, $end - $start + 1);
+        } else {
+            header('Content-Length: ' . $total);
+            echo $data;
         }
         exit;
     }
