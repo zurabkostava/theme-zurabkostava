@@ -76,14 +76,20 @@ add_action('init', function () {
             // Use home_url dynamically to ensure exact domain match, force https
             $srt_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID . '.srt'));
             
+            // 1. სტანდარტული ISO კოდები (მუშაობს კომპიუტერზე/მობილურზე)
             $subtitles[] = array('id' => $id . '_ka', 'url' => $srt_url, 'lang' => 'ka');
-            $subtitles[] = array('id' => $id . '_kat', 'url' => $srt_url, 'lang' => 'kat');
             $subtitles[] = array('id' => $id . '_geo', 'url' => $srt_url, 'lang' => 'geo');
-            $subtitles[] = array('id' => $id . '_ge', 'url' => $srt_url, 'lang' => 'ge');
-            $subtitles[] = array('id' => $id . '_kar', 'url' => $srt_url, 'lang' => 'kar');
             
-            // Adding English just for testing. If this shows up, we know the TV was blocking Georgian codes.
-            $subtitles[] = array('id' => $id . '_eng', 'url' => $srt_url, 'lang' => 'eng');
+            // 2. პირდაპირ სიტყვით მიწოდება (ზოგიერთი ტელევიზორი, რომელსაც ენის კოდი არ აქვს ბაზაში, პირდაპირ ამ სიტყვას გამოაჩენს)
+            $subtitles[] = array('id' => $id . '_full_en', 'url' => $srt_url, 'lang' => 'Georgian');
+            $subtitles[] = array('id' => $id . '_full_ka', 'url' => $srt_url, 'lang' => 'ქართული');
+            
+            // 3. დამატებითი არასტანდარტული ველები (ზოგიერთი პლეერი კითხულობს label-ს)
+            $subtitles[] = array('id' => $id . '_label', 'url' => $srt_url, 'lang' => 'ka', 'label' => 'Georgian', 'title' => 'Georgian');
+            
+            // 4. ფოლბექი: ინგლისურის კოდი, რადგან ტელევიზორები ამას ყოველთვის ცნობენ. 
+            // თუ ტელევიზორში 'Georgian' არ გამოჩნდა, გამოჩნდება კიდევ ერთი 'English' (ან English(Georgian)), რომელსაც თუ აირჩევთ - ქართული იქნება.
+            $subtitles[] = array('id' => $id . '_eng_fallback', 'url' => $srt_url, 'lang' => 'eng', 'label' => 'Georgian');
         }
         
         echo json_encode(array('subtitles' => $subtitles));
@@ -99,6 +105,7 @@ add_action('init', function () {
 
         if ($file_path && file_exists($file_path)) {
             header('Content-Type: application/x-subrip; charset=utf-8');
+            header('Accept-Ranges: bytes'); // აუცილებელია ზოგიერთი Smart TV პლეერისთვის (მაგ. ExoPlayer)
             header('Content-Length: ' . filesize($file_path)); // Crucial for ExoPlayer TV!
             readfile($file_path);
         } else {
