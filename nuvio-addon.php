@@ -16,7 +16,7 @@ add_action('init', function () {
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET, OPTIONS');
-        header('Access-Control-Allow-Headers: *');
+        header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Range');
         header('HTTP/1.1 204 No Content');
         exit;
     }
@@ -24,7 +24,11 @@ add_action('init', function () {
     // Set standard CORS for all GET responses
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET, OPTIONS');
-    header('Access-Control-Allow-Headers: *');
+    header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Range');
+    header('Cache-Control: no-cache, must-revalidate, max-age=0'); // Prevent TV caching during tests
+
+    // Log every request to see if the TV is even reaching us
+    file_put_contents(__DIR__ . '/nuvio-tv-debug.log', date('Y-m-d H:i:s') . " - REQ - " . $path . " - UA: " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown') . "\n", FILE_APPEND);
 
     // 2. Manifest Endpoint
     if (strpos($path, '/nuvio-addon/manifest.json') !== false) {
