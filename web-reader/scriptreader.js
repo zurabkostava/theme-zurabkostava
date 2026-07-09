@@ -648,9 +648,29 @@ function displayChapter(href, delay = 0) {
     });
 }
 function extractTextFromDoc(doc) {
-    let html = doc.body.innerHTML;
-    html = html.replace(/<\/(p|div|h[1-6]|li|blockquote)>/gi, '</$1>\n\n');
-    return html;
+    const paragraphs = doc.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6, li, blockquote');
+    let textArray = [];
+    if (paragraphs.length > 0) {
+        paragraphs.forEach(p => {
+            let html = p.innerHTML;
+            html = html.replace(/<br\s*\/?>/gi, ' ');
+            let text = html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, '').trim();
+            if (text.length > 0) {
+                const cleanText = text.replace(/<[^>]+>/g, '').trim();
+                if (cleanText.length > 0) {
+                    const lastChar = cleanText.slice(-1);
+                    const punctuation = ['.', '!', '?', ':', ';', '…', '"', '»', '”'];
+                    if (!punctuation.includes(lastChar)) { text += '.'; }
+                    textArray.push(text);
+                }
+            }
+        });
+        return textArray.join('\n\n');
+    } else {
+        let html = doc.body.innerHTML;
+        html = html.replace(/<br\s*\/?>/gi, ' ');
+        return html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, '').trim();
+    }
 }
 function handleNextChapterLogic() {
     // აქ ვშლით ინდექსს, რადგან გადავდივართ "წასაკითხად"
@@ -1129,7 +1149,7 @@ function processText(rawHtml) {
     let sCounter = 0;
     
     const tags = [];
-    let textWithPlaceholders = rawHtml.replace(/<[^>]+>/g, (match) => {
+    let textWithPlaceholders = rawHtml.replace(/<\/?(b|strong)[^>]*>/gi, (match) => {
         const index = tags.length;
         tags.push(match);
         return `___HTML_${index}___`;
