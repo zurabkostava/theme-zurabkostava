@@ -1164,19 +1164,19 @@ function rebuildDynamicSettings() {
         <h4 style="margin: 0 0 12px 0; font-size: 0.9rem; color: var(--text-main); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">⏱️ Pause Durations</h4>
         <div class="setting-group" style="margin-bottom: 10px;">
             <label>Main Header (ms) <span id="val-pause-main">${pauseSettings.mainHeader}</span></label>
-            <input type="range" id="input-pause-main" min="0" max="10000" step="500" value="${pauseSettings.mainHeader}">
+            <input type="range" id="input-pause-main" min="0" max="10000" step="50" value="${pauseSettings.mainHeader}">
         </div>
         <div class="setting-group" style="margin-bottom: 10px;">
             <label>Internal Header (ms) <span id="val-pause-internal">${pauseSettings.internalHeader}</span></label>
-            <input type="range" id="input-pause-internal" min="0" max="10000" step="500" value="${pauseSettings.internalHeader}">
+            <input type="range" id="input-pause-internal" min="0" max="10000" step="50" value="${pauseSettings.internalHeader}">
         </div>
         <div class="setting-group" style="margin-bottom: 10px;">
             <label>Post-Header (ms) <span id="val-pause-post">${pauseSettings.postHeader}</span></label>
-            <input type="range" id="input-pause-post" min="0" max="10000" step="500" value="${pauseSettings.postHeader}">
+            <input type="range" id="input-pause-post" min="0" max="10000" step="50" value="${pauseSettings.postHeader}">
         </div>
         <div class="setting-group" style="margin-bottom: 0;">
             <label>Paragraph (ms) <span id="val-pause-paragraph">${pauseSettings.paragraph}</span></label>
-            <input type="range" id="input-pause-paragraph" min="0" max="10000" step="500" value="${pauseSettings.paragraph}">
+            <input type="range" id="input-pause-paragraph" min="0" max="10000" step="50" value="${pauseSettings.paragraph}">
         </div>
     `;
     container.appendChild(pauseWrapper);
