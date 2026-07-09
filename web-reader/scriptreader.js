@@ -1438,42 +1438,42 @@ async function playPiperChunk(chunk, rate, token) {
         const globalIdx = currentItem.index;
         if (globalIdx > 0) {
             const prevItem = parsedContent[globalIdx - 1];
-            // ამოწმებს, გადავედით თუ არა ახალ აბზაცზე
-            if (currentItem.pIndex !== prevItem.pIndex) {
-                let delayMs = 0;
-                const currentSpan = currentItem.element;
-                const prevSpan = prevItem.element;
+            let delayMs = 0;
+            const currentSpan = currentItem.element;
+            const prevSpan = prevItem.element;
 
-                const isHeaderSpan = (span) => {
-                    if (!span) return false;
-                    if (span.querySelector('.epub-header')) return true;
-                    const words = span.querySelectorAll('.word');
-                    if (words.length === 0) return false;
-                    let boldWordCount = 0;
-                    words.forEach(w => { 
-                        let hasBold = false;
-                        Array.from(w.querySelectorAll('*')).forEach(n => {
-                            if (n.localName === 'b' || n.localName === 'strong') hasBold = true;
-                        });
-                        if (hasBold) boldWordCount++; 
+            const isHeaderSpan = (span) => {
+                if (!span) return false;
+                if (span.querySelector('.epub-header')) return true;
+                const words = span.querySelectorAll('.word');
+                if (words.length === 0) return false;
+                let boldWordCount = 0;
+                words.forEach(w => { 
+                    let hasBold = false;
+                    Array.from(w.querySelectorAll('*')).forEach(n => {
+                        if (n.localName === 'b' || n.localName === 'strong') hasBold = true;
                     });
-                    return (boldWordCount / words.length) >= 0.7;
-                };
+                    if (hasBold) boldWordCount++; 
+                });
+                return (boldWordCount / words.length) >= 0.7;
+            };
 
-                const currentIsHeader = isHeaderSpan(currentSpan);
-                const prevIsHeader = isHeaderSpan(prevSpan);
+            const currentIsHeader = isHeaderSpan(currentSpan);
+            const prevIsHeader = isHeaderSpan(prevSpan);
 
-                if (currentIsHeader && !prevIsHeader) {
-                    delayMs = 3000;
-                } else if (!currentIsHeader && prevIsHeader) {
-                    delayMs = 2500;
-                } else if (currentIsHeader && prevIsHeader) {
+            if (currentIsHeader && !prevIsHeader) {
+                delayMs = 3000;
+            } else if (!currentIsHeader && prevIsHeader) {
+                delayMs = 2500;
+            } else if (currentIsHeader && prevIsHeader) {
+                // თუ ორივე სათაურია და სხვადასხვა აბზაცია (მაგ. h1 და მერე h2)
+                if (currentItem.pIndex !== prevItem.pIndex) {
                     delayMs = 3000;
                 }
+            }
 
-                if (delayMs > 0) {
-                    await new Promise(r => setTimeout(r, delayMs));
-                }
+            if (delayMs > 0) {
+                await new Promise(r => setTimeout(r, delayMs));
             }
         }
         if (token !== playbackToken || !isPlaying) return false;
