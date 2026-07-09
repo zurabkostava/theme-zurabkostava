@@ -9,6 +9,22 @@ let voices = [];
 let isEditMode = false;
 window.utterances = [];
 
+let playbackToken = 0;
+let pauseSettings = {
+    mainHeader: 5000,
+    internalHeader: 3000,
+    postHeader: 2000,
+    paragraph: 0
+};
+try {
+    const savedPause = localStorage.getItem('ttsPauseSettings');
+    if (savedPause) {
+        pauseSettings = { ...pauseSettings, ...JSON.parse(savedPause) };
+    }
+} catch (e) {
+    console.error("Error loading pause settings:", e);
+}
+
 let cloudSaveTimeout = null;
 function syncProgressToCloud(force = false) {
     if (!window.currentRawEpubFile) return;
@@ -1136,6 +1152,51 @@ function rebuildDynamicSettings() {
             console.error(`rebuildDynamicSettings failed for language "${langCode}"`, err);
         }
     });
+
+    // Add Global Pause Settings
+    const pauseWrapper = document.createElement('div');
+    pauseWrapper.style.marginTop = '16px';
+    pauseWrapper.style.padding = '12px';
+    pauseWrapper.style.background = 'rgba(255,255,255,0.02)';
+    pauseWrapper.style.borderRadius = '12px';
+    pauseWrapper.style.border = '1px solid rgba(255,255,255,0.05)';
+    pauseWrapper.innerHTML = `
+        <h4 style="margin: 0 0 12px 0; font-size: 0.9rem; color: var(--text-main); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">⏱️ Pause Durations</h4>
+        <div class="setting-group" style="margin-bottom: 10px;">
+            <label>Main Header (ms) <span id="val-pause-main">${pauseSettings.mainHeader}</span></label>
+            <input type="range" id="input-pause-main" min="0" max="10000" step="500" value="${pauseSettings.mainHeader}">
+        </div>
+        <div class="setting-group" style="margin-bottom: 10px;">
+            <label>Internal Header (ms) <span id="val-pause-internal">${pauseSettings.internalHeader}</span></label>
+            <input type="range" id="input-pause-internal" min="0" max="10000" step="500" value="${pauseSettings.internalHeader}">
+        </div>
+        <div class="setting-group" style="margin-bottom: 10px;">
+            <label>Post-Header (ms) <span id="val-pause-post">${pauseSettings.postHeader}</span></label>
+            <input type="range" id="input-pause-post" min="0" max="10000" step="500" value="${pauseSettings.postHeader}">
+        </div>
+        <div class="setting-group" style="margin-bottom: 0;">
+            <label>Paragraph (ms) <span id="val-pause-paragraph">${pauseSettings.paragraph}</span></label>
+            <input type="range" id="input-pause-paragraph" min="0" max="10000" step="500" value="${pauseSettings.paragraph}">
+        </div>
+    `;
+    container.appendChild(pauseWrapper);
+
+    const bindPauseInput = (id, key, valId) => {
+        const input = pauseWrapper.querySelector('#' + id);
+        const valSpan = pauseWrapper.querySelector('#' + valId);
+        if (input) {
+            input.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value);
+                if (valSpan) valSpan.textContent = v;
+                pauseSettings[key] = v;
+                try { localStorage.setItem('ttsPauseSettings', JSON.stringify(pauseSettings)); } catch(err) {}
+            });
+        }
+    };
+    bindPauseInput('input-pause-main', 'mainHeader', 'val-pause-main');
+    bindPauseInput('input-pause-internal', 'internalHeader', 'val-pause-internal');
+    bindPauseInput('input-pause-post', 'postHeader', 'val-pause-post');
+    bindPauseInput('input-pause-paragraph', 'paragraph', 'val-pause-paragraph');
 }
 
 let voiceLoadAttempts = 0;
@@ -1534,8 +1595,8 @@ async function playPiperChunk(chunk, rate, token) {
             const currType = getHeaderType(currentItem.element);
             const prevType = getHeaderType(prevItem ? prevItem.element : null);
 
-            const beforeMs = currType === 'main' ? 5000 : (currType === 'internal' ? 3000 : 0);
-            const afterMs = prevType ? 2000 : 0;
+            const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
+            const afterMs = prevType ? pauseSettings.postHeader : 0;
             const delayMs = Math.max(beforeMs, afterMs);
 
             if (delayMs > 0) {
@@ -1631,8 +1692,8 @@ async function playNativeChunk(chunk, nativeVoice, rate, token) {
             const currType = getHeaderType(currentItem.element);
             const prevType = getHeaderType(prevItem ? prevItem.element : null);
 
-            const beforeMs = currType === 'main' ? 5000 : (currType === 'internal' ? 3000 : 0);
-            const afterMs = prevType ? 2000 : 0;
+            const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
+            const afterMs = prevType ? pauseSettings.postHeader : 0;
             delayMs = Math.max(beforeMs, afterMs);
         }
 
