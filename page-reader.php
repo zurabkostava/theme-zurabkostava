@@ -21,105 +21,107 @@
     </div>
     <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
 
-    <div class="header">
-        <div class="header-left">
-            <button id="sidebar-toggle-btn" class="icon-btn hidden" title="Table of Contents">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            </button>
+    <div class="main-pane">
+        <div class="header">
+            <div class="header-left">
+                <button id="sidebar-toggle-btn" class="icon-btn hidden" title="Table of Contents">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
 
-            <div class="logo">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                </svg>
-                Neural Reader <span style="font-size: 0.7em; opacity: 0.5; margin-left: 5px;">PRO</span>
+                <div class="logo">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
+                    Neural Reader <span style="font-size: 0.7em; opacity: 0.5; margin-left: 5px;">PRO</span>
+                </div>
+
+                <div id="book-meta-container" class="book-meta hidden">
+                    <img id="book-cover-img" src="" alt="Cover">
+                    <div class="book-text-info">
+                        <span id="book-title-text">Book Title</span>
+                        <span id="book-author-text">Author Name</span>
+                        <div id="header-progress-badge" class="progress-badge hidden">0%</div>
+                    </div>
+                </div>
             </div>
 
-            <div id="book-meta-container" class="book-meta hidden">
-                <img id="book-cover-img" src="" alt="Cover">
-                <div class="book-text-info">
-                    <span id="book-title-text">Book Title</span>
-                    <span id="book-author-text">Author Name</span>
-                    <div id="header-progress-badge" class="progress-badge hidden">0%</div>
+            <div class="header-actions">
+                <button id="library-btn" class="icon-btn" title="Library">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                </button>
+                <input type="file" id="file-input" accept=".epub" style="display: none;">
+
+                <button id="upload-btn" class="icon-btn" title="Upload EPUB">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                </button>
+                <button id="edit-btn" class="icon-btn" title="Edit / Paste Text">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+                <button id="settings-btn" class="icon-btn" title="Settings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="settings-panel" class="settings-panel hidden">
+            <div id="dynamic-voice-settings"></div>
+            <button id="refresh-voices-btn" class="ctrl-btn sm" style="width:100%; margin-top:10px;">Refresh Voices ↻</button>
+        </div>
+
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+
+        <div id="content-area" class="content-area">
+            <div id="drop-zone" class="drop-zone">
+                <div class="drop-content">
+                    <svg viewBox="0 0 24 24" width="64" height="64" stroke="currentColor" fill="none" stroke-width="1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="12" y2="12"></line><line x1="15" y1="15" x2="12" y2="12"></line></svg>
+                    <h3>Drag & Drop EPUB here</h3>
+                    <p>or click the upload button above</p>
+                    <p class="sub-text">You can also paste text manually via Edit mode</p>
                 </div>
             </div>
         </div>
 
-        <div class="header-actions">
-            <button id="library-btn" class="icon-btn" title="Library">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-            </button>
-            <input type="file" id="file-input" accept=".epub" style="display: none;">
-
-            <button id="upload-btn" class="icon-btn" title="Upload EPUB">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-            </button>
-            <button id="edit-btn" class="icon-btn" title="Edit / Paste Text">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-            </button>
-            <button id="settings-btn" class="icon-btn" title="Settings">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-            </button>
+        <div id="tts-status-indicator" class="tts-status-indicator hidden">
+            <span class="tts-spinner"></span>
+            <span id="tts-status-text">Initializing Neural Voice...</span>
         </div>
-    </div>
 
-    <div id="settings-panel" class="settings-panel hidden">
-        <div id="dynamic-voice-settings"></div>
-        <button id="refresh-voices-btn" class="ctrl-btn sm" style="width:100%; margin-top:10px;">Refresh Voices ↻</button>
-    </div>
-
-    <div id="progress-container">
-        <div id="progress-bar"></div>
-    </div>
-
-    <div id="content-area" class="content-area">
-        <div id="drop-zone" class="drop-zone">
-            <div class="drop-content">
-                <svg viewBox="0 0 24 24" width="64" height="64" stroke="currentColor" fill="none" stroke-width="1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="12" y2="12"></line><line x1="15" y1="15" x2="12" y2="12"></line></svg>
-                <h3>Drag & Drop EPUB here</h3>
-                <p>or click the upload button above</p>
-                <p class="sub-text">You can also paste text manually via Edit mode</p>
+        <div class="controls-overlay">
+            <div class="controls premium-controls">
+                <button id="prev-btn" class="ctrl-btn sm premium-btn" title="Previous"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><polygon points="17 20 7 12 17 4 17 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+                <button id="play-btn" class="ctrl-btn play premium-play" title="Play/Pause">
+                    <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round" style="width:26px;height:26px; margin-left: 4px;"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+                    <svg id="pause-icon" class="hidden" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="width:26px;height:26px;"><rect x="6" y="4" width="4" height="16" rx="2"></rect><rect x="14" y="4" width="4" height="16" rx="2"></rect></svg>
+                </button>
+                <button id="stop-btn" class="ctrl-btn stop premium-btn" title="Stop"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style="width:20px;height:20px;"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg></button>
+                <button id="next-btn" class="ctrl-btn sm premium-btn" title="Next"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><polygon points="7 4 17 12 7 20 7 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
             </div>
         </div>
-    </div>
 
-    <div id="tts-status-indicator" class="tts-status-indicator hidden">
-        <span class="tts-spinner"></span>
-        <span id="tts-status-text">Initializing Neural Voice...</span>
-    </div>
+        <div id="book-info-modal" class="info-modal-overlay hidden">
+            <div class="info-modal-content">
+                <button id="close-modal-btn" class="icon-btn close-modal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
 
-    <div class="controls-overlay">
-        <div class="controls premium-controls">
-            <button id="prev-btn" class="ctrl-btn sm premium-btn" title="Previous"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><polygon points="17 20 7 12 17 4 17 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
-            <button id="play-btn" class="ctrl-btn play premium-play" title="Play/Pause">
-                <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round" style="width:26px;height:26px; margin-left: 4px;"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
-                <svg id="pause-icon" class="hidden" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="width:26px;height:26px;"><rect x="6" y="4" width="4" height="16" rx="2"></rect><rect x="14" y="4" width="4" height="16" rx="2"></rect></svg>
-            </button>
-            <button id="stop-btn" class="ctrl-btn stop premium-btn" title="Stop"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style="width:20px;height:20px;"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg></button>
-            <button id="next-btn" class="ctrl-btn sm premium-btn" title="Next"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><polygon points="7 4 17 12 7 20 7 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
-        </div>
-    </div>
-
-    <div id="book-info-modal" class="info-modal-overlay hidden">
-        <div class="info-modal-content">
-            <button id="close-modal-btn" class="icon-btn close-modal">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-
-            <div class="modal-header">
-                <img id="modal-book-cover" src="" alt="Book Cover" style="display:none;">
-                <div class="modal-title-group">
-                    <h2 id="modal-book-title">Book Title</h2>
-                    <h3 id="modal-book-author">Author Name</h3>
-                    <div id="modal-book-publisher" class="publisher-info hidden"></div>
-                    <div id="modal-book-genre" class="genre-row"></div>
+                <div class="modal-header">
+                    <img id="modal-book-cover" src="" alt="Book Cover" style="display:none;">
+                    <div class="modal-title-group">
+                        <h2 id="modal-book-title">Book Title</h2>
+                        <h3 id="modal-book-author">Author Name</h3>
+                        <div id="modal-book-publisher" class="publisher-info hidden"></div>
+                        <div id="modal-book-genre" class="genre-row"></div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="modal-body">
-                <h4>Description</h4>
-                <div id="modal-book-desc" class="desc-text">
-                    No description available.
+                <div class="modal-body">
+                    <h4>Description</h4>
+                    <div id="modal-book-desc" class="desc-text">
+                        No description available.
+                    </div>
                 </div>
             </div>
         </div>
@@ -174,12 +176,21 @@
         color: #f8fafc;
         font-family: 'Inter', system-ui, sans-serif;
         display: flex;
-        flex-direction: column;
+        flex-direction: row; /* Desktop side-by-side layout */
         overflow: hidden; /* ეს კრძალავს მთლიანი აპლიკაციის სკროლს */
         overscroll-behavior: none; /* ეს კრძალავს "Rubber band" ეფექტს */
     }
 
     #neural-app-root * { box-sizing: border-box; }
+
+    .main-pane {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        position: relative;
+        height: 100%;
+    }
 
     /* --- CRITICAL BUTTON RESET FOR WP THEMES --- */
     #neural-app-root button {
@@ -576,24 +587,52 @@
 
     /* --- SIDEBAR --- */
     .sidebar {
-        position: absolute;
-        top: 0;
-        left: 0;
+        position: relative; /* Not absolute on desktop */
         width: 320px;
         max-width: 85vw;
         height: 100%;
         background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 15, 30, 0.98) 100%);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
         border-right: 1px solid rgba(255, 255, 255, 0.05);
-        box-shadow: 20px 0 50px rgba(0,0,0,0.5);
-        transform: translateX(-100%);
-        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         z-index: 100;
         display: flex;
         flex-direction: column;
+        transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        flex-shrink: 0;
     }
-    .sidebar.open { transform: translateX(0); }
+    
+    @media (min-width: 769px) {
+        .sidebar.collapsed {
+            width: 0;
+            border-right: none;
+            overflow: hidden;
+            /* No translateX needed because width: 0 hides it smoothly and reflows layout */
+        }
+        .sidebar-overlay {
+            display: none !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        #neural-app-root {
+            flex-direction: column;
+        }
+        .main-pane {
+            width: 100%;
+        }
+        .sidebar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: translateX(-100%);
+            box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar-overlay {
+            display: block;
+        }
+    }
 
     .sidebar-header {
         padding: 20px;

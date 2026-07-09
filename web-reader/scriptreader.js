@@ -687,9 +687,36 @@ function handleNextChapterLogic() {
     }
 }
 // --- SIDEBAR CONTROLS ---
-function openSidebar() { sidebar.classList.add('open'); sidebarOverlay.classList.remove('hidden'); }
-function closeSidebar() { sidebar.classList.remove('open'); sidebarOverlay.classList.add('hidden'); }
-sidebarToggleBtn.onclick = openSidebar;
+function openSidebar() { 
+    if (window.innerWidth >= 769) {
+        sidebar.classList.remove('collapsed');
+    } else {
+        sidebar.classList.add('open'); 
+        sidebarOverlay.classList.remove('hidden'); 
+    }
+}
+
+function closeSidebar() { 
+    if (window.innerWidth >= 769) {
+        sidebar.classList.add('collapsed');
+    } else {
+        sidebar.classList.remove('open'); 
+        sidebarOverlay.classList.add('hidden'); 
+    }
+}
+
+sidebarToggleBtn.onclick = () => {
+    if (window.innerWidth >= 769) {
+        sidebar.classList.toggle('collapsed');
+    } else {
+        if (sidebar.classList.contains('open')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    }
+};
+
 closeSidebarBtn.onclick = closeSidebar;
 sidebarOverlay.onclick = closeSidebar;
 // --- 5. TEXT PROCESSING ---
