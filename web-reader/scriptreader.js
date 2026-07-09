@@ -661,12 +661,14 @@ function extractTextFromDoc(doc) {
             let text = html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, '').trim();
             if (text.length > 0) {
                 if (isHeader) {
-                    text = `<b class="epub-header epub-header-${tagName}">${text}</b>`;
+                    let safeText = text.replace(/\./g, '___DOT___').replace(/!/g, '___EXCL___').replace(/\?/g, '___QUEST___');
+                    text = `<b class="epub-header epub-header-${tagName}">${safeText}</b>`;
                 }
                 const cleanText = text.replace(/<[^>]+>/g, '').trim();
                 if (cleanText.length > 0) {
                     const lastChar = cleanText.slice(-1);
                     const punctuation = ['.', '!', '?', ':', ';', '…', '"', '»', '”'];
+                    // If the text ends with a placeholder, it might end with _, so we still append a dot.
                     if (!punctuation.includes(lastChar)) { text += '.'; }
                     textArray.push(text);
                 }
@@ -1180,7 +1182,7 @@ function processText(rawHtml) {
         let openTagsStack = [];
         
         sentences.forEach((sentText) => {
-            let restoredText = sentText.replace(/___DOT___/g, '.');
+            let restoredText = sentText.replace(/___DOT___/g, '.').replace(/___EXCL___/g, '!').replace(/___QUEST___/g, '?');
             restoredText = restoredText.replace(/___DECIMAL_(\d+)___/g, (match, index) => { return decimalPlaceholders[parseInt(index)]; });
             let originalDisplay = restoredText.trim();
             if(!originalDisplay) return;
