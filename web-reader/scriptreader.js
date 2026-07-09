@@ -654,8 +654,15 @@ function extractTextFromDoc(doc) {
         paragraphs.forEach(p => {
             let html = p.innerHTML;
             html = html.replace(/<br\s*\/?>/gi, ' ');
+            
+            const tagName = p.tagName.toLowerCase();
+            const isHeader = /^h[1-6]$/.test(tagName);
+            
             let text = html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, '').trim();
             if (text.length > 0) {
+                if (isHeader) {
+                    text = `<b class="epub-header epub-header-${tagName}">${text}</b>`;
+                }
                 const cleanText = text.replace(/<[^>]+>/g, '').trim();
                 if (cleanText.length > 0) {
                     const lastChar = cleanText.slice(-1);
@@ -669,6 +676,7 @@ function extractTextFromDoc(doc) {
     } else {
         let html = doc.body.innerHTML;
         html = html.replace(/<br\s*\/?>/gi, ' ');
+        html = html.replace(/<(h[1-6])[^>]*>(.*?)<\/\1>/gi, '<b class="epub-header epub-header-$1">$2</b>');
         return html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, '').trim();
     }
 }

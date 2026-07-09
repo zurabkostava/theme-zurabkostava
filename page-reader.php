@@ -493,6 +493,20 @@
         border-radius: 4px;
     }
 
+    /* EPUB Headers Preservation CSS */
+    .epub-header {
+        font-weight: 700;
+        display: inline;
+        line-height: 1.4;
+        color: #fff;
+    }
+    .epub-header-h1 { font-size: 2em; color: var(--primary); }
+    .epub-header-h2 { font-size: 1.6em; }
+    .epub-header-h3 { font-size: 1.4em; color: #e2e8f0; }
+    .epub-header-h4 { font-size: 1.2em; color: #cbd5e1; }
+    .epub-header-h5 { font-size: 1.1em; color: #cbd5e1; }
+    .epub-header-h6 { font-size: 1.05em; color: #cbd5e1; text-transform: uppercase; }
+
     .sentence:hover { color: var(--text-main); }
     .sentence.active {
         background: rgba(56, 189, 248, 0.1);
