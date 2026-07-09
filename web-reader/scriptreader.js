@@ -1176,11 +1176,44 @@ function processText(rawHtml) {
         const emojiRange = "\\u{1F000}-\\u{1FFFF}\\u{2600}-\\u{27BF}\\u{1F300}-\\u{1F5FF}\\u{1F680}-\\u{1F6FF}\\u{1F1E0}-\\u{1F1FF}";
         const sentenceRegex = new RegExp(`[^.!?${emojiRange}]+(?:[.!?]+|[${emojiRange}]+)+|[^.!?${emojiRange}]+$`, 'gu');
         const sentences = protectedText.match(sentenceRegex) || [protectedText];
+        
+        let openTagsStack = [];
+        
         sentences.forEach((sentText) => {
             let restoredText = sentText.replace(/___DOT___/g, '.');
             restoredText = restoredText.replace(/___DECIMAL_(\d+)___/g, (match, index) => { return decimalPlaceholders[parseInt(index)]; });
-            const originalDisplay = restoredText.trim();
+            let originalDisplay = restoredText.trim();
             if(!originalDisplay) return;
+
+            let prependedTags = '';
+            openTagsStack.forEach(tagIdx => {
+                prependedTags += `___HTML_${tagIdx}___`;
+            });
+
+            let regex = /___HTML_(\d+)___/g;
+            let match;
+            while ((match = regex.exec(originalDisplay)) !== null) {
+                let idx = parseInt(match[1]);
+                let tagStr = tags[idx];
+                if (tagStr.startsWith('</')) {
+                    openTagsStack.pop();
+                } else {
+                    openTagsStack.push(idx);
+                }
+            }
+
+            let appendedTags = '';
+            for (let i = openTagsStack.length - 1; i >= 0; i--) {
+                let tagIdx = openTagsStack[i];
+                let tagStr = tags[tagIdx];
+                let closingTag = tagStr.toLowerCase().startsWith('<strong') ? '</strong>' : '</b>';
+                let newIdx = tags.length;
+                tags.push(closingTag);
+                appendedTags += `___HTML_${newIdx}___`;
+            }
+
+            originalDisplay = prependedTags + originalDisplay + appendedTags;
+
             const words = originalDisplay.split(/(\s+|—|–)/g).filter(w => w.trim().length > 0 || w === '—' || w === '–');
             let detectedLang = 'en';
             if (/[ა-ჰ]/.test(originalDisplay)) detectedLang = 'ka';
