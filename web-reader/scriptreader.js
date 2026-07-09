@@ -1559,37 +1559,44 @@ async function playPiperChunk(chunk, rate, token) {
     return token === playbackToken && isPlaying;
 }
 
-function playNativeChunk(chunk, nativeVoice, rate, token) {
-    return new Promise((resolve) => {
-        let combinedText = "";
-        const sentenceMap = [];
-        chunk.sentences.forEach(sent => {
-            const spoken = buildSpokenSentence(sent, chunk.lang);
-            const offset = combinedText.length;
-            const wordRanges = spoken.wordRanges.map(r => ({ el: r.el, start: r.start + offset, end: r.end + offset }));
-            combinedText += spoken.raw;
-            sentenceMap.push({ idx: sent.index, element: sent.element, wordRanges: wordRanges, sentenceEndChar: combinedText.length });
-        });
+async function playNativeChunk(chunk, nativeVoice, rate, token) {
+    for (let i = 0; i < chunk.sentences.length; i++) {
+        if (token !== playbackToken || !isPlaying) return false;
 
-        const utt = new SpeechSynthesisUtterance(combinedText);
-        if (nativeVoice) utt.voice = nativeVoice;
-        utt.rate = rate;
-        utt.lang = chunk.lang;
-        let lastActiveWord = null;
-        utt.onboundary = (event) => {
-            if (event.name === 'word') {
-                const charPos = event.charIndex;
-                const currentSent = sentenceMap.find(s => charPos < s.sentenceEndChar);
+        const currentItem = chunk.sentences[i];
+        const globalIdx = currentItem.index;
 
-                if (currentSent) {
-                    if (currentSent.idx !== currentIdx) {
-                        currentIdx = currentSent.idx;
-                        highlightSentence(currentIdx, true);
-                        updateMediaPosition();
-                        lastActiveWord = null;
-                    }
+        if (globalIdx > 0) {
+            const prevItem = parsedContent[globalIdx - 1];
+            const currType = getHeaderType(currentItem.element);
+            const prevType = getHeaderType(prevItem ? prevItem.element : null);
 
-                    const currentWordRange = currentSent.wordRanges.find(r => charPos >= r.start && charPos < r.end);
+            const beforeMs = currType === 'main' ? 5000 : (currType === 'internal' ? 3000 : 0);
+            const afterMs = prevType ? 3000 : 0;
+            const delayMs = Math.max(beforeMs, afterMs);
+
+            if (delayMs > 0) {
+                await new Promise(r => setTimeout(r, delayMs));
+            }
+        }
+        if (token !== playbackToken || !isPlaying) return false;
+
+        const spoken = buildSpokenSentence(currentItem, chunk.lang);
+        currentIdx = currentItem.index;
+        highlightSentence(currentIdx, true);
+        updateMediaPosition();
+
+        const ok = await new Promise((resolve) => {
+            const utt = new SpeechSynthesisUtterance(spoken.raw);
+            if (nativeVoice) utt.voice = nativeVoice;
+            utt.rate = rate;
+            utt.lang = chunk.lang;
+
+            let lastActiveWord = null;
+            utt.onboundary = (event) => {
+                if (event.name === 'word') {
+                    const charPos = event.charIndex;
+                    const currentWordRange = spoken.wordRanges.find(r => charPos >= r.start && charPos < r.end);
                     if (currentWordRange && lastActiveWord !== currentWordRange.el) {
                         if (lastActiveWord) {
                             lastActiveWord.classList.remove('active');
@@ -1599,20 +1606,23 @@ function playNativeChunk(chunk, nativeVoice, rate, token) {
                         lastActiveWord = currentWordRange.el;
                     }
                 }
-            }
-        };
-        const settle = () => {
-            if (lastActiveWord) {
-                lastActiveWord.classList.remove('active');
-                lastActiveWord.classList.add('read');
-            }
-            resolve(token === playbackToken && isPlaying);
-        };
-        utt.onend = settle;
-        utt.onerror = settle;
-        window.utterances.push(utt);
-        synthesis.speak(utt);
-    });
+            };
+            const settle = () => {
+                if (lastActiveWord) {
+                    lastActiveWord.classList.remove('active');
+                    lastActiveWord.classList.add('read');
+                }
+                resolve(token === playbackToken && isPlaying);
+            };
+            utt.onend = settle;
+            utt.onerror = settle;
+            window.utterances.push(utt);
+            synthesis.speak(utt);
+        });
+
+        if (!ok) return false;
+    }
+    return token === playbackToken && isPlaying;
 }
 
 async function playMergedQueue() {
