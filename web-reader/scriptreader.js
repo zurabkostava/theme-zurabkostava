@@ -1382,7 +1382,19 @@ function buildSpokenSentence(sent, lang) {
         text += spoken + " ";
         wordRanges.push({ el: wordEl, start: start, end: text.length });
     });
-    return { text: text.trim(), raw: text, wordRanges: wordRanges, totalChars: text.length };
+    
+    let resultText = text.trim();
+    // მომხმარებლის მოთხოვნა: ფიზიკური წერტილის დასმა სათაურებზე
+    const hType = getHeaderType(sent.element);
+    if (hType) {
+        if (resultText.endsWith(':') || resultText.endsWith(';')) {
+            resultText = resultText.slice(0, -1) + '.';
+        } else if (resultText.length > 0 && !/[.!?]/.test(resultText.slice(-1))) {
+            resultText += '.';
+        }
+    }
+    
+    return { text: resultText, raw: resultText + " ", wordRanges: wordRanges, totalChars: resultText.length };
 }
 
 function piperSynthesize(state, text) {
