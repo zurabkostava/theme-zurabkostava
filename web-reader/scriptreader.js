@@ -655,8 +655,20 @@ function extractTextFromDoc(doc) {
             let html = p.innerHTML;
             html = html.replace(/<br\s*\/?>/gi, ' ');
             
-            const tagName = p.tagName.toLowerCase();
-            const isHeader = /^h[1-6]$/.test(tagName);
+            let tagName = p.tagName.toLowerCase();
+            let isHeader = /^h[1-6]$/.test(tagName);
+            
+            // Check if paragraph is almost entirely bold (internal strong header)
+            if (!isHeader) {
+                const boldNodes = p.querySelectorAll('b, strong');
+                let boldLen = 0;
+                boldNodes.forEach(n => boldLen += n.textContent.trim().length);
+                const totalLen = p.textContent.trim().length;
+                if (totalLen > 0 && boldLen >= totalLen * 0.7) {
+                    isHeader = true;
+                    tagName = 'strong';
+                }
+            }
             
             let text = html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, '').trim();
             if (text.length > 0) {
@@ -1428,16 +1440,27 @@ async function playPiperChunk(chunk, rate, token) {
                 const currentSpan = currentItem.element;
                 const prevSpan = prevItem.element;
 
-                // 1. თუ ახალი აბზაცი სათაურია (შესვენება მის დაწყებამდე)
-                if (currentSpan && currentSpan.querySelector('.epub-header, b, strong')) {
-                    delayMs += 3000;
+                const isHeaderSpan = (span) => {
+                    if (!span) return false;
+                    if (span.querySelector('.epub-header')) return true;
+                    const words = span.querySelectorAll('.word');
+                    if (words.length === 0) return false;
+                    let boldWordCount = 0;
+                    words.forEach(w => { if (w.querySelector('b, strong')) boldWordCount++; });
+                    return (boldWordCount / words.length) >= 0.7;
+                };
+
+                const currentIsHeader = isHeaderSpan(currentSpan);
+                const prevIsHeader = isHeaderSpan(prevSpan);
+
+                if (currentIsHeader && !prevIsHeader) {
+                    delayMs = 3000;
+                } else if (!currentIsHeader && prevIsHeader) {
+                    delayMs = 2500;
+                } else if (currentIsHeader && prevIsHeader) {
+                    delayMs = 3000;
                 }
-                
-                // 2. თუ წინა აბზაცი იყო სათაური (შესვენება სათაურის წაკითხვის შემდეგ)
-                if (prevSpan && prevSpan.querySelector('.epub-header, b, strong')) {
-                    delayMs += 2500;
-                }
-                
+
                 if (delayMs > 0) {
                     await new Promise(r => setTimeout(r, delayMs));
                 }
