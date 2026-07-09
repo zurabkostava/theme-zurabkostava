@@ -1535,7 +1535,7 @@ async function playPiperChunk(chunk, rate, token) {
             const prevType = getHeaderType(prevItem ? prevItem.element : null);
 
             const beforeMs = currType === 'main' ? 5000 : (currType === 'internal' ? 3000 : 0);
-            const afterMs = prevType ? 3000 : 0;
+            const afterMs = prevType ? 2000 : 0;
             const delayMs = Math.max(beforeMs, afterMs);
 
             if (delayMs > 0) {
@@ -1632,7 +1632,7 @@ async function playNativeChunk(chunk, nativeVoice, rate, token) {
             const prevType = getHeaderType(prevItem ? prevItem.element : null);
 
             const beforeMs = currType === 'main' ? 5000 : (currType === 'internal' ? 3000 : 0);
-            const afterMs = prevType ? 3000 : 0;
+            const afterMs = prevType ? 2000 : 0;
             delayMs = Math.max(beforeMs, afterMs);
         }
 
