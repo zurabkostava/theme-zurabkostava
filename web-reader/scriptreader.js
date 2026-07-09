@@ -655,6 +655,18 @@ function extractTextFromDoc(doc) {
             let html = p.innerHTML;
             html = html.replace(/<br\s*\/?>/gi, ' ');
             
+            // Protect dots inside ALL bold tags to prevent accidental splitting mid-header
+            const boldRegex = /(<(b|strong)\b[^>]*>)(.*?)(<\/\2>)/gi;
+            html = html.replace(boldRegex, (match, openTag, tagName, innerContent, closeTag) => {
+                let safeText = innerContent.replace(/\./g, '___DOT___').replace(/!/g, '___EXCL___').replace(/\?/g, '___QUEST___');
+                return `${openTag}${safeText}${closeTag}`;
+            });
+
+            // If the paragraph starts with a bold tag (internal header), force a sentence split right after it!
+            if (/^\s*<(b|strong)\b[^>]*>/i.test(html)) {
+                html = html.replace(/^(\s*<(b|strong)\b[^>]*>.*?<\/\2>)(?=\s*[^<\s])/i, '$1___SPLIT___');
+            }
+            
             let tagName = p.tagName.toLowerCase();
             let isHeader = /^h[1-6]$/.test(tagName);
             
@@ -1192,13 +1204,13 @@ function processText(rawHtml) {
         const abbrs = ['ე.წ.', 'ე.ი.', 'ა.შ.', 'მ.შ.', 'ე.უ.', 'შ.პ.ს.', 'ს.ს.'];
         abbrs.forEach(abbr => { let reg = new RegExp(abbr.replace(/\./g, '\\.\\s*'), 'gi'); protectedText = protectedText.replace(reg, m => m.replace(/\./g, '___DOT___')); });
         const emojiRange = "\\u{1F000}-\\u{1FFFF}\\u{2600}-\\u{27BF}\\u{1F300}-\\u{1F5FF}\\u{1F680}-\\u{1F6FF}\\u{1F1E0}-\\u{1F1FF}";
-        const sentenceRegex = new RegExp(`[^.!?${emojiRange}]+(?:[.!?]+|[${emojiRange}]+)+|[^.!?${emojiRange}]+$`, 'gu');
+        const sentenceRegex = new RegExp(`[^.!?${emojiRange}]+(?:[.!?]+|[${emojiRange}]+|___SPLIT___)+|[^.!?${emojiRange}]+$`, 'gu');
         const sentences = protectedText.match(sentenceRegex) || [protectedText];
         
         let openTagsStack = [];
         
         sentences.forEach((sentText) => {
-            let restoredText = sentText.replace(/___DOT___/g, '.').replace(/___EXCL___/g, '!').replace(/___QUEST___/g, '?');
+            let restoredText = sentText.replace(/___DOT___/g, '.').replace(/___EXCL___/g, '!').replace(/___QUEST___/g, '?').replace(/___SPLIT___/g, '');
             restoredText = restoredText.replace(/___DECIMAL_(\d+)___/g, (match, index) => { return decimalPlaceholders[parseInt(index)]; });
             let originalDisplay = restoredText.trim();
             if(!originalDisplay) return;
