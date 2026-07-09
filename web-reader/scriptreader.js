@@ -393,6 +393,7 @@ async function loadEpub(file) {
             populateTocSet(nav.toc);
             renderSidebar(nav.toc);
             sidebarToggleBtn.classList.remove('hidden');
+            openSidebar(); // Automatically open sidebar when EPUB loads
 
             const savedLocation = localStorage.getItem('epub_progress_' + bookName);
             if (savedLocation) {

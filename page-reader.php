@@ -10,7 +10,7 @@
 
     <div class="glow-bg"></div>
 
-    <div id="sidebar" class="sidebar">
+    <div id="sidebar" class="sidebar collapsed">
         <div class="sidebar-header">
             <span>Table of Contents</span>
             <button id="close-sidebar-btn" class="icon-btn sm">
