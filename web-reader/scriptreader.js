@@ -1560,34 +1560,18 @@ async function playPiperChunk(chunk, rate, token) {
 }
 
 async function playNativeChunk(chunk, nativeVoice, rate, token) {
-    for (let i = 0; i < chunk.sentences.length; i++) {
-        if (token !== playbackToken || !isPlaying) return false;
+    let currentBatch = [];
+    let currentBatchText = "";
 
-        const currentItem = chunk.sentences[i];
-        const globalIdx = currentItem.index;
-
-        if (globalIdx > 0) {
-            const prevItem = parsedContent[globalIdx - 1];
-            const currType = getHeaderType(currentItem.element);
-            const prevType = getHeaderType(prevItem ? prevItem.element : null);
-
-            const beforeMs = currType === 'main' ? 5000 : (currType === 'internal' ? 3000 : 0);
-            const afterMs = prevType ? 3000 : 0;
-            const delayMs = Math.max(beforeMs, afterMs);
-
-            if (delayMs > 0) {
-                await new Promise(r => setTimeout(r, delayMs));
-            }
-        }
-        if (token !== playbackToken || !isPlaying) return false;
-
-        const spoken = buildSpokenSentence(currentItem, chunk.lang);
-        currentIdx = currentItem.index;
+    const playBatch = async () => {
+        if (currentBatch.length === 0) return true;
+        
+        currentIdx = currentBatch[0].idx;
         highlightSentence(currentIdx, true);
         updateMediaPosition();
 
         const ok = await new Promise((resolve) => {
-            const utt = new SpeechSynthesisUtterance(spoken.raw);
+            const utt = new SpeechSynthesisUtterance(currentBatchText);
             if (nativeVoice) utt.voice = nativeVoice;
             utt.rate = rate;
             utt.lang = chunk.lang;
@@ -1596,14 +1580,24 @@ async function playNativeChunk(chunk, nativeVoice, rate, token) {
             utt.onboundary = (event) => {
                 if (event.name === 'word') {
                     const charPos = event.charIndex;
-                    const currentWordRange = spoken.wordRanges.find(r => charPos >= r.start && charPos < r.end);
-                    if (currentWordRange && lastActiveWord !== currentWordRange.el) {
-                        if (lastActiveWord) {
-                            lastActiveWord.classList.remove('active');
-                            lastActiveWord.classList.add('read');
+                    const currentSent = currentBatch.find(s => charPos < s.sentenceEndChar);
+                    if (currentSent) {
+                        if (currentSent.idx !== currentIdx) {
+                            currentIdx = currentSent.idx;
+                            highlightSentence(currentIdx, true);
+                            updateMediaPosition();
+                            lastActiveWord = null;
                         }
-                        currentWordRange.el.classList.add('active');
-                        lastActiveWord = currentWordRange.el;
+
+                        const currentWordRange = currentSent.wordRanges.find(r => charPos >= r.start && charPos < r.end);
+                        if (currentWordRange && lastActiveWord !== currentWordRange.el) {
+                            if (lastActiveWord) {
+                                lastActiveWord.classList.remove('active');
+                                lastActiveWord.classList.add('read');
+                            }
+                            currentWordRange.el.classList.add('active');
+                            lastActiveWord = currentWordRange.el;
+                        }
                     }
                 }
             };
@@ -1620,9 +1614,44 @@ async function playNativeChunk(chunk, nativeVoice, rate, token) {
             synthesis.speak(utt);
         });
 
-        if (!ok) return false;
+        currentBatch = [];
+        currentBatchText = "";
+        return ok;
+    };
+
+    for (let i = 0; i < chunk.sentences.length; i++) {
+        if (token !== playbackToken || !isPlaying) return false;
+
+        const currentItem = chunk.sentences[i];
+        const globalIdx = currentItem.index;
+        let delayMs = 0;
+
+        if (globalIdx > 0) {
+            const prevItem = parsedContent[globalIdx - 1];
+            const currType = getHeaderType(currentItem.element);
+            const prevType = getHeaderType(prevItem ? prevItem.element : null);
+
+            const beforeMs = currType === 'main' ? 5000 : (currType === 'internal' ? 3000 : 0);
+            const afterMs = prevType ? 3000 : 0;
+            delayMs = Math.max(beforeMs, afterMs);
+        }
+
+        if (delayMs > 0) {
+            const ok = await playBatch();
+            if (!ok || token !== playbackToken || !isPlaying) return false;
+            
+            await new Promise(r => setTimeout(r, delayMs));
+            if (token !== playbackToken || !isPlaying) return false;
+        }
+
+        const spoken = buildSpokenSentence(currentItem, chunk.lang);
+        const offset = currentBatchText.length;
+        const wordRanges = spoken.wordRanges.map(r => ({ el: r.el, start: r.start + offset, end: r.end + offset }));
+        currentBatchText += spoken.raw;
+        currentBatch.push({ idx: currentItem.index, element: currentItem.element, wordRanges: wordRanges, sentenceEndChar: currentBatchText.length });
     }
-    return token === playbackToken && isPlaying;
+    
+    return await playBatch();
 }
 
 async function playMergedQueue() {
