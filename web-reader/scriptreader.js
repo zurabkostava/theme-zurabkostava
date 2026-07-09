@@ -660,9 +660,13 @@ function extractTextFromDoc(doc) {
             
             // Check if paragraph is almost entirely bold (internal strong header)
             if (!isHeader) {
-                const boldNodes = p.querySelectorAll('b, strong');
+                const allNodes = p.querySelectorAll('*');
                 let boldLen = 0;
-                boldNodes.forEach(n => boldLen += n.textContent.trim().length);
+                allNodes.forEach(n => {
+                    if (n.localName === 'b' || n.localName === 'strong') {
+                        boldLen += n.textContent.trim().length;
+                    }
+                });
                 const totalLen = p.textContent.trim().length;
                 if (totalLen > 0 && boldLen >= totalLen * 0.7) {
                     isHeader = true;
@@ -1446,7 +1450,13 @@ async function playPiperChunk(chunk, rate, token) {
                     const words = span.querySelectorAll('.word');
                     if (words.length === 0) return false;
                     let boldWordCount = 0;
-                    words.forEach(w => { if (w.querySelector('b, strong')) boldWordCount++; });
+                    words.forEach(w => { 
+                        let hasBold = false;
+                        Array.from(w.querySelectorAll('*')).forEach(n => {
+                            if (n.localName === 'b' || n.localName === 'strong') hasBold = true;
+                        });
+                        if (hasBold) boldWordCount++; 
+                    });
                     return (boldWordCount / words.length) >= 0.7;
                 };
 
