@@ -695,8 +695,8 @@ function handleNextChapterLogic() {
                 displayChapter(nextItem.href, 0);
                 return;
             }
-            // აუდიო გადასვლა ითვლება წაკითხვად!
-            displayChapter(nextItem.href, -1);
+            // 5 წამიანი შესვენება მთავარ თავზე გადასვლისას
+            displayChapter(nextItem.href, 5000);
         }
     } else {
         stopReading();
@@ -1414,6 +1414,22 @@ async function playPiperChunk(chunk, rate, token) {
     for (let i = 0; i < chunk.sentences.length; i++) {
         if (token !== playbackToken || !isPlaying) return false;
         const wav = await wavPromise; // synthesizeSentence never rejects, returns null on failure
+        
+        // 3 წამიანი შესვენება შიდა სათაურებზე
+        const currentItem = chunk.sentences[i];
+        const globalIdx = currentItem.index;
+        if (globalIdx > 0) {
+            const prevItem = parsedContent[globalIdx - 1];
+            // ამოწმებს, არის თუ არა ეს ახალი აბზაცის დასაწყისი
+            if (currentItem.pIndex !== prevItem.pIndex) {
+                const sSpan = currentItem.element;
+                if (sSpan && sSpan.querySelector('.epub-header, b, strong')) {
+                    await new Promise(r => setTimeout(r, 3000));
+                }
+            }
+        }
+        if (token !== playbackToken || !isPlaying) return false;
+
         // Prefetch the next sentence's audio while the current one plays — no gaps
         if (i + 1 < chunk.sentences.length) {
             wavPromise = synthesizeSentence(chunk.lang, spokenList[i + 1].text, token);
