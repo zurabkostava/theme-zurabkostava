@@ -1415,16 +1415,29 @@ async function playPiperChunk(chunk, rate, token) {
         if (token !== playbackToken || !isPlaying) return false;
         const wav = await wavPromise; // synthesizeSentence never rejects, returns null on failure
         
-        // 3 წამიანი შესვენება შიდა სათაურებზე
+        // შესვენებების ლოგიკა სათაურებზე
         const currentItem = chunk.sentences[i];
         const globalIdx = currentItem.index;
         if (globalIdx > 0) {
             const prevItem = parsedContent[globalIdx - 1];
-            // ამოწმებს, არის თუ არა ეს ახალი აბზაცის დასაწყისი
+            // ამოწმებს, გადავედით თუ არა ახალ აბზაცზე
             if (currentItem.pIndex !== prevItem.pIndex) {
-                const sSpan = currentItem.element;
-                if (sSpan && sSpan.querySelector('.epub-header, b, strong')) {
-                    await new Promise(r => setTimeout(r, 3000));
+                let delayMs = 0;
+                const currentSpan = currentItem.element;
+                const prevSpan = prevItem.element;
+
+                // 1. თუ ახალი აბზაცი სათაურია (შესვენება მის დაწყებამდე)
+                if (currentSpan && currentSpan.querySelector('.epub-header, b, strong')) {
+                    delayMs += 3000;
+                }
+                
+                // 2. თუ წინა აბზაცი იყო სათაური (შესვენება სათაურის წაკითხვის შემდეგ)
+                if (prevSpan && prevSpan.querySelector('.epub-header, b, strong')) {
+                    delayMs += 2500;
+                }
+                
+                if (delayMs > 0) {
+                    await new Promise(r => setTimeout(r, delayMs));
                 }
             }
         }
