@@ -647,6 +647,42 @@ function displayChapter(href, delay = 0) {
         else if (delay === -1) playMergedQueue();
     });
 }
+// Protect sentence-ending punctuation inside header text so a header like
+// "2. Chapter Title:" survives the sentence regex as ONE piece.
+function protectHeaderPunct(s) {
+    return s.replace(/\./g, '___DOT___').replace(/!/g, '___EXCL___').replace(/\?/g, '___QUEST___');
+}
+
+// Namespace-safe bold check: EPUB XHTML can serialize tags as
+// <strong xmlns="http://www.w3.org/1999/xhtml">, which trips selector-based
+// matching in XML documents — localName sidesteps that entirely.
+function isBoldNode(node) {
+    if (!node || node.nodeType !== 1) return false;
+    const ln = (node.localName || '').toLowerCase();
+    return ln === 'b' || ln === 'strong';
+}
+
+// Detects <p><strong>Header:</strong> normal text…</p>: a bold element that
+// opens the paragraph AND is followed by real content. Whole-bold paragraphs
+// are excluded here (the 70%-bold rule handles those).
+function hasLeadingBoldHeader(p) {
+    let node = p.firstChild;
+    while (node && node.nodeType === 3 && !node.textContent.trim()) node = node.nextSibling;
+    if (!isBoldNode(node) || !node.textContent.trim()) return false;
+    let trailing = '';
+    for (let sib = node.nextSibling; sib; sib = sib.nextSibling) trailing += sib.textContent;
+    return trailing.trim().length > 0;
+}
+
+// Stamps the epub-header marker classes onto an existing attribute string,
+// merging with any class attribute already present (a duplicate class attr
+// would be dropped by the HTML parser, losing the marker).
+function addHeaderClassToAttrs(attrs) {
+    if (/class\s*=\s*"/i.test(attrs)) return attrs.replace(/class\s*=\s*"([^"]*)"/i, 'class="$1 epub-header epub-header-strong"');
+    if (/class\s*=\s*'/i.test(attrs)) return attrs.replace(/class\s*=\s*'([^']*)'/i, "class='$1 epub-header epub-header-strong'");
+    return attrs + ' class="epub-header epub-header-strong"';
+}
+
 function extractTextFromDoc(doc) {
     const paragraphs = doc.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6, li, blockquote');
     let textArray = [];
@@ -654,30 +690,15 @@ function extractTextFromDoc(doc) {
         paragraphs.forEach(p => {
             let html = p.innerHTML;
             html = html.replace(/<br\s*\/?>/gi, ' ');
-            
-            // Protect dots inside ALL bold tags to prevent accidental splitting mid-header
-            const boldRegex = /(<(b|strong)\b[^>]*>)(.*?)(<\/\2>)/gi;
-            html = html.replace(boldRegex, (match, openTag, tagName, innerContent, closeTag) => {
-                let safeText = innerContent.replace(/\./g, '___DOT___').replace(/!/g, '___EXCL___').replace(/\?/g, '___QUEST___');
-                return `${openTag}${safeText}${closeTag}`;
-            });
 
-            // If the paragraph starts with a bold tag (internal header), force a sentence split right after it!
-            if (/^\s*<(b|strong)\b[^>]*>/i.test(html)) {
-                html = html.replace(/^(\s*<(b|strong)\b[^>]*>.*?<\/\2>)(?=\s*[^<\s])/i, '$1___SPLIT___');
-            }
-            
             let tagName = p.tagName.toLowerCase();
             let isHeader = /^h[1-6]$/.test(tagName);
-            
-            // Check if paragraph is almost entirely bold (internal strong header)
+
+            // Whole-paragraph internal header: ≥70% of the visible text is bold
             if (!isHeader) {
-                const allNodes = p.querySelectorAll('*');
                 let boldLen = 0;
-                allNodes.forEach(n => {
-                    if (n.localName === 'b' || n.localName === 'strong') {
-                        boldLen += n.textContent.trim().length;
-                    }
+                p.querySelectorAll('*').forEach(n => {
+                    if (isBoldNode(n)) boldLen += n.textContent.trim().length;
                 });
                 const totalLen = p.textContent.trim().length;
                 if (totalLen > 0 && boldLen >= totalLen * 0.7) {
@@ -685,18 +706,30 @@ function extractTextFromDoc(doc) {
                     tagName = 'strong';
                 }
             }
-            
+
+            // Leading-bold internal header mixed with normal text: stamp the
+            // marker class, protect its punctuation, and force a sentence
+            // split right after the closing tag via ___SPLIT___.
+            if (!isHeader && hasLeadingBoldHeader(p)) {
+                html = html.replace(/^(\s*)<(b|strong)\b([^>]*)>([\s\S]*?)<\/\2\s*>/i,
+                    (m, ws, tag, attrs, inner) =>
+                        `${ws}<${tag}${addHeaderClassToAttrs(attrs)}>${protectHeaderPunct(inner)}</${tag}>___SPLIT___`);
+            }
+
             let text = html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, '').trim();
             if (text.length > 0) {
                 if (isHeader) {
-                    let safeText = text.replace(/\./g, '___DOT___').replace(/!/g, '___EXCL___').replace(/\?/g, '___QUEST___');
+                    // Flatten inner tags — the whole line is one header
+                    let safeText = protectHeaderPunct(text.replace(/<[^>]+>/g, ''));
                     text = `<b class="epub-header epub-header-${tagName}">${safeText}</b>`;
                 }
-                const cleanText = text.replace(/<[^>]+>/g, '').trim();
+                // Restore placeholders before the terminal-punctuation check so a
+                // header ending in a protected "." doesn't get a second dot appended
+                const cleanText = text.replace(/<[^>]+>/g, '').replace(/___SPLIT___/g, '')
+                    .replace(/___DOT___/g, '.').replace(/___EXCL___/g, '!').replace(/___QUEST___/g, '?').trim();
                 if (cleanText.length > 0) {
                     const lastChar = cleanText.slice(-1);
                     const punctuation = ['.', '!', '?', ':', ';', '…', '"', '»', '”'];
-                    // If the text ends with a placeholder, it might end with _, so we still append a dot.
                     if (!punctuation.includes(lastChar)) { text += '.'; }
                     textArray.push(text);
                 }
@@ -706,7 +739,8 @@ function extractTextFromDoc(doc) {
     } else {
         let html = doc.body.innerHTML;
         html = html.replace(/<br\s*\/?>/gi, ' ');
-        html = html.replace(/<(h[1-6])[^>]*>(.*?)<\/\1>/gi, '<b class="epub-header epub-header-$1">$2</b>');
+        html = html.replace(/<(h[1-6])[^>]*>([\s\S]*?)<\/\1>/gi, (m, tag, inner) =>
+            `<b class="epub-header epub-header-${tag.toLowerCase()}">${protectHeaderPunct(inner.replace(/<[^>]+>/g, ''))}</b>`);
         return html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, '').trim();
     }
 }
@@ -1204,8 +1238,18 @@ function processText(rawHtml) {
         const abbrs = ['ე.წ.', 'ე.ი.', 'ა.შ.', 'მ.შ.', 'ე.უ.', 'შ.პ.ს.', 'ს.ს.'];
         abbrs.forEach(abbr => { let reg = new RegExp(abbr.replace(/\./g, '\\.\\s*'), 'gi'); protectedText = protectedText.replace(reg, m => m.replace(/\./g, '___DOT___')); });
         const emojiRange = "\\u{1F000}-\\u{1FFFF}\\u{2600}-\\u{27BF}\\u{1F300}-\\u{1F5FF}\\u{1F680}-\\u{1F6FF}\\u{1F1E0}-\\u{1F1FF}";
-        const sentenceRegex = new RegExp(`[^.!?${emojiRange}]+(?:[.!?]+|[${emojiRange}]+|___SPLIT___)+|[^.!?${emojiRange}]+$`, 'gu');
-        const sentences = protectedText.match(sentenceRegex) || [protectedText];
+        const sentenceRegex = new RegExp(`[^.!?${emojiRange}]+(?:[.!?]+|[${emojiRange}]+)+|[^.!?${emojiRange}]+$`, 'gu');
+        // Hard split at forced header markers FIRST: the greedy [^.!?]+ class
+        // would otherwise swallow ___SPLIT___ (it contains no .!?) and merge the
+        // header with the text that follows it into one sentence.
+        const sentences = [];
+        protectedText.split('___SPLIT___').forEach(segment => {
+            if (!segment.trim()) return;
+            const matched = segment.match(sentenceRegex);
+            if (matched) sentences.push(...matched);
+            else sentences.push(segment);
+        });
+        if (sentences.length === 0) sentences.push(protectedText);
         
         let openTagsStack = [];
         
@@ -1433,6 +1477,27 @@ function playPiperAudio(state, wavBlob, rate, spoken, token) {
     });
 }
 
+// Classifies a sentence span: 'main' (h1-h6), 'internal' (bold header), or null.
+// Detection relies on the .epub-header marker classes stamped in extractTextFromDoc.
+// The bold-ratio fallback covers manually pasted/edited text where no marker exists;
+// it compares localName (never selectors) so XML-namespaced <strong> tags still match.
+function getHeaderType(span) {
+    if (!span) return null;
+    const marker = span.querySelector('.epub-header');
+    if (marker) {
+        return /(?:^|\s)epub-header-h[1-6](?:\s|$)/.test(marker.className) ? 'main' : 'internal';
+    }
+    const words = span.querySelectorAll('.word');
+    if (words.length === 0) return null;
+    let boldWordCount = 0;
+    words.forEach(w => {
+        for (const n of w.querySelectorAll('*')) {
+            if (isBoldNode(n)) { boldWordCount++; break; }
+        }
+    });
+    return (boldWordCount / words.length) >= 0.7 ? 'internal' : null;
+}
+
 async function playPiperChunk(chunk, rate, token) {
     const state = piperWorkers[chunk.lang];
     const ready = await waitForPiperReady(state, token);
@@ -1444,45 +1509,22 @@ async function playPiperChunk(chunk, rate, token) {
     for (let i = 0; i < chunk.sentences.length; i++) {
         if (token !== playbackToken || !isPlaying) return false;
         const wav = await wavPromise; // synthesizeSentence never rejects, returns null on failure
-        
-        // შესვენებების ლოგიკა სათაურებზე
+
+        // შესვენებების ლოგიკა სათაურებზე:
+        // - 5s BEFORE main headers (h1-h6), 3s BEFORE internal bold headers
+        // - 3s AFTER any header, before whatever follows
+        // Header→Header transitions take the LARGER of the two pauses (never
+        // stacked), and paragraph (pIndex) boundaries are deliberately ignored.
         const currentItem = chunk.sentences[i];
         const globalIdx = currentItem.index;
         if (globalIdx > 0) {
             const prevItem = parsedContent[globalIdx - 1];
-            let delayMs = 0;
-            const currentSpan = currentItem.element;
-            const prevSpan = prevItem.element;
+            const currType = getHeaderType(currentItem.element);
+            const prevType = getHeaderType(prevItem ? prevItem.element : null);
 
-            const isHeaderSpan = (span) => {
-                if (!span) return false;
-                if (span.querySelector('.epub-header')) return true;
-                const words = span.querySelectorAll('.word');
-                if (words.length === 0) return false;
-                let boldWordCount = 0;
-                words.forEach(w => { 
-                    let hasBold = false;
-                    Array.from(w.querySelectorAll('*')).forEach(n => {
-                        if (n.localName === 'b' || n.localName === 'strong') hasBold = true;
-                    });
-                    if (hasBold) boldWordCount++; 
-                });
-                return (boldWordCount / words.length) >= 0.7;
-            };
-
-            const currentIsHeader = isHeaderSpan(currentSpan);
-            const prevIsHeader = isHeaderSpan(prevSpan);
-
-            if (currentIsHeader && !prevIsHeader) {
-                delayMs = 3000;
-            } else if (!currentIsHeader && prevIsHeader) {
-                delayMs = 2500;
-            } else if (currentIsHeader && prevIsHeader) {
-                // თუ ორივე სათაურია და სხვადასხვა აბზაცია (მაგ. h1 და მერე h2)
-                if (currentItem.pIndex !== prevItem.pIndex) {
-                    delayMs = 3000;
-                }
-            }
+            const beforeMs = currType === 'main' ? 5000 : (currType === 'internal' ? 3000 : 0);
+            const afterMs = prevType ? 3000 : 0;
+            const delayMs = Math.max(beforeMs, afterMs);
 
             if (delayMs > 0) {
                 await new Promise(r => setTimeout(r, delayMs));
