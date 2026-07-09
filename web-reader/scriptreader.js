@@ -1420,7 +1420,6 @@ function processText(rawHtml) {
 }
 // --- SEQUENTIAL PLAYBACK ENGINE ---
 // Incremented on every play/stop/seek: any in-flight loop holding an old token dies quietly
-let playbackToken = 0;
 
 const EMOJI_TEST_RE = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/u;
 
