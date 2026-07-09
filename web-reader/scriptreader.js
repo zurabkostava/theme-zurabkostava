@@ -501,7 +501,7 @@ async function calculateGlobalChapterWeights() {
         try {
             const doc = await currentBook.load(item.href);
             const text = extractTextFromDoc(doc);
-            const len = text ? text.length : 0;
+            const len = text ? text.replace(/<[^>]+>/g, '').length : 0;
             weights.push(len);
             totalLength += len;
         } catch(e) {
@@ -648,22 +648,9 @@ function displayChapter(href, delay = 0) {
     });
 }
 function extractTextFromDoc(doc) {
-    const paragraphs = doc.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6, li, blockquote');
-    let textArray = [];
-    if (paragraphs.length > 0) {
-        paragraphs.forEach(p => {
-            let text = p.innerText.trim();
-            if (text.length > 0) {
-                const lastChar = text.slice(-1);
-                const punctuation = ['.', '!', '?', ':', ';', '…', '"', '»', '”'];
-                if (!punctuation.includes(lastChar)) { text += '.'; }
-                textArray.push(text);
-            }
-        });
-        return textArray.join('\n\n');
-    } else {
-        return doc.body.innerText.trim();
-    }
+    let html = doc.body.innerHTML;
+    html = html.replace(/<\/(p|div|h[1-6]|li|blockquote)>/gi, '</$1>\n\n');
+    return html;
 }
 function handleNextChapterLogic() {
     // აქ ვშლით ინდექსს, რადგან გადავდივართ "წასაკითხად"
@@ -1133,14 +1120,22 @@ function transliterateToGeorgian(text) {
     }
     return text.replace(/[a-zA-Z]+(?:[\-\u2010-\u2015\u2013\u2014][a-zA-Z]+)*/g, (match) => { return processSingleWord(match); });
 }
-function processText(rawText) {
+function processText(rawHtml) {
     stopReading();
-    lastLoadedText = rawText.trim();
+    lastLoadedText = rawHtml.trim();
     contentArea.innerHTML = '';
     contentArea.scrollTop = 0;
     parsedContent = [];
     let sCounter = 0;
-    const paragraphs = rawText.split(/\n\s*\n+/).map(p => p.trim()).filter(p => p.length > 0);
+    
+    const tags = [];
+    let textWithPlaceholders = rawHtml.replace(/<[^>]+>/g, (match) => {
+        const index = tags.length;
+        tags.push(match);
+        return `___HTML_${index}___`;
+    });
+    
+    const paragraphs = textWithPlaceholders.split(/\n\s*\n+/).map(p => p.trim()).filter(p => p.length > 0);
     paragraphs.forEach((paraText, pIdx) => {
         const pDiv = document.createElement('div');
         pDiv.className = 'paragraph';
@@ -1167,7 +1162,13 @@ function processText(rawText) {
             const sSpan = document.createElement('span');
             sSpan.className = 'sentence';
             sSpan.dataset.idx = sCounter;
-            sSpan.innerHTML = words.map(w => `<span class="word">${w}</span>`).join(' ') + ' ';
+            
+            let sentenceHtml = words.map(w => `<span class="word">${w}</span>`).join(' ') + ' ';
+            sentenceHtml = sentenceHtml.replace(/___HTML_(\d+)___/g, (match, index) => {
+                return tags[parseInt(index)];
+            });
+            sSpan.innerHTML = sentenceHtml;
+            
             sSpan.addEventListener('click', (e) => {
                 e.preventDefault(); e.stopPropagation();
                 synthesis.cancel(); stopPiperAudio();
