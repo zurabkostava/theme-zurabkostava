@@ -3114,3 +3114,6 @@ function zk_custom_robots_txt( $output, $public ) {
     return $custom_robots;
 }
 add_filter( 'robots_txt', 'zk_custom_robots_txt', 99, 2 );
+
+// Remove default WordPress canonical tag to prevent conflicts with ZK Custom SEO Engine
+remove_action( 'wp_head', 'rel_canonical' );
