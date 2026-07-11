@@ -2276,14 +2276,7 @@ function zk_serve_dynamic_seo_files() {
 }
 add_action( 'template_redirect', 'zk_serve_dynamic_seo_files', 1 );
 
-// 3. Override robots.txt
-function zk_custom_robots_txt($output, $public) {
-    $output .= "\nUser-agent: *\n";
-    $output .= "Allow: /\n";
-    $output .= "\nSitemap: " . home_url('/wp-sitemap.xml') . "\n";
-    return $output;
-}
-add_filter('robots_txt', 'zk_custom_robots_txt', 10, 2);
+// 3. Override robots.txt (Moved to the bottom)
 
 /* ============================================================
    ZK CUSTOM SEO ENGINE (Stage 4 - Image SEO)
@@ -3101,3 +3094,23 @@ add_filter('upload_mimes', 'custom_mime_types');
 
 // Include Nuvio Addon API
 require_once get_template_directory() . '/nuvio-addon.php';
+
+/* ============================================================
+   ZK UNIFIED ROBOTS.TXT ENGINE (Strict Overwrite)
+   ============================================================ */
+function zk_custom_robots_txt( $output, $public ) {
+    $site_url = home_url();
+    
+    $custom_robots  = "User-agent: *\n";
+    $custom_robots .= "Allow: /\n";
+    $custom_robots .= "Disallow: /wp-admin/\n";
+    $custom_robots .= "Allow: /wp-admin/admin-ajax.php\n";
+    $custom_robots .= "Disallow: /wp-json/\n";
+    $custom_robots .= "Disallow: /*?replytocom=\n";
+    $custom_robots .= "Disallow: /*?s=\n";
+    $custom_robots .= "Disallow: /*/feed/\n\n";
+    $custom_robots .= "Sitemap: " . esc_url( $site_url ) . "/wp-sitemap.xml\n";
+    
+    return $custom_robots;
+}
+add_filter( 'robots_txt', 'zk_custom_robots_txt', 99, 2 );
