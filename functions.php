@@ -3101,3 +3101,19 @@ add_filter('upload_mimes', 'custom_mime_types');
 
 // Include Nuvio Addon API
 require_once get_template_directory() . '/nuvio-addon.php';
+
+// Custom robots.txt rules
+add_filter( 'robots_txt', 'zk_custom_robots_txt', 99, 2 );
+function zk_custom_robots_txt( $output, $public ) {
+    $site_url = home_url();
+    $custom_robots  = "User-agent: *\n";
+    $custom_robots .= "Allow: /\n";
+    $custom_robots .= "Disallow: /wp-admin/\n";
+    $custom_robots .= "Allow: /wp-admin/admin-ajax.php\n";
+    $custom_robots .= "Disallow: /wp-json/\n";
+    $custom_robots .= "Disallow: /*?replytocom=\n";
+    $custom_robots .= "Disallow: /*?s=\n";
+    $custom_robots .= "Disallow: /*/feed/\n\n";
+    $custom_robots .= "Sitemap: {$site_url}/wp-sitemap.xml\n";
+    return $custom_robots;
+}

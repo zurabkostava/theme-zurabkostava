@@ -1,0 +1,1 @@
+<?php require '../../../wp-load.php'; $q=new WP_Query(['post_type'=>'attachment','post_mime_type'=>'application/epub+zip','post_status'=>'inherit','posts_per_page'=>-1]); foreach($q->posts as $p){ $f=get_attached_file($p->ID); $sz=filesize($f); echo $p->post_title . ' -> ' . round($sz/1024) . ' KB' . PHP_EOL; }
