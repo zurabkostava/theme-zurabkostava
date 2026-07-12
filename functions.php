@@ -7,6 +7,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // No direct access.
 }
 
+// 🔴 Load Nuvio Addons
+require_once get_template_directory() . '/nuvio-addon.php';
+require_once get_template_directory() . '/nuvio-movies-addon.php';
+
 function zk_setup() {
     add_theme_support( 'title-tag' );
     add_theme_support( 'post-thumbnails' );
@@ -3093,7 +3097,7 @@ function custom_mime_types($mimes) {
 add_filter('upload_mimes', 'custom_mime_types');
 
 // Include Nuvio Addon API
-require_once get_template_directory() . '/nuvio-addon.php';
+
 
 /* ============================================================
    ZK UNIFIED ROBOTS.TXT ENGINE (Strict Overwrite)
