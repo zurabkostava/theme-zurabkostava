@@ -48,38 +48,72 @@ add_action('init', function () {
     }
 
     // 3. Stream Endpoint
-    // Matches /nuvio-movies-addon/stream/movie/tt1234567.json (or with extra params)
     if (preg_match('#/nuvio-movies-addon/stream/movie/([^/]+?)(?:/([^/]+?))?\.json$#', $path, $matches)) {
         header('Content-Type: application/json; charset=utf-8');
         
         $imdb_id = urldecode($matches[1]);
         $streams = array();
         
-        // --- PROVIDER 1: Public JSON API (Consumet/FlixHQ wrapper example) ---
-        // For production, we would use a reliable API or robust scraper here.
-        // We will mock a direct API call to a hypothetical or known API that returns m3u8.
+        // --- PROVIDER 1: PHP cURL Scraper (Attempting to bypass Cloudflare/JS) ---
+        function zk_fetch_page($url) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                "Accept-Language: en-US,en;q=0.5",
+                "Connection: keep-alive"
+            ]);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $html = curl_exec($ch);
+            curl_close($ch);
+            return $html;
+        }
+
+        $direct_link = false;
         
-        // This is a placeholder for the actual scraping logic. 
-        // In reality, PHP would cURL vidsrc.me, parse the HTML, find the iframe, cURL the iframe, and extract the m3u8.
+        // Target A: autoembed.to
+        $html = zk_fetch_page("https://autoembed.to/movie/imdb/" . $imdb_id);
+        if (preg_match('/(https?:\/\/[^\s"\']+\.m3u8)/i', $html, $m)) {
+            $direct_link = $m[1];
+        } else {
+            // Target B: vsembed.ru (vidsrc clone)
+            $html2 = zk_fetch_page("https://vsembed.ru/embed/movie/" . $imdb_id);
+            if (preg_match('/(https?:\/\/[^\s"\']+\.m3u8)/i', $html2, $m)) {
+                $direct_link = $m[1];
+            } else {
+                // Try finding an iframe and scraping that
+                if (preg_match('/<iframe[^>]+src=["\']([^"\']+)["\']/i', $html2, $iframe_match)) {
+                    $iframe_url = $iframe_match[1];
+                    if (strpos($iframe_url, '//') === 0) $iframe_url = 'https:' . $iframe_url;
+                    
+                    $iframe_html = zk_fetch_page($iframe_url);
+                    if (preg_match('/(https?:\/\/[^\s"\']+\.m3u8)/i', $iframe_html, $m)) {
+                        $direct_link = $m[1];
+                    }
+                }
+            }
+        }
         
-        // For demonstration, let's try to use a generic approach or return a placeholder stream
-        // so you can test if Nuvio receives it.
+        if ($direct_link) {
+            $streams[] = array(
+                'name' => 'Nuvio Pro',
+                'title' => '1080p / Direct Stream',
+                'url' => $direct_link
+            );
+        } else {
+            // Fallback to External URL if scraping blocked by Cloudflare
+            $streams[] = array(
+                'name' => 'Nuvio Pro',
+                'title' => 'Browser Fallback (CF Blocked)',
+                'externalUrl' => 'https://autoembed.to/movie/imdb/' . $imdb_id
+            );
+        }
         
-        $streams[] = array(
-            'name' => 'Nuvio Pro',
-            'title' => '1080p / AutoEmbed',
-            // We return an externalUrl for now if direct m3u8 scraping fails, 
-            // BUT our goal is to return 'url' => 'https://...m3u8'
-            // 'url' => 'https://example.com/movie.m3u8'
-            'externalUrl' => 'https://autoembed.to/movie/imdb/' . $imdb_id
-        );
-        
-        // To implement true .m3u8 extraction in PHP, we need a dedicated class that parses the specific provider.
-        // Example structure for future expansion:
-        // $m3u8_url = NuvioScraper::scrape_vidsrc($imdb_id);
-        // if ($m3u8_url) { $streams[] = array('name'=>'VidSrc','url'=>$m3u8_url); }
-        
-        file_put_contents($log_file, date('Y-m-d H:i:s') . " - MOVIE FOUND - " . count($streams) . " streams for $imdb_id\n", FILE_APPEND);
+        file_put_contents($log_file, date('Y-m-d H:i:s') . " - MOVIE SCRAPED - ID: $imdb_id | Success: " . ($direct_link ? 'YES' : 'NO') . "\n", FILE_APPEND);
         
         echo json_encode(array('streams' => $streams));
         exit;
