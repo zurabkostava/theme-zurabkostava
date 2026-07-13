@@ -558,11 +558,27 @@ function zk_cinematic_gallery() {
         $cat_class = isset( $category_map[ $image_id ] ) ? $category_map[ $image_id ] : 'all';
         $exif_text = zk_attachment_exif( $image_id );
 
+        $alt_text    = get_post_meta( $image_id, '_wp_attachment_image_alt', true );
+        $title       = get_the_title( $image_id );
+        $caption     = wp_get_attachment_caption( $image_id );
+        $description = get_post( $image_id )->post_content;
+
+        if ( empty( $alt_text ) ) {
+            $alt_text = $title;
+        }
+        if ( empty( $alt_text ) ) {
+            $alt_text = 'Zurab Kostava Capture';
+        }
+
         $img_html = wp_get_attachment_image( $image_id, 'large', false, array(
-                'data-full'  => esc_url( $full_img ),
-                'data-thumb' => esc_url( $thumb_img ? $thumb_img : $full_img ),
-                'data-exif'  => esc_attr( $exif_text ),
-                'class'      => 'zk-grid-photo',
+                'data-full'        => esc_url( $full_img ),
+                'data-thumb'       => esc_url( $thumb_img ? $thumb_img : $full_img ),
+                'data-exif'        => esc_attr( $exif_text ),
+                'data-title'       => esc_attr( $title ),
+                'data-caption'     => esc_attr( $caption ),
+                'data-description' => esc_attr( $description ),
+                'class'            => 'zk-grid-photo',
+                'alt'              => esc_attr( $alt_text ),
         ) );
 
         $output .= '<div class="zk-gallery-item ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '">';
@@ -1039,14 +1055,29 @@ function zk_get_filebird_gallery( $folder_id ) {
             continue;
         }
 
+        $alt_text    = get_post_meta( $id, '_wp_attachment_image_alt', true );
+        $title       = get_the_title( $id );
+        $caption     = wp_get_attachment_caption( $id );
+        $description = get_post( $id )->post_content;
+
+        if ( empty( $alt_text ) ) {
+            $alt_text = $title;
+        }
+        if ( empty( $alt_text ) ) {
+            $alt_text = 'Zurab Kostava Capture';
+        }
+
         // Same image contract initGallery() reads: data-full (lightbox), data-thumb (strip).
         // Life & Captures has no EXIF, so data-exif stays empty.
         $img_html = wp_get_attachment_image( $id, 'large', false, array(
-                'data-full'  => esc_url( $full_img ),
-                'data-thumb' => esc_url( $thumb_img ? $thumb_img : $full_img ),
-                'data-exif'  => '',
-                'class'      => 'zk-grid-photo',
-                'alt'        => 'Zurab Kostava Capture',
+                'data-full'        => esc_url( $full_img ),
+                'data-thumb'       => esc_url( $thumb_img ? $thumb_img : $full_img ),
+                'data-exif'        => '',
+                'data-title'       => esc_attr( $title ),
+                'data-caption'     => esc_attr( $caption ),
+                'data-description' => esc_attr( $description ),
+                'class'            => 'zk-grid-photo',
+                'alt'              => esc_attr( $alt_text ),
         ) );
 
         $output .= '<div class="zk-gallery-item">';
