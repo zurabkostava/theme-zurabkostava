@@ -2392,12 +2392,7 @@ function zk_render_geo_meta_tags() {
     }
 
     if ( ! empty( $ai_summary ) ) {
-        if ( is_page('about') ) {
-            $clean_summary = str_replace( '"', '&quot;', $ai_summary );
-            echo "<meta name='abstract' content='" . esc_attr( $clean_summary ) . "' />\n";
-        } else {
-            echo '<meta name="abstract" content="' . esc_attr( $ai_summary ) . '" />' . "\n";
-        }
+        echo '<meta name="abstract" content="' . esc_attr( $ai_summary ) . '" />' . "\n";
     }
 }
 add_action( 'wp_head', 'zk_render_geo_meta_tags', 1 );
