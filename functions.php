@@ -776,6 +776,43 @@ add_shortcode( 'zk_music', 'zk_music_timeline_shortcode' );
 /* ============================================================
    ABOUT PAGE - DYNAMIC TABS SHORTCODE
    ============================================================ */
+function zk_get_og_image( $url ) {
+    if ( empty( $url ) || $url === '#' ) return '';
+
+    $transient_key = 'zk_og_img_' . md5( $url );
+    $cached_image = get_transient( $transient_key );
+
+    if ( false !== $cached_image ) {
+        return $cached_image;
+    }
+
+    $response = wp_remote_get( $url, array(
+        'timeout'     => 5,
+        'redirection' => 3,
+        'user-agent'  => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+    ) );
+
+    if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
+        set_transient( $transient_key, '', DAY_IN_SECONDS * 7 );
+        return '';
+    }
+
+    $body = wp_remote_retrieve_body( $response );
+    
+    $image_url = '';
+    if ( preg_match( '/<meta[^>]*property=[\"|\']og:image[\"|\'][^>]*content=[\"|\']([^\"^\']+)[\"|\'][^>]*>/i', $body, $matches ) ) {
+        $image_url = $matches[1];
+    } elseif ( preg_match( '/<meta[^>]*content=[\"|\']([^\"^\']+)[\"|\'][^>]*property=[\"|\']og:image[\"|\'][^>]*>/i', $body, $matches ) ) {
+        $image_url = $matches[1];
+    }
+
+    $image_url = html_entity_decode( $image_url );
+
+    set_transient( $transient_key, $image_url, DAY_IN_SECONDS * 30 );
+
+    return $image_url;
+}
+
 function zk_render_fav_list($option_key) {
     $data = get_option($option_key, '');
     if (empty(trim($data))) {
@@ -789,9 +826,74 @@ function zk_render_fav_list($option_key) {
         $parts = explode('|', $line);
         $name = trim($parts[0]);
         $url = isset($parts[1]) ? trim($parts[1]) : '#';
-        echo '<li><a href="' . esc_url($url) . '" target="_blank">' . esc_html($name) . '</a></li>';
+        
+        $hover_attr = '';
+        if ( $url !== '#' ) {
+            $og_image = zk_get_og_image( $url );
+            if ( ! empty( $og_image ) ) {
+                $hover_attr = ' data-hover-image="' . esc_url( $og_image ) . '" class="zk-fav-link"';
+            } else {
+                $hover_attr = ' class="zk-fav-link"';
+            }
+        }
+        
+        echo '<li><a href="' . esc_url($url) . '" target="_blank"' . $hover_attr . '>' . esc_html($name) . '</a></li>';
     }
 }
+
+function zk_fav_tooltip_script() {
+    if ( ! is_page('about') ) return;
+    ?>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const tooltip = document.createElement("div");
+        tooltip.id = "zk-fav-tooltip";
+        document.body.appendChild(tooltip);
+
+        const links = document.querySelectorAll(".zk-fav-link");
+        
+        links.forEach(link => {
+            link.addEventListener("mouseenter", function(e) {
+                const imgUrl = this.getAttribute("data-hover-image");
+                if (imgUrl) {
+                    tooltip.innerHTML = '<img src="' + imgUrl + '" loading="lazy" alt="Preview">';
+                    tooltip.classList.add("visible");
+                }
+            });
+            
+            link.addEventListener("mousemove", function(e) {
+                if (!tooltip.classList.contains("visible")) return;
+                
+                const xOffset = 20;
+                const yOffset = 20;
+                
+                let left = e.clientX + xOffset;
+                let top = e.clientY + yOffset;
+                
+                const tooltipRect = tooltip.getBoundingClientRect();
+                
+                if (left + tooltipRect.width > window.innerWidth) {
+                    left = e.clientX - tooltipRect.width - 10;
+                }
+                
+                if (top + tooltipRect.height > window.innerHeight) {
+                    top = e.clientY - tooltipRect.height - 10;
+                }
+                
+                tooltip.style.left = left + "px";
+                tooltip.style.top = top + "px";
+            });
+            
+            link.addEventListener("mouseleave", function() {
+                tooltip.classList.remove("visible");
+                tooltip.innerHTML = "";
+            });
+        });
+    });
+    </script>
+    <?php
+}
+add_action('wp_footer', 'zk_fav_tooltip_script');
 
 function zk_about_page_shortcode() {
     ob_start(); ?>

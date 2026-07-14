@@ -2156,6 +2156,47 @@ body.zk-lb-open { overflow: hidden; }
 	line-height: 2;
 }
 
+/* Favorites Hover Tooltip */
+#zk-fav-tooltip {
+	position: fixed;
+	pointer-events: none;
+	z-index: 9999;
+	opacity: 0;
+	visibility: hidden;
+	transform: scale(0.95);
+	transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+	background: #111;
+	width: 200px;
+	height: auto;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#zk-fav-tooltip.visible {
+	opacity: 1;
+	visibility: visible;
+	transform: scale(1);
+}
+
+#zk-fav-tooltip img {
+	width: 100%;
+	height: auto;
+	display: block;
+	object-fit: cover;
+}
+
+.zk-fav-link {
+	text-decoration: none;
+	position: relative;
+	transition: color 0.3s ease;
+}
+
+.zk-fav-link:hover {
+	color: #fff;
+}
+
 /* პლანშეტებზე (მაგ: iPad) გადაეწყოს 2x2 სვეტად */
 @media (max-width: 950px) {
 	.zk-favorites-grid {
