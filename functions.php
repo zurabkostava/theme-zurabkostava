@@ -858,27 +858,40 @@ function zk_render_fav_list($option_key) {
 }
 
 function zk_fav_tooltip_script() {
-    if ( ! is_page('about') ) return;
     ?>
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const tooltip = document.createElement("div");
-        tooltip.id = "zk-fav-tooltip";
-        document.body.appendChild(tooltip);
-
-        const links = document.querySelectorAll(".zk-fav-link");
+    (function() {
+        let tooltip = null;
         
-        links.forEach(link => {
-            link.addEventListener("mouseenter", function(e) {
-                const imgUrl = this.getAttribute("data-hover-image");
-                if (imgUrl) {
-                    tooltip.innerHTML = '<img src="' + imgUrl + '" loading="lazy" alt="Preview">';
-                    tooltip.classList.add("visible");
+        function getTooltip() {
+            if (!tooltip) {
+                tooltip = document.getElementById("zk-fav-tooltip");
+                if (!tooltip) {
+                    tooltip = document.createElement("div");
+                    tooltip.id = "zk-fav-tooltip";
+                    document.body.appendChild(tooltip);
                 }
-            });
-            
-            link.addEventListener("mousemove", function(e) {
-                if (!tooltip.classList.contains("visible")) return;
+            }
+            return tooltip;
+        }
+
+        document.addEventListener("mouseover", function(e) {
+            const link = e.target.closest(".zk-fav-link");
+            if (link) {
+                const imgUrl = link.getAttribute("data-hover-image");
+                if (imgUrl) {
+                    const tt = getTooltip();
+                    tt.innerHTML = '<img src="' + imgUrl + '" loading="lazy" alt="Preview">';
+                    tt.classList.add("visible");
+                }
+            }
+        });
+        
+        document.addEventListener("mousemove", function(e) {
+            const link = e.target.closest(".zk-fav-link");
+            if (link) {
+                const tt = getTooltip();
+                if (!tt.classList.contains("visible")) return;
                 
                 const xOffset = 20;
                 const yOffset = 20;
@@ -886,26 +899,36 @@ function zk_fav_tooltip_script() {
                 let left = e.clientX + xOffset;
                 let top = e.clientY + yOffset;
                 
-                const tooltipRect = tooltip.getBoundingClientRect();
+                const tooltipRect = tt.getBoundingClientRect();
                 
-                if (left + tooltipRect.width > window.innerWidth) {
-                    left = e.clientX - tooltipRect.width - 10;
+                // fallback dimensions before image loads fully
+                const width = tooltipRect.width || 200; 
+                const height = tooltipRect.height || 300;
+                
+                if (left + width > window.innerWidth) {
+                    left = e.clientX - width - 10;
                 }
                 
-                if (top + tooltipRect.height > window.innerHeight) {
-                    top = e.clientY - tooltipRect.height - 10;
+                if (top + height > window.innerHeight) {
+                    top = e.clientY - height - 10;
                 }
                 
-                tooltip.style.left = left + "px";
-                tooltip.style.top = top + "px";
-            });
-            
-            link.addEventListener("mouseleave", function() {
-                tooltip.classList.remove("visible");
-                tooltip.innerHTML = "";
-            });
+                tt.style.left = left + "px";
+                tt.style.top = top + "px";
+            }
         });
-    });
+        
+        document.addEventListener("mouseout", function(e) {
+            const link = e.target.closest(".zk-fav-link");
+            if (link) {
+                if (!link.contains(e.relatedTarget)) {
+                    const tt = getTooltip();
+                    tt.classList.remove("visible");
+                    tt.innerHTML = "";
+                }
+            }
+        });
+    })();
     </script>
     <?php
 }
