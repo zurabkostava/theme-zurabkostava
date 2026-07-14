@@ -779,7 +779,7 @@ add_shortcode( 'zk_music', 'zk_music_timeline_shortcode' );
 function zk_get_og_image( $url ) {
     if ( empty( $url ) || $url === '#' ) return '';
 
-    $transient_key = 'zk_og_img_v4_' . md5( $url );
+    $transient_key = 'zk_og_img_v3_' . md5( $url );
     $cached_image = get_transient( $transient_key );
 
     if ( false !== $cached_image ) {
@@ -793,10 +793,9 @@ function zk_get_og_image( $url ) {
     }
 
     $response = wp_remote_get( $url, array(
-        'timeout'     => 10,
-        'redirection' => 5,
-        'user-agent'  => $user_agent,
-        'sslverify'   => false
+        'timeout'     => 5,
+        'redirection' => 3,
+        'user-agent'  => $user_agent
     ) );
 
     if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
@@ -835,16 +834,18 @@ function zk_render_fav_list($option_key) {
         $url = isset($parts[1]) ? trim($parts[1]) : '#';
         
         $hover_attr = '';
+        $thumb_html = '';
         if ( $url !== '#' ) {
             $og_image = zk_get_og_image( $url );
             if ( ! empty( $og_image ) ) {
                 $hover_attr = ' data-hover-image="' . esc_url( $og_image ) . '" class="zk-fav-link"';
+                $thumb_html = '<img src="' . esc_url( $og_image ) . '" class="zk-fav-thumb" loading="lazy" alt="Thumb" />';
             } else {
                 $hover_attr = ' class="zk-fav-link"';
             }
         }
         
-        echo '<li><a href="' . esc_url($url) . '" target="_blank"' . $hover_attr . '>' . esc_html($name) . '</a></li>';
+        echo '<li><a href="' . esc_url($url) . '" target="_blank"' . $hover_attr . '>' . $thumb_html . '<span>' . esc_html($name) . '</span></a></li>';
     }
 }
 
