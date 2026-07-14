@@ -779,7 +779,7 @@ add_shortcode( 'zk_music', 'zk_music_timeline_shortcode' );
 function zk_get_og_image( $url ) {
     if ( empty( $url ) || $url === '#' ) return '';
 
-    $transient_key = 'zk_og_img_' . md5( $url );
+    $transient_key = 'zk_og_img_v2_' . md5( $url );
     $cached_image = get_transient( $transient_key );
 
     if ( false !== $cached_image ) {
@@ -789,7 +789,7 @@ function zk_get_og_image( $url ) {
     $response = wp_remote_get( $url, array(
         'timeout'     => 5,
         'redirection' => 3,
-        'user-agent'  => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+        'user-agent'  => 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)'
     ) );
 
     if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
