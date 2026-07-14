@@ -776,7 +776,7 @@ add_shortcode( 'zk_music', 'zk_music_timeline_shortcode' );
 /* ============================================================
    ABOUT PAGE - DYNAMIC TABS SHORTCODE
    ============================================================ */
-function zk_get_og_image( $url ) {
+function zk_get_og_image( $url, $scrape = true ) {
     if ( empty( $url ) || $url === '#' ) return '';
 
     $transient_key = 'zk_og_img_v3_' . md5( $url );
@@ -784,6 +784,10 @@ function zk_get_og_image( $url ) {
 
     if ( false !== $cached_image ) {
         return $cached_image;
+    }
+
+    if ( ! $scrape ) {
+        return false;
     }
 
     // Determine the best User-Agent
@@ -841,19 +845,40 @@ function zk_render_fav_list($option_key) {
         $name = trim($parts[0]);
         $url = isset($parts[1]) ? trim($parts[1]) : '#';
         
-        $hover_attr = '';
+        $hover_attr = ' class="zk-fav-link"';
         $thumb_html = '';
         if ( $url !== '#' ) {
-            $og_image = zk_get_og_image( $url );
-            if ( ! empty( $og_image ) ) {
+            $og_image = zk_get_og_image( $url, false );
+            
+            if ( false !== $og_image && ! empty( $og_image ) ) {
                 $hover_attr = ' data-hover-image="' . esc_url( $og_image ) . '" class="zk-fav-link"';
                 $thumb_html = '<img src="' . esc_url( $og_image ) . '" class="zk-fav-thumb" data-shape="' . esc_attr($shape) . '" loading="lazy" alt="" />';
-            } else {
-                $hover_attr = ' class="zk-fav-link"';
+            } elseif ( false === $og_image ) {
+                $hover_attr = ' data-scrape-url="' . esc_url( $url ) . '" data-shape="' . esc_attr($shape) . '" class="zk-fav-link"';
+                $thumb_html = '<img src="" class="zk-fav-thumb" data-shape="' . esc_attr($shape) . '" loading="lazy" alt="" />';
             }
         }
         
         echo '<li><a href="' . esc_url($url) . '" target="_blank"' . $hover_attr . '>' . $thumb_html . '<span>' . esc_html($name) . '</span></a></li>';
+    }
+}
+
+add_action( 'wp_ajax_zk_fetch_og_image', 'zk_fetch_og_image_ajax' );
+add_action( 'wp_ajax_nopriv_zk_fetch_og_image', 'zk_fetch_og_image_ajax' );
+
+function zk_fetch_og_image_ajax() {
+    if ( ! isset( $_POST['url'] ) ) {
+        wp_send_json_error( 'No URL provided' );
+    }
+    
+    $url = esc_url_raw( $_POST['url'] );
+    // Pass scrape=true to explicitly perform the fetch
+    $image_url = zk_get_og_image( $url, true );
+    
+    if ( ! empty( $image_url ) ) {
+        wp_send_json_success( array( 'image' => $image_url ) );
+    } else {
+        wp_send_json_error( 'No image found' );
     }
 }
 
@@ -928,6 +953,53 @@ function zk_fav_tooltip_script() {
                 }
             }
         });
+        
+        // Background scraper for missing images
+        function fetchMissingImages() {
+            const links = document.querySelectorAll('.zk-fav-link[data-scrape-url]');
+            const ajaxUrl = "<?php echo admin_url('admin-ajax.php'); ?>";
+            
+            links.forEach(link => {
+                const scrapeUrl = link.getAttribute('data-scrape-url');
+                
+                // Immediately remove to prevent duplicate fetching
+                link.removeAttribute('data-scrape-url');
+                
+                const formData = new FormData();
+                formData.append('action', 'zk_fetch_og_image');
+                formData.append('url', scrapeUrl);
+                
+                fetch(ajaxUrl, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data.image) {
+                        link.setAttribute('data-hover-image', data.data.image);
+                        const img = link.querySelector('.zk-fav-thumb');
+                        if (img) {
+                            img.src = data.data.image;
+                        }
+                    }
+                })
+                .catch(err => console.error('Error fetching og:image', err));
+            });
+        }
+        
+        // Run once on load
+        fetchMissingImages();
+        
+        // Handle SPA transitions
+        const observer = new MutationObserver((mutations) => {
+            let shouldFetch = false;
+            mutations.forEach((mutation) => {
+                if (mutation.addedNodes.length) shouldFetch = true;
+            });
+            if (shouldFetch) fetchMissingImages();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+        
     })();
     </script>
     <?php
