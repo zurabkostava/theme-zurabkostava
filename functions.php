@@ -3437,3 +3437,51 @@ add_filter( 'robots_txt', 'zk_custom_robots_txt', 99, 2 );
 
 // Remove default WordPress canonical tag to prevent conflicts with ZK Custom SEO Engine
 remove_action( 'wp_head', 'rel_canonical' );
+
+/* ============================================================
+   DIAGNOSTIC - LOOPBACK TEST SHORTCODE
+   ============================================================ */
+function zk_loopback_diagnostic_shortcode() {
+    if ( ! current_user_can('manage_options') ) {
+        return 'Unauthorized. Must be admin.';
+    }
+
+    $url = site_url();
+    $start_time = microtime(true);
+    
+    $args = array(
+        'timeout'   => 15,
+        'sslverify' => false,
+    );
+    
+    $response = wp_remote_get( $url, $args );
+    $end_time = microtime(true);
+    $duration = round( $end_time - $start_time, 2 );
+
+    $output = '<div style="background:#111; color:#0f0; padding:20px; font-family:monospace; margin:20px 0; border-radius:8px; border:1px solid #333;">';
+    $output .= '<h3 style="color:#0f0; margin-top:0;">Loopback Diagnostic Test</h3>';
+    $output .= '<p><strong>Testing URL:</strong> ' . esc_html($url) . '</p>';
+    $output .= '<p><strong>Time Taken:</strong> ' . $duration . ' seconds</p>';
+
+    if ( is_wp_error( $response ) ) {
+        $output .= '<p style="color:#f55;"><strong>Error:</strong> ' . esc_html( $response->get_error_message() ) . '</p>';
+    } else {
+        $code = wp_remote_retrieve_response_code( $response );
+        $headers = wp_remote_retrieve_headers( $response );
+        
+        $output .= '<p><strong>Response Code:</strong> ' . esc_html( $code ) . '</p>';
+        $output .= '<h4>Headers:</h4><pre style="white-space:pre-wrap; overflow-x:auto; background:#000; padding:10px; border-radius:4px;">';
+        foreach ( $headers as $key => $value ) {
+            if ( is_array($value) ) {
+                $value = implode(', ', $value);
+            }
+            $output .= esc_html($key) . ': ' . esc_html($value) . "\n";
+        }
+        $output .= '</pre>';
+    }
+    
+    $output .= '</div>';
+    
+    return $output;
+}
+add_shortcode('zk_loopback_test', 'zk_loopback_diagnostic_shortcode');
