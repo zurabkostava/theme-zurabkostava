@@ -955,11 +955,12 @@ function zk_fav_tooltip_script() {
         });
         
         // Background scraper for missing images
-        function fetchMissingImages() {
+        async function fetchMissingImages() {
             const links = document.querySelectorAll('.zk-fav-link[data-scrape-url]');
             const ajaxUrl = "<?php echo admin_url('admin-ajax.php'); ?>";
             
-            links.forEach(link => {
+            for (let i = 0; i < links.length; i++) {
+                const link = links[i];
                 const scrapeUrl = link.getAttribute('data-scrape-url');
                 
                 // Immediately remove to prevent duplicate fetching
@@ -969,12 +970,13 @@ function zk_fav_tooltip_script() {
                 formData.append('action', 'zk_fetch_og_image');
                 formData.append('url', scrapeUrl);
                 
-                fetch(ajaxUrl, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
+                try {
+                    const response = await fetch(ajaxUrl, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    
                     if (data.success && data.data.image) {
                         link.setAttribute('data-hover-image', data.data.image);
                         const img = link.querySelector('.zk-fav-thumb');
@@ -982,9 +984,13 @@ function zk_fav_tooltip_script() {
                             img.src = data.data.image;
                         }
                     }
-                })
-                .catch(err => console.error('Error fetching og:image', err));
-            });
+                } catch (err) {
+                    console.error('Error fetching og:image', err);
+                }
+                
+                // Wait 500ms between requests to avoid overloading the server and exhausting PHP workers
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
         }
         
         // Run once on load
