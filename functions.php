@@ -779,17 +779,23 @@ add_shortcode( 'zk_music', 'zk_music_timeline_shortcode' );
 function zk_get_og_image( $url ) {
     if ( empty( $url ) || $url === '#' ) return '';
 
-    $transient_key = 'zk_og_img_v2_' . md5( $url );
+    $transient_key = 'zk_og_img_v3_' . md5( $url );
     $cached_image = get_transient( $transient_key );
 
     if ( false !== $cached_image ) {
         return $cached_image;
     }
 
+    // Determine the best User-Agent
+    $user_agent = 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)';
+    if ( strpos( $url, 'wikipedia.org' ) !== false ) {
+        $user_agent = 'ZurabKostavaThemeBot/1.0 (admin@zurabkostava.com)';
+    }
+
     $response = wp_remote_get( $url, array(
         'timeout'     => 5,
         'redirection' => 3,
-        'user-agent'  => 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)'
+        'user-agent'  => $user_agent
     ) );
 
     if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
