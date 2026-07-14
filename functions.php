@@ -3446,12 +3446,18 @@ function zk_loopback_diagnostic_shortcode() {
         return 'Unauthorized. Must be admin.';
     }
 
-    $url = site_url();
+    $url = rest_url( 'wp/v2/types/post?context=edit' );
     $start_time = microtime(true);
+    
+    $cookies = array();
+    foreach ( $_COOKIE as $name => $value ) {
+        $cookies[] = new WP_Http_Cookie( array( 'name' => $name, 'value' => $value ) );
+    }
     
     $args = array(
         'timeout'   => 15,
         'sslverify' => false,
+        'cookies'   => $cookies,
     );
     
     $response = wp_remote_get( $url, $args );
