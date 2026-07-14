@@ -820,6 +820,14 @@ function zk_get_og_image( $url ) {
 }
 
 function zk_render_fav_list($option_key) {
+    // Determine shape based on option key
+    $shape = 'square';
+    if ( in_array( $option_key, ['zk_fav_cinema', 'zk_fav_series', 'zk_fav_books'] ) ) {
+        $shape = 'portrait';
+    } elseif ( in_array( $option_key, ['zk_fav_bands', 'zk_fav_albums', 'zk_fav_songs', 'zk_fav_actors', 'zk_fav_writers', 'zk_fav_directors', 'zk_fav_artists', 'zk_fav_nerds', 'zk_fav_scientists', 'zk_fav_athletes', 'zk_fav_models'] ) ) {
+        $shape = 'circle';
+    }
+
     $data = get_option($option_key, '');
     if (empty(trim($data))) {
         echo '<li><a href="#">[TBD]</a></li>';
@@ -839,7 +847,7 @@ function zk_render_fav_list($option_key) {
             $og_image = zk_get_og_image( $url );
             if ( ! empty( $og_image ) ) {
                 $hover_attr = ' data-hover-image="' . esc_url( $og_image ) . '" class="zk-fav-link"';
-                $thumb_html = '<img src="' . esc_url( $og_image ) . '" class="zk-fav-thumb" loading="lazy" alt="Thumb" />';
+                $thumb_html = '<img src="' . esc_url( $og_image ) . '" class="zk-fav-thumb" data-shape="' . esc_attr($shape) . '" loading="lazy" alt="" />';
             } else {
                 $hover_attr = ' class="zk-fav-link"';
             }

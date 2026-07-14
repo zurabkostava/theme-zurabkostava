@@ -2151,7 +2151,8 @@ body.zk-lb-open { overflow: hidden; }
 
 .zk-fav-col ol {
 	margin: 0;
-	padding-left: 22px;
+	padding-left: 0;
+	list-style: none;
 	font-size: 0.85rem;
 	line-height: 2;
 }
@@ -2197,13 +2198,31 @@ body.zk-lb-open { overflow: hidden; }
 }
 
 .zk-fav-thumb {
-	width: 24px;
-	height: 24px;
-	border-radius: 4px;
+	flex-shrink: 0;
+	background-color: rgba(255, 255, 255, 0.05); /* Loading skeleton placeholder */
+	color: transparent; /* Hides broken image icon during load */
 	object-fit: cover;
 	display: inline-block;
 	border: 1px solid rgba(255, 255, 255, 0.1);
 	box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.zk-fav-thumb[data-shape="portrait"] {
+	width: 20px;
+	height: 30px;
+	border-radius: 4px;
+}
+
+.zk-fav-thumb[data-shape="circle"] {
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+}
+
+.zk-fav-thumb[data-shape="square"] {
+	width: 26px;
+	height: 26px;
+	border-radius: 4px;
 }
 
 .zk-fav-link:hover {
