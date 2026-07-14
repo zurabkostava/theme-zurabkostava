@@ -779,7 +779,7 @@ add_shortcode( 'zk_music', 'zk_music_timeline_shortcode' );
 function zk_get_og_image( $url ) {
     if ( empty( $url ) || $url === '#' ) return '';
 
-    $transient_key = 'zk_og_img_v3_' . md5( $url );
+    $transient_key = 'zk_og_img_v4_' . md5( $url );
     $cached_image = get_transient( $transient_key );
 
     if ( false !== $cached_image ) {
@@ -793,9 +793,10 @@ function zk_get_og_image( $url ) {
     }
 
     $response = wp_remote_get( $url, array(
-        'timeout'     => 5,
-        'redirection' => 3,
-        'user-agent'  => $user_agent
+        'timeout'     => 10,
+        'redirection' => 5,
+        'user-agent'  => $user_agent,
+        'sslverify'   => false
     ) );
 
     if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
