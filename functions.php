@@ -955,13 +955,20 @@ function zk_fav_tooltip_script() {
         });
         
         // Background scraper for missing images
+        let isFetchingImages = false;
         async function fetchMissingImages() {
+            if (isFetchingImages) return;
+            
             const links = document.querySelectorAll('.zk-fav-link[data-scrape-url]');
+            if (links.length === 0) return;
+            
+            isFetchingImages = true;
             const ajaxUrl = "<?php echo admin_url('admin-ajax.php'); ?>";
             
             for (let i = 0; i < links.length; i++) {
                 const link = links[i];
                 const scrapeUrl = link.getAttribute('data-scrape-url');
+                if (!scrapeUrl) continue;
                 
                 // Immediately remove to prevent duplicate fetching
                 link.removeAttribute('data-scrape-url');
@@ -988,9 +995,11 @@ function zk_fav_tooltip_script() {
                     console.error('Error fetching og:image', err);
                 }
                 
-                // Wait 500ms between requests to avoid overloading the server and exhausting PHP workers
+                // Wait 500ms between requests to avoid overloading the server
                 await new Promise(resolve => setTimeout(resolve, 500));
             }
+            
+            isFetchingImages = false;
         }
         
         // Run once on load
