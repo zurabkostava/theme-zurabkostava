@@ -2,7 +2,6 @@ let synthesis = window.speechSynthesis;
 let piperVoicesList = [];
 let detectedBookLanguages = new Set();
 let piperWorkers = {};
-let kokoroState = { worker: null, ready: false, initializing: false, pending: [] };
 let parsedContent = [];
 let currentIdx = 0;
 let isPlaying = false;
@@ -998,91 +997,6 @@ function stopPiperAudio() {
     });
 }
 
-function initKokoroWorker() {
-    if (kokoroState.worker && (kokoroState.ready || kokoroState.initializing)) return;
-    
-    kokoroState.ready = false; 
-    kokoroState.initializing = true;
-    
-    const failInit = (message) => {
-        kokoroState.initializing = false;
-        kokoroState.ready = false;
-        if (kokoroState.worker) { kokoroState.worker.terminate(); kokoroState.worker = null; }
-        while (kokoroState.pending.length) {
-            try { kokoroState.pending.shift().reject(new Error(message)); } catch (e) {}
-        }
-        console.error("Kokoro init failed:", message);
-        setTtsStatus("❌ " + message);
-        setTimeout(() => setTtsStatus(null), 6000);
-        const dlBtn = document.getElementById('unified-download-btn');
-        if (dlBtn && (dlBtn.textContent.includes('Kokoro') || dlBtn.textContent.includes('Initializing'))) {
-            dlBtn.textContent = "🔁 Retry Kokoro";
-            dlBtn.disabled = false;
-            dlBtn.style.opacity = "1";
-        }
-        stopReading();
-    };
-
-    try {
-        const base = window.THEME_URI || '/wp-content/themes/zurabkostava';
-        kokoroState.worker = new Worker(base + '/web-reader/kokoro-worker.js', { type: 'module' });
-    } catch (e) {
-        failInit("Worker creation failed: " + e);
-        return;
-    }
-    
-    setTtsStatus("Downloading Kokoro Model (~86MB)...");
-    
-    kokoroState.worker.onerror = (e) => {
-        console.error("[Main Thread] Kokoro worker onerror triggered:", e.message || e);
-        failInit(e.message || "Kokoro worker script failed to load.");
-    };
-    
-    kokoroState.worker.onmessage = (e) => {
-        const data = e.data || {};
-        
-        if (data.type === 'progress') {
-            const dlBtn = document.getElementById('unified-download-btn');
-            if (dlBtn && data.info) {
-                if (data.info.status === 'progress' && data.info.total) {
-                    const loadedMB = (data.info.loaded / 1024 / 1024).toFixed(1);
-                    const totalMB = (data.info.total / 1024 / 1024).toFixed(1);
-                    dlBtn.textContent = `⏳ Downloading ${data.info.file}: ${loadedMB}/${totalMB} MB`;
-                } else if (data.info.status === 'downloading') {
-                    dlBtn.textContent = `⏳ Starting download...`;
-                }
-            }
-        } else if (data.type === 'init_done') {
-            if (data.success) {
-                kokoroState.ready = true;
-                kokoroState.initializing = false;
-                setTtsStatus(null);
-                
-                const dlBtn = document.getElementById('unified-download-btn');
-                if (dlBtn && (dlBtn.textContent.includes('Kokoro') || dlBtn.textContent.includes('Initializing') || dlBtn.textContent.includes('Downloading'))) {
-                    dlBtn.textContent = "✅ Kokoro Ready";
-                    dlBtn.style.opacity = "0.5"; dlBtn.disabled = true;
-                    dlBtn.style.background = "transparent"; dlBtn.style.border = "1px solid rgba(255,255,255,0.1)"; dlBtn.style.color = "var(--text-muted)";
-                }
-            } else {
-                failInit(data.error);
-            }
-        } else if (data.type === 'generate_done') {
-            const pIndex = kokoroState.pending.findIndex(p => p.id === data.id);
-            if (pIndex > -1) {
-                const p = kokoroState.pending.splice(pIndex, 1)[0];
-                if (data.success) {
-                    p.resolve(data.blob);
-                } else {
-                    p.reject(new Error(data.error));
-                }
-            }
-        }
-    };
-    
-    kokoroState.worker.postMessage({ type: 'init' });
-}
-
 // 'ka_GE', 'ka-GE', 'KA-ge' → all normalize to 'ka-ge' so they match langCode 'ka'
 function normalizeLang(code) {
     return String(code || '').toLowerCase().replace(/_/g, '-').trim();
@@ -1229,26 +1143,6 @@ function rebuildDynamicSettings() {
             voiceSelect.appendChild(optGroup);
         }
         
-        if (currentLang.startsWith('en')) {
-            const kokoroVoices = [
-                { name: 'af_heart (Female, US)', val: 'af_heart' },
-                { name: 'af_bella (Female, US)', val: 'af_bella' },
-                { name: 'am_adam (Male, US)', val: 'am_adam' },
-                { name: 'am_michael (Male, US)', val: 'am_michael' },
-                { name: 'bf_emma (Female, UK)', val: 'bf_emma' },
-                { name: 'bm_george (Male, UK)', val: 'bm_george' }
-            ];
-            const kokoroOptGroup = document.createElement('optgroup');
-            kokoroOptGroup.label = "Kokoro Offline (Ultra High Quality)";
-            kokoroVoices.forEach(v => {
-                const opt = document.createElement('option');
-                opt.value = 'kokoro:' + v.val;
-                opt.textContent = `✨ ${v.name}`;
-                kokoroOptGroup.appendChild(opt);
-            });
-            voiceSelect.appendChild(kokoroOptGroup);
-        }
-
         const puterVoices = [
             { name: '☁️ Puter (OpenAI Nova - Female)', val: 'nova' },
             { name: '☁️ Puter (OpenAI Alloy - Neutral)', val: 'alloy' },
@@ -1317,17 +1211,6 @@ function rebuildDynamicSettings() {
                 dlBtn.style.opacity = "1"; dlBtn.disabled = false;
                 dlBtn.style.background = "rgba(56, 189, 248, 0.1)"; dlBtn.style.border = "1px solid rgba(56, 189, 248, 0.3)"; dlBtn.style.color = "#38bdf8";
             }
-        } else if (selectedVoice && selectedVoice.startsWith('kokoro:')) {
-            dlBtn.classList.remove('hidden');
-            if (kokoroState.ready) {
-                dlBtn.textContent = "✅ Kokoro Ready";
-                dlBtn.style.opacity = "0.5"; dlBtn.disabled = true;
-                dlBtn.style.background = "transparent"; dlBtn.style.border = "1px solid rgba(255,255,255,0.1)"; dlBtn.style.color = "var(--text-muted)";
-            } else {
-                dlBtn.textContent = "📥 Download / Init Kokoro (~86MB)";
-                dlBtn.style.opacity = "1"; dlBtn.disabled = false;
-                dlBtn.style.background = "rgba(56, 189, 248, 0.1)"; dlBtn.style.border = "1px solid rgba(56, 189, 248, 0.3)"; dlBtn.style.color = "#38bdf8";
-            }
         } else {
             dlBtn.classList.add('hidden');
         }
@@ -1347,17 +1230,11 @@ function rebuildDynamicSettings() {
         const currentLang = langSelect.value;
         const selectedVoice = voiceSelect.value;
         
-        if (selectedVoice && selectedVoice.startsWith('kokoro:')) {
-            initKokoroWorker();
-            dlBtn.textContent = "⏳ Initializing (~86MB)...";
+        const chosen = piperList.find(v => v.name === selectedVoice);
+        if (currentLang && chosen) {
+            initPiperWorker(currentLang, chosen.path);
+            dlBtn.textContent = "⏳ Initializing...";
             dlBtn.disabled = true; dlBtn.style.opacity = "0.7";
-        } else {
-            const chosen = piperList.find(v => v.name === selectedVoice);
-            if (currentLang && chosen) {
-                initPiperWorker(currentLang, chosen.path);
-                dlBtn.textContent = "⏳ Initializing...";
-                dlBtn.disabled = true; dlBtn.style.opacity = "0.7";
-            }
         }
     });
 
@@ -1924,120 +1801,6 @@ function highlightChunk(chunk) {
             }
         }
     });
-}
-
-async function playKokoroChunk(chunk, rate, token, voiceId) {
-    if (token !== playbackToken || !isPlaying) return false;
-    
-    let batches = [];
-    let currentBatch = [];
-    let currentBatchText = "";
-
-    for (let i = 0; i < chunk.sentences.length; i++) {
-        const currentItem = chunk.sentences[i];
-        const globalIdx = currentItem.index;
-        let delayMs = 0;
-
-        if (globalIdx > 0) {
-            const prevItem = parsedContent[globalIdx - 1];
-            const currType = getHeaderType(currentItem.element);
-            const prevType = getHeaderType(prevItem ? prevItem.element : null);
-
-            const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
-            const afterMs = prevType ? pauseSettings.postHeader : 0;
-            delayMs = Math.max(beforeMs, afterMs);
-        }
-
-        if (delayMs > 0 && currentBatch.length > 0) {
-            batches.push({ items: currentBatch, text: currentBatchText, delayMs: delayMs });
-            currentBatch = [];
-            currentBatchText = "";
-        }
-
-        const spoken = buildSpokenSentence(currentItem, chunk.lang);
-        const offset = currentBatchText.length;
-        const wordRanges = spoken.wordRanges.map(r => ({ el: r.el, start: r.start + offset, end: r.end + offset }));
-        currentBatchText += spoken.raw;
-        currentBatch.push({ idx: currentItem.index, element: currentItem.element, wordRanges: wordRanges, sentenceEndChar: currentBatchText.length });
-    }
-    if (currentBatch.length > 0) {
-        batches.push({ items: currentBatch, text: currentBatchText, delayMs: 0 });
-    }
-
-    if (batches.length === 0) return true;
-
-    const batchPromises = batches.map(batch => {
-        return new Promise((resolve, reject) => {
-            const rawText = batch.items.map(s => s.element.innerText.trim()).join(' ');
-            const msgId = Date.now() + Math.random();
-            
-            const p = {
-                id: msgId,
-                resolve: (blob) => resolve({ blob, batch }),
-                reject: (err) => reject(err)
-            };
-            kokoroState.pending.push(p);
-            kokoroState.worker.postMessage({ type: 'generate', text: rawText, voice: voiceId, id: msgId });
-        });
-    });
-
-    for (let i = 0; i < batchPromises.length; i++) {
-        if (token !== playbackToken || !isPlaying) return false;
-        
-        setTtsStatus("⏳ Kokoro is thinking...");
-        let result;
-        try {
-            result = await batchPromises[i];
-        } catch (err) {
-            console.error("Kokoro synth error", err);
-            setTtsStatus(null);
-            continue;
-        }
-        setTtsStatus(null);
-        
-        if (token !== playbackToken || !isPlaying) return false;
-        const { blob, batch } = result;
-
-        currentIdx = batch.items[0].idx;
-        highlightSentence(currentIdx, true);
-        updateMediaPosition();
-
-        const audioUrl = URL.createObjectURL(blob);
-        const audio = new Audio(audioUrl);
-        audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
-        
-        const ok = await new Promise((resolvePlay) => {
-            let done = false;
-            const finish = () => {
-                if (done) return;
-                done = true;
-                clearInterval(guard);
-                URL.revokeObjectURL(audioUrl);
-                resolvePlay(token === playbackToken && isPlaying);
-            };
-            const guard = setInterval(() => {
-                if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
-            }, 100);
-            audio.onended = finish;
-            audio.onerror = finish;
-            
-            const consolidatedSpoken = {
-                totalChars: batch.text.length,
-                wordRanges: batch.items.flatMap(s => s.wordRanges)
-            };
-            runWordHighlights(audio, consolidatedSpoken, token, batch.items);
-            audio.play().catch(finish);
-        });
-
-        if (!ok || token !== playbackToken || !isPlaying) return false;
-
-        if (batch.delayMs > 0) {
-            await new Promise(r => setTimeout(r, batch.delayMs));
-            if (token !== playbackToken || !isPlaying) return false;
-        }
-    }
-
-    return true;
 }
 
 function runWordHighlights(audio, spoken, token, sentenceRanges) {
