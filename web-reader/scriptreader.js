@@ -700,65 +700,88 @@ function addHeaderClassToAttrs(attrs) {
 }
 
 function extractTextFromDoc(doc) {
-    const paragraphs = doc.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6, li, blockquote');
-    let textArray = [];
-    if (paragraphs.length > 0) {
-        paragraphs.forEach(p => {
+    let body = doc.body.cloneNode(true);
+    
+    // 1. Process headers
+    body.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(h => {
+        const tag = h.tagName.toLowerCase();
+        let safeText = protectHeaderPunct(h.textContent.trim());
+        if (safeText) {
+            h.innerHTML = `<b class="epub-header epub-header-${tag}">${safeText}</b>`;
+        }
+    });
+
+    // 2. Identify and transform leading-bold or all-bold blocks
+    body.querySelectorAll('p, div, li, blockquote, section, article').forEach(p => {
+        if (p.querySelector('.epub-header')) return;
+        
+        let boldLen = 0;
+        p.querySelectorAll('b, strong').forEach(n => { boldLen += n.textContent.trim().length; });
+        const totalLen = p.textContent.trim().length;
+        
+        if (totalLen > 0 && boldLen >= totalLen * 0.7) {
+            let safeText = protectHeaderPunct(p.textContent.trim());
+            p.innerHTML = `<b class="epub-header epub-header-strong">${safeText}</b>`;
+        } else if (hasLeadingBoldHeader(p)) {
             let html = p.innerHTML;
-            html = html.replace(/<br\s*\/?>/gi, ' ');
-
-            let tagName = p.tagName.toLowerCase();
-            let isHeader = /^h[1-6]$/.test(tagName);
-
-            // Whole-paragraph internal header: ≥70% of the visible text is bold
-            if (!isHeader) {
-                let boldLen = 0;
-                p.querySelectorAll('*').forEach(n => {
-                    if (isBoldNode(n)) boldLen += n.textContent.trim().length;
-                });
-                const totalLen = p.textContent.trim().length;
-                if (totalLen > 0 && boldLen >= totalLen * 0.7) {
-                    isHeader = true;
-                    tagName = 'strong';
-                }
-            }
-
-            // Leading-bold internal header mixed with normal text: stamp the
-            // marker class, protect its punctuation, and force a sentence
-            // split right after the closing tag via ___SPLIT___.
-            if (!isHeader && hasLeadingBoldHeader(p)) {
-                html = html.replace(/^(\s*)<(b|strong)\b([^>]*)>([\s\S]*?)<\/\2\s*>/i,
-                    (m, ws, tag, attrs, inner) =>
-                        `${ws}<${tag}${addHeaderClassToAttrs(attrs)}>${protectHeaderPunct(inner)}</${tag}>___SPLIT___`);
-            }
-
-            let text = html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, '').trim();
-            if (text.length > 0) {
-                if (isHeader) {
-                    // Flatten inner tags — the whole line is one header
-                    let safeText = protectHeaderPunct(text.replace(/<[^>]+>/g, ''));
-                    text = `<b class="epub-header epub-header-${tagName}">${safeText}</b>`;
-                }
-                // Restore placeholders before the terminal-punctuation check so a
-                // header ending in a protected "." doesn't get a second dot appended
-                const cleanText = text.replace(/<[^>]+>/g, '').replace(/___SPLIT___/g, '')
-                    .replace(/___DOT___/g, '.').replace(/___EXCL___/g, '!').replace(/___QUEST___/g, '?').trim();
-                if (cleanText.length > 0) {
-                    const lastChar = cleanText.slice(-1);
-                    const punctuation = ['.', '!', '?', ':', ';', '…', '"', '»', '”'];
-                    if (!punctuation.includes(lastChar)) { text += '.'; }
-                    textArray.push(text);
-                }
+            html = html.replace(/^(\s*)<(b|strong)\b([^>]*)>([\s\S]*?)<\/\2\s*>/i,
+                (m, ws, tag, attrs, inner) =>
+                    `${ws}<${tag}${addHeaderClassToAttrs(attrs)}>${protectHeaderPunct(inner)}</${tag}>___SPLIT___`);
+            p.innerHTML = html;
+        }
+    });
+    
+    // 3. Inject newlines around block elements to preserve logical breaks
+    const blockTags = ['p', 'div', 'section', 'article', 'header', 'footer', 'aside', 'blockquote', 'figure', 'figcaption', 'li', 'dd', 'dt', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'td', 'th', 'caption', 'tr'];
+    
+    blockTags.forEach(tag => {
+        body.querySelectorAll(tag).forEach(el => {
+            if (el.parentNode) {
+                el.insertAdjacentText('beforebegin', '\n\n');
+                el.insertAdjacentText('afterend', '\n\n');
             }
         });
-        return textArray.join('\n\n');
-    } else {
-        let html = doc.body.innerHTML;
-        html = html.replace(/<br\s*\/?>/gi, ' ');
-        html = html.replace(/<(h[1-6])[^>]*>([\s\S]*?)<\/\1>/gi, (m, tag, inner) =>
-            `<b class="epub-header epub-header-${tag.toLowerCase()}">${protectHeaderPunct(inner.replace(/<[^>]+>/g, ''))}</b>`);
-        return html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, '').trim();
-    }
+    });
+    
+    body.querySelectorAll('br').forEach(br => {
+        if (br.parentNode) br.insertAdjacentText('afterend', ' ');
+    });
+
+    // 4. Extract HTML, strip unwanted tags, decode entities
+    let html = body.innerHTML;
+    let text = html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, ' ');
+    
+    text = text.replace(/&nbsp;/gi, ' ')
+               .replace(/&amp;/gi, '&')
+               .replace(/&lt;/gi, '<')
+               .replace(/&gt;/gi, '>')
+               .replace(/&quot;/gi, '"')
+               .replace(/&#39;/gi, "'");
+
+    // 5. Split into blocks and clean up
+    let textArray = text.split(/\n\n+/);
+    let finalArray = [];
+    
+    textArray.forEach(block => {
+        let t = block.trim();
+        if (t.length > 0) {
+            t = t.replace(/___SPLIT___/g, '')
+                 .replace(/___DOT___/g, '.')
+                 .replace(/___EXCL___/g, '!')
+                 .replace(/___QUEST___/g, '?');
+                 
+            t = t.replace(/\s+/g, ' ').trim();
+            
+            if (t.length > 0) {
+                const lastChar = t.slice(-1);
+                const punctuation = ['.', '!', '?', ':', ';', '…', '"', '»', '”', '’', "'"];
+                if (!punctuation.includes(lastChar)) { t += '.'; }
+                finalArray.push(t);
+            }
+        }
+    });
+    
+    return finalArray.join('\n\n');
 }
 function handleNextChapterLogic() {
     // აქ ვშლით ინდექსს, რადგან გადავდივართ "წასაკითხად"
