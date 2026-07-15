@@ -2,6 +2,7 @@ let synthesis = window.speechSynthesis;
 let piperVoicesList = [];
 let detectedBookLanguages = new Set();
 let piperWorkers = {};
+let kokoroInstance = null;
 let parsedContent = [];
 let currentIdx = 0;
 let isPlaying = false;
@@ -1142,6 +1143,26 @@ function rebuildDynamicSettings() {
             });
             voiceSelect.appendChild(optGroup);
         }
+        
+        if (currentLang.startsWith('en')) {
+            const kokoroVoices = [
+                { name: 'af_heart (Female, US)', val: 'af_heart' },
+                { name: 'af_bella (Female, US)', val: 'af_bella' },
+                { name: 'am_adam (Male, US)', val: 'am_adam' },
+                { name: 'am_michael (Male, US)', val: 'am_michael' },
+                { name: 'bf_emma (Female, UK)', val: 'bf_emma' },
+                { name: 'bm_george (Male, UK)', val: 'bm_george' }
+            ];
+            const kokoroOptGroup = document.createElement('optgroup');
+            kokoroOptGroup.label = "Kokoro Offline (Ultra High Quality)";
+            kokoroVoices.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = 'kokoro:' + v.val;
+                opt.textContent = `✨ ${v.name}`;
+                kokoroOptGroup.appendChild(opt);
+            });
+            voiceSelect.appendChild(kokoroOptGroup);
+        }
 
         const puterVoices = [
             { name: '☁️ Puter (OpenAI Nova - Female)', val: 'nova' },
@@ -1799,6 +1820,115 @@ function highlightChunk(chunk) {
     });
 }
 
+async function playKokoroChunk(chunk, rate, token, voiceId) {
+    if (!kokoroInstance) {
+        const playToggleBtn = document.getElementById('play-btn');
+        const originalText = playToggleBtn.innerHTML;
+        playToggleBtn.innerHTML = '<span class="icon">⏳</span><span class="text">Downloading (~86MB)...</span>';
+        try {
+            const { KokoroTTS } = await import('https://cdn.jsdelivr.net/npm/kokoro-js/+esm');
+            kokoroInstance = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
+                dtype: "q8",
+                device: "wasm"
+            });
+        } catch (e) {
+            console.error("Kokoro load error", e);
+            playToggleBtn.innerHTML = originalText;
+            return false;
+        }
+        playToggleBtn.innerHTML = originalText;
+    }
+
+    if (token !== playbackToken || !isPlaying) return false;
+    
+    let currentBatch = [];
+    let currentBatchText = "";
+
+    const playBatch = async () => {
+        if (currentBatch.length === 0) return true;
+        
+        currentIdx = currentBatch[0].idx;
+        highlightSentence(currentIdx, true);
+        updateMediaPosition();
+
+        const ok = await new Promise(async (resolve) => {
+            const rawText = currentBatch.map(s => s.element.innerText.trim()).join(' ');
+            try {
+                const audioData = await kokoroInstance.generate(rawText, { voice: voiceId });
+                if (token !== playbackToken || !isPlaying) { resolve(false); return; }
+
+                const blob = audioData.toBlob();
+                const audioUrl = URL.createObjectURL(blob);
+                
+                const audio = new Audio(audioUrl);
+                audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
+                
+                let done = false;
+                const finish = () => {
+                    if (done) return;
+                    done = true;
+                    clearInterval(guard);
+                    URL.revokeObjectURL(audioUrl);
+                    resolve(token === playbackToken && isPlaying);
+                };
+                const guard = setInterval(() => {
+                    if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
+                }, 100);
+                audio.onended = finish;
+                audio.onerror = finish;
+                
+                const consolidatedSpoken = {
+                    totalChars: currentBatchText.length,
+                    wordRanges: currentBatch.flatMap(s => s.wordRanges)
+                };
+                runWordHighlights(audio, consolidatedSpoken, token, currentBatch);
+                audio.play().catch(finish);
+            } catch (e) {
+                console.error("Kokoro synth error", e);
+                resolve(token === playbackToken && isPlaying);
+            }
+        });
+
+        currentBatch = [];
+        currentBatchText = "";
+        return ok;
+    };
+
+    for (let i = 0; i < chunk.sentences.length; i++) {
+        if (token !== playbackToken || !isPlaying) return false;
+
+        const currentItem = chunk.sentences[i];
+        const globalIdx = currentItem.index;
+        let delayMs = 0;
+
+        if (globalIdx > 0) {
+            const prevItem = parsedContent[globalIdx - 1];
+            const currType = getHeaderType(currentItem.element);
+            const prevType = getHeaderType(prevItem ? prevItem.element : null);
+
+            const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
+            const afterMs = prevType ? pauseSettings.postHeader : 0;
+            delayMs = Math.max(beforeMs, afterMs);
+        }
+
+        if (delayMs > 0) {
+            const ok = await playBatch();
+            if (!ok || token !== playbackToken || !isPlaying) return false;
+            
+            await new Promise(r => setTimeout(r, delayMs));
+            if (token !== playbackToken || !isPlaying) return false;
+        }
+
+        const spoken = buildSpokenSentence(currentItem, chunk.lang);
+        const offset = currentBatchText.length;
+        const wordRanges = spoken.wordRanges.map(r => ({ el: r.el, start: r.start + offset, end: r.end + offset }));
+        currentBatchText += spoken.raw;
+        currentBatch.push({ idx: currentItem.index, element: currentItem.element, wordRanges: wordRanges, sentenceEndChar: currentBatchText.length });
+    }
+    
+    return await playBatch();
+}
+
 function runWordHighlights(audio, spoken, token, sentenceRanges) {
     let lastEl = null;
     let lastSentIdx = currentIdx;
@@ -2071,6 +2201,10 @@ async function playMergedQueue() {
         if (selectedVoiceName && selectedVoiceName.startsWith('puter:')) {
             const puterVoiceId = selectedVoiceName.split(':')[1];
             const ok = await playPuterChunk(chunk, rate, token, puterVoiceId);
+            if (!ok) return;
+        } else if (selectedVoiceName && selectedVoiceName.startsWith('kokoro:')) {
+            const kokoroVoiceId = selectedVoiceName.split(':')[1];
+            const ok = await playKokoroChunk(chunk, rate, token, kokoroVoiceId);
             if (!ok) return;
         } else if (selectedVoiceName && selectedVoiceName.startsWith('google:')) {
             const ok = await playGoogleChunk(chunk, rate, token);
