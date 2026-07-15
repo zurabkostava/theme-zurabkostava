@@ -700,7 +700,10 @@ function addHeaderClassToAttrs(attrs) {
 }
 
 function extractTextFromDoc(doc) {
-    let body = doc.body.cloneNode(true);
+    if (!doc) return '';
+    let root = doc.body || doc.documentElement;
+    if (!root) return '';
+    let body = root.cloneNode(true);
     
     // 1. Process headers
     body.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(h => {
@@ -737,18 +740,32 @@ function extractTextFromDoc(doc) {
     blockTags.forEach(tag => {
         body.querySelectorAll(tag).forEach(el => {
             if (el.parentNode) {
-                el.insertAdjacentText('beforebegin', '\n\n');
-                el.insertAdjacentText('afterend', '\n\n');
+                el.parentNode.insertBefore(doc.createTextNode('\n\n'), el);
+                if (el.nextSibling) {
+                    el.parentNode.insertBefore(doc.createTextNode('\n\n'), el.nextSibling);
+                } else {
+                    el.parentNode.appendChild(doc.createTextNode('\n\n'));
+                }
             }
         });
     });
     
     body.querySelectorAll('br').forEach(br => {
-        if (br.parentNode) br.insertAdjacentText('afterend', ' ');
+        if (br.parentNode) {
+            if (br.nextSibling) {
+                br.parentNode.insertBefore(doc.createTextNode(' '), br.nextSibling);
+            } else {
+                br.parentNode.appendChild(doc.createTextNode(' '));
+            }
+        }
     });
 
     // 4. Extract HTML, strip unwanted tags, decode entities
+    // For XML docs, innerHTML might be missing or different, XMLSerializer is foolproof
     let html = body.innerHTML;
+    if (typeof html !== 'string') {
+        try { html = new XMLSerializer().serializeToString(body); } catch(e) { html = ''; }
+    }
     let text = html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, ' ');
     
     text = text.replace(/&nbsp;/gi, ' ')
