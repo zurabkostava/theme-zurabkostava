@@ -1085,6 +1085,24 @@ function rebuildDynamicSettings() {
                 select.appendChild(optGroup);
             }
 
+            const puterVoices = [
+                { name: '☁️ Puter (OpenAI Nova - Female)', val: 'nova' },
+                { name: '☁️ Puter (OpenAI Alloy - Neutral)', val: 'alloy' },
+                { name: '☁️ Puter (OpenAI Echo - Male)', val: 'echo' },
+                { name: '☁️ Puter (OpenAI Onyx - Male)', val: 'onyx' },
+                { name: '☁️ Puter (OpenAI Fable - British)', val: 'fable' },
+                { name: '☁️ Puter (OpenAI Shimmer - Female)', val: 'shimmer' }
+            ];
+            const puterOptGroup = document.createElement('optgroup');
+            puterOptGroup.label = "Premium Cloud (Puter)";
+            puterVoices.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = 'puter:' + v.val;
+                opt.textContent = v.name;
+                puterOptGroup.appendChild(opt);
+            });
+            select.appendChild(puterOptGroup);
+
             if (select.options.length === 0) {
                 const opt = document.createElement('option');
                 opt.value = '';
@@ -1619,6 +1637,71 @@ async function playPiperChunk(chunk, rate, token) {
     return token === playbackToken && isPlaying;
 }
 
+function playPuterAudio(audio, rate, spoken, token) {
+    return new Promise((resolve) => {
+        audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
+        let done = false;
+        const finish = () => {
+            if (done) return;
+            done = true;
+            clearInterval(guard);
+            resolve();
+        };
+        const guard = setInterval(() => {
+            if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
+        }, 100);
+        audio.onended = finish;
+        audio.onerror = finish;
+        runWordHighlights(audio, spoken, token);
+        audio.play().catch(finish);
+    });
+}
+
+async function playPuterChunk(chunk, rate, token, puterVoiceId) {
+    if (typeof puter === 'undefined') return false;
+    
+    const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
+    
+    // Puter uses OpenAI which handles multiple languages automatically
+    let audioPromise = puter.ai.txt2speech(spokenList[0].text, puterVoiceId ? { voice: puterVoiceId } : undefined).catch(e => { console.error("Puter init error", e); return null; });
+
+    for (let i = 0; i < chunk.sentences.length; i++) {
+        if (token !== playbackToken || !isPlaying) return false;
+        const audio = await audioPromise; 
+
+        const currentItem = chunk.sentences[i];
+        const globalIdx = currentItem.index;
+        if (globalIdx > 0) {
+            const prevItem = parsedContent[globalIdx - 1];
+            const currType = getHeaderType(currentItem.element);
+            const prevType = getHeaderType(prevItem ? prevItem.element : null);
+
+            const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
+            const afterMs = prevType ? pauseSettings.postHeader : 0;
+            const delayMs = Math.max(beforeMs, afterMs);
+
+            if (delayMs > 0) {
+                await new Promise(r => setTimeout(r, delayMs));
+            }
+        }
+        if (token !== playbackToken || !isPlaying) return false;
+
+        if (i + 1 < chunk.sentences.length) {
+            audioPromise = puter.ai.txt2speech(spokenList[i + 1].text, puterVoiceId ? { voice: puterVoiceId } : undefined).catch(e => { console.error("Puter prefetch error", e); return null; });
+        }
+        if (token !== playbackToken || !isPlaying) return false;
+
+        currentIdx = chunk.sentences[i].index;
+        highlightSentence(currentIdx, true);
+        updateMediaPosition();
+
+        if (audio) {
+            await playPuterAudio(audio, rate, spokenList[i], token);
+        }
+    }
+    return token === playbackToken && isPlaying;
+}
+
 async function playNativeChunk(chunk, nativeVoice, rate, token) {
     let currentBatch = [];
     let currentBatchText = "";
@@ -1748,7 +1831,11 @@ async function playMergedQueue() {
 
         const piperVoice = piperVoicesList.find(v => v && v.name === selectedVoiceName);
 
-        if (piperVoice) {
+        if (selectedVoiceName && selectedVoiceName.startsWith('puter:')) {
+            const puterVoiceId = selectedVoiceName.split(':')[1];
+            const ok = await playPuterChunk(chunk, rate, token, puterVoiceId);
+            if (!ok) return;
+        } else if (piperVoice) {
             const state = piperWorkers[chunk.lang];
             if (!state || state.voicePath !== piperVoice.path) {
                 stopReading();
