@@ -1663,7 +1663,7 @@ async function playPuterChunk(chunk, rate, token, puterVoiceId) {
     const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
     
     // Puter uses OpenAI which handles multiple languages automatically
-    let audioPromise = puter.ai.txt2speech(spokenList[0].text, puterVoiceId ? { voice: puterVoiceId } : undefined).catch(e => { console.error("Puter init error", e); return null; });
+    let audioPromise = puter.ai.txt2speech(spokenList[0].text, puterVoiceId ? { provider: 'openai', voice: puterVoiceId } : undefined).catch(e => { console.error("Puter init error", e); return null; });
 
     for (let i = 0; i < chunk.sentences.length; i++) {
         if (token !== playbackToken || !isPlaying) return false;
@@ -1687,7 +1687,7 @@ async function playPuterChunk(chunk, rate, token, puterVoiceId) {
         if (token !== playbackToken || !isPlaying) return false;
 
         if (i + 1 < chunk.sentences.length) {
-            audioPromise = puter.ai.txt2speech(spokenList[i + 1].text, puterVoiceId ? { voice: puterVoiceId } : undefined).catch(e => { console.error("Puter prefetch error", e); return null; });
+            audioPromise = puter.ai.txt2speech(spokenList[i + 1].text, puterVoiceId ? { provider: 'openai', voice: puterVoiceId } : undefined).catch(e => { console.error("Puter prefetch error", e); return null; });
         }
         if (token !== playbackToken || !isPlaying) return false;
 
