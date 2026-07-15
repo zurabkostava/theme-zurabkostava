@@ -1937,6 +1937,19 @@ async function playKokoroChunk(chunk, rate, token, voiceId) {
         });
     });
 
+    // 💡 AOT Buffering: Wait for the first 5 sentences/paragraphs to generate before starting
+    const bufferCount = Math.min(5, chunk.sentences.length);
+    if (bufferCount > 0) {
+        setTtsStatus(`⏳ Kokoro Buffering (${bufferCount} steps ahead)...`);
+        try {
+            await Promise.all(wavPromises.slice(0, bufferCount));
+        } catch(e) {
+            console.error("Kokoro buffer error", e);
+        }
+        setTtsStatus(null);
+    }
+    if (token !== playbackToken || !isPlaying) return false;
+
     for (let i = 0; i < chunk.sentences.length; i++) {
         if (token !== playbackToken || !isPlaying) return false;
         
