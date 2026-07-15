@@ -1674,7 +1674,16 @@ async function playPiperChunk(chunk, rate, token) {
         }
         if (token !== playbackToken || !isPlaying) return false;
 
-        const wav = await wavPromises[i];
+        let wav;
+        const spinnerTimeout = setTimeout(() => {
+            setTtsStatus("⏳ Piper is thinking...");
+        }, 300); // Show spinner if wait is longer than 300ms
+        
+        wav = await wavPromises[i];
+        
+        clearTimeout(spinnerTimeout);
+        setTtsStatus(null);
+        
         if (token !== playbackToken || !isPlaying) return false;
 
         currentIdx = chunk.sentences[i].index;
