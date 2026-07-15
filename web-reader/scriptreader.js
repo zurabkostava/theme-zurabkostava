@@ -516,7 +516,7 @@ async function calculateGlobalChapterWeights() {
         }
         try {
             const doc = await currentBook.load(item.href);
-            const text = extractTextFromDoc(doc);
+            const text = await extractTextFromDoc(doc);
             const len = text ? text.replace(/<[^>]+>/g, '').length : 0;
             weights.push(len);
             totalLength += len;
@@ -677,7 +677,7 @@ async function displayChapter(href, delay = 0) {
         try {
             const item = currentBook.spine.spineItems[i];
             const doc = await currentBook.load(item.href);
-            const text = extractTextFromDoc(doc);
+            const text = await extractTextFromDoc(doc, item.href, currentBook, true);
             if (text) {
                 fullBodyText += text + "\n\n\n";
             }
@@ -751,7 +751,22 @@ function addHeaderClassToAttrs(attrs) {
     return attrs + ' class="epub-header epub-header-strong"';
 }
 
-function extractTextFromDoc(doc) {
+function resolveEpubUrl(href, src) {
+    let hrefParts = href.split('/');
+    hrefParts.pop(); // remove file name
+    let srcParts = src.split('/');
+    for (let part of srcParts) {
+        if (part === '.') continue;
+        if (part === '..') {
+            hrefParts.pop();
+        } else {
+            hrefParts.push(part);
+        }
+    }
+    return hrefParts.join('/');
+}
+
+async function extractTextFromDoc(doc, itemHref = null, book = null, resolveImages = false) {
     if (!doc) return '';
     let root = doc.body || doc.documentElement;
     if (!root) return '';
@@ -765,6 +780,20 @@ function extractTextFromDoc(doc) {
         body.querySelectorAll('head, style, script, meta, link, noscript').forEach(el => {
             if (el.parentNode) el.parentNode.removeChild(el);
         });
+
+        if (resolveImages && itemHref && book && book.archive) {
+            let imgs = body.querySelectorAll('img');
+            for (let img of imgs) {
+                let src = img.getAttribute('src');
+                if (src && !src.startsWith('blob:') && !src.startsWith('data:') && !src.startsWith('http')) {
+                    try {
+                        let absolutePath = resolveEpubUrl(itemHref, src);
+                        let blobUrl = await book.archive.createUrl(absolutePath);
+                        if (blobUrl) img.setAttribute('src', blobUrl);
+                    } catch(e) {}
+                }
+            }
+        }
         
         let allElements = body.getElementsByTagName('*');
         const blockTags = new Set(['P', 'DIV', 'SECTION', 'ARTICLE', 'HEADER', 'FOOTER', 'ASIDE', 'BLOCKQUOTE', 'FIGURE', 'FIGCAPTION', 'LI', 'DD', 'DT', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'TD', 'TH', 'CAPTION', 'TR']);
