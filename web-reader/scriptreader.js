@@ -878,7 +878,7 @@ function getPiperWorkerUrl() {
     // Same resolution strategy as WordEvo (WORDEVO_ASSET_PATH): PHP injects THEME_URI,
     // hardcoded path only as a last-resort fallback
     const base = window.THEME_URI || '/wp-content/themes/zurabkostava';
-    return base + '/WordEvo/piper-worker.js';
+    return base + '/WordEvo/piper-worker.js?v=' + Date.now();
 }
 
 function setTtsStatus(message) {
@@ -1047,7 +1047,7 @@ function initKokoroWorker() {
 
     try {
         const base = window.THEME_URI || '/wp-content/themes/zurabkostava';
-        kokoroState.worker = new Worker(base + '/web-reader/kokoro-worker.js', { type: 'module' });
+        kokoroState.worker = new Worker(base + '/web-reader/kokoro-worker.js?v=' + Date.now(), { type: 'module' });
     } catch (e) {
         failInit("Worker creation failed: " + e);
         return;
