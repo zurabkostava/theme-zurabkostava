@@ -1,6 +1,7 @@
 import { KokoroTTS } from 'https://cdn.jsdelivr.net/npm/kokoro-js/+esm';
 
 let tts = null;
+const device = "wasm"; // Force WASM to prevent integrated GPU hallucinations
 
 self.onmessage = async (e) => {
     const data = e.data;
