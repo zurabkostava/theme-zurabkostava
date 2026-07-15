@@ -1145,6 +1145,14 @@ function rebuildDynamicSettings() {
         });
         voiceSelect.appendChild(puterOptGroup);
 
+        const googleOptGroup = document.createElement('optgroup');
+        googleOptGroup.label = "☁️ Free Cloud (Google)";
+        const gOpt = document.createElement('option');
+        gOpt.value = 'google:standard';
+        gOpt.textContent = "☁️ Google Translate TTS (Standard)";
+        googleOptGroup.appendChild(gOpt);
+        voiceSelect.appendChild(googleOptGroup);
+
         if (voiceSelect.options.length === 0) {
             const opt = document.createElement('option');
             opt.value = ''; opt.textContent = `⚠️ No voices found`; opt.disabled = true; opt.selected = true;
@@ -1660,6 +1668,81 @@ async function playPiperChunk(chunk, rate, token) {
     return token === playbackToken && isPlaying;
 }
 
+function playGoogleAudio(audioUrl, rate, spoken, token) {
+    return new Promise((resolve) => {
+        const audio = new Audio(audioUrl);
+        audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
+        let done = false;
+        const finish = () => {
+            if (done) return;
+            done = true;
+            clearInterval(guard);
+            resolve();
+        };
+        const guard = setInterval(() => {
+            if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
+        }, 100);
+        audio.onended = finish;
+        audio.onerror = finish;
+        runWordHighlights(audio, spoken, token, null);
+        audio.play().catch(finish);
+    });
+}
+
+async function playGoogleChunk(chunk, rate, token) {
+    const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
+    
+    for (let i = 0; i < chunk.sentences.length; i++) {
+        if (token !== playbackToken || !isPlaying) return false;
+
+        const currentItem = chunk.sentences[i];
+        const globalIdx = currentItem.index;
+        if (globalIdx > 0) {
+            const prevItem = parsedContent[globalIdx - 1];
+            const currType = getHeaderType(currentItem.element);
+            const prevType = getHeaderType(prevItem ? prevItem.element : null);
+
+            const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
+            const afterMs = prevType ? pauseSettings.postHeader : 0;
+            const delayMs = Math.max(beforeMs, afterMs);
+
+            if (delayMs > 0) {
+                await new Promise(r => setTimeout(r, delayMs));
+            }
+        }
+        if (token !== playbackToken || !isPlaying) return false;
+
+        currentIdx = chunk.sentences[i].index;
+        highlightSentence(currentIdx, true);
+        updateMediaPosition();
+
+        const base = window.THEME_URI || '/wp-content/themes/zurabkostava';
+        let textToSpeak = spokenList[i].text;
+        
+        if (textToSpeak.length > 190) {
+            const words = textToSpeak.split(' ');
+            let temp = '';
+            for (let w of words) {
+                if (temp.length + w.length + 1 > 190) {
+                    const url = base + '/web-reader/google-tts.php?tl=' + encodeURIComponent(chunk.lang.split('-')[0]) + '&text=' + encodeURIComponent(temp);
+                    await playGoogleAudio(url, rate, { ...spokenList[i], text: temp }, token);
+                    temp = w + ' ';
+                } else {
+                    temp += w + ' ';
+                }
+            }
+            if (temp.trim().length > 0) {
+                const url = base + '/web-reader/google-tts.php?tl=' + encodeURIComponent(chunk.lang.split('-')[0]) + '&text=' + encodeURIComponent(temp);
+                await playGoogleAudio(url, rate, { ...spokenList[i], text: temp }, token);
+            }
+        } else {
+            const url = base + '/web-reader/google-tts.php?tl=' + encodeURIComponent(chunk.lang.split('-')[0]) + '&text=' + encodeURIComponent(textToSpeak);
+            await playGoogleAudio(url, rate, spokenList[i], token);
+        }
+    }
+    return token === playbackToken && isPlaying;
+}
+
 function runWordHighlights(audio, spoken, token, sentenceRanges) {
     let lastEl = null;
     let lastSentIdx = currentIdx;
@@ -1932,6 +2015,9 @@ async function playMergedQueue() {
         if (selectedVoiceName && selectedVoiceName.startsWith('puter:')) {
             const puterVoiceId = selectedVoiceName.split(':')[1];
             const ok = await playPuterChunk(chunk, rate, token, puterVoiceId);
+            if (!ok) return;
+        } else if (selectedVoiceName && selectedVoiceName.startsWith('google:')) {
+            const ok = await playGoogleChunk(chunk, rate, token);
             if (!ok) return;
         } else if (piperVoice) {
             const state = piperWorkers[chunk.lang];
