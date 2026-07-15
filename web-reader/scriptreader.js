@@ -590,6 +590,10 @@ function updateProgressPercentage() {
             }
             finalFraction = baseProgress + chapterInsideProgress;
         } else {
+            finalFraction = 0;
+        }
+    }
+
 // 4. ფორმატირება
     let displayPercentage = finalFraction * 100;
     if (displayPercentage < 0) displayPercentage = 0;
