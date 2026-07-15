@@ -1518,16 +1518,7 @@ async function synthesizeSentence(langCode, text, token) {
 
 // Piper has no onboundary events, so word karaoke is estimated:
 // playback position is mapped linearly onto spoken-character offsets.
-function runWordHighlights(audio, spoken, token) {
-    let lastEl = null;
-    const step = () => {
-        if (token !== playbackToken || audio.ended) {
-            if (lastEl) { lastEl.classList.remove('active'); lastEl.classList.add('read'); }
-            return;
-        }
-        const dur = audio.duration;
-        if (isFinite(dur) && dur > 0 && spoken.totalChars > 0) {
-            const pos = (audio.currentTime / dur) * spoken.totalChars;
+// Implemented runWordHighlights (replaced by multi_replace above, removing original to prevent duplicate definitions)
             let range = null;
             for (const r of spoken.wordRanges) { if (pos >= r.start && pos < r.end) { range = r; break; } }
             if (range && lastEl !== range.el) {
@@ -1637,7 +1628,41 @@ async function playPiperChunk(chunk, rate, token) {
     return token === playbackToken && isPlaying;
 }
 
-function playPuterAudio(audio, rate, spoken, token) {
+function runWordHighlights(audio, spoken, token, sentenceRanges) {
+    let lastEl = null;
+    let lastSentIdx = currentIdx;
+    const step = () => {
+        if (token !== playbackToken || audio.ended) {
+            if (lastEl) { lastEl.classList.remove('active'); lastEl.classList.add('read'); }
+            return;
+        }
+        const dur = audio.duration;
+        if (isFinite(dur) && dur > 0 && spoken.totalChars > 0) {
+            const pos = (audio.currentTime / dur) * spoken.totalChars;
+            let range = null;
+            for (const r of spoken.wordRanges) { if (pos >= r.start && pos < r.end) { range = r; break; } }
+            if (range && lastEl !== range.el) {
+                if (lastEl) { lastEl.classList.remove('active'); lastEl.classList.add('read'); }
+                range.el.classList.add('active');
+                lastEl = range.el;
+                
+                if (sentenceRanges) {
+                    const currentSent = sentenceRanges.find(s => pos < s.sentenceEndChar);
+                    if (currentSent && currentSent.idx !== lastSentIdx) {
+                        lastSentIdx = currentSent.idx;
+                        currentIdx = lastSentIdx;
+                        highlightSentence(currentIdx, true);
+                        updateMediaPosition();
+                    }
+                }
+            }
+        }
+        requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+}
+
+function playPuterAudio(audio, rate, spoken, token, sentenceRanges) {
     return new Promise((resolve) => {
         audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
         let done = false;
@@ -1652,7 +1677,7 @@ function playPuterAudio(audio, rate, spoken, token) {
         }, 100);
         audio.onended = finish;
         audio.onerror = finish;
-        runWordHighlights(audio, spoken, token);
+        runWordHighlights(audio, spoken, token, sentenceRanges);
         audio.play().catch(finish);
     });
 }
@@ -1660,17 +1685,61 @@ function playPuterAudio(audio, rate, spoken, token) {
 async function playPuterChunk(chunk, rate, token, puterVoiceId) {
     if (typeof puter === 'undefined') return false;
     
-    const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
-    
-    // Puter uses OpenAI which handles multiple languages automatically
-    let audioPromise = puter.ai.txt2speech(spokenList[0].text, puterVoiceId ? { provider: 'openai', voice: puterVoiceId } : undefined).catch(e => { console.error("Puter init error", e); return null; });
+    let currentBatch = [];
+    let currentBatchText = "";
+
+    const playBatch = async () => {
+        if (currentBatch.length === 0) return true;
+        
+        currentIdx = currentBatch[0].idx;
+        highlightSentence(currentIdx, true);
+        updateMediaPosition();
+
+        const ok = await new Promise((resolve) => {
+            // Send entire raw text for natural OpenAI prosody, bypassing Piper's transliterations which break rhythm
+            const rawText = currentBatch.map(s => s.element.innerText.trim()).join(' ');
+            puter.ai.txt2speech(rawText, puterVoiceId ? { provider: 'openai', voice: puterVoiceId } : undefined)
+                .then(audio => {
+                    if (token !== playbackToken || !isPlaying) { resolve(false); return; }
+                    audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
+                    let done = false;
+                    const finish = () => {
+                        if (done) return;
+                        done = true;
+                        clearInterval(guard);
+                        resolve(token === playbackToken && isPlaying);
+                    };
+                    const guard = setInterval(() => {
+                        if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
+                    }, 100);
+                    audio.onended = finish;
+                    audio.onerror = finish;
+                    
+                    const consolidatedSpoken = {
+                        totalChars: currentBatchText.length,
+                        wordRanges: currentBatch.flatMap(s => s.wordRanges)
+                    };
+                    runWordHighlights(audio, consolidatedSpoken, token, currentBatch);
+                    audio.play().catch(finish);
+                })
+                .catch(e => {
+                    console.error("Puter synth error", e);
+                    resolve(token === playbackToken && isPlaying);
+                });
+        });
+
+        currentBatch = [];
+        currentBatchText = "";
+        return ok;
+    };
 
     for (let i = 0; i < chunk.sentences.length; i++) {
         if (token !== playbackToken || !isPlaying) return false;
-        const audio = await audioPromise; 
 
         const currentItem = chunk.sentences[i];
         const globalIdx = currentItem.index;
+        let delayMs = 0;
+
         if (globalIdx > 0) {
             const prevItem = parsedContent[globalIdx - 1];
             const currType = getHeaderType(currentItem.element);
@@ -1678,28 +1747,25 @@ async function playPuterChunk(chunk, rate, token, puterVoiceId) {
 
             const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
             const afterMs = prevType ? pauseSettings.postHeader : 0;
-            const delayMs = Math.max(beforeMs, afterMs);
-
-            if (delayMs > 0) {
-                await new Promise(r => setTimeout(r, delayMs));
-            }
+            delayMs = Math.max(beforeMs, afterMs);
         }
-        if (token !== playbackToken || !isPlaying) return false;
 
-        if (i + 1 < chunk.sentences.length) {
-            audioPromise = puter.ai.txt2speech(spokenList[i + 1].text, puterVoiceId ? { provider: 'openai', voice: puterVoiceId } : undefined).catch(e => { console.error("Puter prefetch error", e); return null; });
+        if (delayMs > 0) {
+            const ok = await playBatch();
+            if (!ok || token !== playbackToken || !isPlaying) return false;
+            
+            await new Promise(r => setTimeout(r, delayMs));
+            if (token !== playbackToken || !isPlaying) return false;
         }
-        if (token !== playbackToken || !isPlaying) return false;
 
-        currentIdx = chunk.sentences[i].index;
-        highlightSentence(currentIdx, true);
-        updateMediaPosition();
-
-        if (audio) {
-            await playPuterAudio(audio, rate, spokenList[i], token);
-        }
+        const spoken = buildSpokenSentence(currentItem, chunk.lang);
+        const offset = currentBatchText.length;
+        const wordRanges = spoken.wordRanges.map(r => ({ el: r.el, start: r.start + offset, end: r.end + offset }));
+        currentBatchText += spoken.raw;
+        currentBatch.push({ idx: currentItem.index, element: currentItem.element, wordRanges: wordRanges, sentenceEndChar: currentBatchText.length });
     }
-    return token === playbackToken && isPlaying;
+    
+    return await playBatch();
 }
 
 async function playNativeChunk(chunk, nativeVoice, rate, token) {
