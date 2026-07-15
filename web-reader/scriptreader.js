@@ -1258,24 +1258,6 @@ function rebuildDynamicSettings() {
             voiceSelect.appendChild(kokoroOptGroup);
         }
 
-        const puterVoices = [
-            { name: '☁️ Puter (OpenAI Nova - Female)', val: 'nova' },
-            { name: '☁️ Puter (OpenAI Alloy - Neutral)', val: 'alloy' },
-            { name: '☁️ Puter (OpenAI Echo - Male)', val: 'echo' },
-            { name: '☁️ Puter (OpenAI Onyx - Male)', val: 'onyx' },
-            { name: '☁️ Puter (OpenAI Fable - British)', val: 'fable' },
-            { name: '☁️ Puter (OpenAI Shimmer - Female)', val: 'shimmer' }
-        ];
-        const puterOptGroup = document.createElement('optgroup');
-        puterOptGroup.label = "Premium Cloud (Puter)";
-        puterVoices.forEach(v => {
-            const opt = document.createElement('option');
-            opt.value = 'puter:' + v.val;
-            opt.textContent = v.name;
-            puterOptGroup.appendChild(opt);
-        });
-        voiceSelect.appendChild(puterOptGroup);
-
         const googleOptGroup = document.createElement('optgroup');
         googleOptGroup.label = "☁️ Free Cloud (Google)";
         const gOpt = document.createElement('option');
@@ -2070,112 +2052,6 @@ function runWordHighlights(audio, spoken, token, sentenceRanges) {
     requestAnimationFrame(step);
 }
 
-function playPuterAudio(audio, rate, spoken, token, sentenceRanges) {
-    return new Promise((resolve) => {
-        audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
-        let done = false;
-        const finish = () => {
-            if (done) return;
-            done = true;
-            clearInterval(guard);
-            resolve();
-        };
-        const guard = setInterval(() => {
-            if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
-        }, 100);
-        audio.onended = finish;
-        audio.onerror = finish;
-        runWordHighlights(audio, spoken, token, sentenceRanges);
-        audio.play().catch(finish);
-    });
-}
-
-async function playPuterChunk(chunk, rate, token, puterVoiceId) {
-    if (typeof puter === 'undefined') return false;
-    
-    let currentBatch = [];
-    let currentBatchText = "";
-
-    const playBatch = async () => {
-        if (currentBatch.length === 0) return true;
-        
-        currentIdx = currentBatch[0].idx;
-        highlightSentence(currentIdx, true);
-        updateMediaPosition();
-
-        const ok = await new Promise((resolve) => {
-            // Send entire raw text for natural OpenAI prosody, bypassing Piper's transliterations which break rhythm
-            const rawText = currentBatch.map(s => s.element.innerText.trim()).join(' ');
-            puter.ai.txt2speech(rawText, puterVoiceId ? { provider: 'openai', voice: puterVoiceId } : undefined)
-                .then(audio => {
-                    if (token !== playbackToken || !isPlaying) { resolve(false); return; }
-                    audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
-                    let done = false;
-                    const finish = () => {
-                        if (done) return;
-                        done = true;
-                        clearInterval(guard);
-                        resolve(token === playbackToken && isPlaying);
-                    };
-                    const guard = setInterval(() => {
-                        if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
-                    }, 100);
-                    audio.onended = finish;
-                    audio.onerror = finish;
-                    
-                    const consolidatedSpoken = {
-                        totalChars: currentBatchText.length,
-                        wordRanges: currentBatch.flatMap(s => s.wordRanges)
-                    };
-                    runWordHighlights(audio, consolidatedSpoken, token, currentBatch);
-                    audio.play().catch(finish);
-                })
-                .catch(e => {
-                    console.error("Puter synth error", e);
-                    resolve(token === playbackToken && isPlaying);
-                });
-        });
-
-        currentBatch = [];
-        currentBatchText = "";
-        return ok;
-    };
-
-    for (let i = 0; i < chunk.sentences.length; i++) {
-        if (token !== playbackToken || !isPlaying) return false;
-
-        const currentItem = chunk.sentences[i];
-        const globalIdx = currentItem.index;
-        let delayMs = 0;
-
-        if (globalIdx > 0) {
-            const prevItem = parsedContent[globalIdx - 1];
-            const currType = getHeaderType(currentItem.element);
-            const prevType = getHeaderType(prevItem ? prevItem.element : null);
-
-            const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
-            const afterMs = prevType ? pauseSettings.postHeader : 0;
-            delayMs = Math.max(beforeMs, afterMs);
-        }
-
-        if (delayMs > 0) {
-            const ok = await playBatch();
-            if (!ok || token !== playbackToken || !isPlaying) return false;
-            
-            await new Promise(r => setTimeout(r, delayMs));
-            if (token !== playbackToken || !isPlaying) return false;
-        }
-
-        const spoken = buildSpokenSentence(currentItem, chunk.lang);
-        const offset = currentBatchText.length;
-        const wordRanges = spoken.wordRanges.map(r => ({ el: r.el, start: r.start + offset, end: r.end + offset }));
-        currentBatchText += spoken.raw;
-        currentBatch.push({ idx: currentItem.index, element: currentItem.element, wordRanges: wordRanges, sentenceEndChar: currentBatchText.length });
-    }
-    
-    return await playBatch();
-}
-
 async function playNativeChunk(chunk, nativeVoice, rate, token) {
     let currentBatch = [];
     let currentBatchText = "";
@@ -2305,11 +2181,7 @@ async function playMergedQueue() {
 
         const piperVoice = piperVoicesList.find(v => v && v.name === selectedVoiceName);
 
-        if (selectedVoiceName && selectedVoiceName.startsWith('puter:')) {
-            const puterVoiceId = selectedVoiceName.split(':')[1];
-            const ok = await playPuterChunk(chunk, rate, token, puterVoiceId);
-            if (!ok) return;
-        } else if (selectedVoiceName && selectedVoiceName.startsWith('kokoro:')) {
+        if (selectedVoiceName && selectedVoiceName.startsWith('kokoro:')) {
             if (!kokoroState || !kokoroState.ready) {
                 stopReading();
                 alert(`გთხოვთ, პარამეტრებიდან ჯერ ჩამოტვირთოთ/გაააქტიუროთ Kokoro-ს ხმა!`);
