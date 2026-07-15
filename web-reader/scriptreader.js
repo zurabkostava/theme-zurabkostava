@@ -1034,19 +1034,32 @@ function initKokoroWorker() {
     setTtsStatus("Downloading Kokoro Model (~86MB)...");
     
     kokoroState.worker.onerror = (e) => {
+        console.error("[Main Thread] Kokoro worker onerror triggered:", e.message || e);
         failInit(e.message || "Kokoro worker script failed to load.");
     };
     
     kokoroState.worker.onmessage = (e) => {
         const data = e.data || {};
-        if (data.type === 'init_done') {
+        
+        if (data.type === 'progress') {
+            const dlBtn = document.getElementById('unified-download-btn');
+            if (dlBtn && data.info) {
+                if (data.info.status === 'progress' && data.info.total) {
+                    const loadedMB = (data.info.loaded / 1024 / 1024).toFixed(1);
+                    const totalMB = (data.info.total / 1024 / 1024).toFixed(1);
+                    dlBtn.textContent = `⏳ Downloading ${data.info.file}: ${loadedMB}/${totalMB} MB`;
+                } else if (data.info.status === 'downloading') {
+                    dlBtn.textContent = `⏳ Starting download...`;
+                }
+            }
+        } else if (data.type === 'init_done') {
             if (data.success) {
                 kokoroState.ready = true;
                 kokoroState.initializing = false;
                 setTtsStatus(null);
                 
                 const dlBtn = document.getElementById('unified-download-btn');
-                if (dlBtn && (dlBtn.textContent.includes('Kokoro') || dlBtn.textContent.includes('Initializing'))) {
+                if (dlBtn && (dlBtn.textContent.includes('Kokoro') || dlBtn.textContent.includes('Initializing') || dlBtn.textContent.includes('Downloading'))) {
                     dlBtn.textContent = "✅ Kokoro Ready";
                     dlBtn.style.opacity = "0.5"; dlBtn.disabled = true;
                     dlBtn.style.background = "transparent"; dlBtn.style.border = "1px solid rgba(255,255,255,0.1)"; dlBtn.style.color = "var(--text-muted)";
@@ -1916,65 +1929,11 @@ function highlightChunk(chunk) {
 async function playKokoroChunk(chunk, rate, token, voiceId) {
     if (token !== playbackToken || !isPlaying) return false;
     
+    let batches = [];
     let currentBatch = [];
     let currentBatchText = "";
 
-    const playBatch = async () => {
-        if (currentBatch.length === 0) return true;
-        
-        currentIdx = currentBatch[0].idx;
-        highlightSentence(currentIdx, true);
-        updateMediaPosition();
-
-        const ok = await new Promise((resolve) => {
-            const rawText = currentBatch.map(s => s.element.innerText.trim()).join(' ');
-            const msgId = Date.now() + Math.random();
-            
-            const p = {
-                id: msgId,
-                resolve: (blob) => {
-                    const audioUrl = URL.createObjectURL(blob);
-                    const audio = new Audio(audioUrl);
-                    audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
-                    
-                    let done = false;
-                    const finish = () => {
-                        if (done) return;
-                        done = true;
-                        clearInterval(guard);
-                        URL.revokeObjectURL(audioUrl);
-                        resolve(token === playbackToken && isPlaying);
-                    };
-                    const guard = setInterval(() => {
-                        if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
-                    }, 100);
-                    audio.onended = finish;
-                    audio.onerror = finish;
-                    
-                    const consolidatedSpoken = {
-                        totalChars: currentBatchText.length,
-                        wordRanges: currentBatch.flatMap(s => s.wordRanges)
-                    };
-                    runWordHighlights(audio, consolidatedSpoken, token, currentBatch);
-                    audio.play().catch(finish);
-                },
-                reject: (err) => {
-                    console.error("Kokoro synth error", err);
-                    resolve(token === playbackToken && isPlaying);
-                }
-            };
-            kokoroState.pending.push(p);
-            kokoroState.worker.postMessage({ type: 'generate', text: rawText, voice: voiceId, id: msgId });
-        });
-
-        currentBatch = [];
-        currentBatchText = "";
-        return ok;
-    };
-
     for (let i = 0; i < chunk.sentences.length; i++) {
-        if (token !== playbackToken || !isPlaying) return false;
-
         const currentItem = chunk.sentences[i];
         const globalIdx = currentItem.index;
         let delayMs = 0;
@@ -1989,12 +1948,10 @@ async function playKokoroChunk(chunk, rate, token, voiceId) {
             delayMs = Math.max(beforeMs, afterMs);
         }
 
-        if (delayMs > 0) {
-            const ok = await playBatch();
-            if (!ok || token !== playbackToken || !isPlaying) return false;
-            
-            await new Promise(r => setTimeout(r, delayMs));
-            if (token !== playbackToken || !isPlaying) return false;
+        if (delayMs > 0 && currentBatch.length > 0) {
+            batches.push({ items: currentBatch, text: currentBatchText, delayMs: delayMs });
+            currentBatch = [];
+            currentBatchText = "";
         }
 
         const spoken = buildSpokenSentence(currentItem, chunk.lang);
@@ -2003,8 +1960,84 @@ async function playKokoroChunk(chunk, rate, token, voiceId) {
         currentBatchText += spoken.raw;
         currentBatch.push({ idx: currentItem.index, element: currentItem.element, wordRanges: wordRanges, sentenceEndChar: currentBatchText.length });
     }
-    
-    return await playBatch();
+    if (currentBatch.length > 0) {
+        batches.push({ items: currentBatch, text: currentBatchText, delayMs: 0 });
+    }
+
+    if (batches.length === 0) return true;
+
+    const batchPromises = batches.map(batch => {
+        return new Promise((resolve, reject) => {
+            const rawText = batch.items.map(s => s.element.innerText.trim()).join(' ');
+            const msgId = Date.now() + Math.random();
+            
+            const p = {
+                id: msgId,
+                resolve: (blob) => resolve({ blob, batch }),
+                reject: (err) => reject(err)
+            };
+            kokoroState.pending.push(p);
+            kokoroState.worker.postMessage({ type: 'generate', text: rawText, voice: voiceId, id: msgId });
+        });
+    });
+
+    for (let i = 0; i < batchPromises.length; i++) {
+        if (token !== playbackToken || !isPlaying) return false;
+        
+        setTtsStatus("⏳ Kokoro is thinking...");
+        let result;
+        try {
+            result = await batchPromises[i];
+        } catch (err) {
+            console.error("Kokoro synth error", err);
+            setTtsStatus(null);
+            continue;
+        }
+        setTtsStatus(null);
+        
+        if (token !== playbackToken || !isPlaying) return false;
+        const { blob, batch } = result;
+
+        currentIdx = batch.items[0].idx;
+        highlightSentence(currentIdx, true);
+        updateMediaPosition();
+
+        const audioUrl = URL.createObjectURL(blob);
+        const audio = new Audio(audioUrl);
+        audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
+        
+        const ok = await new Promise((resolvePlay) => {
+            let done = false;
+            const finish = () => {
+                if (done) return;
+                done = true;
+                clearInterval(guard);
+                URL.revokeObjectURL(audioUrl);
+                resolvePlay(token === playbackToken && isPlaying);
+            };
+            const guard = setInterval(() => {
+                if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
+            }, 100);
+            audio.onended = finish;
+            audio.onerror = finish;
+            
+            const consolidatedSpoken = {
+                totalChars: batch.text.length,
+                wordRanges: batch.items.flatMap(s => s.wordRanges)
+            };
+            runWordHighlights(audio, consolidatedSpoken, token, batch.items);
+            audio.play().catch(finish);
+        });
+
+        if (!ok || token !== playbackToken || !isPlaying) return false;
+
+        if (batch.delayMs > 0) {
+            await new Promise(r => setTimeout(r, batch.delayMs));
+            if (token !== playbackToken || !isPlaying) return false;
+        }
+    }
+
+    return true;
 }
 
 function runWordHighlights(audio, spoken, token, sentenceRanges) {
