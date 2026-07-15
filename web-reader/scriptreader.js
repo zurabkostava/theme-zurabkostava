@@ -1680,7 +1680,15 @@ async function playPiperChunk(chunk, rate, token) {
         }, 100); 
         
         try {
-            await Promise.all(pPromises);
+            // აუცილებლად ველოდებით აბზაცის პირველ წინადადებას
+            await pPromises[0];
+            // ვაძლევთ დამატებით 2 წამს ფონურ გენერაციას, რომ დანარჩენი წინადადებებიც მოასწროს
+            if (pPromises.length > 1) {
+                await Promise.race([
+                    Promise.all(pPromises.slice(1)),
+                    new Promise(r => setTimeout(r, 2000))
+                ]);
+            }
         } catch(e) {
             console.error("Piper buffer error", e);
             clearTimeout(spinnerTimeout);
@@ -1712,7 +1720,19 @@ async function playPiperChunk(chunk, rate, token) {
             }
             if (token !== playbackToken || !isPlaying) return false;
 
-            let wav = await wavPromises[idx];
+            let wav;
+            const spinnerTimeout = setTimeout(() => {
+                setTtsStatus("⏳ Piper is thinking...");
+            }, 300); // Show spinner if wait is longer than 300ms
+            
+            try {
+                wav = await wavPromises[idx];
+            } catch (err) {
+                console.error("Piper synth error", err);
+            }
+            
+            clearTimeout(spinnerTimeout);
+            setTtsStatus(null);
             
             if (token !== playbackToken || !isPlaying) return false;
 
