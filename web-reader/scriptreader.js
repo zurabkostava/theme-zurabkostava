@@ -1151,24 +1151,15 @@ function rebuildDynamicSettings() {
         gOpt.value = 'google:standard';
         gOpt.textContent = "☁️ Google Translate TTS (Standard)";
         googleOptGroup.appendChild(gOpt);
-        voiceSelect.appendChild(googleOptGroup);
 
-        const azureVoicesMap = {
-            'ka': [{ name: 'Eka (Female)', val: 'ka-GE-EkaNeural' }, { name: 'Giorgi (Male)', val: 'ka-GE-GiorgiNeural' }],
-            'en': [{ name: 'Aria (Female)', val: 'en-US-AriaNeural' }, { name: 'Guy (Male)', val: 'en-US-GuyNeural' }],
-            'ru': [{ name: 'Svetlana (Female)', val: 'ru-RU-SvetlanaNeural' }, { name: 'Dmitry (Male)', val: 'ru-RU-DmitryNeural' }]
-        };
-        const azureOptGroup = document.createElement('optgroup');
-        azureOptGroup.label = "☁️ Free Cloud (Azure Hack)";
-        const availableAzureVoices = azureVoicesMap[currentLang] || [{ name: 'Default (Female)', val: `${currentLang}-DefaultNeural` }];
-        
-        availableAzureVoices.forEach(v => {
-            const opt = document.createElement('option');
-            opt.value = 'azure:' + v.val;
-            opt.textContent = "☁️ Azure Neural - " + v.name;
-            azureOptGroup.appendChild(opt);
-        });
-        voiceSelect.appendChild(azureOptGroup);
+        if (currentLang !== 'ka') {
+            const gnOpt = document.createElement('option');
+            gnOpt.value = 'googleneural:default';
+            gnOpt.textContent = "☁️ Google Neural (Wavenet Hack)";
+            googleOptGroup.appendChild(gnOpt);
+        }
+
+        voiceSelect.appendChild(googleOptGroup);
 
         if (voiceSelect.options.length === 0) {
             const opt = document.createElement('option');
@@ -1794,7 +1785,7 @@ function highlightChunk(chunk) {
     });
 }
 
-async function playAzureChunk(chunk, rate, token) {
+async function playGoogleNeuralChunk(chunk, rate, token) {
     let fullText = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang).text).join(' ');
     if (token !== playbackToken || !isPlaying) return false;
     
@@ -1803,19 +1794,18 @@ async function playAzureChunk(chunk, rate, token) {
     updateMediaPosition();
 
     const base = window.THEME_URI || '/wp-content/themes/zurabkostava';
-    const voiceSelectId = `voice-${chunk.lang}`;
-    const selectEl = document.getElementById(voiceSelectId);
-    const selectedVoiceName = localStorage.getItem(voiceSelectId) || (selectEl ? selectEl.value : '');
-    const voiceId = selectedVoiceName.split(':')[1] || 'ka-GE-EkaNeural';
     
     const formData = new FormData();
     formData.append('text', fullText);
-    formData.append('voice', voiceId);
+    formData.append('lang', chunk.lang);
     
     let audioUrl = null;
     try {
-        const res = await fetch(base + '/web-reader/azure-tts.php', { method: 'POST', body: formData });
-        if (!res.ok) throw new Error('Azure Proxy failed');
+        const res = await fetch(base + '/web-reader/google-neural.php', { method: 'POST', body: formData });
+        if (!res.ok) {
+            const errText = await res.text();
+            throw new Error('Google Neural Proxy failed: ' + errText);
+        }
         const blob = await res.blob();
         audioUrl = URL.createObjectURL(blob);
     } catch (e) {
@@ -2118,8 +2108,8 @@ async function playMergedQueue() {
             const puterVoiceId = selectedVoiceName.split(':')[1];
             const ok = await playPuterChunk(chunk, rate, token, puterVoiceId);
             if (!ok) return;
-        } else if (selectedVoiceName && selectedVoiceName.startsWith('azure:')) {
-            const ok = await playAzureChunk(chunk, rate, token);
+        } else if (selectedVoiceName && selectedVoiceName.startsWith('googleneural:')) {
+            const ok = await playGoogleNeuralChunk(chunk, rate, token);
             if (!ok) return;
         } else if (selectedVoiceName && selectedVoiceName.startsWith('google:')) {
             const ok = await playGoogleChunk(chunk, rate, token);
