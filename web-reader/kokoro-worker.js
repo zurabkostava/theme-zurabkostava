@@ -23,7 +23,7 @@ self.addEventListener('message', (e) => {
 async function init(data) {
     try {
         console.log("[Kokoro Worker] Starting from_pretrained...");
-        const device = navigator.gpu ? "webgpu" : "wasm";
+        const device = "wasm"; // Force WASM to prevent integrated GPU hangs
         console.log("[Kokoro Worker] Using device:", device);
         tts = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
             dtype: "q8",
