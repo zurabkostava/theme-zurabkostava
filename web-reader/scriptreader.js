@@ -1519,18 +1519,7 @@ async function synthesizeSentence(langCode, text, token) {
 // Piper has no onboundary events, so word karaoke is estimated:
 // playback position is mapped linearly onto spoken-character offsets.
 // Implemented runWordHighlights (replaced by multi_replace above, removing original to prevent duplicate definitions)
-            let range = null;
-            for (const r of spoken.wordRanges) { if (pos >= r.start && pos < r.end) { range = r; break; } }
-            if (range && lastEl !== range.el) {
-                if (lastEl) { lastEl.classList.remove('active'); lastEl.classList.add('read'); }
-                range.el.classList.add('active');
-                lastEl = range.el;
-            }
-        }
-        requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-}
+
 
 function playPiperAudio(state, wavBlob, rate, spoken, token) {
     return new Promise((resolve) => {
