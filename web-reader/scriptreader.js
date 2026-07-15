@@ -1732,14 +1732,26 @@ async function playGoogleChunk(chunk, rate, token) {
         const base = window.THEME_URI || '/wp-content/themes/zurabkostava';
         let textToSpeak = spokenList[i].text;
         
-        async function fetchBlobUrl(text) {
-            const fetchUrl = base + '/web-reader/google-tts.php?tl=' + encodeURIComponent(chunk.lang.split('-')[0]) + '&text=' + encodeURIComponent(text);
-            try {
-                const res = await fetch(fetchUrl);
-                if (!res.ok) return null;
-                const blob = await res.blob();
-                return URL.createObjectURL(blob);
-            } catch (e) { return null; }
+        async function fetchBlobUrl(text, useNeural) {
+            if (useNeural) {
+                const formData = new FormData();
+                formData.append('text', text);
+                formData.append('lang', chunk.lang);
+                try {
+                    const res = await fetch(base + '/web-reader/google-neural.php', { method: 'POST', body: formData });
+                    if (!res.ok) return null;
+                    const blob = await res.blob();
+                    return URL.createObjectURL(blob);
+                } catch (e) { return null; }
+            } else {
+                const fetchUrl = base + '/web-reader/google-tts.php?tl=' + encodeURIComponent(chunk.lang.split('-')[0]) + '&text=' + encodeURIComponent(text);
+                try {
+                    const res = await fetch(fetchUrl);
+                    if (!res.ok) return null;
+                    const blob = await res.blob();
+                    return URL.createObjectURL(blob);
+                } catch (e) { return null; }
+            }
         }
         
         if (textToSpeak.length > 190) {
@@ -1747,7 +1759,7 @@ async function playGoogleChunk(chunk, rate, token) {
             let temp = '';
             for (let w of words) {
                 if (temp.length + w.length + 1 > 190) {
-                    const bUrl = await fetchBlobUrl(temp);
+                    const bUrl = await fetchBlobUrl(temp, useNeural);
                     if (bUrl) await playGoogleAudio(bUrl, rate, null, token); // Disable word-level highlights for sliced chunks
                     temp = w + ' ';
                 } else {
@@ -1755,11 +1767,11 @@ async function playGoogleChunk(chunk, rate, token) {
                 }
             }
             if (temp.trim().length > 0) {
-                const bUrl = await fetchBlobUrl(temp);
+                const bUrl = await fetchBlobUrl(temp, useNeural);
                 if (bUrl) await playGoogleAudio(bUrl, rate, null, token);
             }
         } else {
-            const bUrl = await fetchBlobUrl(textToSpeak);
+            const bUrl = await fetchBlobUrl(textToSpeak, useNeural);
             if (bUrl) await playGoogleAudio(bUrl, rate, spokenList[i], token);
         }
     }
@@ -1782,56 +1794,6 @@ function highlightChunk(chunk) {
                 }
             }
         }
-    });
-}
-
-async function playGoogleNeuralChunk(chunk, rate, token) {
-    let fullText = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang).text).join(' ');
-    if (token !== playbackToken || !isPlaying) return false;
-    
-    highlightChunk(chunk);
-    currentIdx = chunk.sentences[0].index;
-    updateMediaPosition();
-
-    const base = window.THEME_URI || '/wp-content/themes/zurabkostava';
-    
-    const formData = new FormData();
-    formData.append('text', fullText);
-    formData.append('lang', chunk.lang);
-    
-    let audioUrl = null;
-    try {
-        const res = await fetch(base + '/web-reader/google-neural.php', { method: 'POST', body: formData });
-        if (!res.ok) {
-            const errText = await res.text();
-            throw new Error('Google Neural Proxy failed: ' + errText);
-        }
-        const blob = await res.blob();
-        audioUrl = URL.createObjectURL(blob);
-    } catch (e) {
-        console.error(e);
-        return false;
-    }
-
-    if (token !== playbackToken || !isPlaying) return false;
-
-    return new Promise((resolve) => {
-        const audio = new Audio(audioUrl);
-        audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
-        let done = false;
-        const finish = () => {
-            if (done) return;
-            done = true;
-            clearInterval(guard);
-            URL.revokeObjectURL(audioUrl);
-            resolve(token === playbackToken && isPlaying);
-        };
-        const guard = setInterval(() => {
-            if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
-        }, 100);
-        audio.onended = finish;
-        audio.onerror = finish;
-        audio.play().catch(finish);
     });
 }
 
@@ -2109,10 +2071,10 @@ async function playMergedQueue() {
             const ok = await playPuterChunk(chunk, rate, token, puterVoiceId);
             if (!ok) return;
         } else if (selectedVoiceName && selectedVoiceName.startsWith('googleneural:')) {
-            const ok = await playGoogleNeuralChunk(chunk, rate, token);
+            const ok = await playGoogleChunk(chunk, rate, token, true);
             if (!ok) return;
         } else if (selectedVoiceName && selectedVoiceName.startsWith('google:')) {
-            const ok = await playGoogleChunk(chunk, rate, token);
+            const ok = await playGoogleChunk(chunk, rate, token, false);
             if (!ok) return;
         } else if (piperVoice) {
             const state = piperWorkers[chunk.lang];
