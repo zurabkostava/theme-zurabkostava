@@ -1,6 +1,6 @@
 let synthesis = window.speechSynthesis;
 let piperVoicesList = [];
-let detectedBookLanguages = new Set(['en', 'ka']);
+let detectedBookLanguages = new Set();
 let piperWorkers = {};
 let parsedContent = [];
 let currentIdx = 0;
