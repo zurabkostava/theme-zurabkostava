@@ -1105,11 +1105,27 @@ function rebuildDynamicSettings() {
         voiceSelect.innerHTML = '';
         const nativeVoices = nativeList.filter(v => langMatches(v.lang, currentLang) || (v.name && v.name.toLowerCase().includes('multilingual')));
         if (nativeVoices.length > 0) {
+            nativeVoices.sort((a, b) => {
+                const isPremium = (v) => /natural|online|neural|premium|enhanced/i.test(v.name);
+                const aP = isPremium(a);
+                const bP = isPremium(b);
+                if (aP && !bP) return -1;
+                if (!aP && bP) return 1;
+                return a.name.localeCompare(b.name);
+            });
+            
             const optGroup = document.createElement('optgroup');
             optGroup.label = "Native Browser Voices";
             nativeVoices.forEach(v => {
                 const opt = document.createElement('option');
-                opt.value = v.name; opt.textContent = v.name.toLowerCase().includes('multilingual') ? `🌐 ${v.name}` : v.name;
+                opt.value = v.name;
+                let textName = v.name;
+                if (/natural|online|neural|premium|enhanced/i.test(v.name)) {
+                    textName = `✨ ${textName}`;
+                } else if (v.name.toLowerCase().includes('multilingual')) {
+                    textName = `🌐 ${textName}`;
+                }
+                opt.textContent = textName;
                 optGroup.appendChild(opt);
             });
             voiceSelect.appendChild(optGroup);
@@ -1163,7 +1179,12 @@ function rebuildDynamicSettings() {
             if (savedVoice && Array.from(voiceSelect.options).some(o => o.value === savedVoice)) {
                 voiceSelect.value = savedVoice;
             } else {
-                voiceSelect.selectedIndex = 0;
+                const piperOpt = Array.from(voiceSelect.options).find(o => Array.from(voiceSelect.options).some(x => x.parentElement.label === "Piper Offline Voices" && x === o));
+                if (piperOpt) {
+                    voiceSelect.value = piperOpt.value;
+                } else {
+                    voiceSelect.selectedIndex = 0;
+                }
             }
         }
 
