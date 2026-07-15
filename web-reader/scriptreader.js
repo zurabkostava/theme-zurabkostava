@@ -2,7 +2,6 @@ let synthesis = window.speechSynthesis;
 let piperVoicesList = [];
 let detectedBookLanguages = new Set();
 let piperWorkers = {};
-let kokoroState = { worker: null, ready: false, initializing: false, pending: [] };
 let parsedContent = [];
 let currentIdx = 0;
 let isPlaying = false;
@@ -622,7 +621,7 @@ function displayChapter(href, delay = 0) {
     // 🔥 ამოღებულია: localStorage.setItem('epub_progress_'...)
     // დათვალიერება არ ინახავს პროგრესს!
 
-    // განვლილი თავების ვიზუალური ჩაქრობა (Sidebar)
+    // განვლილი თავების ვიזუალური ჩაქრობა (Sidebar)
     updateSidebarStyling();
 
     window.scrollTo(0, 0);
@@ -1010,100 +1009,8 @@ function stopPiperAudio() {
             if (p && p.reject) p.reject(new Error('Stopped'));
         }
     });
-
-    if (typeof kokoroState !== 'undefined' && kokoroState.worker) {
-        kokoroState.worker.postMessage({ type: 'clear' });
-        while (kokoroState.pending && kokoroState.pending.length > 0) {
-            const p = kokoroState.pending.shift();
-            if (p && p.reject) p.reject(new Error('Stopped'));
-        }
-    }
 }
 
-function initKokoroWorker() {
-    if (kokoroState.worker && (kokoroState.ready || kokoroState.initializing)) return;
-    
-    kokoroState.ready = false; 
-    kokoroState.initializing = true;
-    
-    const failInit = (message) => {
-        kokoroState.initializing = false;
-        kokoroState.ready = false;
-        if (kokoroState.worker) { kokoroState.worker.terminate(); kokoroState.worker = null; }
-        while (kokoroState.pending.length) {
-            try { kokoroState.pending.shift().reject(new Error(message)); } catch (e) {}
-        }
-        console.error("Kokoro init failed:", message);
-        setTtsStatus("❌ " + message);
-        setTimeout(() => setTtsStatus(null), 6000);
-        const dlBtn = document.getElementById('unified-download-btn');
-        if (dlBtn && (dlBtn.textContent.includes('Kokoro') || dlBtn.textContent.includes('Initializing'))) {
-            dlBtn.textContent = "🔁 Retry Kokoro";
-            dlBtn.disabled = false;
-            dlBtn.style.opacity = "1";
-        }
-        stopReading();
-    };
-
-    try {
-        const base = window.THEME_URI || '/wp-content/themes/zurabkostava';
-        kokoroState.worker = new Worker(base + '/web-reader/kokoro-worker.js?v=' + Date.now(), { type: 'module' });
-    } catch (e) {
-        failInit("Worker creation failed: " + e);
-        return;
-    }
-    
-    setTtsStatus("Downloading Kokoro Model (~86MB)...");
-    
-    kokoroState.worker.onerror = (e) => {
-        console.error("[Main Thread] Kokoro worker onerror triggered:", e.message || e);
-        failInit(e.message || "Kokoro worker script failed to load.");
-    };
-    
-    kokoroState.worker.onmessage = (e) => {
-        const data = e.data || {};
-        
-        if (data.type === 'progress') {
-            const dlBtn = document.getElementById('unified-download-btn');
-            if (dlBtn && data.info) {
-                if (data.info.status === 'progress' && data.info.total) {
-                    const loadedMB = (data.info.loaded / 1024 / 1024).toFixed(1);
-                    const totalMB = (data.info.total / 1024 / 1024).toFixed(1);
-                    dlBtn.textContent = `⏳ Downloading ${data.info.file}: ${loadedMB}/${totalMB} MB`;
-                } else if (data.info.status === 'downloading') {
-                    dlBtn.textContent = `⏳ Starting download...`;
-                }
-            }
-        } else if (data.type === 'init_done') {
-            if (data.success) {
-                kokoroState.ready = true;
-                kokoroState.initializing = false;
-                setTtsStatus(null);
-                
-                const dlBtn = document.getElementById('unified-download-btn');
-                if (dlBtn && (dlBtn.textContent.includes('Kokoro') || dlBtn.textContent.includes('Initializing') || dlBtn.textContent.includes('Downloading'))) {
-                    dlBtn.textContent = "✅ Kokoro Ready";
-                    dlBtn.style.opacity = "0.5"; dlBtn.disabled = true;
-                    dlBtn.style.background = "transparent"; dlBtn.style.border = "1px solid rgba(255,255,255,0.1)"; dlBtn.style.color = "var(--text-muted)";
-                }
-            } else {
-                failInit(data.error);
-            }
-        } else if (data.type === 'generate_done') {
-            const pIndex = kokoroState.pending.findIndex(p => p.id === data.id);
-            if (pIndex > -1) {
-                const p = kokoroState.pending.splice(pIndex, 1)[0];
-                if (data.success) {
-                    p.resolve(data.blob);
-                } else {
-                    p.reject(new Error(data.error));
-                }
-            }
-        }
-    };
-    
-    kokoroState.worker.postMessage({ type: 'init' });
-}
 
 // 'ka_GE', 'ka-GE', 'KA-ge' → all normalize to 'ka-ge' so they match langCode 'ka'
 function normalizeLang(code) {
@@ -1251,25 +1158,6 @@ function rebuildDynamicSettings() {
             voiceSelect.appendChild(optGroup);
         }
         
-        if (currentLang.startsWith('en')) {
-            const kokoroVoices = [
-                { name: 'af_heart (Female, US)', val: 'af_heart' },
-                { name: 'af_bella (Female, US)', val: 'af_bella' },
-                { name: 'am_adam (Male, US)', val: 'am_adam' },
-                { name: 'am_michael (Male, US)', val: 'am_michael' },
-                { name: 'bf_emma (Female, UK)', val: 'bf_emma' },
-                { name: 'bm_george (Male, UK)', val: 'bm_george' }
-            ];
-            const kokoroOptGroup = document.createElement('optgroup');
-            kokoroOptGroup.label = "Kokoro Offline (Ultra High Quality)";
-            kokoroVoices.forEach(v => {
-                const opt = document.createElement('option');
-                opt.value = 'kokoro:' + v.val;
-                opt.textContent = `✨ ${v.name}`;
-                kokoroOptGroup.appendChild(opt);
-            });
-            voiceSelect.appendChild(kokoroOptGroup);
-        }
 
         const googleOptGroup = document.createElement('optgroup');
         googleOptGroup.label = "☁️ Free Cloud (Google)";
@@ -1321,17 +1209,6 @@ function rebuildDynamicSettings() {
                 dlBtn.style.opacity = "1"; dlBtn.disabled = false;
                 dlBtn.style.background = "rgba(56, 189, 248, 0.1)"; dlBtn.style.border = "1px solid rgba(56, 189, 248, 0.3)"; dlBtn.style.color = "#38bdf8";
             }
-        } else if (selectedVoice && selectedVoice.startsWith('kokoro:')) {
-            dlBtn.classList.remove('hidden');
-            if (kokoroState.ready) {
-                dlBtn.textContent = "✅ Kokoro Ready";
-                dlBtn.style.opacity = "0.5"; dlBtn.disabled = true;
-                dlBtn.style.background = "transparent"; dlBtn.style.border = "1px solid rgba(255,255,255,0.1)"; dlBtn.style.color = "var(--text-muted)";
-            } else {
-                dlBtn.textContent = "📥 Download / Init Kokoro (~86MB)";
-                dlBtn.style.opacity = "1"; dlBtn.disabled = false;
-                dlBtn.style.background = "rgba(56, 189, 248, 0.1)"; dlBtn.style.border = "1px solid rgba(56, 189, 248, 0.3)"; dlBtn.style.color = "#38bdf8";
-            }
         } else {
             dlBtn.classList.add('hidden');
         }
@@ -1351,17 +1228,11 @@ function rebuildDynamicSettings() {
         const currentLang = langSelect.value;
         const selectedVoice = voiceSelect.value;
         
-        if (selectedVoice && selectedVoice.startsWith('kokoro:')) {
-            initKokoroWorker();
-            dlBtn.textContent = "⏳ Initializing (~86MB)...";
+        const chosen = piperList.find(v => v.name === selectedVoice);
+        if (currentLang && chosen) {
+            initPiperWorker(currentLang, chosen.path);
+            dlBtn.textContent = "⏳ Initializing...";
             dlBtn.disabled = true; dlBtn.style.opacity = "0.7";
-        } else {
-            const chosen = piperList.find(v => v.name === selectedVoice);
-            if (currentLang && chosen) {
-                initPiperWorker(currentLang, chosen.path);
-                dlBtn.textContent = "⏳ Initializing...";
-                dlBtn.disabled = true; dlBtn.style.opacity = "0.7";
-            }
         }
     });
 
@@ -1964,131 +1835,7 @@ function highlightChunk(chunk) {
     });
 }
 
-async function playKokoroChunk(chunk, rate, token, voiceId) {
-    if (token !== playbackToken || !isPlaying) return false;
-    
-    const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
-    
-    const wavPromises = spokenList.map(spoken => {
-        return new Promise((resolve, reject) => {
-            const rawText = spoken.text;
-            const msgId = Date.now() + Math.random();
-            const p = {
-                id: msgId,
-                resolve: (blob) => resolve(blob),
-                reject: (err) => reject(err)
-            };
-            kokoroState.pending.push(p);
-            kokoroState.worker.postMessage({ type: 'generate', text: rawText, voice: voiceId, id: msgId });
-        });
-    });
 
-    // Group sentences by pIndex
-    const paragraphs = [];
-    let currentP = [];
-    for (let i = 0; i < chunk.sentences.length; i++) {
-        const item = chunk.sentences[i];
-        if (currentP.length === 0) {
-            currentP.push({ item, idx: i });
-        } else {
-            const prevItem = currentP[currentP.length - 1].item;
-            if (item.pIndex !== prevItem.pIndex) {
-                paragraphs.push(currentP);
-                currentP = [{ item, idx: i }];
-            } else {
-                currentP.push({ item, idx: i });
-            }
-        }
-    }
-    if (currentP.length > 0) paragraphs.push(currentP);
-
-    for (const p of paragraphs) {
-        if (token !== playbackToken || !isPlaying) return false;
-        
-        const pPromises = p.map(x => wavPromises[x.idx]);
-        
-        const spinnerTimeout = setTimeout(() => {
-            setTtsStatus("⏳ Kokoro Buffering...");
-        }, 100); 
-        
-        try {
-            await Promise.all(pPromises);
-        } catch(e) {
-            console.error("Kokoro buffer error", e);
-            clearTimeout(spinnerTimeout);
-            setTtsStatus(null);
-            continue;
-        }
-        
-        clearTimeout(spinnerTimeout);
-        setTtsStatus(null);
-        if (token !== playbackToken || !isPlaying) return false;
-
-        for (const { item, idx } of p) {
-            if (token !== playbackToken || !isPlaying) return false;
-            
-            const currentItem = item;
-            const globalIdx = currentItem.index;
-            if (globalIdx > 0) {
-                const prevItem = parsedContent[globalIdx - 1];
-                const currType = getHeaderType(currentItem.element);
-                const prevType = getHeaderType(prevItem ? prevItem.element : null);
-
-                const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
-                const afterMs = prevType ? pauseSettings.postHeader : 0;
-                const delayMs = Math.max(beforeMs, afterMs);
-
-                if (delayMs > 0) {
-                    await new Promise(r => setTimeout(r, delayMs));
-                }
-            }
-            if (token !== playbackToken || !isPlaying) return false;
-
-            let blob = await wavPromises[idx];
-            if (token !== playbackToken || !isPlaying) return false;
-
-            currentIdx = currentItem.index;
-            highlightSentence(currentIdx, true);
-            updateMediaPosition();
-
-            if (blob) {
-                const audioUrl = URL.createObjectURL(blob);
-                const audio = new Audio(audioUrl);
-                audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
-                
-                const ok = await new Promise((resolvePlay) => {
-                    let done = false;
-                    const finish = () => {
-                        if (done) return;
-                        done = true;
-                        clearInterval(guard);
-                        URL.revokeObjectURL(audioUrl);
-                        resolvePlay(token === playbackToken && isPlaying);
-                    };
-                    const guard = setInterval(() => {
-                        if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
-                    }, 100);
-                    audio.onended = finish;
-                    audio.onerror = finish;
-                    
-                    audio.addEventListener('loadedmetadata', () => {
-                        if (spokenList[idx] && spokenList[idx].raw) {
-                            const consolidatedSpoken = {
-                                totalChars: spokenList[idx].raw.length,
-                                wordRanges: spokenList[idx].wordRanges
-                            };
-                            runWordHighlights(audio, consolidatedSpoken, token, null);
-                        }
-                    });
-                    
-                    audio.play().catch(finish);
-                });
-                if (!ok) return false;
-            }
-        }
-    }
-    return true;
-}
 
 function runWordHighlights(audio, spoken, token, sentenceRanges) {
     let lastEl = null;
@@ -2253,16 +2000,7 @@ async function playMergedQueue() {
 
         const piperVoice = piperVoicesList.find(v => v && v.name === selectedVoiceName);
 
-        if (selectedVoiceName && selectedVoiceName.startsWith('kokoro:')) {
-            if (!kokoroState || !kokoroState.ready) {
-                stopReading();
-                alert(`გთხოვთ, პარამეტრებიდან ჯერ ჩამოტვირთოთ/გაააქტიუროთ Kokoro-ს ხმა!`);
-                return;
-            }
-            const kokoroVoiceId = selectedVoiceName.split(':')[1];
-            const ok = await playKokoroChunk(chunk, rate, token, kokoroVoiceId);
-            if (!ok) return;
-        } else if (selectedVoiceName && selectedVoiceName.startsWith('google:')) {
+        if (selectedVoiceName && selectedVoiceName.startsWith('google:')) {
             const ok = await playGoogleChunk(chunk, rate, token);
             if (!ok) return;
         } else if (piperVoice) {
