@@ -224,19 +224,34 @@ async function synthesize(text) {
     self.postMessage({ kind: 'output', wav });
 }
 
-// Message handler
-self.addEventListener('message', async (event) => {
-    const { kind, text, voicePath } = event.data;
+let queue = [];
+let isGenerating = false;
 
-    try {
-        if (kind === 'init') {
-            await init(voicePath);
-        } else if (kind === 'synthesize') {
-            await synthesize(text);
-        }
-    } catch (e) {
-        self.postMessage({ kind: 'error', message: e.message || String(e) });
+self.addEventListener('message', (event) => {
+    const data = event.data;
+
+    if (data.kind === 'clear') {
+        queue = []; // Instantly clear pending generations
+    } else if (data.kind === 'init') {
+        init(data.voicePath).catch(e => self.postMessage({ kind: 'error', message: e.message || String(e) }));
+    } else if (data.kind === 'synthesize') {
+        queue.push(data);
+        processQueue();
     }
 });
+
+async function processQueue() {
+    if (isGenerating) return;
+    isGenerating = true;
+    while(queue.length > 0) {
+        const data = queue.shift();
+        try {
+            await synthesize(data.text);
+        } catch(e) {
+            self.postMessage({ kind: 'error', message: e.message || String(e) });
+        }
+    }
+    isGenerating = false;
+}
 
 

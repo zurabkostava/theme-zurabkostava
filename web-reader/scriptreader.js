@@ -1004,7 +1004,20 @@ function initPiperWorker(langCode, voicePath) {
 function stopPiperAudio() {
     Object.values(piperWorkers).forEach(state => {
         if (state.currentAudio) { state.currentAudio.pause(); state.currentAudio = null; }
+        if (state.worker) { state.worker.postMessage({ kind: 'clear' }); }
+        while (state.pending && state.pending.length > 0) {
+            const p = state.pending.shift();
+            if (p && p.reject) p.reject(new Error('Stopped'));
+        }
     });
+
+    if (typeof kokoroState !== 'undefined' && kokoroState.worker) {
+        kokoroState.worker.postMessage({ type: 'clear' });
+        while (kokoroState.pending && kokoroState.pending.length > 0) {
+            const p = kokoroState.pending.shift();
+            if (p && p.reject) p.reject(new Error('Stopped'));
+        }
+    }
 }
 
 function initKokoroWorker() {
@@ -1765,9 +1778,26 @@ async function playPiperChunk(chunk, rate, token) {
     if (!ready) return false;
 
     const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
-    
     const wavPromises = spokenList.map(spoken => synthesizeSentence(chunk.lang, spoken.text, token));
 
+    // 💡 Smart AOT Buffering: Give the worker a small head-start (max 3 seconds) to build a buffer.
+    if (chunk.sentences.length > 1) {
+        setTtsStatus(`⏳ Piper Buffering...`);
+        try {
+            // აუცილებლად ველოდებით პირველ წინადადებას
+            await wavPromises[0];
+            // დამატებით ვაძლევთ მაქსიმუმ 3 წამს, რომ მოასწროს შემდეგი 2-3 წინადადების ბუფერში ჩაგდება
+            const bufferTarget = Math.min(4, chunk.sentences.length);
+            await Promise.race([
+                Promise.all(wavPromises.slice(1, bufferTarget)),
+                new Promise(r => setTimeout(r, 3000))
+            ]);
+        } catch(e) {
+            console.error("Piper buffer error", e);
+        }
+        setTtsStatus(null);
+    }
+    if (token !== playbackToken || !isPlaying) return false;
     for (let i = 0; i < chunk.sentences.length; i++) {
         if (token !== playbackToken || !isPlaying) return false;
         
@@ -1937,12 +1967,18 @@ async function playKokoroChunk(chunk, rate, token, voiceId) {
         });
     });
 
-    // 💡 AOT Buffering: Wait for the first 5 sentences/paragraphs to generate before starting
-    const bufferCount = Math.min(5, chunk.sentences.length);
-    if (bufferCount > 0) {
-        setTtsStatus(`⏳ Kokoro Buffering (${bufferCount} steps ahead)...`);
+    // 💡 Smart AOT Buffering: Give the worker a small head-start (max 3 seconds) to build a buffer.
+    if (chunk.sentences.length > 1) {
+        setTtsStatus(`⏳ Kokoro Buffering...`);
         try {
-            await Promise.all(wavPromises.slice(0, bufferCount));
+            // აუცილებლად ველოდებით პირველ წინადადებას
+            await wavPromises[0];
+            // დამატებით ვაძლევთ მაქსიმუმ 3 წამს, რომ მოასწროს შემდეგი 2-3 წინადადების ბუფერში ჩაგდება
+            const bufferTarget = Math.min(4, chunk.sentences.length);
+            await Promise.race([
+                Promise.all(wavPromises.slice(1, bufferTarget)),
+                new Promise(r => setTimeout(r, 3000))
+            ]);
         } catch(e) {
             console.error("Kokoro buffer error", e);
         }
