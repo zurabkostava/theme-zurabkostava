@@ -1020,20 +1020,27 @@ function rebuildDynamicSettings() {
     if (!Array.isArray(piperVoicesList)) piperVoicesList = [];
     const piperList = piperVoicesList.filter(isValidPiperEntry);
 
+    const getBaseLang = (l) => String(l || '').split(/[-_]/)[0].toLowerCase().trim();
+    
     const allLangs = new Set();
+    // Always include our main languages
+    allLangs.add('ka');
+    allLangs.add('en');
+    allLangs.add('ru');
+
     if (detectedBookLanguages) {
-        detectedBookLanguages.forEach(l => allLangs.add(normalizeLang(l)));
+        detectedBookLanguages.forEach(l => allLangs.add(getBaseLang(l)));
     }
     nativeList.forEach(v => {
-        if (v.lang) allLangs.add(normalizeLang(v.lang));
+        if (v.lang) allLangs.add(getBaseLang(v.lang));
     });
     piperList.forEach(v => {
-        if (v.lang) allLangs.add(normalizeLang(v.lang));
+        if (v.lang) allLangs.add(getBaseLang(v.lang));
     });
     
     const sortedLangs = Array.from(allLangs).sort((a, b) => {
-        const aDet = detectedBookLanguages.has(a) || detectedBookLanguages.has(a.split('-')[0]);
-        const bDet = detectedBookLanguages.has(b) || detectedBookLanguages.has(b.split('-')[0]);
+        const aDet = detectedBookLanguages && detectedBookLanguages.has(a);
+        const bDet = detectedBookLanguages && detectedBookLanguages.has(b);
         if (aDet && !bDet) return -1;
         if (!aDet && bDet) return 1;
         return a.localeCompare(b);
