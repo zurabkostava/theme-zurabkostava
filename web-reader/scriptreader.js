@@ -590,11 +590,7 @@ function updateProgressPercentage() {
             }
             finalFraction = baseProgress + chapterInsideProgress;
         } else {
-            finalFraction = 0;
-        }
-    }
-
-    // 4. ფორმატირება
+// 4. ფორმატირება
     let displayPercentage = finalFraction * 100;
     if (displayPercentage < 0) displayPercentage = 0;
     if (displayPercentage > 100) displayPercentage = 100;
@@ -613,10 +609,47 @@ function updateProgressPercentage() {
     localStorage.setItem('epub_perc_' + window.currentRawEpubFile.name, displayPercentage.toFixed(2));
     syncProgressToCloud(true); // Force sync to guarantee library gets latest percent
 }
-function displayChapter(href, delay = 0) {
+// Helper to determine logical chapter boundaries based on TOC entries
+function getLogicalChapterBounds(spineIndex) {
+    if (!currentBook || !currentBook.spine || !currentBook.spine.spineItems) {
+        return { start: spineIndex, end: spineIndex + 1 };
+    }
+    
+    let start = spineIndex;
+    // Go backwards to find the nearest TOC entry
+    while (start > 0) {
+        const prevHref = currentBook.spine.spineItems[start].href;
+        if (tocHrefSet.has(prevHref)) {
+            break;
+        }
+        start--;
+    }
+    
+    let end = currentBook.spine.spineItems.length;
+    // Go forwards from start+1 to find the next TOC entry
+    for (let i = start + 1; i < currentBook.spine.spineItems.length; i++) {
+        const nextHref = currentBook.spine.spineItems[i].href;
+        if (tocHrefSet.has(nextHref)) {
+            end = i;
+            break;
+        }
+    }
+    
+    return { start, end };
+}
+
+async function displayChapter(href, delay = 0) {
     if (!currentBook) return;
-    let spineItem = currentBook.spine.get(href);
-    if (spineItem) { currentSpineIndex = spineItem.index; }
+    
+    let requestedSpineIndex = currentBook.spine.spineItems.findIndex(item => item.href === href || href.startsWith(item.href + '#'));
+    if (requestedSpineIndex === -1) requestedSpineIndex = currentSpineIndex;
+    if (requestedSpineIndex === -1) return;
+
+    // Get logical chapter bounds
+    const bounds = getLogicalChapterBounds(requestedSpineIndex);
+    
+    // Update global state to point to the START of this logical chapter
+    currentSpineIndex = bounds.start;
 
     // 🔥 ამოღებულია: localStorage.setItem('epub_progress_'...)
     // დათვალიერება არ ინახავს პროგრესს!
@@ -632,36 +665,51 @@ function displayChapter(href, delay = 0) {
         }
     });
 
-    currentBook.load(href).then(doc => {
-        const bodyText = extractTextFromDoc(doc);
-        processText(bodyText);
-
-        // 🔥 GHOST DIMMING: თუ ვათვალიერებთ უკვე წაკითხულ თავს
-        // ვამოწმებთ რეალურ შენახულ ინდექსთან
-        const savedRealIndex = getRealSavedIndex();
-
-        if (savedRealIndex !== -1 && currentSpineIndex < savedRealIndex) {
-            // თუ ეს თავი რეალურ პოზიციაზე ნაკლებია -> სრულად ჩავაქროთ
-            document.querySelectorAll('.sentence').forEach(el => {
-                el.classList.add('read');
-                el.classList.remove('active');
-                el.querySelectorAll('.word').forEach(w => w.classList.add('read'));
-            });
-        }
-        // თუ ზუსტად იმ თავში ვართ, სადაც გავჩერდით -> აღვადგინოთ წინადადება
-        else if (savedRealIndex === currentSpineIndex || savedRealIndex === -1) {
-            const savedIdx = localStorage.getItem('epub_idx_' + window.currentRawEpubFile.name);
-            if (savedIdx !== null && delay === 0) {
-                currentIdx = parseInt(savedIdx);
-                setTimeout(() => {
-                    highlightSentence(currentIdx, false); // false = არ შეინახო ხელახლა, უბრალოდ გაანათე
-                }, 100);
+    setTtsStatus("Loading chapter text...");
+    
+    let fullBodyText = "";
+    // Load all spine items in the logical chapter sequentially
+    for (let i = bounds.start; i < bounds.end; i++) {
+        try {
+            const item = currentBook.spine.spineItems[i];
+            const doc = await currentBook.load(item.href);
+            const text = extractTextFromDoc(doc);
+            if (text) {
+                fullBodyText += text + "\n\n\n";
             }
+        } catch (e) {
+            console.error("Failed to load spine item " + i, e);
         }
+    }
+    
+    setTtsStatus(null);
+    processText(fullBodyText);
 
-        if (delay > 0) setTimeout(() => { playMergedQueue(); }, delay);
-        else if (delay === -1) playMergedQueue();
-    });
+    // 🔥 GHOST DIMMING: თუ ვათვალიერებთ უკვე წაკითხულ თავს
+    // ვამოწმებთ რეალურ შენახულ ინდექსთან
+    const savedRealIndex = getRealSavedIndex();
+
+    if (savedRealIndex !== -1 && currentSpineIndex < savedRealIndex) {
+        // თუ ეს თავი რეალურ პოზიციაზე ნაკლებია -> სრულად ჩავაქროთ
+        document.querySelectorAll('.sentence').forEach(el => {
+            el.classList.add('read');
+            el.classList.remove('active');
+            el.querySelectorAll('.word').forEach(w => w.classList.add('read'));
+        });
+    }
+    // თუ ზუსტად იმ თავში ვართ, სადაც გავჩერდით -> აღვადგინოთ წინადადება
+    else if (savedRealIndex === currentSpineIndex || savedRealIndex === -1) {
+        const savedIdx = localStorage.getItem('epub_idx_' + window.currentRawEpubFile.name);
+        if (savedIdx !== null && delay === 0) {
+            currentIdx = parseInt(savedIdx);
+            setTimeout(() => {
+                highlightSentence(currentIdx, false); // false = არ შეინახო ხელახლა, უბრალოდ გაანათე
+            }, 100);
+        }
+    }
+
+    if (delay > 0) setTimeout(() => { playMergedQueue(); }, delay);
+    else if (delay === -1) playMergedQueue();
 }
 // Protect sentence-ending punctuation inside header text so a header like
 // "2. Chapter Title:" survives the sentence regex as ONE piece.
@@ -809,8 +857,14 @@ function handleNextChapterLogic() {
         localStorage.removeItem('epub_idx_' + window.currentRawEpubFile.name);
     }
     if (!currentBook) return;
-    const nextIndex = currentSpineIndex + 1;
-    if (nextIndex < currentBook.spine.length) {
+    
+    const bounds = getLogicalChapterBounds(currentSpineIndex);
+    const nextIndex = bounds.end;
+    
+    if (nextIndex < currentBook.spine.spineItems.length) {
+        // ვინახავთ ახალ რეალურ პოზიციას
+        localStorage.setItem('epub_progress_' + window.currentRawEpubFile.name, nextIndex);
+        
         const nextItem = currentBook.spine.get(nextIndex);
         if (nextItem) {
             const wasPlaying = isPlaying;
@@ -1529,11 +1583,14 @@ function processText(rawHtml) {
     prevBtnEl.className = 'nav-chapter-btn';
     prevBtnEl.innerHTML = `<span>←</span> Previous Chapter`;
 
-    if (currentSpineIndex <= 0) prevBtnEl.classList.add('hidden');
+    const bounds = getLogicalChapterBounds(currentSpineIndex);
+
+    if (bounds.start <= 0) prevBtnEl.classList.add('hidden');
 
     prevBtnEl.onclick = () => {
-        if (currentBook && currentSpineIndex > 0) {
-            const prevItem = currentBook.spine.get(currentSpineIndex - 1);
+        if (currentBook && bounds.start > 0) {
+            const prevBounds = getLogicalChapterBounds(bounds.start - 1);
+            const prevItem = currentBook.spine.get(prevBounds.start);
             // გადასვლა არ ინახავს!
             const delay = isPlaying ? -1 : 0;
             if (prevItem) displayChapter(prevItem.href, delay);
@@ -1544,7 +1601,7 @@ function processText(rawHtml) {
     nextBtnEl.className = 'nav-chapter-btn';
     nextBtnEl.innerHTML = `Next Chapter <span>→</span>`;
 
-    if (currentBook && currentSpineIndex >= currentBook.spine.length - 1) nextBtnEl.classList.add('hidden');
+    if (currentBook && bounds.end >= currentBook.spine.spineItems.length) nextBtnEl.classList.add('hidden');
 
     nextBtnEl.onclick = () => {
         handleNextChapterLogic();
