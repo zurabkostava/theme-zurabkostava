@@ -49,7 +49,7 @@ async function init(voicePath) {
     // 1. Load ONNX Runtime
     self.postMessage({ kind: 'status', message: 'ONNX Runtime loading...' });
     importScripts(ORT_CDN);
-    ort.env.wasm.numThreads = navigator.hardwareConcurrency ? Math.max(1, navigator.hardwareConcurrency - 1) : 4;
+    ort.env.wasm.numThreads = navigator.hardwareConcurrency ? Math.min(4, Math.max(1, navigator.hardwareConcurrency - 1)) : 2;
     ort.env.wasm.simd = true;
     ort.env.wasm.wasmPaths = 'https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.17.1/';
 
@@ -160,7 +160,14 @@ async function init(voicePath) {
     }
 
     self.postMessage({ kind: 'status', message: 'Model initializing...' });
-    ortSession = await ort.InferenceSession.create(modelBuffer);
+    const sessionOptions = {
+        executionProviders: ['wasm'],
+        graphOptimizationLevel: 'all',
+        enableCpuMemArena: true,
+        enableMemPattern: true,
+        executionMode: 'sequential'
+    };
+    ortSession = await ort.InferenceSession.create(modelBuffer, sessionOptions);
 
     self.postMessage({ kind: 'ready' });
 }
