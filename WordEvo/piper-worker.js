@@ -49,7 +49,8 @@ async function init(voicePath) {
     // 1. Load ONNX Runtime
     self.postMessage({ kind: 'status', message: 'ONNX Runtime loading...' });
     importScripts(ORT_CDN);
-    ort.env.wasm.numThreads = 1;
+    ort.env.wasm.numThreads = navigator.hardwareConcurrency ? Math.max(1, navigator.hardwareConcurrency - 1) : 4;
+    ort.env.wasm.simd = true;
     ort.env.wasm.wasmPaths = 'https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.17.1/';
 
     // 2. Load Piper phonemize WASM
