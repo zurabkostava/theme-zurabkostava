@@ -1780,61 +1780,77 @@ async function playPiperChunk(chunk, rate, token) {
     const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
     const wavPromises = spokenList.map(spoken => synthesizeSentence(chunk.lang, spoken.text, token));
 
-    // 💡 Smart AOT Buffering: Give the worker a small head-start (max 3 seconds) to build a buffer.
-    if (chunk.sentences.length > 1) {
-        setTtsStatus(`⏳ Piper Buffering...`);
-        try {
-            // აუცილებლად ველოდებით პირველ წინადადებას
-            await wavPromises[0];
-            // დამატებით ვაძლევთ მაქსიმუმ 3 წამს, რომ მოასწროს შემდეგი 2-3 წინადადების ბუფერში ჩაგდება
-            const bufferTarget = Math.min(4, chunk.sentences.length);
-            await Promise.race([
-                Promise.all(wavPromises.slice(1, bufferTarget)),
-                new Promise(r => setTimeout(r, 3000))
-            ]);
-        } catch(e) {
-            console.error("Piper buffer error", e);
-        }
-        setTtsStatus(null);
-    }
-    if (token !== playbackToken || !isPlaying) return false;
+    // Group sentences by pIndex
+    const paragraphs = [];
+    let currentP = [];
     for (let i = 0; i < chunk.sentences.length; i++) {
-        if (token !== playbackToken || !isPlaying) return false;
-        
-        const currentItem = chunk.sentences[i];
-        const globalIdx = currentItem.index;
-        if (globalIdx > 0) {
-            const prevItem = parsedContent[globalIdx - 1];
-            const currType = getHeaderType(currentItem.element);
-            const prevType = getHeaderType(prevItem ? prevItem.element : null);
-
-            const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
-            const afterMs = prevType ? pauseSettings.postHeader : 0;
-            const delayMs = Math.max(beforeMs, afterMs);
-
-            if (delayMs > 0) {
-                await new Promise(r => setTimeout(r, delayMs));
+        const item = chunk.sentences[i];
+        if (currentP.length === 0) {
+            currentP.push({ item, idx: i });
+        } else {
+            const prevItem = currentP[currentP.length - 1].item;
+            if (item.pIndex !== prevItem.pIndex) {
+                paragraphs.push(currentP);
+                currentP = [{ item, idx: i }];
+            } else {
+                currentP.push({ item, idx: i });
             }
         }
-        if (token !== playbackToken || !isPlaying) return false;
+    }
+    if (currentP.length > 0) paragraphs.push(currentP);
 
-        let wav;
-        const spinnerTimeout = setTimeout(() => {
-            setTtsStatus("⏳ Piper is thinking...");
-        }, 300); // Show spinner if wait is longer than 300ms
+    for (const p of paragraphs) {
+        if (token !== playbackToken || !isPlaying) return false;
         
-        wav = await wavPromises[i];
+        const pPromises = p.map(x => wavPromises[x.idx]);
+        
+        const spinnerTimeout = setTimeout(() => {
+            setTtsStatus("⏳ Piper Buffering...");
+        }, 100); 
+        
+        try {
+            await Promise.all(pPromises);
+        } catch(e) {
+            console.error("Piper buffer error", e);
+            clearTimeout(spinnerTimeout);
+            setTtsStatus(null);
+            continue; 
+        }
         
         clearTimeout(spinnerTimeout);
         setTtsStatus(null);
-        
         if (token !== playbackToken || !isPlaying) return false;
 
-        currentIdx = chunk.sentences[i].index;
-        highlightSentence(currentIdx, true);
-        updateMediaPosition();
+        for (const { item, idx } of p) {
+            if (token !== playbackToken || !isPlaying) return false;
+            
+            const currentItem = item;
+            const globalIdx = currentItem.index;
+            if (globalIdx > 0) {
+                const prevItem = parsedContent[globalIdx - 1];
+                const currType = getHeaderType(currentItem.element);
+                const prevType = getHeaderType(prevItem ? prevItem.element : null);
 
-        if (wav) await playPiperAudio(state, wav, rate, spokenList[i], token);
+                const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
+                const afterMs = prevType ? pauseSettings.postHeader : 0;
+                const delayMs = Math.max(beforeMs, afterMs);
+
+                if (delayMs > 0) {
+                    await new Promise(r => setTimeout(r, delayMs));
+                }
+            }
+            if (token !== playbackToken || !isPlaying) return false;
+
+            let wav = await wavPromises[idx];
+            
+            if (token !== playbackToken || !isPlaying) return false;
+
+            currentIdx = currentItem.index;
+            highlightSentence(currentIdx, true);
+            updateMediaPosition();
+
+            if (wav) await playPiperAudio(state, wav, rate, spokenList[idx], token);
+        }
     }
     return token === playbackToken && isPlaying;
 }
@@ -1967,54 +1983,38 @@ async function playKokoroChunk(chunk, rate, token, voiceId) {
         });
     });
 
-    // 💡 Smart AOT Buffering: Give the worker a small head-start (max 3 seconds) to build a buffer.
-    if (chunk.sentences.length > 1) {
-        setTtsStatus(`⏳ Kokoro Buffering...`);
-        try {
-            // აუცილებლად ველოდებით პირველ წინადადებას
-            await wavPromises[0];
-            // დამატებით ვაძლევთ მაქსიმუმ 3 წამს, რომ მოასწროს შემდეგი 2-3 წინადადების ბუფერში ჩაგდება
-            const bufferTarget = Math.min(4, chunk.sentences.length);
-            await Promise.race([
-                Promise.all(wavPromises.slice(1, bufferTarget)),
-                new Promise(r => setTimeout(r, 3000))
-            ]);
-        } catch(e) {
-            console.error("Kokoro buffer error", e);
-        }
-        setTtsStatus(null);
-    }
-    if (token !== playbackToken || !isPlaying) return false;
-
+    // Group sentences by pIndex
+    const paragraphs = [];
+    let currentP = [];
     for (let i = 0; i < chunk.sentences.length; i++) {
-        if (token !== playbackToken || !isPlaying) return false;
-        
-        const currentItem = chunk.sentences[i];
-        const globalIdx = currentItem.index;
-        if (globalIdx > 0) {
-            const prevItem = parsedContent[globalIdx - 1];
-            const currType = getHeaderType(currentItem.element);
-            const prevType = getHeaderType(prevItem ? prevItem.element : null);
-
-            const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
-            const afterMs = prevType ? pauseSettings.postHeader : 0;
-            const delayMs = Math.max(beforeMs, afterMs);
-
-            if (delayMs > 0) {
-                await new Promise(r => setTimeout(r, delayMs));
+        const item = chunk.sentences[i];
+        if (currentP.length === 0) {
+            currentP.push({ item, idx: i });
+        } else {
+            const prevItem = currentP[currentP.length - 1].item;
+            if (item.pIndex !== prevItem.pIndex) {
+                paragraphs.push(currentP);
+                currentP = [{ item, idx: i }];
+            } else {
+                currentP.push({ item, idx: i });
             }
         }
+    }
+    if (currentP.length > 0) paragraphs.push(currentP);
+
+    for (const p of paragraphs) {
         if (token !== playbackToken || !isPlaying) return false;
-
-        let blob;
+        
+        const pPromises = p.map(x => wavPromises[x.idx]);
+        
         const spinnerTimeout = setTimeout(() => {
-            setTtsStatus("⏳ Kokoro is thinking...");
-        }, 300);
-
+            setTtsStatus("⏳ Kokoro Buffering...");
+        }, 100); 
+        
         try {
-            blob = await wavPromises[i];
-        } catch (err) {
-            console.error("Kokoro synth error", err);
+            await Promise.all(pPromises);
+        } catch(e) {
+            console.error("Kokoro buffer error", e);
             clearTimeout(spinnerTimeout);
             setTtsStatus(null);
             continue;
@@ -2022,46 +2022,69 @@ async function playKokoroChunk(chunk, rate, token, voiceId) {
         
         clearTimeout(spinnerTimeout);
         setTtsStatus(null);
-        
         if (token !== playbackToken || !isPlaying) return false;
 
-        currentIdx = chunk.sentences[i].index;
-        highlightSentence(currentIdx, true);
-        updateMediaPosition();
-
-        if (blob) {
-            const audioUrl = URL.createObjectURL(blob);
-            const audio = new Audio(audioUrl);
-            audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
+        for (const { item, idx } of p) {
+            if (token !== playbackToken || !isPlaying) return false;
             
-            const ok = await new Promise((resolvePlay) => {
-                let done = false;
-                const finish = () => {
-                    if (done) return;
-                    done = true;
-                    clearInterval(guard);
-                    URL.revokeObjectURL(audioUrl);
-                    resolvePlay(token === playbackToken && isPlaying);
-                };
-                const guard = setInterval(() => {
-                    if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
-                }, 100);
-                audio.onended = finish;
-                audio.onerror = finish;
+            const currentItem = item;
+            const globalIdx = currentItem.index;
+            if (globalIdx > 0) {
+                const prevItem = parsedContent[globalIdx - 1];
+                const currType = getHeaderType(currentItem.element);
+                const prevType = getHeaderType(prevItem ? prevItem.element : null);
+
+                const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
+                const afterMs = prevType ? pauseSettings.postHeader : 0;
+                const delayMs = Math.max(beforeMs, afterMs);
+
+                if (delayMs > 0) {
+                    await new Promise(r => setTimeout(r, delayMs));
+                }
+            }
+            if (token !== playbackToken || !isPlaying) return false;
+
+            let blob = await wavPromises[idx];
+            if (token !== playbackToken || !isPlaying) return false;
+
+            currentIdx = currentItem.index;
+            highlightSentence(currentIdx, true);
+            updateMediaPosition();
+
+            if (blob) {
+                const audioUrl = URL.createObjectURL(blob);
+                const audio = new Audio(audioUrl);
+                audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
                 
-                audio.addEventListener('loadedmetadata', () => {
-                    if (spokenList[i] && spokenList[i].raw) {
-                        const consolidatedSpoken = {
-                            totalChars: spokenList[i].raw.length,
-                            wordRanges: spokenList[i].wordRanges
-                        };
-                        runWordHighlights(audio, consolidatedSpoken, token, null);
-                    }
+                const ok = await new Promise((resolvePlay) => {
+                    let done = false;
+                    const finish = () => {
+                        if (done) return;
+                        done = true;
+                        clearInterval(guard);
+                        URL.revokeObjectURL(audioUrl);
+                        resolvePlay(token === playbackToken && isPlaying);
+                    };
+                    const guard = setInterval(() => {
+                        if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
+                    }, 100);
+                    audio.onended = finish;
+                    audio.onerror = finish;
+                    
+                    audio.addEventListener('loadedmetadata', () => {
+                        if (spokenList[idx] && spokenList[idx].raw) {
+                            const consolidatedSpoken = {
+                                totalChars: spokenList[idx].raw.length,
+                                wordRanges: spokenList[idx].wordRanges
+                            };
+                            runWordHighlights(audio, consolidatedSpoken, token, null);
+                        }
+                    });
+                    
+                    audio.play().catch(finish);
                 });
-                
-                audio.play().catch(finish);
-            });
-            if (!ok || token !== playbackToken || !isPlaying) return false;
+                if (!ok) return false;
+            }
         }
     }
     return true;
