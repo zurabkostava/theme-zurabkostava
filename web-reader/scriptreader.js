@@ -788,7 +788,17 @@ async function extractTextFromDoc(doc, itemHref = null, book = null, resolveImag
                 if (src && !src.startsWith('blob:') && !src.startsWith('data:') && !src.startsWith('http')) {
                     try {
                         let absolutePath = resolveEpubUrl(itemHref, src);
-                        let blobUrl = await book.archive.createUrl(absolutePath);
+                        let zipPath = absolutePath;
+                        if (book.path && typeof book.path.resolve === 'function') {
+                            zipPath = book.path.resolve(absolutePath);
+                        }
+                        let blobUrl = await book.archive.createUrl(zipPath);
+                        if (!blobUrl && book.archive.zip && book.archive.zip.files) {
+                            // Fallback: search zip files for suffix match
+                            let keys = Object.keys(book.archive.zip.files);
+                            let matchedKey = keys.find(k => k.endsWith(absolutePath) || k.endsWith(src.split('/').pop()));
+                            if (matchedKey) blobUrl = await book.archive.createUrl(matchedKey);
+                        }
                         if (blobUrl) img.setAttribute('src', blobUrl);
                     } catch(e) {}
                 }
