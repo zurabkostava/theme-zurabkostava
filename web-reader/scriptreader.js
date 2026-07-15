@@ -703,102 +703,99 @@ function extractTextFromDoc(doc) {
     if (!doc) return '';
     let root = doc.body || doc.documentElement;
     if (!root) return '';
-    let body = root.cloneNode(true);
     
-    // 1. Process headers
-    body.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(h => {
-        const tag = h.tagName.toLowerCase();
-        let safeText = protectHeaderPunct(h.textContent.trim());
-        if (safeText) {
-            h.innerHTML = `<b class="epub-header epub-header-${tag}">${safeText}</b>`;
+    let fallbackText = root.textContent || '';
+    
+    try {
+        let body = root.cloneNode(true);
+        let allElements = body.getElementsByTagName('*');
+        const blockTags = new Set(['P', 'DIV', 'SECTION', 'ARTICLE', 'HEADER', 'FOOTER', 'ASIDE', 'BLOCKQUOTE', 'FIGURE', 'FIGCAPTION', 'LI', 'DD', 'DT', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'TD', 'TH', 'CAPTION', 'TR']);
+        
+        // Process backwards to avoid messing up live HTMLCollection when injecting nodes
+        // Wait, getElementsByTagName returns a live collection. 
+        // We will convert it to an array first to safely iterate.
+        let elArray = Array.from(allElements);
+        
+        for (let i = 0; i < elArray.length; i++) {
+            let el = elArray[i];
+            let tag = el.tagName.toUpperCase();
+            
+            // Process headers
+            if (/^H[1-6]$/.test(tag)) {
+                let safeText = protectHeaderPunct(el.textContent.trim());
+                if (safeText) {
+                    try {
+                        el.innerHTML = `<b class="epub-header epub-header-${tag.toLowerCase()}">${safeText}</b>`;
+                    } catch(e) {}
+                }
+            }
+            
+            // Block element newlines
+            if (blockTags.has(tag)) {
+                if (el.parentNode) {
+                    el.parentNode.insertBefore(doc.createTextNode('\n\n'), el);
+                    if (el.nextSibling) {
+                        el.parentNode.insertBefore(doc.createTextNode('\n\n'), el.nextSibling);
+                    } else {
+                        el.parentNode.appendChild(doc.createTextNode('\n\n'));
+                    }
+                }
+            }
+            
+            if (tag === 'BR') {
+                if (el.parentNode) {
+                    if (el.nextSibling) {
+                        el.parentNode.insertBefore(doc.createTextNode(' '), el.nextSibling);
+                    } else {
+                        el.parentNode.appendChild(doc.createTextNode(' '));
+                    }
+                }
+            }
         }
-    });
 
-    // 2. Identify and transform leading-bold or all-bold blocks
-    body.querySelectorAll('p, div, li, blockquote, section, article').forEach(p => {
-        if (p.querySelector('.epub-header')) return;
-        
-        let boldLen = 0;
-        p.querySelectorAll('b, strong').forEach(n => { boldLen += n.textContent.trim().length; });
-        const totalLen = p.textContent.trim().length;
-        
-        if (totalLen > 0 && boldLen >= totalLen * 0.7) {
-            let safeText = protectHeaderPunct(p.textContent.trim());
-            p.innerHTML = `<b class="epub-header epub-header-strong">${safeText}</b>`;
-        } else if (hasLeadingBoldHeader(p)) {
-            let html = p.innerHTML;
-            html = html.replace(/^(\s*)<(b|strong)\b([^>]*)>([\s\S]*?)<\/\2\s*>/i,
-                (m, ws, tag, attrs, inner) =>
-                    `${ws}<${tag}${addHeaderClassToAttrs(attrs)}>${protectHeaderPunct(inner)}</${tag}>___SPLIT___`);
-            p.innerHTML = html;
+        let html = body.innerHTML;
+        if (typeof html !== 'string') {
+            try { html = new XMLSerializer().serializeToString(body); } catch(e) { html = ''; }
         }
-    });
-    
-    // 3. Inject newlines around block elements to preserve logical breaks
-    const blockTags = ['p', 'div', 'section', 'article', 'header', 'footer', 'aside', 'blockquote', 'figure', 'figcaption', 'li', 'dd', 'dt', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'td', 'th', 'caption', 'tr'];
-    
-    blockTags.forEach(tag => {
-        body.querySelectorAll(tag).forEach(el => {
-            if (el.parentNode) {
-                el.parentNode.insertBefore(doc.createTextNode('\n\n'), el);
-                if (el.nextSibling) {
-                    el.parentNode.insertBefore(doc.createTextNode('\n\n'), el.nextSibling);
-                } else {
-                    el.parentNode.appendChild(doc.createTextNode('\n\n'));
+        
+        let text = html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, ' ');
+        
+        text = text.replace(/&nbsp;/gi, ' ')
+                   .replace(/&amp;/gi, '&')
+                   .replace(/&lt;/gi, '<')
+                   .replace(/&gt;/gi, '>')
+                   .replace(/&quot;/gi, '"')
+                   .replace(/&#39;/gi, "'");
+
+        let textArray = text.split(/\n\n+/);
+        let finalArray = [];
+        
+        textArray.forEach(block => {
+            let t = block.trim();
+            if (t.length > 0) {
+                t = t.replace(/___SPLIT___/g, '')
+                     .replace(/___DOT___/g, '.')
+                     .replace(/___EXCL___/g, '!')
+                     .replace(/___QUEST___/g, '?');
+                     
+                t = t.replace(/\s+/g, ' ').trim();
+                
+                if (t.length > 0) {
+                    const lastChar = t.slice(-1);
+                    const punctuation = ['.', '!', '?', ':', ';', '…', '"', '»', '”', '’', "'"];
+                    if (!punctuation.includes(lastChar)) { t += '.'; }
+                    finalArray.push(t);
                 }
             }
         });
-    });
-    
-    body.querySelectorAll('br').forEach(br => {
-        if (br.parentNode) {
-            if (br.nextSibling) {
-                br.parentNode.insertBefore(doc.createTextNode(' '), br.nextSibling);
-            } else {
-                br.parentNode.appendChild(doc.createTextNode(' '));
-            }
-        }
-    });
-
-    // 4. Extract HTML, strip unwanted tags, decode entities
-    // For XML docs, innerHTML might be missing or different, XMLSerializer is foolproof
-    let html = body.innerHTML;
-    if (typeof html !== 'string') {
-        try { html = new XMLSerializer().serializeToString(body); } catch(e) { html = ''; }
+        
+        let finalStr = finalArray.join('\n\n');
+        if (!finalStr.trim()) return fallbackText.trim();
+        return finalStr;
+    } catch (err) {
+        console.error("EPUB Extraction Error:", err);
+        return fallbackText.trim();
     }
-    let text = html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, ' ');
-    
-    text = text.replace(/&nbsp;/gi, ' ')
-               .replace(/&amp;/gi, '&')
-               .replace(/&lt;/gi, '<')
-               .replace(/&gt;/gi, '>')
-               .replace(/&quot;/gi, '"')
-               .replace(/&#39;/gi, "'");
-
-    // 5. Split into blocks and clean up
-    let textArray = text.split(/\n\n+/);
-    let finalArray = [];
-    
-    textArray.forEach(block => {
-        let t = block.trim();
-        if (t.length > 0) {
-            t = t.replace(/___SPLIT___/g, '')
-                 .replace(/___DOT___/g, '.')
-                 .replace(/___EXCL___/g, '!')
-                 .replace(/___QUEST___/g, '?');
-                 
-            t = t.replace(/\s+/g, ' ').trim();
-            
-            if (t.length > 0) {
-                const lastChar = t.slice(-1);
-                const punctuation = ['.', '!', '?', ':', ';', '…', '"', '»', '”', '’', "'"];
-                if (!punctuation.includes(lastChar)) { t += '.'; }
-                finalArray.push(t);
-            }
-        }
-    });
-    
-    return finalArray.join('\n\n');
 }
 function handleNextChapterLogic() {
     // აქ ვშლით ინდექსს, რადგან გადავდივართ "წასაკითხად"
