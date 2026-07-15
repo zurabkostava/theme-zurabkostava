@@ -949,6 +949,15 @@ function initPiperWorker(langCode, voicePath) {
             if (unifiedDlBtn && unifiedLangSelect && unifiedLangSelect.value === langCode && !state.ready) {
                 unifiedDlBtn.textContent = "⏳ " + msg.message;
             }
+        } else if (msg.kind === 'progress') {
+            const dlBtn = document.getElementById('unified-download-btn');
+            if (dlBtn && msg.info && !state.ready) {
+                if (msg.info.status === 'progress' && msg.info.total) {
+                    const loadedMB = (msg.info.loaded / 1024 / 1024).toFixed(1);
+                    const totalMB = (msg.info.total / 1024 / 1024).toFixed(1);
+                    dlBtn.textContent = `⏳ Downloading ${msg.info.file}: ${loadedMB}/${totalMB} MB`;
+                }
+            }
         }
         else if (msg.kind === 'ready') {
             state.ready = true;
@@ -1930,51 +1939,15 @@ function highlightChunk(chunk) {
 async function playKokoroChunk(chunk, rate, token, voiceId) {
     if (token !== playbackToken || !isPlaying) return false;
     
-    let batches = [];
-    let currentBatch = [];
-    let currentBatchText = "";
-
-    for (let i = 0; i < chunk.sentences.length; i++) {
-        const currentItem = chunk.sentences[i];
-        const globalIdx = currentItem.index;
-        let delayMs = 0;
-
-        if (globalIdx > 0) {
-            const prevItem = parsedContent[globalIdx - 1];
-            const currType = getHeaderType(currentItem.element);
-            const prevType = getHeaderType(prevItem ? prevItem.element : null);
-
-            const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
-            const afterMs = prevType ? pauseSettings.postHeader : 0;
-            delayMs = Math.max(beforeMs, afterMs);
-        }
-
-        if (delayMs > 0 && currentBatch.length > 0) {
-            batches.push({ items: currentBatch, text: currentBatchText, delayMs: delayMs });
-            currentBatch = [];
-            currentBatchText = "";
-        }
-
-        const spoken = buildSpokenSentence(currentItem, chunk.lang);
-        const offset = currentBatchText.length;
-        const wordRanges = spoken.wordRanges.map(r => ({ el: r.el, start: r.start + offset, end: r.end + offset }));
-        currentBatchText += spoken.raw;
-        currentBatch.push({ idx: currentItem.index, element: currentItem.element, wordRanges: wordRanges, sentenceEndChar: currentBatchText.length });
-    }
-    if (currentBatch.length > 0) {
-        batches.push({ items: currentBatch, text: currentBatchText, delayMs: 0 });
-    }
-
-    if (batches.length === 0) return true;
-
-    const batchPromises = batches.map(batch => {
+    const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
+    
+    const wavPromises = spokenList.map(spoken => {
         return new Promise((resolve, reject) => {
-            const rawText = batch.items.map(s => s.element.innerText.trim()).join(' ');
+            const rawText = spoken.text;
             const msgId = Date.now() + Math.random();
-            
             const p = {
                 id: msgId,
-                resolve: (blob) => resolve({ blob, batch }),
+                resolve: (blob) => resolve(blob),
                 reject: (err) => reject(err)
             };
             kokoroState.pending.push(p);
@@ -1982,62 +1955,84 @@ async function playKokoroChunk(chunk, rate, token, voiceId) {
         });
     });
 
-    for (let i = 0; i < batchPromises.length; i++) {
+    for (let i = 0; i < chunk.sentences.length; i++) {
         if (token !== playbackToken || !isPlaying) return false;
         
-        setTtsStatus("⏳ Kokoro is thinking...");
-        let result;
+        const currentItem = chunk.sentences[i];
+        const globalIdx = currentItem.index;
+        if (globalIdx > 0) {
+            const prevItem = parsedContent[globalIdx - 1];
+            const currType = getHeaderType(currentItem.element);
+            const prevType = getHeaderType(prevItem ? prevItem.element : null);
+
+            const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
+            const afterMs = prevType ? pauseSettings.postHeader : 0;
+            const delayMs = Math.max(beforeMs, afterMs);
+
+            if (delayMs > 0) {
+                await new Promise(r => setTimeout(r, delayMs));
+            }
+        }
+        if (token !== playbackToken || !isPlaying) return false;
+
+        let blob;
+        const spinnerTimeout = setTimeout(() => {
+            setTtsStatus("⏳ Kokoro is thinking...");
+        }, 300);
+
         try {
-            result = await batchPromises[i];
+            blob = await wavPromises[i];
         } catch (err) {
             console.error("Kokoro synth error", err);
+            clearTimeout(spinnerTimeout);
             setTtsStatus(null);
             continue;
         }
+        
+        clearTimeout(spinnerTimeout);
         setTtsStatus(null);
         
         if (token !== playbackToken || !isPlaying) return false;
-        const { blob, batch } = result;
 
-        currentIdx = batch.items[0].idx;
+        currentIdx = chunk.sentences[i].index;
         highlightSentence(currentIdx, true);
         updateMediaPosition();
 
-        const audioUrl = URL.createObjectURL(blob);
-        const audio = new Audio(audioUrl);
-        audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
-        
-        const ok = await new Promise((resolvePlay) => {
-            let done = false;
-            const finish = () => {
-                if (done) return;
-                done = true;
-                clearInterval(guard);
-                URL.revokeObjectURL(audioUrl);
-                resolvePlay(token === playbackToken && isPlaying);
-            };
-            const guard = setInterval(() => {
-                if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
-            }, 100);
-            audio.onended = finish;
-            audio.onerror = finish;
+        if (blob) {
+            const audioUrl = URL.createObjectURL(blob);
+            const audio = new Audio(audioUrl);
+            audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
             
-            const consolidatedSpoken = {
-                totalChars: batch.text.length,
-                wordRanges: batch.items.flatMap(s => s.wordRanges)
-            };
-            runWordHighlights(audio, consolidatedSpoken, token, batch.items);
-            audio.play().catch(finish);
-        });
-
-        if (!ok || token !== playbackToken || !isPlaying) return false;
-
-        if (batch.delayMs > 0) {
-            await new Promise(r => setTimeout(r, batch.delayMs));
-            if (token !== playbackToken || !isPlaying) return false;
+            const ok = await new Promise((resolvePlay) => {
+                let done = false;
+                const finish = () => {
+                    if (done) return;
+                    done = true;
+                    clearInterval(guard);
+                    URL.revokeObjectURL(audioUrl);
+                    resolvePlay(token === playbackToken && isPlaying);
+                };
+                const guard = setInterval(() => {
+                    if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
+                }, 100);
+                audio.onended = finish;
+                audio.onerror = finish;
+                
+                audio.addEventListener('loadedmetadata', () => {
+                    if (spokenList[i] && spokenList[i].raw) {
+                        const consolidatedSpoken = {
+                            totalChars: spokenList[i].raw.length,
+                            wordRanges: spokenList[i].wordRanges
+                        };
+                        runWordHighlights(audio, consolidatedSpoken, token, null);
+                    }
+                });
+                
+                audio.play().catch(finish);
+            });
+            if (!ok || token !== playbackToken || !isPlaying) return false;
         }
     }
-
     return true;
 }
 

@@ -1,4 +1,4 @@
-﻿// ==== Piper TTS Web Worker ====
+// ==== Piper TTS Web Worker ====
 // Runs Piper neural TTS locally in the browser via WASM + ONNX Runtime
 
 const PIPER_WASM_BASE = 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/';
@@ -96,21 +96,66 @@ async function init(voicePath) {
             self.postMessage({ kind: 'status', message: 'Model loading from storage...' });
             modelBuffer = await cachedResponse.arrayBuffer();
         } else {
-            self.postMessage({ kind: 'status', message: 'Voice model loading (~60MB)...' });
-            const fetchResponse = await fetch(modelUrl);
-            if (!fetchResponse.ok) throw new Error('Failed to fetch voice model');
+            self.postMessage({ kind: 'status', message: 'Starting download...' });
+            
+            const response = await fetch(modelUrl);
+            if (!response.ok) throw new Error('Failed to fetch voice model');
+            
+            const contentLength = response.headers.get('Content-Length');
+            const total = contentLength ? parseInt(contentLength, 10) : 0;
+            let loaded = 0;
+            
+            const reader = response.body.getReader();
+            const chunks = [];
+            
+            while(true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                loaded += value.length;
+                if (total) {
+                    self.postMessage({ 
+                        kind: 'progress', 
+                        info: { status: 'progress', file: 'model.onnx', loaded, total }
+                    });
+                }
+            }
+            
+            const blob = new Blob(chunks);
+            modelBuffer = await blob.arrayBuffer();
             
             // Save to cache for future
-            const cacheResponse = fetchResponse.clone();
-            await cache.put(modelUrl, cacheResponse);
-            modelBuffer = await fetchResponse.arrayBuffer();
+            await cache.put(modelUrl, new Response(blob));
         }
     } catch (e) {
         console.warn('[Piper Worker] Cache API failed, falling back to network:', e);
-        self.postMessage({ kind: 'status', message: 'Voice model loading (~60MB)...' });
-        const fetchResponse = await fetch(modelUrl);
-        if (!fetchResponse.ok) throw new Error('Failed to fetch voice model');
-        modelBuffer = await fetchResponse.arrayBuffer();
+        self.postMessage({ kind: 'status', message: 'Starting download (no cache)...' });
+        
+        const response = await fetch(modelUrl);
+        if (!response.ok) throw new Error('Failed to fetch voice model');
+        
+        const contentLength = response.headers.get('Content-Length');
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+        let loaded = 0;
+        
+        const reader = response.body.getReader();
+        const chunks = [];
+        
+        while(true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            loaded += value.length;
+            if (total) {
+                self.postMessage({ 
+                    kind: 'progress', 
+                    info: { status: 'progress', file: 'model.onnx', loaded, total }
+                });
+            }
+        }
+        
+        const blob = new Blob(chunks);
+        modelBuffer = await blob.arrayBuffer();
     }
 
     self.postMessage({ kind: 'status', message: 'Model initializing...' });
