@@ -1677,6 +1677,7 @@ function playGoogleAudio(audioUrl, rate, spoken, token) {
             if (done) return;
             done = true;
             clearInterval(guard);
+            URL.revokeObjectURL(audioUrl); // Clean up Blob URL
             resolve();
         };
         const guard = setInterval(() => {
@@ -1684,7 +1685,11 @@ function playGoogleAudio(audioUrl, rate, spoken, token) {
         }, 100);
         audio.onended = finish;
         audio.onerror = finish;
-        runWordHighlights(audio, spoken, token, null);
+        audio.addEventListener('loadedmetadata', () => {
+            if (spoken && spoken.totalChars) {
+                runWordHighlights(audio, spoken, token, null);
+            }
+        });
         audio.play().catch(finish);
     });
 }
@@ -1719,25 +1724,35 @@ async function playGoogleChunk(chunk, rate, token) {
         const base = window.THEME_URI || '/wp-content/themes/zurabkostava';
         let textToSpeak = spokenList[i].text;
         
+        async function fetchBlobUrl(text) {
+            const fetchUrl = base + '/web-reader/google-tts.php?tl=' + encodeURIComponent(chunk.lang.split('-')[0]) + '&text=' + encodeURIComponent(text);
+            try {
+                const res = await fetch(fetchUrl);
+                if (!res.ok) return null;
+                const blob = await res.blob();
+                return URL.createObjectURL(blob);
+            } catch (e) { return null; }
+        }
+        
         if (textToSpeak.length > 190) {
             const words = textToSpeak.split(' ');
             let temp = '';
             for (let w of words) {
                 if (temp.length + w.length + 1 > 190) {
-                    const url = base + '/web-reader/google-tts.php?tl=' + encodeURIComponent(chunk.lang.split('-')[0]) + '&text=' + encodeURIComponent(temp);
-                    await playGoogleAudio(url, rate, { ...spokenList[i], text: temp }, token);
+                    const bUrl = await fetchBlobUrl(temp);
+                    if (bUrl) await playGoogleAudio(bUrl, rate, null, token); // Disable word-level highlights for sliced chunks
                     temp = w + ' ';
                 } else {
                     temp += w + ' ';
                 }
             }
             if (temp.trim().length > 0) {
-                const url = base + '/web-reader/google-tts.php?tl=' + encodeURIComponent(chunk.lang.split('-')[0]) + '&text=' + encodeURIComponent(temp);
-                await playGoogleAudio(url, rate, { ...spokenList[i], text: temp }, token);
+                const bUrl = await fetchBlobUrl(temp);
+                if (bUrl) await playGoogleAudio(bUrl, rate, null, token);
             }
         } else {
-            const url = base + '/web-reader/google-tts.php?tl=' + encodeURIComponent(chunk.lang.split('-')[0]) + '&text=' + encodeURIComponent(textToSpeak);
-            await playGoogleAudio(url, rate, spokenList[i], token);
+            const bUrl = await fetchBlobUrl(textToSpeak);
+            if (bUrl) await playGoogleAudio(bUrl, rate, spokenList[i], token);
         }
     }
     return token === playbackToken && isPlaying;
