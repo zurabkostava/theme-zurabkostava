@@ -1076,7 +1076,7 @@ function rebuildDynamicSettings() {
             const piperForLang = piperList.filter(v => langMatches(v.lang, langCode));
             if (piperForLang.length > 0) {
                 const optGroup = document.createElement('optgroup');
-                optGroup.label = "High-Quality Piper Voices";
+                optGroup.label = `📍 Piper Offline (Recommended for ${langName})`;
                 piperForLang.forEach(v => {
                     const opt = document.createElement('option');
                     opt.value = v.name; opt.textContent = v.name;
@@ -1084,6 +1084,27 @@ function rebuildDynamicSettings() {
                 });
                 select.appendChild(optGroup);
             }
+
+            // Piper Global Library: Add all other languages
+            const piperLangs = [...new Set(piperList.map(v => v.lang))].sort();
+            piperLangs.forEach(pLang => {
+                if (langMatches(pLang, langCode)) return; // Already added above
+                
+                const voicesInLang = piperList.filter(v => v.lang === pLang);
+                if (voicesInLang.length === 0) return;
+                
+                let displayLang = pLang.toUpperCase();
+                try { displayLang = new Intl.DisplayNames(['en'], { type: 'language' }).of(pLang.split('-')[0]) || displayLang; } catch(e){}
+                
+                const optGroup = document.createElement('optgroup');
+                optGroup.label = `🌍 Piper Offline (${displayLang})`;
+                voicesInLang.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.name; opt.textContent = v.name;
+                    optGroup.appendChild(opt);
+                });
+                select.appendChild(optGroup);
+            });
 
             const puterVoices = [
                 { name: '☁️ Puter (OpenAI Nova - Female)', val: 'nova' },
