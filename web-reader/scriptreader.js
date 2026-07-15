@@ -1786,8 +1786,7 @@ function highlightChunk(chunk) {
             s.element.classList.remove('read');
             if (s === chunk.sentences[0]) {
                 const elRect = s.element.getBoundingClientRect();
-                const container = document.getElementById('book-content-container');
-                if (elRect.top < 0 || elRect.bottom > container.clientHeight) {
+                if (elRect.top < 0 || elRect.bottom > contentArea.clientHeight) {
                     s.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             }
