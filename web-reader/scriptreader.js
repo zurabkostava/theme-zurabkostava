@@ -1651,17 +1651,12 @@ async function playPiperChunk(chunk, rate, token) {
     if (!ready) return false;
 
     const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
-    let wavPromise = synthesizeSentence(chunk.lang, spokenList[0].text, token);
+    
+    const wavPromises = spokenList.map(spoken => synthesizeSentence(chunk.lang, spoken.text, token));
 
     for (let i = 0; i < chunk.sentences.length; i++) {
         if (token !== playbackToken || !isPlaying) return false;
-        const wav = await wavPromise; // synthesizeSentence never rejects, returns null on failure
-
-        // შესვენებების ლოგიკა სათაურებზე:
-        // - 5s BEFORE main headers (h1-h6), 3s BEFORE internal bold headers
-        // - 3s AFTER any header, before whatever follows
-        // Header→Header transitions take the LARGER of the two pauses (never
-        // stacked), and paragraph (pIndex) boundaries are deliberately ignored.
+        
         const currentItem = chunk.sentences[i];
         const globalIdx = currentItem.index;
         if (globalIdx > 0) {
@@ -1679,17 +1674,14 @@ async function playPiperChunk(chunk, rate, token) {
         }
         if (token !== playbackToken || !isPlaying) return false;
 
-        // Prefetch the next sentence's audio while the current one plays — no gaps
-        if (i + 1 < chunk.sentences.length) {
-            wavPromise = synthesizeSentence(chunk.lang, spokenList[i + 1].text, token);
-        }
+        const wav = await wavPromises[i];
         if (token !== playbackToken || !isPlaying) return false;
 
         currentIdx = chunk.sentences[i].index;
         highlightSentence(currentIdx, true);
         updateMediaPosition();
 
-        if (wav) await playPiperAudio(piperWorkers[chunk.lang], wav, rate, spokenList[i], token);
+        if (wav) await playPiperAudio(state, wav, rate, spokenList[i], token);
     }
     return token === playbackToken && isPlaying;
 }
