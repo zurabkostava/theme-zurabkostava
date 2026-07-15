@@ -708,6 +708,12 @@ function extractTextFromDoc(doc) {
     
     try {
         let body = root.cloneNode(true);
+        
+        // Remove unwanted elements that could leak text or cause issues
+        body.querySelectorAll('head, style, script, meta, link, noscript').forEach(el => {
+            if (el.parentNode) el.parentNode.removeChild(el);
+        });
+        
         let allElements = body.getElementsByTagName('*');
         const blockTags = new Set(['P', 'DIV', 'SECTION', 'ARTICLE', 'HEADER', 'FOOTER', 'ASIDE', 'BLOCKQUOTE', 'FIGURE', 'FIGCAPTION', 'LI', 'DD', 'DT', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'TD', 'TH', 'CAPTION', 'TR']);
         
@@ -758,7 +764,7 @@ function extractTextFromDoc(doc) {
             try { html = new XMLSerializer().serializeToString(body); } catch(e) { html = ''; }
         }
         
-        let text = html.replace(/<\/?(?!(b|strong)\b)[^>]+>/gi, ' ');
+        let text = html.replace(/<\/?(?!(b|strong|img)\b)[^>]+>/gi, ' ');
         
         text = text.replace(/&nbsp;/gi, ' ')
                    .replace(/&amp;/gi, '&')
@@ -1412,7 +1418,7 @@ function processText(rawHtml) {
     let sCounter = 0;
     
     const tags = [];
-    let textWithPlaceholders = rawHtml.replace(/<\/?(b|strong)[^>]*>/gi, (match) => {
+    let textWithPlaceholders = rawHtml.replace(/<\/?(b|strong|img)[^>]*>/gi, (match) => {
         const index = tags.length;
         tags.push(match);
         return `___HTML_${index}___`;
@@ -1471,7 +1477,11 @@ function processText(rawHtml) {
             for (let i = openTagsStack.length - 1; i >= 0; i--) {
                 let tagIdx = openTagsStack[i];
                 let tagStr = tags[tagIdx];
-                let closingTag = tagStr.toLowerCase().startsWith('<strong') ? '</strong>' : '</b>';
+                let closingTag = '';
+                if (tagStr.toLowerCase().startsWith('<strong')) closingTag = '</strong>';
+                else if (tagStr.toLowerCase().startsWith('<b')) closingTag = '</b>';
+                else if (tagStr.toLowerCase().startsWith('<img')) continue; // img doesn't need closing tag injected
+                
                 let newIdx = tags.length;
                 tags.push(closingTag);
                 appendedTags += `___HTML_${newIdx}___`;
