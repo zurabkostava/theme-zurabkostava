@@ -1153,6 +1153,23 @@ function rebuildDynamicSettings() {
         googleOptGroup.appendChild(gOpt);
         voiceSelect.appendChild(googleOptGroup);
 
+        const azureVoicesMap = {
+            'ka': [{ name: 'Eka (Female)', val: 'ka-GE-EkaNeural' }, { name: 'Giorgi (Male)', val: 'ka-GE-GiorgiNeural' }],
+            'en': [{ name: 'Aria (Female)', val: 'en-US-AriaNeural' }, { name: 'Guy (Male)', val: 'en-US-GuyNeural' }],
+            'ru': [{ name: 'Svetlana (Female)', val: 'ru-RU-SvetlanaNeural' }, { name: 'Dmitry (Male)', val: 'ru-RU-DmitryNeural' }]
+        };
+        const azureOptGroup = document.createElement('optgroup');
+        azureOptGroup.label = "☁️ Free Cloud (Azure Hack)";
+        const availableAzureVoices = azureVoicesMap[currentLang] || [{ name: 'Default (Female)', val: `${currentLang}-DefaultNeural` }];
+        
+        availableAzureVoices.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = 'azure:' + v.val;
+            opt.textContent = "☁️ Azure Neural - " + v.name;
+            azureOptGroup.appendChild(opt);
+        });
+        voiceSelect.appendChild(azureOptGroup);
+
         if (voiceSelect.options.length === 0) {
             const opt = document.createElement('option');
             opt.value = ''; opt.textContent = `⚠️ No voices found`; opt.disabled = true; opt.selected = true;
@@ -1758,6 +1775,77 @@ async function playGoogleChunk(chunk, rate, token) {
     return token === playbackToken && isPlaying;
 }
 
+function highlightChunk(chunk) {
+    document.querySelectorAll('.active').forEach(el => {
+        el.classList.remove('active');
+        el.classList.add('read');
+    });
+    chunk.sentences.forEach(s => {
+        if (s.element) {
+            s.element.classList.add('active');
+            s.element.classList.remove('read');
+            if (s === chunk.sentences[0]) {
+                const elRect = s.element.getBoundingClientRect();
+                const container = document.getElementById('book-content-container');
+                if (elRect.top < 0 || elRect.bottom > container.clientHeight) {
+                    s.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+    });
+}
+
+async function playAzureChunk(chunk, rate, token) {
+    let fullText = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang).text).join(' ');
+    if (token !== playbackToken || !isPlaying) return false;
+    
+    highlightChunk(chunk);
+    currentIdx = chunk.sentences[0].index;
+    updateMediaPosition();
+
+    const base = window.THEME_URI || '/wp-content/themes/zurabkostava';
+    const voiceSelectId = `voice-${chunk.lang}`;
+    const selectEl = document.getElementById(voiceSelectId);
+    const selectedVoiceName = localStorage.getItem(voiceSelectId) || (selectEl ? selectEl.value : '');
+    const voiceId = selectedVoiceName.split(':')[1] || 'ka-GE-EkaNeural';
+    
+    const formData = new FormData();
+    formData.append('text', fullText);
+    formData.append('voice', voiceId);
+    
+    let audioUrl = null;
+    try {
+        const res = await fetch(base + '/web-reader/azure-tts.php', { method: 'POST', body: formData });
+        if (!res.ok) throw new Error('Azure Proxy failed');
+        const blob = await res.blob();
+        audioUrl = URL.createObjectURL(blob);
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+
+    if (token !== playbackToken || !isPlaying) return false;
+
+    return new Promise((resolve) => {
+        const audio = new Audio(audioUrl);
+        audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
+        let done = false;
+        const finish = () => {
+            if (done) return;
+            done = true;
+            clearInterval(guard);
+            URL.revokeObjectURL(audioUrl);
+            resolve(token === playbackToken && isPlaying);
+        };
+        const guard = setInterval(() => {
+            if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
+        }, 100);
+        audio.onended = finish;
+        audio.onerror = finish;
+        audio.play().catch(finish);
+    });
+}
+
 function runWordHighlights(audio, spoken, token, sentenceRanges) {
     let lastEl = null;
     let lastSentIdx = currentIdx;
@@ -2030,6 +2118,9 @@ async function playMergedQueue() {
         if (selectedVoiceName && selectedVoiceName.startsWith('puter:')) {
             const puterVoiceId = selectedVoiceName.split(':')[1];
             const ok = await playPuterChunk(chunk, rate, token, puterVoiceId);
+            if (!ok) return;
+        } else if (selectedVoiceName && selectedVoiceName.startsWith('azure:')) {
+            const ok = await playAzureChunk(chunk, rate, token);
             if (!ok) return;
         } else if (selectedVoiceName && selectedVoiceName.startsWith('google:')) {
             const ok = await playGoogleChunk(chunk, rate, token);
