@@ -1702,7 +1702,7 @@ function playGoogleAudio(audioUrl, rate, spoken, token) {
     });
 }
 
-async function playGoogleChunk(chunk, rate, token) {
+async function playGoogleChunk(chunk, rate, token, useNeural = false) {
     const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
     
     for (let i = 0; i < chunk.sentences.length; i++) {
