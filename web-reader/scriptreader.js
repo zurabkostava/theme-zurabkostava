@@ -913,11 +913,12 @@ function initPiperWorker(langCode, voicePath) {
         console.error("Piper init failed:", message);
         setTtsStatus("❌ " + message);
         setTimeout(() => setTtsStatus(null), 6000);
-        const dlBtn = document.getElementById(`download-${langCode}`);
-        if (dlBtn) {
-            dlBtn.textContent = "🔁 Retry Download";
-            dlBtn.disabled = false;
-            dlBtn.style.opacity = "1";
+        const unifiedDlBtn = document.getElementById('unified-download-btn');
+        const unifiedLangSelect = document.getElementById('unified-lang-select');
+        if (unifiedDlBtn && unifiedLangSelect && unifiedLangSelect.value === langCode) {
+            unifiedDlBtn.textContent = "🔁 Retry Download";
+            unifiedDlBtn.disabled = false;
+            unifiedDlBtn.style.opacity = "1";
         }
         stopReading(); // გააჩეროს გაჭედილი attemptPlay ციკლი
     };
@@ -942,22 +943,26 @@ function initPiperWorker(langCode, voicePath) {
         const msg = e.data || {};
         if (msg.kind === 'status') {
             setTtsStatus(msg.message);
-            const dlBtn = document.getElementById(`download-${langCode}`);
-            if (dlBtn && !state.ready) dlBtn.textContent = "⏳ " + msg.message;
+            const unifiedDlBtn = document.getElementById('unified-download-btn');
+            const unifiedLangSelect = document.getElementById('unified-lang-select');
+            if (unifiedDlBtn && unifiedLangSelect && unifiedLangSelect.value === langCode && !state.ready) {
+                unifiedDlBtn.textContent = "⏳ " + msg.message;
+            }
         }
         else if (msg.kind === 'ready') {
             state.ready = true;
             state.initializing = false;
             setTtsStatus(null);
 
-            const dlBtn = document.getElementById(`download-${langCode}`);
-            if (dlBtn) {
-                dlBtn.textContent = "✅ Voice Ready";
-                dlBtn.style.opacity = "0.5";
-                dlBtn.disabled = true;
-                dlBtn.style.background = "transparent";
-                dlBtn.style.border = "1px solid rgba(255,255,255,0.1)";
-                dlBtn.style.color = "var(--text-muted)";
+            const unifiedDlBtn = document.getElementById('unified-download-btn');
+            const unifiedLangSelect = document.getElementById('unified-lang-select');
+            if (unifiedDlBtn && unifiedLangSelect && unifiedLangSelect.value === langCode) {
+                unifiedDlBtn.textContent = "✅ Voice Ready";
+                unifiedDlBtn.style.opacity = "0.5";
+                unifiedDlBtn.disabled = true;
+                unifiedDlBtn.style.background = "transparent";
+                unifiedDlBtn.style.border = "1px solid rgba(255,255,255,0.1)";
+                unifiedDlBtn.style.color = "var(--text-muted)";
             }
         }
         else if (msg.kind === 'error') {
@@ -1015,182 +1020,192 @@ function rebuildDynamicSettings() {
     if (!Array.isArray(piperVoicesList)) piperVoicesList = [];
     const piperList = piperVoicesList.filter(isValidPiperEntry);
 
-    Array.from(detectedBookLanguages).sort().forEach(langCode => {
-        try {
-            const wrapper = document.createElement('div');
-            wrapper.style.marginBottom = '16px';
-            wrapper.style.padding = '12px';
-            wrapper.style.background = 'rgba(255,255,255,0.02)';
-            wrapper.style.borderRadius = '12px';
-            wrapper.style.border = '1px solid rgba(255,255,255,0.05)';
+    const allLangs = new Set();
+    if (detectedBookLanguages) {
+        detectedBookLanguages.forEach(l => allLangs.add(normalizeLang(l)));
+    }
+    nativeList.forEach(v => {
+        if (v.lang) allLangs.add(normalizeLang(v.lang));
+    });
+    piperList.forEach(v => {
+        if (v.lang) allLangs.add(normalizeLang(v.lang));
+    });
+    
+    const sortedLangs = Array.from(allLangs).sort((a, b) => {
+        const aDet = detectedBookLanguages.has(a) || detectedBookLanguages.has(a.split('-')[0]);
+        const bDet = detectedBookLanguages.has(b) || detectedBookLanguages.has(b.split('-')[0]);
+        if (aDet && !bDet) return -1;
+        if (!aDet && bDet) return 1;
+        return a.localeCompare(b);
+    });
 
-            let flag = '🌐';
-            if(langCode === 'ka') flag = '🇬🇪';
-            if(langCode === 'en') flag = '🇺🇸';
-            if(langCode === 'ru') flag = '🇷🇺';
+    const wrapper = document.createElement('div');
+    wrapper.style.marginBottom = '16px';
+    wrapper.style.padding = '12px';
+    wrapper.style.background = 'rgba(255,255,255,0.02)';
+    wrapper.style.borderRadius = '12px';
+    wrapper.style.border = '1px solid rgba(255,255,255,0.05)';
 
-            let langName = String(langCode).toUpperCase();
-            try { langName = new Intl.DisplayNames(['en'], { type: 'language' }).of(langCode) || langName; } catch(e){}
+    wrapper.innerHTML = `
+        <div class="setting-group" style="margin-bottom: 12px;">
+            <label style="color: #38bdf8;">🌐 Select Language to Configure</label>
+            <div class="select-wrapper">
+                <select id="unified-lang-select"></select>
+            </div>
+        </div>
+        <div class="setting-group" style="margin-bottom: 12px;">
+            <label>Selected Voice</label>
+            <div class="select-wrapper">
+                <select id="unified-voice-select"></select>
+            </div>
+            <button id="unified-download-btn" class="hidden" style="width: 100%; margin-top: 10px; font-size: 0.95rem; padding: 10px; border-radius: 8px; justify-content: center; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; cursor: pointer; transition: all 0.2s;">📥 Download / Init Voice</button>
+        </div>
+        <div class="setting-group">
+            <label>Reading Speed <span id="unified-rate-val">1x</span></label>
+            <input type="range" id="unified-rate-input" min="0.5" max="4" step="0.1" value="1">
+        </div>
+    `;
+    container.appendChild(wrapper);
 
-            const voiceSelectId = `voice-${langCode}`;
-            const rateInputId = `rate-${langCode}`;
-            let savedVoice = '';
-            let savedRate = '1';
-            try {
-                savedVoice = localStorage.getItem(voiceSelectId) || '';
-                savedRate = localStorage.getItem(rateInputId) || '1';
-            } catch(e) {}
+    const langSelect = wrapper.querySelector('#unified-lang-select');
+    const voiceSelect = wrapper.querySelector('#unified-voice-select');
+    const dlBtn = wrapper.querySelector('#unified-download-btn');
+    const rateInput = wrapper.querySelector('#unified-rate-input');
+    const rateVal = wrapper.querySelector('#unified-rate-val');
 
-            wrapper.innerHTML = `
-                <div class="setting-group" style="margin-bottom: 12px;">
-                    <label style="color: #38bdf8;"><span>${flag}</span> ${langName} Voice</label>
-                    <div class="select-wrapper">
-                        <select id="${voiceSelectId}"></select>
-                    </div>
-                    <button id="download-${langCode}" class="hidden" style="width: 100%; margin-top: 10px; font-size: 0.95rem; padding: 10px; border-radius: 8px; justify-content: center; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; cursor: pointer; transition: all 0.2s;">📥 Download / Init Voice</button>
-                </div>
-                <div class="setting-group">
-                    <label>${langName.substring(0,3).toUpperCase()} Speed <span id="${rateInputId}-val">${savedRate}x</span></label>
-                    <input type="range" id="${rateInputId}" min="0.5" max="4" step="0.1" value="${savedRate}">
-                </div>
-            `;
-            container.appendChild(wrapper);
+    sortedLangs.forEach(langCode => {
+        const opt = document.createElement('option');
+        opt.value = langCode;
+        let displayLang = langCode.toUpperCase();
+        try { displayLang = new Intl.DisplayNames(['en'], { type: 'language' }).of(langCode.split('-')[0]) || displayLang; } catch(e){}
+        const isDetected = detectedBookLanguages.has(langCode) || detectedBookLanguages.has(langCode.split('-')[0]);
+        opt.textContent = isDetected ? `📍 ${displayLang} (In Book)` : displayLang;
+        langSelect.appendChild(opt);
+    });
 
-            const select = wrapper.querySelector('select');
-            const dlBtn = wrapper.querySelector(`#download-${langCode}`);
-            if (!select) return;
+    const savedUiLang = localStorage.getItem('unified-ui-lang');
+    if (savedUiLang && Array.from(langSelect.options).some(o => o.value === savedUiLang)) {
+        langSelect.value = savedUiLang;
+    } else if (langSelect.options.length > 0) {
+        langSelect.selectedIndex = 0;
+    }
 
-            const nativeVoices = nativeList.filter(v => langMatches(v.lang, langCode) || (v.name && v.name.toLowerCase().includes('multilingual')));
-            if (nativeVoices.length > 0) {
-                const optGroup = document.createElement('optgroup');
-                optGroup.label = "Native Browser Voices";
-                nativeVoices.forEach(v => {
-                    const opt = document.createElement('option');
-                    opt.value = v.name; 
-                    opt.textContent = v.name.toLowerCase().includes('multilingual') ? `🌐 ${v.name}` : v.name;
-                    optGroup.appendChild(opt);
-                });
-                select.appendChild(optGroup);
-            }
+    function updateVoiceDropdown() {
+        const currentLang = langSelect.value;
+        if (!currentLang) return;
+        localStorage.setItem('unified-ui-lang', currentLang);
 
-            const piperForLang = piperList.filter(v => langMatches(v.lang, langCode));
-            if (piperForLang.length > 0) {
-                const optGroup = document.createElement('optgroup');
-                optGroup.label = `📍 Piper Offline (Recommended for ${langName})`;
-                piperForLang.forEach(v => {
-                    const opt = document.createElement('option');
-                    opt.value = v.name; opt.textContent = v.name;
-                    optGroup.appendChild(opt);
-                });
-                select.appendChild(optGroup);
-            }
-
-            // Piper Global Library: Add all other languages
-            const piperLangs = [...new Set(piperList.map(v => v.lang))].sort();
-            piperLangs.forEach(pLang => {
-                if (langMatches(pLang, langCode)) return; // Already added above
-                
-                const voicesInLang = piperList.filter(v => v.lang === pLang);
-                if (voicesInLang.length === 0) return;
-                
-                let displayLang = pLang.toUpperCase();
-                try { displayLang = new Intl.DisplayNames(['en'], { type: 'language' }).of(pLang.split('-')[0]) || displayLang; } catch(e){}
-                
-                const optGroup = document.createElement('optgroup');
-                optGroup.label = `🌍 Piper Offline (${displayLang})`;
-                voicesInLang.forEach(v => {
-                    const opt = document.createElement('option');
-                    opt.value = v.name; opt.textContent = v.name;
-                    optGroup.appendChild(opt);
-                });
-                select.appendChild(optGroup);
-            });
-
-            const puterVoices = [
-                { name: '☁️ Puter (OpenAI Nova - Female)', val: 'nova' },
-                { name: '☁️ Puter (OpenAI Alloy - Neutral)', val: 'alloy' },
-                { name: '☁️ Puter (OpenAI Echo - Male)', val: 'echo' },
-                { name: '☁️ Puter (OpenAI Onyx - Male)', val: 'onyx' },
-                { name: '☁️ Puter (OpenAI Fable - British)', val: 'fable' },
-                { name: '☁️ Puter (OpenAI Shimmer - Female)', val: 'shimmer' }
-            ];
-            const puterOptGroup = document.createElement('optgroup');
-            puterOptGroup.label = "Premium Cloud (Puter)";
-            puterVoices.forEach(v => {
+        voiceSelect.innerHTML = '';
+        const nativeVoices = nativeList.filter(v => langMatches(v.lang, currentLang) || (v.name && v.name.toLowerCase().includes('multilingual')));
+        if (nativeVoices.length > 0) {
+            const optGroup = document.createElement('optgroup');
+            optGroup.label = "Native Browser Voices";
+            nativeVoices.forEach(v => {
                 const opt = document.createElement('option');
-                opt.value = 'puter:' + v.val;
-                opt.textContent = v.name;
-                puterOptGroup.appendChild(opt);
+                opt.value = v.name; opt.textContent = v.name.toLowerCase().includes('multilingual') ? `🌐 ${v.name}` : v.name;
+                optGroup.appendChild(opt);
             });
-            select.appendChild(puterOptGroup);
+            voiceSelect.appendChild(optGroup);
+        }
 
-            if (select.options.length === 0) {
+        const piperForLang = piperList.filter(v => langMatches(v.lang, currentLang));
+        if (piperForLang.length > 0) {
+            const optGroup = document.createElement('optgroup');
+            optGroup.label = "Piper Offline Voices";
+            piperForLang.forEach(v => {
                 const opt = document.createElement('option');
-                opt.value = '';
-                opt.textContent = `⚠️ No voices found for ${langName}`;
-                opt.disabled = true;
-                opt.selected = true;
-                select.appendChild(opt);
+                opt.value = v.name; opt.textContent = v.name;
+                optGroup.appendChild(opt);
+            });
+            voiceSelect.appendChild(optGroup);
+        }
+
+        const puterVoices = [
+            { name: '☁️ Puter (OpenAI Nova - Female)', val: 'nova' },
+            { name: '☁️ Puter (OpenAI Alloy - Neutral)', val: 'alloy' },
+            { name: '☁️ Puter (OpenAI Echo - Male)', val: 'echo' },
+            { name: '☁️ Puter (OpenAI Onyx - Male)', val: 'onyx' },
+            { name: '☁️ Puter (OpenAI Fable - British)', val: 'fable' },
+            { name: '☁️ Puter (OpenAI Shimmer - Female)', val: 'shimmer' }
+        ];
+        const puterOptGroup = document.createElement('optgroup');
+        puterOptGroup.label = "Premium Cloud (Puter)";
+        puterVoices.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = 'puter:' + v.val;
+            opt.textContent = v.name;
+            puterOptGroup.appendChild(opt);
+        });
+        voiceSelect.appendChild(puterOptGroup);
+
+        if (voiceSelect.options.length === 0) {
+            const opt = document.createElement('option');
+            opt.value = ''; opt.textContent = `⚠️ No voices found`; opt.disabled = true; opt.selected = true;
+            voiceSelect.appendChild(opt);
+        } else {
+            const savedVoice = localStorage.getItem(`voice-${currentLang}`);
+            if (savedVoice && Array.from(voiceSelect.options).some(o => o.value === savedVoice)) {
+                voiceSelect.value = savedVoice;
             } else {
-                const hasSaved = savedVoice && Array.from(select.options).some(o => o.value === savedVoice);
-                if (hasSaved) select.value = savedVoice;
-                else select.selectedIndex = 0;
+                voiceSelect.selectedIndex = 0;
             }
+        }
 
-            function updateDlBtn() {
-                const chosen = piperList.find(v => v.name === select.value);
-                if (chosen) {
-                    dlBtn.classList.remove('hidden');
-                    const state = piperWorkers[langCode];
-                    if (state && state.voicePath === chosen.path && state.ready) {
-                        dlBtn.textContent = "✅ Voice Ready";
-                        dlBtn.style.opacity = "0.5";
-                        dlBtn.disabled = true;
-                        dlBtn.style.background = "transparent";
-                        dlBtn.style.border = "1px solid rgba(255,255,255,0.1)";
-                        dlBtn.style.color = "var(--text-muted)";
-                    } else {
-                        dlBtn.textContent = "📥 Download / Init Voice";
-                        dlBtn.style.opacity = "1";
-                        dlBtn.disabled = false;
-                        dlBtn.style.background = "rgba(56, 189, 248, 0.1)";
-                        dlBtn.style.border = "1px solid rgba(56, 189, 248, 0.3)";
-                        dlBtn.style.color = "#38bdf8";
-                    }
-                } else {
-                    dlBtn.classList.add('hidden');
-                }
+        const savedRate = localStorage.getItem(`rate-${currentLang}`) || '1';
+        rateInput.value = savedRate;
+        rateVal.textContent = savedRate + 'x';
+        updateDlBtn();
+    }
+
+    function updateDlBtn() {
+        const currentLang = langSelect.value;
+        const chosen = piperList.find(v => v.name === voiceSelect.value);
+        if (chosen) {
+            dlBtn.classList.remove('hidden');
+            const state = piperWorkers[currentLang];
+            if (state && state.voicePath === chosen.path && state.ready) {
+                dlBtn.textContent = "✅ Voice Ready";
+                dlBtn.style.opacity = "0.5"; dlBtn.disabled = true;
+                dlBtn.style.background = "transparent"; dlBtn.style.border = "1px solid rgba(255,255,255,0.1)"; dlBtn.style.color = "var(--text-muted)";
+            } else {
+                dlBtn.textContent = "📥 Download / Init Voice";
+                dlBtn.style.opacity = "1"; dlBtn.disabled = false;
+                dlBtn.style.background = "rgba(56, 189, 248, 0.1)"; dlBtn.style.border = "1px solid rgba(56, 189, 248, 0.3)"; dlBtn.style.color = "#38bdf8";
             }
+        } else {
+            dlBtn.classList.add('hidden');
+        }
+    }
 
-            select.addEventListener('change', (e) => {
-                try { localStorage.setItem(voiceSelectId, e.target.value); } catch(err) {}
-                updateDlBtn();
-            });
+    langSelect.addEventListener('change', updateVoiceDropdown);
 
-            dlBtn.addEventListener('click', () => {
-                const chosen = piperList.find(v => v.name === select.value);
-                if (chosen) {
-                    initPiperWorker(langCode, chosen.path);
-                    dlBtn.textContent = "⏳ Initializing...";
-                    dlBtn.disabled = true;
-                    dlBtn.style.opacity = "0.7";
-                }
-            });
-
-            updateDlBtn(); // Call on render
-
-            const slider = wrapper.querySelector(`input[type="range"]`);
-            const rateVal = wrapper.querySelector(`#${rateInputId}-val`);
-            if (slider) {
-                slider.addEventListener('input', (e) => {
-                    if (rateVal) rateVal.textContent = e.target.value + 'x';
-                    try { localStorage.setItem(rateInputId, e.target.value); } catch(err) {}
-                });
-            }
-        } catch (err) {
-            console.error(`rebuildDynamicSettings failed for language "${langCode}"`, err);
+    voiceSelect.addEventListener('change', (e) => {
+        const currentLang = langSelect.value;
+        if(currentLang) {
+            try { localStorage.setItem(`voice-${currentLang}`, e.target.value); } catch(err) {}
+            updateDlBtn();
         }
     });
+
+    dlBtn.addEventListener('click', () => {
+        const currentLang = langSelect.value;
+        const chosen = piperList.find(v => v.name === voiceSelect.value);
+        if (currentLang && chosen) {
+            initPiperWorker(currentLang, chosen.path);
+            dlBtn.textContent = "⏳ Initializing...";
+            dlBtn.disabled = true; dlBtn.style.opacity = "0.7";
+        }
+    });
+
+    rateInput.addEventListener('input', (e) => {
+        const currentLang = langSelect.value;
+        if(currentLang) {
+            rateVal.textContent = e.target.value + 'x';
+            try { localStorage.setItem(`rate-${currentLang}`, e.target.value); } catch(err) {}
+        }
+    });
+
+    updateVoiceDropdown();
 
     // Add Global Pause Settings
     const pauseWrapper = document.createElement('div');
