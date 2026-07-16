@@ -142,10 +142,10 @@ function renderNextQuestion() {
                 const realCard = [...document.querySelectorAll('.card')].find(c =>
                     c.querySelector('.word').textContent.trim().toLowerCase() === word
                 );
-                if (realCard) updateCardProgress(realCard, +1);
+                if (realCard) updateCardProgress(realCard, window.ProgressConfig.quiz_correct || 1);
             } else {
                 btn.classList.add('incorrect');
-                if (realCard) updateCardProgress(realCard, -1);
+                if (realCard) updateCardProgress(realCard, window.ProgressConfig.quiz_wrong || -1);
                 buttons.forEach(b => {
                     if (correctChoices.includes(b.dataset.answer)) {
                         b.classList.add('correct');

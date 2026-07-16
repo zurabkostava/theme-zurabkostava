@@ -227,7 +227,7 @@ function showNextMWQuestion() {
             incrementStat('TOTAL_CORRECT', 1);
             mwCorrectAnswers++;
             
-            updateRealCardProgress(correctWord, delta);
+            updateRealCardProgress(correctWord, window.ProgressConfig.mix_correct || 1);
             applyCurrentSort?.();
 
             const hintEl = document.getElementById('mwEnterHint');
@@ -260,7 +260,7 @@ function showNextMWQuestion() {
         } else {
             incrementStat('TOTAL_TESTS', 1);
             incrementStat('TOTAL_WRONG', 1);
-            updateRealCardProgress(correctWord, -delta);
+            updateRealCardProgress(correctWord, window.ProgressConfig.mix_wrong || -1);
             applyCurrentSort?.();
             
             // Disable all buttons so user can't keep clicking while waiting

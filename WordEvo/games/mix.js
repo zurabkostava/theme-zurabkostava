@@ -137,7 +137,7 @@ function renderMixUI() {
                     selectedRight.button.disabled = true;
                     matchedPairs++;
 
-                    updateCardProgressFromText(selectedLeft.text, selectedRight.text, +1);
+                    updateCardProgressFromText(selectedLeft.text, selectedRight.text, window.ProgressConfig.mix_correct || 1);
                     applyCurrentSort?.();
                     incrementStat('TOTAL_CORRECT', 1);
 
@@ -154,7 +154,7 @@ function renderMixUI() {
                     selectedRight.button.classList.remove('selected');
                     selectedLeft.button.classList.add('incorrect');
                     selectedRight.button.classList.add('incorrect');
-                    updateCardProgressFromText(selectedLeft.text, selectedRight.text, -1);
+                    updateCardProgressFromText(selectedLeft.text, selectedRight.text, window.ProgressConfig.mix_wrong || -1);
                     applyCurrentSort?.();
                     incrementStat('TOTAL_WRONG', 1);
 

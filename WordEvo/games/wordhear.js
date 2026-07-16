@@ -148,10 +148,10 @@ async function showNextWordhear() {
             if (isCorrect) {
                 wordhearCorrectAnswers++;
                 incrementStat('TOTAL_CORRECT', 1);
-                if (realCard) updateCardProgress(realCard, +1);
+                if (realCard) updateCardProgress(realCard, window.ProgressConfig.quiz_correct || 1);
             } else {
                 incrementStat('TOTAL_WRONG', 1);
-                if (realCard) updateCardProgress(realCard, -1);
+                if (realCard) updateCardProgress(realCard, window.ProgressConfig.quiz_wrong || -1);
             }
 
             applyCurrentSort?.();

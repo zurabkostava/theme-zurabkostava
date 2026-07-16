@@ -24,6 +24,22 @@ let touchStartX = 0;
 let touchEndX = 0;
 let isPlayerMinimized = false; // <-- NEW: ჩაკეცვის მდგომარეობა
 
+window.ProgressConfig = {
+    view_card: 0.1,
+    quiz_correct: 1.0,
+    quiz_wrong: -1.0,
+    type_correct: 1.0,
+    type_wrong: -1.0,
+    type_hint: -0.5,
+    speak_excellent: 0.5,
+    speak_good: 0.2,
+    puzzle_correct: 1.0,
+    puzzle_wrong: -1.0,
+    mix_correct: 1.0,
+    mix_wrong: -1.0
+};
+
+
 // --- BACKGROUND AUDIO TRICK FOR MOBILE ---
 function createSilentAudio(time) {
     const sampleRate = 8000;
@@ -240,6 +256,53 @@ async function syncStatsFromSupabase() {
     }
 }
 
+async function syncSettingsFromSupabase() {
+    if (!currentUser || currentUser.id === 'offline-user') return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('user_settings')
+            .select('progress_config')
+            .eq('user_id', currentUser.id)
+            .single();
+
+        if (error && error.code !== 'PGRST116') {
+            console.error('[Wordevo] Error fetching settings:', error);
+            return;
+        }
+
+        if (data && data.progress_config) {
+            // Merge loaded settings with defaults
+            window.ProgressConfig = { ...window.ProgressConfig, ...data.progress_config };
+            localStorage.setItem('PROGRESS_CONFIG', JSON.stringify(window.ProgressConfig));
+        } else {
+            // Check local storage fallback
+            try {
+                const localConfig = JSON.parse(localStorage.getItem('PROGRESS_CONFIG'));
+                if (localConfig) {
+                    window.ProgressConfig = { ...window.ProgressConfig, ...localConfig };
+                }
+            } catch(e) {}
+            // Insert default config for new user
+            await supabaseClient.from('user_settings').insert({
+                user_id: currentUser.id,
+                progress_config: window.ProgressConfig
+            });
+        }
+    } catch (e) {
+        console.error('[Wordevo] Exception in syncSettings:', e);
+    }
+}
+
+async function pushSettingsToSupabase() {
+    if (!currentUser || currentUser.id === 'offline-user') return;
+    try {
+        await supabaseClient.from('user_settings').upsert({
+            user_id: currentUser.id,
+            progress_config: window.ProgressConfig
+        }, { onConflict: 'user_id' });
+    } catch (e) {}
+}
+
 async function pushStatsToSupabase() {
     if (!currentUser || currentUser.id === 'offline-user') return;
     const tests = parseInt(localStorage.getItem('TOTAL_TESTS') || '0');
@@ -395,13 +458,13 @@ async function speakPreviewCard(card) {
     };
 
     await safeSpeak(word, selectedVoice, null, null, { type: 'word' });
-    if (!stopRequested) updateCardProgress(card, 0.1);
+    if (!stopRequested) updateCardProgress(card, window.ProgressConfig.view_card);
 
     await safeSpeak(mainPart, selectedGeorgianVoice, null, extraPart, { type: 'translation' });
     if (!stopRequested) {
-        updateCardProgress(card, 0.1); // For mainPart
+        updateCardProgress(card, window.ProgressConfig.view_card); // For mainPart
         if (extraPart) {
-            updateCardProgress(card, 0.1); // For extraPart
+            updateCardProgress(card, window.ProgressConfig.view_card); // For extraPart
         }
     }
 
@@ -409,7 +472,7 @@ async function speakPreviewCard(card) {
     const skipMnemonic = localStorage.getItem('skip_mnemonic') === 'true';
     if (!skipMnemonic && mnemonic.trim() !== '') {
         await safeSpeak(mnemonic, selectedGeorgianVoice, null, null, { type: 'mnemonic' });
-        if (!stopRequested) updateCardProgress(card, 0.1);
+        if (!stopRequested) updateCardProgress(card, window.ProgressConfig.view_card);
     }
 
     const limitStr = localStorage.getItem('read_examples_limit') || 'all';
@@ -441,7 +504,7 @@ async function speakPreviewCard(card) {
         }
         
         if (!stopRequested && (ex.en || ex.ge)) {
-            updateCardProgress(card, 0.1);
+            updateCardProgress(card, window.ProgressConfig.view_card);
         }
         
         // --- NEW: პაუზა მაგალითებს შორის ---
@@ -1020,7 +1083,7 @@ function showCardPreview(word, mainTranslations, extraTranslations, tags, englis
         c.querySelector('.word').textContent.trim().toLowerCase() === word.toLowerCase()
     );
     if (card) {
-        updateCardProgress(card, 0.1);
+        updateCardProgress(card, window.ProgressConfig.view_card);
         applyCurrentSort?.();
         const modal = document.getElementById('cardPreviewModal');
         if (modal) {
@@ -1775,6 +1838,7 @@ async function deleteCard(card) {
         } catch(e) { console.error('[Wordevo] CRASH at UI setup:', e); }
         try {
             await syncStatsFromSupabase(); // Sync stats right away
+            await syncSettingsFromSupabase(); // Sync settings right away
             const stored = localStorage.getItem(TEXTAREA_STORAGE_KEY);
             const btn = document.getElementById("downloadTemplateBtn");
             const quizTab = document.getElementById('quizTab');
@@ -2239,6 +2303,76 @@ async function deleteCard(card) {
     closeSettingsBtn.onclick = () => {
         settingsModal.style.display = 'none';
     };
+
+    // --- NEW: Progress Settings Modal ---
+    const progressSettingsModal = document.getElementById('progressSettingsModal');
+    const openProgressSettingsBtn = document.getElementById('openProgressSettingsBtn');
+    const closeProgressSettingsBtn = document.getElementById('closeProgressSettingsBtn');
+    const saveProgressSettingsBtn = document.getElementById('saveProgressSettingsBtn');
+    const resetProgressSettingsBtn = document.getElementById('resetProgressSettingsBtn');
+
+    if (openProgressSettingsBtn) {
+        openProgressSettingsBtn.onclick = () => {
+            const cfg = window.ProgressConfig;
+            document.getElementById('prog_view_card').value = cfg.view_card;
+            document.getElementById('prog_quiz_correct').value = cfg.quiz_correct;
+            document.getElementById('prog_quiz_wrong').value = cfg.quiz_wrong;
+            document.getElementById('prog_type_correct').value = cfg.type_correct;
+            document.getElementById('prog_type_wrong').value = cfg.type_wrong;
+            document.getElementById('prog_type_hint').value = cfg.type_hint;
+            document.getElementById('prog_speak_excellent').value = cfg.speak_excellent;
+            document.getElementById('prog_speak_good').value = cfg.speak_good;
+            document.getElementById('prog_puzzle_correct').value = cfg.puzzle_correct;
+            document.getElementById('prog_puzzle_wrong').value = cfg.puzzle_wrong;
+            document.getElementById('prog_mix_correct').value = cfg.mix_correct;
+            document.getElementById('prog_mix_wrong').value = cfg.mix_wrong;
+
+            progressSettingsModal.style.display = 'flex';
+        };
+    }
+    if (closeProgressSettingsBtn) {
+        closeProgressSettingsBtn.onclick = () => {
+            progressSettingsModal.style.display = 'none';
+        };
+    }
+    if (resetProgressSettingsBtn) {
+        resetProgressSettingsBtn.onclick = () => {
+            document.getElementById('prog_view_card').value = 0.1;
+            document.getElementById('prog_quiz_correct').value = 1.0;
+            document.getElementById('prog_quiz_wrong').value = -1.0;
+            document.getElementById('prog_type_correct').value = 1.0;
+            document.getElementById('prog_type_wrong').value = -1.0;
+            document.getElementById('prog_type_hint').value = -0.5;
+            document.getElementById('prog_speak_excellent').value = 0.5;
+            document.getElementById('prog_speak_good').value = 0.2;
+            document.getElementById('prog_puzzle_correct').value = 1.0;
+            document.getElementById('prog_puzzle_wrong').value = -1.0;
+            document.getElementById('prog_mix_correct').value = 1.0;
+            document.getElementById('prog_mix_wrong').value = -1.0;
+        };
+    }
+    if (saveProgressSettingsBtn) {
+        saveProgressSettingsBtn.onclick = async () => {
+            window.ProgressConfig = {
+                view_card: parseFloat(document.getElementById('prog_view_card').value) || 0.1,
+                quiz_correct: parseFloat(document.getElementById('prog_quiz_correct').value) || 1.0,
+                quiz_wrong: parseFloat(document.getElementById('prog_quiz_wrong').value) || -1.0,
+                type_correct: parseFloat(document.getElementById('prog_type_correct').value) || 1.0,
+                type_wrong: parseFloat(document.getElementById('prog_type_wrong').value) || -1.0,
+                type_hint: parseFloat(document.getElementById('prog_type_hint').value) || -0.5,
+                speak_excellent: parseFloat(document.getElementById('prog_speak_excellent').value) || 0.5,
+                speak_good: parseFloat(document.getElementById('prog_speak_good').value) || 0.2,
+                puzzle_correct: parseFloat(document.getElementById('prog_puzzle_correct').value) || 1.0,
+                puzzle_wrong: parseFloat(document.getElementById('prog_puzzle_wrong').value) || -1.0,
+                mix_correct: parseFloat(document.getElementById('prog_mix_correct').value) || 1.0,
+                mix_wrong: parseFloat(document.getElementById('prog_mix_wrong').value) || -1.0
+            };
+            localStorage.setItem('PROGRESS_CONFIG', JSON.stringify(window.ProgressConfig));
+            await pushSettingsToSupabase();
+            progressSettingsModal.style.display = 'none';
+        };
+    }
+    // --- END NEW ---
     saveVoiceBtn.onclick = () => {
         const voiceSelect = document.getElementById('voiceSelect');
         const georgianVoiceSelect = document.getElementById('georgianVoiceSelect');

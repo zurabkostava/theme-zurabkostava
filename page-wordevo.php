@@ -530,6 +530,11 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <h3>
                     Import / Export Files
                 </h3>
+                <div class="button-row" style="margin-bottom: 15px;">
+                    <button class="settings-btn" id="openProgressSettingsBtn" style="background-color: #6366f1; color: white; width: 100%;">
+                        ⚙️ Progress Settings
+                    </button>
+                </div>
                 <div class="button-row">
                     <button class="settings-btn blue" id="exportExcelBtn">
                         📤 Export to Excel
@@ -550,6 +555,82 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <button id="saveVoiceBtn" style="background-color: #28a745; color: white;">
                     Save
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="progressSettingsModal" style="display: none; z-index: 100000; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7);">
+        <div class="modal" style="max-width: 500px; width: 90%; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header" style="flex-shrink: 0;">
+                <h2>⚙️ Progress Settings</h2>
+                <button class="close-button" id="closeProgressSettingsBtn">×</button>
+            </div>
+            <div class="modal-body" style="flex-grow: 1; overflow-y: auto; padding-right: 10px;">
+                <p style="font-size: 13px; color: #888; margin-bottom: 15px;">Configure how much progress (%) is added or subtracted for each action.</p>
+                
+                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">Flashcards</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>View / Listen</label>
+                    <input type="number" id="prog_view_card" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+
+                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">Quiz & Multi-Choice</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Correct Answer</label>
+                    <input type="number" id="prog_quiz_correct" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Wrong Answer</label>
+                    <input type="number" id="prog_quiz_wrong" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+
+                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">Typing Game</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Correct Answer</label>
+                    <input type="number" id="prog_type_correct" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Wrong Answer</label>
+                    <input type="number" id="prog_type_wrong" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Use Hint</label>
+                    <input type="number" id="prog_type_hint" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+
+                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">Speaking Game</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Excellent Match</label>
+                    <input type="number" id="prog_speak_excellent" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Good / Partial Match</label>
+                    <input type="number" id="prog_speak_good" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+
+                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">Puzzle & Sentence</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Correct Answer</label>
+                    <input type="number" id="prog_puzzle_correct" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Wrong Answer</label>
+                    <input type="number" id="prog_puzzle_wrong" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                
+                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">Mix & MakeWord</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Correct Answer</label>
+                    <input type="number" id="prog_mix_correct" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Wrong Answer</label>
+                    <input type="number" id="prog_mix_wrong" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+            </div>
+            <div class="modal-footer modal-actions" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                <button id="resetProgressSettingsBtn" style="background-color: transparent; color: #aaa; border: 1px solid #444; padding: 8px 12px; border-radius: 6px;">Reset to Defaults</button>
+                <button id="saveProgressSettingsBtn" style="background-color: #28a745; color: white;">Save Config</button>
             </div>
         </div>
     </div>

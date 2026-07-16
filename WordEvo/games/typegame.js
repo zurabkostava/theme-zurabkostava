@@ -83,11 +83,11 @@ function showNextTyping() {
 
         if (isCorrect) {
             feedback.innerHTML = `<span style="color:green;">Correct!</span>`;
-            updateCardByText(word, 3);
+            updateCardByText(word, window.ProgressConfig.type_correct || 1);
             tiCorrect++;
         } else {
             feedback.innerHTML = `<span style="color:red;">❌ Incorrect! Correct answer: <strong>${correctAnswers[0]}</strong></span>`;
-            updateCardByText(word, -3);
+            updateCardByText(word, window.ProgressConfig.type_wrong || -1);
         }
         applyCurrentSort?.();
 
@@ -126,7 +126,7 @@ function showNextTyping() {
         if (i < target.length) {
             input.value = target.substring(0, i + 1);
             tiHintIndex = i + 1;
-            updateCardByText(word, -tiProgressPenalty);
+            updateCardByText(word, window.ProgressConfig.type_hint || -0.5);
             applyCurrentSort?.();
         }
     };

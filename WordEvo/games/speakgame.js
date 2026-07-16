@@ -186,13 +186,13 @@ function handleSpeakResult(transcript) {
         fbColor = '#2ecc71'; // Green
         speakTotalScore += 0.5;
         incrementStat('TOTAL_CORRECT', 1);
-        if (card) updateCardProgress(card, 0.5);
+        if (card) updateCardProgress(card, window.ProgressConfig.speak_excellent || 0.5);
     } else if (similarity >= 0.70) {
         fbText = 'Good! 👍 +0.2%';
         fbColor = '#f1c40f'; // Yellow
         speakTotalScore += 0.2;
         incrementStat('TOTAL_CORRECT', 1);
-        if (card) updateCardProgress(card, 0.2);
+        if (card) updateCardProgress(card, window.ProgressConfig.speak_good || 0.2);
     } else {
         fbText = 'Try again! ❌ +0%';
         fbColor = '#e74c3c'; // Red

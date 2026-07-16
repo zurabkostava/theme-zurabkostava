@@ -151,7 +151,7 @@ function showNextPuzzle() {
 
         if (isCorrect) {
             feedback.innerHTML = `<span style="color: green;">Correct!</span>`;
-            updateCardByText(word, 3);
+            updateCardByText(word, window.ProgressConfig.puzzle_correct || 1);
             puzzleCorrect++;
             puzzleAnswer.querySelectorAll('button').forEach(b => {
                 b.style.backgroundColor = '#4caf50';
@@ -160,7 +160,7 @@ function showNextPuzzle() {
             });
         } else {
             feedback.innerHTML = `<span style="color: red;">Incorrect. The correct sentence is:<br><strong>${originalSentence}</strong></span>`;
-            updateCardByText(word, -3);
+            updateCardByText(word, window.ProgressConfig.puzzle_wrong || -1);
             puzzleAnswer.querySelectorAll('button').forEach(b => b.disabled = true);
         }
 
