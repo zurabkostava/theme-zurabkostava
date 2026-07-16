@@ -132,7 +132,7 @@ function showNextPuzzle() {
             checkSubmitEnabled();
         };
 
-        updateCardByText(word, -0.4);
+        updateCardByText(word, window.ProgressConfig.puzzle_hint || -0.5);
         applyCurrentSort?.();
         checkSubmitEnabled();
     };
@@ -193,7 +193,7 @@ function showNextPuzzle() {
     hintBtn.onclick = () => {
         const alt = oppositeSentences[0] || "(No translation found)";
         document.getElementById('puzzleHint').textContent = `Translation: ${alt}`;
-        updateCardByText(word, -0.4);
+        updateCardByText(word, window.ProgressConfig.puzzle_translation || -0.2);
         hintBtn.disabled = true;
         applyCurrentSort?.();
     };

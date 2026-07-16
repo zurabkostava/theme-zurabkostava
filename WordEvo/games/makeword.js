@@ -227,7 +227,10 @@ function showNextMWQuestion() {
             incrementStat('TOTAL_CORRECT', 1);
             mwCorrectAnswers++;
             
-            updateRealCardProgress(correctWord, window.ProgressConfig.mix_correct || 1);
+            const corrScore = mwFullBlankMode 
+                ? (window.ProgressConfig.fill_correct_blank || 2.0) 
+                : (window.ProgressConfig.fill_correct || 1.0);
+            updateRealCardProgress(correctWord, corrScore);
             applyCurrentSort?.();
 
             const hintEl = document.getElementById('mwEnterHint');
@@ -260,7 +263,10 @@ function showNextMWQuestion() {
         } else {
             incrementStat('TOTAL_TESTS', 1);
             incrementStat('TOTAL_WRONG', 1);
-            updateRealCardProgress(correctWord, window.ProgressConfig.mix_wrong || -1);
+            const wrongScore = mwFullBlankMode 
+                ? (window.ProgressConfig.fill_wrong_blank || -2.0) 
+                : (window.ProgressConfig.fill_wrong || -1.0);
+            updateRealCardProgress(correctWord, wrongScore);
             applyCurrentSort?.();
             
             // Disable all buttons so user can't keep clicking while waiting

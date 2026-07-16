@@ -91,11 +91,11 @@ function showNextSentence() {
 
             if (isCorrect) {
                 feedback.innerHTML = `<span style="color:green;">Correct!</span>`;
-                updateCardByText(correctWord, window.ProgressConfig.puzzle_correct || 1);
+                updateCardByText(correctWord, window.ProgressConfig.sentence_correct || 1);
                 senCorrect++;
             } else {
                 feedback.innerHTML = `<span style="color:red;">❌ Incorrect! Correct word: <strong>${correctWord}</strong></span>`;
-                updateCardByText(correctWord, window.ProgressConfig.puzzle_wrong || -1);
+                updateCardByText(correctWord, window.ProgressConfig.sentence_wrong || -1);
             }
 
             let i = 0;

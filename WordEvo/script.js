@@ -25,18 +25,41 @@ let touchEndX = 0;
 let isPlayerMinimized = false; // <-- NEW: ჩაკეცვის მდგომარეობა
 
 window.ProgressConfig = {
-    view_card: 0.1,
+    // Flashcards
+    open_card: 0.1,
+    listen_word: 0.1,
+    listen_translation: 0.1,
+    listen_mnemonic: 0.1,
+    listen_example: 0.1,
+    // Quiz
     quiz_correct: 1.0,
     quiz_wrong: -1.0,
+    // Hear
+    hear_correct: 1.0,
+    hear_wrong: -1.0,
+    // Mix
+    mix_correct: 1.0,
+    mix_wrong: -1.0,
+    // Fill
+    fill_correct: 1.0,
+    fill_wrong: -1.0,
+    fill_correct_blank: 2.0,
+    fill_wrong_blank: -2.0,
+    // Type
     type_correct: 1.0,
     type_wrong: -1.0,
     type_hint: -0.5,
-    speak_excellent: 0.5,
-    speak_good: 0.2,
+    // Sentence
+    sentence_correct: 1.0,
+    sentence_wrong: -1.0,
+    // Puzzle
     puzzle_correct: 1.0,
     puzzle_wrong: -1.0,
-    mix_correct: 1.0,
-    mix_wrong: -1.0
+    puzzle_hint: -0.5,         // auto-fill
+    puzzle_translation: -0.2, // show translation
+    // Speak
+    speak_excellent: 0.5,
+    speak_good: 0.2
 };
 
 
@@ -458,13 +481,13 @@ async function speakPreviewCard(card) {
     };
 
     await safeSpeak(word, selectedVoice, null, null, { type: 'word' });
-    if (!stopRequested) updateCardProgress(card, window.ProgressConfig.view_card);
+    if (!stopRequested) updateCardProgress(card, window.ProgressConfig.listen_word || 0.1);
 
     await safeSpeak(mainPart, selectedGeorgianVoice, null, extraPart, { type: 'translation' });
     if (!stopRequested) {
-        updateCardProgress(card, window.ProgressConfig.view_card); // For mainPart
+        updateCardProgress(card, window.ProgressConfig.listen_translation || 0.1); // For mainPart
         if (extraPart) {
-            updateCardProgress(card, window.ProgressConfig.view_card); // For extraPart
+            updateCardProgress(card, window.ProgressConfig.listen_translation || 0.1); // For extraPart
         }
     }
 
@@ -472,7 +495,7 @@ async function speakPreviewCard(card) {
     const skipMnemonic = localStorage.getItem('skip_mnemonic') === 'true';
     if (!skipMnemonic && mnemonic.trim() !== '') {
         await safeSpeak(mnemonic, selectedGeorgianVoice, null, null, { type: 'mnemonic' });
-        if (!stopRequested) updateCardProgress(card, window.ProgressConfig.view_card);
+        if (!stopRequested) updateCardProgress(card, window.ProgressConfig.listen_mnemonic || 0.1);
     }
 
     const limitStr = localStorage.getItem('read_examples_limit') || 'all';
@@ -504,7 +527,7 @@ async function speakPreviewCard(card) {
         }
         
         if (!stopRequested && (ex.en || ex.ge)) {
-            updateCardProgress(card, window.ProgressConfig.view_card);
+            updateCardProgress(card, window.ProgressConfig.listen_example || 0.1);
         }
         
         // --- NEW: პაუზა მაგალითებს შორის ---
@@ -1083,7 +1106,7 @@ function showCardPreview(word, mainTranslations, extraTranslations, tags, englis
         c.querySelector('.word').textContent.trim().toLowerCase() === word.toLowerCase()
     );
     if (card) {
-        updateCardProgress(card, window.ProgressConfig.view_card);
+        updateCardProgress(card, window.ProgressConfig.open_card || 0.1);
         applyCurrentSort?.();
         const modal = document.getElementById('cardPreviewModal');
         if (modal) {
@@ -2314,18 +2337,40 @@ async function deleteCard(card) {
     if (openProgressSettingsBtn) {
         openProgressSettingsBtn.onclick = () => {
             const cfg = window.ProgressConfig;
-            document.getElementById('prog_view_card').value = cfg.view_card;
+            document.getElementById('prog_open_card').value = cfg.open_card;
+            document.getElementById('prog_listen_word').value = cfg.listen_word;
+            document.getElementById('prog_listen_translation').value = cfg.listen_translation;
+            document.getElementById('prog_listen_mnemonic').value = cfg.listen_mnemonic;
+            document.getElementById('prog_listen_example').value = cfg.listen_example;
+            
             document.getElementById('prog_quiz_correct').value = cfg.quiz_correct;
             document.getElementById('prog_quiz_wrong').value = cfg.quiz_wrong;
+            
+            document.getElementById('prog_hear_correct').value = cfg.hear_correct;
+            document.getElementById('prog_hear_wrong').value = cfg.hear_wrong;
+            
+            document.getElementById('prog_mix_correct').value = cfg.mix_correct;
+            document.getElementById('prog_mix_wrong').value = cfg.mix_wrong;
+            
+            document.getElementById('prog_fill_correct').value = cfg.fill_correct;
+            document.getElementById('prog_fill_wrong').value = cfg.fill_wrong;
+            document.getElementById('prog_fill_correct_blank').value = cfg.fill_correct_blank;
+            document.getElementById('prog_fill_wrong_blank').value = cfg.fill_wrong_blank;
+            
             document.getElementById('prog_type_correct').value = cfg.type_correct;
             document.getElementById('prog_type_wrong').value = cfg.type_wrong;
             document.getElementById('prog_type_hint').value = cfg.type_hint;
-            document.getElementById('prog_speak_excellent').value = cfg.speak_excellent;
-            document.getElementById('prog_speak_good').value = cfg.speak_good;
+            
+            document.getElementById('prog_sentence_correct').value = cfg.sentence_correct;
+            document.getElementById('prog_sentence_wrong').value = cfg.sentence_wrong;
+            
             document.getElementById('prog_puzzle_correct').value = cfg.puzzle_correct;
             document.getElementById('prog_puzzle_wrong').value = cfg.puzzle_wrong;
-            document.getElementById('prog_mix_correct').value = cfg.mix_correct;
-            document.getElementById('prog_mix_wrong').value = cfg.mix_wrong;
+            document.getElementById('prog_puzzle_hint').value = cfg.puzzle_hint;
+            document.getElementById('prog_puzzle_translation').value = cfg.puzzle_translation;
+            
+            document.getElementById('prog_speak_excellent').value = cfg.speak_excellent;
+            document.getElementById('prog_speak_good').value = cfg.speak_good;
 
             progressSettingsModal.style.display = 'flex';
         };
@@ -2337,35 +2382,79 @@ async function deleteCard(card) {
     }
     if (resetProgressSettingsBtn) {
         resetProgressSettingsBtn.onclick = () => {
-            document.getElementById('prog_view_card').value = 0.1;
+            document.getElementById('prog_open_card').value = 0.1;
+            document.getElementById('prog_listen_word').value = 0.1;
+            document.getElementById('prog_listen_translation').value = 0.1;
+            document.getElementById('prog_listen_mnemonic').value = 0.1;
+            document.getElementById('prog_listen_example').value = 0.1;
+            
             document.getElementById('prog_quiz_correct').value = 1.0;
             document.getElementById('prog_quiz_wrong').value = -1.0;
+            
+            document.getElementById('prog_hear_correct').value = 1.0;
+            document.getElementById('prog_hear_wrong').value = -1.0;
+            
+            document.getElementById('prog_mix_correct').value = 1.0;
+            document.getElementById('prog_mix_wrong').value = -1.0;
+            
+            document.getElementById('prog_fill_correct').value = 1.0;
+            document.getElementById('prog_fill_wrong').value = -1.0;
+            document.getElementById('prog_fill_correct_blank').value = 2.0;
+            document.getElementById('prog_fill_wrong_blank').value = -2.0;
+            
             document.getElementById('prog_type_correct').value = 1.0;
             document.getElementById('prog_type_wrong').value = -1.0;
             document.getElementById('prog_type_hint').value = -0.5;
-            document.getElementById('prog_speak_excellent').value = 0.5;
-            document.getElementById('prog_speak_good').value = 0.2;
+            
+            document.getElementById('prog_sentence_correct').value = 1.0;
+            document.getElementById('prog_sentence_wrong').value = -1.0;
+            
             document.getElementById('prog_puzzle_correct').value = 1.0;
             document.getElementById('prog_puzzle_wrong').value = -1.0;
-            document.getElementById('prog_mix_correct').value = 1.0;
-            document.getElementById('prog_mix_wrong').value = -1.0;
+            document.getElementById('prog_puzzle_hint').value = -0.5;
+            document.getElementById('prog_puzzle_translation').value = -0.2;
+            
+            document.getElementById('prog_speak_excellent').value = 0.5;
+            document.getElementById('prog_speak_good').value = 0.2;
         };
     }
     if (saveProgressSettingsBtn) {
         saveProgressSettingsBtn.onclick = async () => {
             window.ProgressConfig = {
-                view_card: parseFloat(document.getElementById('prog_view_card').value) || 0.1,
+                open_card: parseFloat(document.getElementById('prog_open_card').value) || 0.1,
+                listen_word: parseFloat(document.getElementById('prog_listen_word').value) || 0.1,
+                listen_translation: parseFloat(document.getElementById('prog_listen_translation').value) || 0.1,
+                listen_mnemonic: parseFloat(document.getElementById('prog_listen_mnemonic').value) || 0.1,
+                listen_example: parseFloat(document.getElementById('prog_listen_example').value) || 0.1,
+                
                 quiz_correct: parseFloat(document.getElementById('prog_quiz_correct').value) || 1.0,
                 quiz_wrong: parseFloat(document.getElementById('prog_quiz_wrong').value) || -1.0,
+                
+                hear_correct: parseFloat(document.getElementById('prog_hear_correct').value) || 1.0,
+                hear_wrong: parseFloat(document.getElementById('prog_hear_wrong').value) || -1.0,
+                
+                mix_correct: parseFloat(document.getElementById('prog_mix_correct').value) || 1.0,
+                mix_wrong: parseFloat(document.getElementById('prog_mix_wrong').value) || -1.0,
+                
+                fill_correct: parseFloat(document.getElementById('prog_fill_correct').value) || 1.0,
+                fill_wrong: parseFloat(document.getElementById('prog_fill_wrong').value) || -1.0,
+                fill_correct_blank: parseFloat(document.getElementById('prog_fill_correct_blank').value) || 2.0,
+                fill_wrong_blank: parseFloat(document.getElementById('prog_fill_wrong_blank').value) || -2.0,
+                
                 type_correct: parseFloat(document.getElementById('prog_type_correct').value) || 1.0,
                 type_wrong: parseFloat(document.getElementById('prog_type_wrong').value) || -1.0,
                 type_hint: parseFloat(document.getElementById('prog_type_hint').value) || -0.5,
-                speak_excellent: parseFloat(document.getElementById('prog_speak_excellent').value) || 0.5,
-                speak_good: parseFloat(document.getElementById('prog_speak_good').value) || 0.2,
+                
+                sentence_correct: parseFloat(document.getElementById('prog_sentence_correct').value) || 1.0,
+                sentence_wrong: parseFloat(document.getElementById('prog_sentence_wrong').value) || -1.0,
+                
                 puzzle_correct: parseFloat(document.getElementById('prog_puzzle_correct').value) || 1.0,
                 puzzle_wrong: parseFloat(document.getElementById('prog_puzzle_wrong').value) || -1.0,
-                mix_correct: parseFloat(document.getElementById('prog_mix_correct').value) || 1.0,
-                mix_wrong: parseFloat(document.getElementById('prog_mix_wrong').value) || -1.0
+                puzzle_hint: parseFloat(document.getElementById('prog_puzzle_hint').value) || -0.5,
+                puzzle_translation: parseFloat(document.getElementById('prog_puzzle_translation').value) || -0.2,
+                
+                speak_excellent: parseFloat(document.getElementById('prog_speak_excellent').value) || 0.5,
+                speak_good: parseFloat(document.getElementById('prog_speak_good').value) || 0.2
             };
             localStorage.setItem('PROGRESS_CONFIG', JSON.stringify(window.ProgressConfig));
             await pushSettingsToSupabase();

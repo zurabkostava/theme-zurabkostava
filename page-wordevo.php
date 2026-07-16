@@ -569,13 +569,29 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <p style="font-size: 13px; color: #888; margin-bottom: 15px;">Configure how much progress (%) is added or subtracted for each action.</p>
                 
                 <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">Flashcards</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
+                    <label>Open Card</label>
+                    <input type="number" id="prog_open_card" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
+                    <label>Listen Word</label>
+                    <input type="number" id="prog_listen_word" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
+                    <label>Listen Translation</label>
+                    <input type="number" id="prog_listen_translation" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
+                    <label>Listen Mnemonic</label>
+                    <input type="number" id="prog_listen_mnemonic" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
-                    <label>View / Listen</label>
-                    <input type="number" id="prog_view_card" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                    <label>Listen Example</label>
+                    <input type="number" id="prog_listen_example" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
                 </div>
 
-                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">Quiz & Multi-Choice</h3>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">QUIZ</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
                     <label>Correct Answer</label>
                     <input type="number" id="prog_quiz_correct" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
                 </div>
@@ -584,12 +600,50 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                     <input type="number" id="prog_quiz_wrong" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
                 </div>
 
-                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">Typing Game</h3>
+                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">HEAR</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
+                    <label>Correct Answer</label>
+                    <input type="number" id="prog_hear_correct" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Wrong Answer</label>
+                    <input type="number" id="prog_hear_wrong" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+
+                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">MIX</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
+                    <label>Correct Pair</label>
+                    <input type="number" id="prog_mix_correct" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Wrong Pair</label>
+                    <input type="number" id="prog_mix_wrong" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+
+                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">FILL</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
+                    <label>Correct Answer</label>
+                    <input type="number" id="prog_fill_correct" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
+                    <label>Wrong Answer</label>
+                    <input type="number" id="prog_fill_wrong" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
+                    <label>Correct (All Blank Mode)</label>
+                    <input type="number" id="prog_fill_correct_blank" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Wrong (All Blank Mode)</label>
+                    <input type="number" id="prog_fill_wrong_blank" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+
+                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">TYPE</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
                     <label>Correct Answer</label>
                     <input type="number" id="prog_type_correct" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
                     <label>Wrong Answer</label>
                     <input type="number" id="prog_type_wrong" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
                 </div>
@@ -598,34 +652,42 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                     <input type="number" id="prog_type_hint" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
                 </div>
 
-                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">Speaking Game</h3>
+                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">SENTENCE</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
+                    <label>Correct Sentence</label>
+                    <input type="number" id="prog_sentence_correct" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Wrong Sentence</label>
+                    <input type="number" id="prog_sentence_wrong" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+
+                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">PUZZLE</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
+                    <label>Correct Puzzle</label>
+                    <input type="number" id="prog_puzzle_correct" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
+                    <label>Wrong Puzzle</label>
+                    <input type="number" id="prog_puzzle_wrong" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
+                    <label>Use Auto-fill</label>
+                    <input type="number" id="prog_puzzle_hint" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                    <label>Show Translation</label>
+                    <input type="number" id="prog_puzzle_translation" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
+                </div>
+                
+                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">SPEAK</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
                     <label>Excellent Match</label>
                     <input type="number" id="prog_speak_excellent" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
                     <label>Good / Partial Match</label>
                     <input type="number" id="prog_speak_good" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
-                </div>
-
-                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">Puzzle & Sentence</h3>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
-                    <label>Correct Answer</label>
-                    <input type="number" id="prog_puzzle_correct" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
-                    <label>Wrong Answer</label>
-                    <input type="number" id="prog_puzzle_wrong" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
-                </div>
-                
-                <h3 style="font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 20px;">Mix & MakeWord</h3>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
-                    <label>Correct Answer</label>
-                    <input type="number" id="prog_mix_correct" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
-                    <label>Wrong Answer</label>
-                    <input type="number" id="prog_mix_wrong" step="0.1" style="width: 80px; padding: 5px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444;" />
                 </div>
             </div>
             <div class="modal-footer modal-actions" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
