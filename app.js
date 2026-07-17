@@ -1563,8 +1563,20 @@
                 });
             }
             
-            // 50% chance for 1-4 small planets/satellites
-            if (Math.random() < 0.5) {
+            // 10% chance for a Mega Planetary System (10-20 planets)
+            if (Math.random() < 0.1) {
+                let numPlanets = 10 + Math.floor(Math.random() * 11);
+                for (let j = 0; j < numPlanets; j++) {
+                    satellites.push({
+                        type: 'planet',
+                        dx: (Math.random() - 0.5) * width * 0.3, // wider orbit
+                        dy: (Math.random() - 0.5) * height * 0.3,
+                        scale: 0.02 + Math.random() * 0.1, // tiny to small dots
+                        color: Math.random() < 0.5 ? '180, 220, 255' : '255, 220, 160'
+                    });
+                }
+            } else if (Math.random() < 0.5) {
+                // 50% chance for regular 1-4 small planets/satellites
                 let numPlanets = Math.floor(Math.random() * 4) + 1;
                 for (let j = 0; j < numPlanets; j++) {
                     satellites.push({
