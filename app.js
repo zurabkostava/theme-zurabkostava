@@ -1109,13 +1109,43 @@
 
             // ── VISUAL SORTING MAGIC (ადამიანური კითხვის ლოგიკა) ──
             // ვასწავლით სისტემას, დაალაგოს ფოტოები ეკრანზე მათი რეალური პოზიციების მიხედვით
+            // ვითვალისწინებთ კარუსელის დამალულ ფოტოებს, რომ არ გაიფანტონ.
             activeItems.sort(function(a, b) {
+                var isHiddenA = a.classList.contains('zk-carousel-hidden');
+                var isHiddenB = b.classList.contains('zk-carousel-hidden');
+
+                var topA = isHiddenA && a.previousElementSibling ? a.previousElementSibling.offsetTop : a.offsetTop;
+                var topB = isHiddenB && b.previousElementSibling ? b.previousElementSibling.offsetTop : b.offsetTop;
+
+                var leftA = isHiddenA && a.previousElementSibling ? a.previousElementSibling.offsetLeft : a.offsetLeft;
+                var leftB = isHiddenB && b.previousElementSibling ? b.previousElementSibling.offsetLeft : b.offsetLeft;
+
+                // გავავრცელოთ იგივე კოორდინატები წინა ელემენტიდან, სანამ არ მივალთ ყდამდე
+                var curr = a;
+                while(curr && curr.classList.contains('zk-carousel-hidden') && curr.previousElementSibling) {
+                    curr = curr.previousElementSibling;
+                    topA = curr.offsetTop;
+                    leftA = curr.offsetLeft;
+                }
+                curr = b;
+                while(curr && curr.classList.contains('zk-carousel-hidden') && curr.previousElementSibling) {
+                    curr = curr.previousElementSibling;
+                    topB = curr.offsetTop;
+                    leftB = curr.offsetLeft;
+                }
+
                 // ვყოფთ სივრცეს 200px-იან ვირტუალურ ჰორიზონტალურ რიგებად
-                var rowA = Math.round(a.offsetTop / 200);
-                var rowB = Math.round(b.offsetTop / 200);
+                var rowA = Math.round(topA / 200);
+                var rowB = Math.round(topB / 200);
 
                 if (rowA === rowB) {
-                    return a.offsetLeft - b.offsetLeft; // თუ ერთ რიგშია, მიდის მარცხნიდან მარჯვნივ
+                    if (leftA === leftB) {
+                        // თუ ერთნაირი კოორდინატები აქვთ (მაგ. ყდა და მისი შიდა ფოტოები), დავალაგოთ DOM-ის ინდექსით
+                        var indexA = allItems.indexOf(a);
+                        var indexB = allItems.indexOf(b);
+                        return indexA - indexB;
+                    }
+                    return leftA - leftB; // თუ ერთ რიგშია, მიდის მარცხნიდან მარჯვნივ
                 }
                 return rowA - rowB; // თუ სხვადასხვა რიგშია, მიდის ზემოდან ქვემოთ
             });
