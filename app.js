@@ -935,9 +935,15 @@
                         titleEl.className = 'zk-lightbox-thumb-group-title';
                         titleEl.textContent = carouselTitle;
                         currentGroupEl.appendChild(titleEl);
+                        
+                        var itemsWrapper = document.createElement('div');
+                        itemsWrapper.className = 'zk-lightbox-thumb-group-items';
+                        currentGroupEl.appendChild(itemsWrapper);
+                        
                         frag.appendChild(currentGroupEl);
                     }
-                    currentGroupEl.appendChild(cell);
+                    var wrapper = currentGroupEl.querySelector('.zk-lightbox-thumb-group-items');
+                    wrapper.appendChild(cell);
                 } else {
                     currentGroupTitle = null;
                     currentGroupEl = null;

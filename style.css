@@ -1347,10 +1347,9 @@ body.zk-lb-open { overflow: hidden; }
 	position: absolute; bottom: 30px; left: 0; right: 0;
 
 	/* ── აქ არის ცვლილება: center-ის მაგივრად ვიყენებთ flex-start-ს ── */
-	display: flex; justify-content: flex-start; gap: 8px;
+	display: flex; justify-content: flex-start; align-items: flex-end; gap: 8px;
 
-	padding: 10px 40px;
-	padding-top: 35px; /* Space for carousel title and bracket */
+	padding: 10px 40px 10px;
 	overflow-x: auto; overscroll-behavior: contain; scroll-behavior: smooth;
 	scrollbar-width: none; -ms-overflow-style: none;
 	z-index: 2002;
@@ -1359,11 +1358,17 @@ body.zk-lb-open { overflow: hidden; }
 }
 .zk-lightbox-thumb-group {
 	display: flex;
-	gap: 8px;
+	flex-direction: column;
+	gap: 16px; /* Space between title and items (includes bracket) */
 	position: relative;
 	margin: 0 4px;
 }
-.zk-lightbox-thumb-group::before {
+.zk-lightbox-thumb-group-items {
+	display: flex;
+	gap: 8px;
+	position: relative;
+}
+.zk-lightbox-thumb-group-items::before {
 	content: '';
 	position: absolute;
 	top: -12px;
@@ -1379,16 +1384,15 @@ body.zk-lb-open { overflow: hidden; }
 .zk-lightbox-thumb-group-title {
 	position: sticky;
 	left: 4px;
-	width: 0;
-	height: 0;
+	max-width: 100%;
 	align-self: flex-start;
-	transform: translateY(-30px);
 	font-size: 0.65rem;
 	color: rgba(255, 255, 255, 0.6);
 	letter-spacing: 0.05em;
 	font-weight: 500;
 	white-space: nowrap;
-	overflow: visible;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	pointer-events: none;
 	font-family: var(--font, sans-serif);
 	text-transform: uppercase;
