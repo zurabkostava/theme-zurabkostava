@@ -893,6 +893,7 @@
 
         var lbImg    = lightbox.querySelector('.zk-lightbox-img');
         var lbExif   = lightbox.querySelector('.zk-lightbox-exif');
+        var lbTitle  = lightbox.querySelector('.zk-lightbox-top-title');
         var closeBtn = lightbox.querySelector('.zk-lightbox-close');
         var prevBtn  = lightbox.querySelector('.zk-lightbox-prev');
         var nextBtn  = lightbox.querySelector('.zk-lightbox-next');
@@ -1013,6 +1014,7 @@
             var img   = activeItems[index].querySelector('img');
             var full  = img.getAttribute('data-full');
             var exif  = img.getAttribute('data-exif') || '';
+            var title = activeItems[index].getAttribute('data-carousel-title') || '';
             var token = ++swapToken;
             var hadImage = lbImg.classList.contains('is-ready');
 
@@ -1024,6 +1026,11 @@
                 lbImg.src = full;
                 lbImg.alt = img.alt || '';
                 lbExif.textContent = exif;
+                if (lbTitle) {
+                    lbTitle.textContent = title;
+                    if (title) lbTitle.classList.add('has-title');
+                    else lbTitle.classList.remove('has-title');
+                }
 
                 requestAnimationFrame(function () {
                     requestAnimationFrame(function () {

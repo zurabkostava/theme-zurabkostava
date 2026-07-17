@@ -1327,6 +1327,27 @@ body.zk-lb-open { overflow: hidden; }
 	opacity: 0;
 	transition: opacity 0.3s ease, color 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
 }
+.zk-lightbox-top-title {
+	position: absolute;
+	top: 30px;
+	left: 50%;
+	transform: translateX(-50%);
+	font-size: 0.8rem;
+	color: rgba(255, 255, 255, 0.9);
+	letter-spacing: 0.1em;
+	font-weight: 600;
+	text-transform: uppercase;
+	font-family: var(--font, sans-serif);
+	z-index: 2005;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.3s ease, transform 0.3s ease;
+	text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
+.zk-lightbox.is-open .zk-lightbox-top-title.has-title {
+	opacity: 1;
+}
+
 /* ისრები შემოდიან ფოტოს გახსნისას */
 .zk-lightbox.is-open .zk-lightbox-arrow { opacity: 1; }
 .zk-lightbox.is-open .zk-lightbox-prev { left: 40px; }
