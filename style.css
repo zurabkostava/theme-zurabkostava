@@ -3037,30 +3037,25 @@ body.zk-lb-open { overflow: hidden; }
     text-overflow: ellipsis;
     box-sizing: border-box;
 }
+
 .zk-carousel-count {
     position: absolute;
-    top: 12px;
-    left: 12px;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    top: 13px;
+    right: 44px;
     color: rgba(255, 255, 255, 0.95);
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-family: var(--font, sans-serif);
     font-weight: 600;
-    padding: 4px 8px;
-    border-radius: 4px;
     z-index: 5;
     pointer-events: none;
     display: flex;
     align-items: center;
-    gap: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    gap: 4px;
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.7));
 }
 .zk-carousel-count svg {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
 }
 .zk-carousel-hidden {
     display: none !important;
