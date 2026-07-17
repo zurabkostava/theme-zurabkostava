@@ -779,6 +779,8 @@ add_shortcode( 'zk_music', 'zk_music_timeline_shortcode' );
 function zk_get_og_image( $url, $scrape = true ) {
     if ( empty( $url ) || $url === '#' ) return '';
 
+    // Normalize URL to ensure cache keys match between backend rendering and frontend AJAX
+    $url = esc_url_raw( $url );
     $transient_key = 'zk_og_img_v3_' . md5( $url );
     $cached_image = get_transient( $transient_key );
 
@@ -959,46 +961,53 @@ function zk_fav_tooltip_script() {
         async function fetchMissingImages() {
             if (isFetchingImages) return;
             
-            const links = document.querySelectorAll('.zk-fav-link[data-scrape-url]');
+            const links = Array.from(document.querySelectorAll('.zk-fav-link[data-scrape-url]'));
             if (links.length === 0) return;
             
             isFetchingImages = true;
             const ajaxUrl = "<?php echo admin_url('admin-ajax.php'); ?>";
             
-            for (let i = 0; i < links.length; i++) {
-                const link = links[i];
-                const scrapeUrl = link.getAttribute('data-scrape-url');
-                if (!scrapeUrl) continue;
-                
-                // Immediately remove to prevent duplicate fetching
-                link.removeAttribute('data-scrape-url');
-                
-                const formData = new FormData();
-                formData.append('action', 'zk_fetch_og_image');
-                formData.append('url', scrapeUrl);
-                
-                try {
-                    const response = await fetch(ajaxUrl, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const data = await response.json();
+            const concurrencyLimit = 4; // Fetch 4 images concurrently
+            let currentIndex = 0;
+            
+            async function worker() {
+                while (currentIndex < links.length) {
+                    const link = links[currentIndex++];
+                    const scrapeUrl = link.getAttribute('data-scrape-url');
+                    if (!scrapeUrl) continue;
                     
-                    if (data.success && data.data.image) {
-                        link.setAttribute('data-hover-image', data.data.image);
-                        const img = link.querySelector('.zk-fav-thumb');
-                        if (img) {
-                            img.src = data.data.image;
+                    // Immediately remove to prevent duplicate fetching
+                    link.removeAttribute('data-scrape-url');
+                    
+                    const formData = new FormData();
+                    formData.append('action', 'zk_fetch_og_image');
+                    formData.append('url', scrapeUrl);
+                    
+                    try {
+                        const response = await fetch(ajaxUrl, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success && data.data.image) {
+                            link.setAttribute('data-hover-image', data.data.image);
+                            const img = link.querySelector('.zk-fav-thumb');
+                            if (img) {
+                                img.src = data.data.image;
+                            }
                         }
+                    } catch (err) {
+                        console.error('Error fetching og:image', err);
                     }
-                } catch (err) {
-                    console.error('Error fetching og:image', err);
                 }
-                
-                // Wait 500ms between requests to avoid overloading the server
-                await new Promise(resolve => setTimeout(resolve, 500));
             }
             
+            const workers = [];
+            for (let w = 0; w < concurrencyLimit; w++) {
+                workers.push(worker());
+            }
+            await Promise.all(workers);
             isFetchingImages = false;
         }
         
