@@ -1541,16 +1541,22 @@
             
             mScale = 0.5 + Math.random() * 1.5; // Random size multiplier (0.5x to 2.0x)
             
-            // Randomize color with more variety
+            // More diverse colors
             let rC = Math.random();
-            if (rC < 0.2) glowColor = '255, 230, 160'; // Yellowish
-            else if (rC < 0.4) glowColor = '160, 210, 255'; // Bluish
-            else if (rC < 0.6) glowColor = '255, 180, 180'; // Reddish/Pinkish
-            else if (rC < 0.8) glowColor = '180, 255, 200'; // Greenish
+            if (rC < 0.15) glowColor = '255, 180, 180'; // Reddish/Pinkish
+            else if (rC < 0.3) glowColor = '255, 210, 140'; // Orange
+            else if (rC < 0.45) glowColor = '255, 240, 160'; // Yellowish
+            else if (rC < 0.6) glowColor = '160, 240, 200'; // Teal/Greenish
+            else if (rC < 0.75) glowColor = '160, 200, 255'; // Bluish
+            else if (rC < 0.85) glowColor = '200, 160, 255'; // Purplish
             else glowColor = '240, 240, 255'; // White/Neutral
             
-            let mSubType = Math.floor(Math.random() * 3); // 0: 8-point, 1: 4-point, 2: ball
-            let mBrightness = 0.5 + Math.random() * 0.5; // 0.5 to 1.0 max alpha
+            // Render Type & Brightness for main star
+            let rtRand = Math.random();
+            let mType = 'full';
+            if (rtRand < 0.25) mType = 'cross';
+            else if (rtRand < 0.5) mType = 'ball';
+            let mBrightness = 0.4 + Math.random() * 0.6;
             
             // Multi-star system probabilities
             let rTwin = Math.random();
@@ -1559,17 +1565,28 @@
             else if (rTwin < 0.07) numTwins = 2; // 5% chance for 3-star system
             else if (rTwin < 0.15) numTwins = 1; // 8% chance for 2-star system
 
+            // Helper for random mega star colors
+            function getMegaColor() {
+                const colors = ['255, 180, 180', '255, 210, 140', '255, 240, 160', '160, 240, 200', '160, 200, 255', '200, 160, 255', '240, 240, 255'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            // Helper for random render type
+            function getRenderType() {
+                let r = Math.random();
+                if (r < 0.25) return 'cross';
+                if (r < 0.5) return 'ball';
+                return 'full';
+            }
+
             for (let t = 0; t < numTwins; t++) {
-                let tc = Math.random();
-                let twinColor = tc < 0.3 ? '255, 200, 150' : (tc < 0.6 ? '180, 220, 255' : '220, 180, 255');
                 satellites.push({
                     type: 'twin',
                     dx: (Math.random() - 0.5) * width * 0.8, // X spread
                     dy: (Math.random() - 0.5) * height * 0.8, // Y spread
                     dz: (Math.random() - 0.5) * width * 1.0, // Z spread (near and far)
                     scale: 0.4 + Math.random() * 0.8, // varying twin sizes
-                    color: twinColor,
-                    subType: Math.floor(Math.random() * 3),
+                    color: getMegaColor(),
+                    renderType: getRenderType(),
                     brightness: 0.4 + Math.random() * 0.6
                 });
             }
@@ -1578,8 +1595,6 @@
             if (Math.random() < 0.2) {
                 let numDistant = Math.random() < 0.3 ? 2 : 1; // 1 or 2 extra distant stars
                 for (let d = 0; d < numDistant; d++) {
-                    let tc = Math.random();
-                    let dColor = tc < 0.3 ? '255, 230, 160' : (tc < 0.6 ? '160, 210, 255' : '200, 255, 200');
                     satellites.push({
                         type: 'distant_twin',
                         // Push them far away from the main star
@@ -1587,8 +1602,8 @@
                         dy: (Math.random() > 0.5 ? 1 : -1) * (height * 3 + Math.random() * height * 6),
                         dz: (Math.random() - 0.5) * width * 3.0, // Large Z separation
                         scale: 0.5 + Math.random() * 1.5,
-                        color: dColor,
-                        subType: Math.floor(Math.random() * 3),
+                        color: getMegaColor(),
+                        renderType: getRenderType(),
                         brightness: 0.4 + Math.random() * 0.6
                     });
                 }
@@ -1646,9 +1661,9 @@
             isGiant: giant,
             isMorningStar: isMorningStar,
             morningScale: mScale,
-            glowRgb: glowColor,
-            morningSubType: mSubType,
+            morningType: mType,
             morningBrightness: mBrightness,
+            glowRgb: glowColor,
             satellites: satellites,
             isDead: false
         };
@@ -1716,7 +1731,11 @@
                 ctx.stroke();
             } else {
                 // Complex rendering for Morning Star and its 3D satellites
-                let objectsToRender = [{ type: 'main', dx: 0, dy: 0, dz: 0, scale: s.morningScale, color: s.glowRgb, subType: s.morningSubType, brightness: s.morningBrightness }].concat(s.satellites);
+                let objectsToRender = [{ 
+                    type: 'main', dx: 0, dy: 0, dz: 0, 
+                    scale: s.morningScale, color: s.glowRgb, 
+                    renderType: s.morningType, brightness: s.morningBrightness 
+                }].concat(s.satellites);
                 
                 for (let obj of objectsToRender) {
                     let oz = s.z + (obj.dz || 0);
@@ -1724,7 +1743,12 @@
                     
                     let objAlpha = 0;
                     if (oz < width * 3.5) {
-                        objAlpha = Math.min(1, ((width * 3.5) - oz) / (width * 1.5)) * (obj.brightness || 1.0);
+                        objAlpha = Math.min(1, ((width * 3.5) - oz) / (width * 1.5));
+                    }
+                    
+                    // Apply object brightness multiplier (only for non-planets)
+                    if (obj.type !== 'planet' && obj.brightness) {
+                        objAlpha *= obj.brightness;
                     }
                     
                     if (objAlpha > 0.01) {
@@ -1746,22 +1770,25 @@
                             ctx.fill();
                             ctx.shadowBlur = 0;
                         } else {
-                            let crossLen = Math.min(or * 30, width * 0.45);
-                            let diagLen = crossLen * 0.35;
                             let gColor = obj.color;
+                            let rType = obj.renderType || 'full';
                             
                             // Core
-                            let coreGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, or * 4);
+                            let coreRadius = (rType === 'ball') ? or * 6 : or * 4; 
+                            let coreGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, coreRadius);
                             coreGrad.addColorStop(0, '#ffffff');
                             coreGrad.addColorStop(0.15, `rgba(${gColor}, 0.8)`);
                             coreGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
                             
                             ctx.beginPath();
-                            ctx.arc(ox, oy, or * 4, 0, Math.PI * 2);
+                            ctx.arc(ox, oy, coreRadius, 0, Math.PI * 2);
                             ctx.fillStyle = coreGrad;
                             ctx.fill();
                             
-                            if (obj.subType !== 2) { // 2 means ball-only (no spikes)
+                            if (rType !== 'ball') {
+                                let crossLen = Math.min(or * 30, width * 0.45);
+                                let diagLen = crossLen * 0.35;
+                                
                                 // Spikes
                                 let spikeGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, crossLen);
                                 spikeGrad.addColorStop(0, '#ffffff');
@@ -1786,8 +1813,8 @@
                                 ctx.moveTo(ox, oy - crossLen * 0.6); ctx.lineTo(ox, oy + crossLen * 0.6);
                                 ctx.stroke();
                                 
-                                if (obj.subType === 0) { // 0 means full 8-point
-                                    // Diagonal Cross
+                                // Diagonal Cross (only for 'full' type)
+                                if (rType === 'full') {
                                     ctx.beginPath();
                                     ctx.lineWidth = or * 1.0;
                                     ctx.moveTo(ox - diagLen, oy - diagLen); ctx.lineTo(ox + diagLen, oy + diagLen);
