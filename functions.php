@@ -2494,6 +2494,11 @@ function zk_render_seo_meta() {
     $type = 'website';
     $img = get_option( 'zk_profile_img', '' ); // Default fallback image from Identity Settings
 
+    // 1. Initialize Custom Meta Variables
+    $custom_title = '';
+    $custom_desc  = '';
+    $custom_img   = '';
+
     // Override for single posts/pages
     if ( $is_single ) {
         if ( is_front_page() || is_home() ) {
@@ -2508,17 +2513,10 @@ function zk_render_seo_meta() {
         $custom_title = get_post_meta( $obj_id, '_zk_seo_title', true );
         $custom_desc  = get_post_meta( $obj_id, '_zk_seo_description', true );
         
-        // Title logic
-        if ( ! empty( $custom_title ) ) {
-            $title = $custom_title;
-        } else {
-            $title = get_the_title( $obj_id ) . ' — ' . $site_name;
-        }
+        // Default Title/Desc logic for single (can be overridden later)
+        $title = get_the_title( $obj_id ) . ' — ' . $site_name;
         
-        // Description logic
-        if ( ! empty( $custom_desc ) ) {
-            $desc = $custom_desc;
-        } elseif ( has_excerpt( $obj_id ) ) {
+        if ( has_excerpt( $obj_id ) ) {
             $desc = wp_strip_all_tags( get_the_excerpt( $obj_id ) );
         } else {
             $post_content = get_post( $obj_id )->post_content;
@@ -2535,25 +2533,29 @@ function zk_render_seo_meta() {
         $custom_desc  = get_term_meta( $term_id, '_zk_seo_description', true );
         $custom_img   = get_term_meta( $term_id, '_zk_seo_image', true );
 
-        if ( !empty($custom_img) ) {
-            $img = $custom_img;
-        }
-
         if ( is_category() ) {
-            $title = !empty($custom_title) ? $custom_title : single_cat_title( '', false ) . ' — ' . $site_name;
-            $desc = !empty($custom_desc) ? $custom_desc : (wp_strip_all_tags( category_description() ) ?: $desc);
+            $title = single_cat_title( '', false ) . ' — ' . $site_name;
+            $desc = wp_strip_all_tags( category_description() ) ?: $desc;
         } elseif ( is_tag() ) {
-            $title = !empty($custom_title) ? $custom_title : single_tag_title( '', false ) . ' — ' . $site_name;
-            $desc = !empty($custom_desc) ? $custom_desc : (wp_strip_all_tags( tag_description() ) ?: $desc);
-        } else {
-            // Other archives fallback
-            if (!empty($custom_title)) $title = $custom_title;
-            if (!empty($custom_desc)) $desc = $custom_desc;
+            $title = single_tag_title( '', false ) . ' — ' . $site_name;
+            $desc = wp_strip_all_tags( tag_description() ) ?: $desc;
         }
     } elseif ( is_search() ) {
         $title = 'Search Results for "' . get_search_query() . '" — ' . $site_name;
     } elseif ( is_404() ) {
         $title = '404 Not Found — ' . $site_name;
+    }
+
+    // --- GLOBAL META BOX OVERRIDE (STRICT HIGHEST PRIORITY) ---
+    // Whatever happens above, if you typed it in the meta box, it wins.
+    if ( ! empty( $custom_title ) ) {
+        $title = $custom_title;
+    }
+    if ( ! empty( $custom_desc ) ) {
+        $desc = $custom_desc;
+    }
+    if ( ! empty( $custom_img ) ) {
+        $img = $custom_img;
     }
 
     // Clean up title and description to prevent HTML breaks
