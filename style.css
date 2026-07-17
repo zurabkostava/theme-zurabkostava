@@ -2909,3 +2909,22 @@ body.zk-lb-open { overflow: hidden; }
         display: none; /* Show only the very latest post */
     }
 }
+
+/* --- FileBird Carousels --- */
+.zk-is-carousel {
+    position: relative;
+}
+.zk-carousel-icon {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+    color: rgba(255, 255, 255, 0.95);
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.7));
+    z-index: 5;
+    pointer-events: none;
+}
+.zk-carousel-hidden {
+    display: none !important;
+}
