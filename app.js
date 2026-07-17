@@ -1541,15 +1541,16 @@
             
             mScale = 0.5 + Math.random() * 1.5; // Random size multiplier (0.5x to 2.0x)
             
-            // Randomize color
+            // Randomize color with more variety
             let rC = Math.random();
-            if (rC < 0.3) {
-                glowColor = '255, 230, 160'; // Yellowish
-            } else if (rC < 0.7) {
-                glowColor = '160, 210, 255'; // Bluish
-            } else {
-                glowColor = '240, 240, 255'; // White/Neutral
-            }
+            if (rC < 0.2) glowColor = '255, 230, 160'; // Yellowish
+            else if (rC < 0.4) glowColor = '160, 210, 255'; // Bluish
+            else if (rC < 0.6) glowColor = '255, 180, 180'; // Reddish/Pinkish
+            else if (rC < 0.8) glowColor = '180, 255, 200'; // Greenish
+            else glowColor = '240, 240, 255'; // White/Neutral
+            
+            let mSubType = Math.floor(Math.random() * 3); // 0: 8-point, 1: 4-point, 2: ball
+            let mBrightness = 0.5 + Math.random() * 0.5; // 0.5 to 1.0 max alpha
             
             // Multi-star system probabilities
             let rTwin = Math.random();
@@ -1559,14 +1560,17 @@
             else if (rTwin < 0.15) numTwins = 1; // 8% chance for 2-star system
 
             for (let t = 0; t < numTwins; t++) {
-                let twinColor = Math.random() < 0.5 ? '255, 200, 150' : '180, 220, 255';
+                let tc = Math.random();
+                let twinColor = tc < 0.3 ? '255, 200, 150' : (tc < 0.6 ? '180, 220, 255' : '220, 180, 255');
                 satellites.push({
                     type: 'twin',
                     dx: (Math.random() - 0.5) * width * 0.8, // X spread
                     dy: (Math.random() - 0.5) * height * 0.8, // Y spread
                     dz: (Math.random() - 0.5) * width * 1.0, // Z spread (near and far)
                     scale: 0.4 + Math.random() * 0.8, // varying twin sizes
-                    color: twinColor
+                    color: twinColor,
+                    subType: Math.floor(Math.random() * 3),
+                    brightness: 0.4 + Math.random() * 0.6
                 });
             }
             
@@ -1574,7 +1578,8 @@
             if (Math.random() < 0.2) {
                 let numDistant = Math.random() < 0.3 ? 2 : 1; // 1 or 2 extra distant stars
                 for (let d = 0; d < numDistant; d++) {
-                    let dColor = Math.random() < 0.3 ? '255, 230, 160' : (Math.random() < 0.7 ? '160, 210, 255' : '240, 240, 255');
+                    let tc = Math.random();
+                    let dColor = tc < 0.3 ? '255, 230, 160' : (tc < 0.6 ? '160, 210, 255' : '200, 255, 200');
                     satellites.push({
                         type: 'distant_twin',
                         // Push them far away from the main star
@@ -1582,7 +1587,9 @@
                         dy: (Math.random() > 0.5 ? 1 : -1) * (height * 3 + Math.random() * height * 6),
                         dz: (Math.random() - 0.5) * width * 3.0, // Large Z separation
                         scale: 0.5 + Math.random() * 1.5,
-                        color: dColor
+                        color: dColor,
+                        subType: Math.floor(Math.random() * 3),
+                        brightness: 0.4 + Math.random() * 0.6
                     });
                 }
             }
@@ -1640,6 +1647,8 @@
             isMorningStar: isMorningStar,
             morningScale: mScale,
             glowRgb: glowColor,
+            morningSubType: mSubType,
+            morningBrightness: mBrightness,
             satellites: satellites,
             isDead: false
         };
@@ -1707,7 +1716,7 @@
                 ctx.stroke();
             } else {
                 // Complex rendering for Morning Star and its 3D satellites
-                let objectsToRender = [{ type: 'main', dx: 0, dy: 0, dz: 0, scale: s.morningScale, color: s.glowRgb }].concat(s.satellites);
+                let objectsToRender = [{ type: 'main', dx: 0, dy: 0, dz: 0, scale: s.morningScale, color: s.glowRgb, subType: s.morningSubType, brightness: s.morningBrightness }].concat(s.satellites);
                 
                 for (let obj of objectsToRender) {
                     let oz = s.z + (obj.dz || 0);
@@ -1715,7 +1724,7 @@
                     
                     let objAlpha = 0;
                     if (oz < width * 3.5) {
-                        objAlpha = Math.min(1, ((width * 3.5) - oz) / (width * 1.5));
+                        objAlpha = Math.min(1, ((width * 3.5) - oz) / (width * 1.5)) * (obj.brightness || 1.0);
                     }
                     
                     if (objAlpha > 0.01) {
@@ -1752,36 +1761,40 @@
                             ctx.fillStyle = coreGrad;
                             ctx.fill();
                             
-                            // Spikes
-                            let spikeGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, crossLen);
-                            spikeGrad.addColorStop(0, '#ffffff');
-                            spikeGrad.addColorStop(0.1, `rgba(${gColor}, 0.6)`);
-                            spikeGrad.addColorStop(0.4, `rgba(${gColor}, 0.15)`);
-                            spikeGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                            
-                            ctx.strokeStyle = spikeGrad;
-                            ctx.lineCap = 'round';
-                            
-                            // Main Cross
-                            ctx.beginPath();
-                            ctx.lineWidth = or * 1.5;
-                            ctx.moveTo(ox - crossLen, oy); ctx.lineTo(ox + crossLen, oy);
-                            ctx.moveTo(ox, oy - crossLen); ctx.lineTo(ox, oy + crossLen);
-                            ctx.stroke();
-                            
-                            // Core Cross
-                            ctx.beginPath();
-                            ctx.lineWidth = Math.max(0.2, or * 0.4);
-                            ctx.moveTo(ox - crossLen * 0.6, oy); ctx.lineTo(ox + crossLen * 0.6, oy);
-                            ctx.moveTo(ox, oy - crossLen * 0.6); ctx.lineTo(ox, oy + crossLen * 0.6);
-                            ctx.stroke();
-                            
-                            // Diagonal Cross
-                            ctx.beginPath();
-                            ctx.lineWidth = or * 1.0;
-                            ctx.moveTo(ox - diagLen, oy - diagLen); ctx.lineTo(ox + diagLen, oy + diagLen);
-                            ctx.moveTo(ox - diagLen, oy + diagLen); ctx.lineTo(ox + diagLen, oy - diagLen);
-                            ctx.stroke();
+                            if (obj.subType !== 2) { // 2 means ball-only (no spikes)
+                                // Spikes
+                                let spikeGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, crossLen);
+                                spikeGrad.addColorStop(0, '#ffffff');
+                                spikeGrad.addColorStop(0.1, `rgba(${gColor}, 0.6)`);
+                                spikeGrad.addColorStop(0.4, `rgba(${gColor}, 0.15)`);
+                                spikeGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                                
+                                ctx.strokeStyle = spikeGrad;
+                                ctx.lineCap = 'round';
+                                
+                                // Main Cross
+                                ctx.beginPath();
+                                ctx.lineWidth = or * 1.5;
+                                ctx.moveTo(ox - crossLen, oy); ctx.lineTo(ox + crossLen, oy);
+                                ctx.moveTo(ox, oy - crossLen); ctx.lineTo(ox, oy + crossLen);
+                                ctx.stroke();
+                                
+                                // Core Cross
+                                ctx.beginPath();
+                                ctx.lineWidth = Math.max(0.2, or * 0.4);
+                                ctx.moveTo(ox - crossLen * 0.6, oy); ctx.lineTo(ox + crossLen * 0.6, oy);
+                                ctx.moveTo(ox, oy - crossLen * 0.6); ctx.lineTo(ox, oy + crossLen * 0.6);
+                                ctx.stroke();
+                                
+                                if (obj.subType === 0) { // 0 means full 8-point
+                                    // Diagonal Cross
+                                    ctx.beginPath();
+                                    ctx.lineWidth = or * 1.0;
+                                    ctx.moveTo(ox - diagLen, oy - diagLen); ctx.lineTo(ox + diagLen, oy + diagLen);
+                                    ctx.moveTo(ox - diagLen, oy + diagLen); ctx.lineTo(ox + diagLen, oy - diagLen);
+                                    ctx.stroke();
+                                }
+                            }
                         }
                         
                         ctx.restore();
