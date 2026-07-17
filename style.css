@@ -473,11 +473,27 @@ body.is-navigating #zk-global-loader {
     letter-spacing: -0.03em;
     line-height: 1.05;
     margin: 0;
-    color: #fff;
-    /* Cyberpunk Mixed Glow */
+    
+    /* Liquid Glass Effect */
+    color: transparent;
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.9) 0%,
+        rgba(255, 255, 255, 0.2) 25%,
+        rgba(255, 255, 255, 0.05) 50%,
+        rgba(255, 255, 255, 0.4) 75%,
+        rgba(255, 255, 255, 0.8) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    
+    /* Glass Edge Reflections */
+    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.5);
+    
+    /* Deep Glass Shadows */
     text-shadow: 
-        -6px -6px 24px rgba(255, 42, 133, 0.3), 
-        6px 6px 24px rgba(0, 240, 255, 0.3);
+        0px 6px 16px rgba(0, 0, 0, 0.6), /* Drop shadow for physical depth */
+        0px 0px 30px rgba(255, 255, 255, 0.2); /* Soft ambient glow */
     
     transform: translateY(100%);
     opacity: 0;
