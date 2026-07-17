@@ -574,11 +574,20 @@ function zk_cinematic_gallery() {
             'update_post_term_cache' => false,
     ) );
 
+    // Calculate counts
+    $total_photos = count($category_map);
+    $camera_photos = 0;
+    $mobile_photos = 0;
+    foreach($category_map as $c) {
+        if ($c == 'filter-camera') $camera_photos++;
+        elseif ($c == 'filter-mobile') $mobile_photos++;
+    }
+
     $output  = '<div class="zk-gallery-wrapper">';
     $output .= '<div class="zk-gallery-filters" role="group" aria-label="Filter photography">';
-    $output .= '<button class="zk-filter-btn is-active" type="button" data-filter="all" aria-pressed="true">All</button>';
-    $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-camera" aria-pressed="false">Camera</button>';
-    $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-mobile" aria-pressed="false">Mobile</button>';
+    $output .= '<button class="zk-filter-btn is-active" type="button" data-filter="all" aria-pressed="true">All <span class="zk-tab-count">' . $total_photos . '</span></button>';
+    $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-camera" aria-pressed="false">Camera <span class="zk-tab-count">' . $camera_photos . '</span></button>';
+    $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-mobile" aria-pressed="false">Mobile <span class="zk-tab-count">' . $mobile_photos . '</span></button>';
     $output .= '</div>';
 
     $output .= '<div class="zk-gallery-grid" id="zkGalleryGrid">';
