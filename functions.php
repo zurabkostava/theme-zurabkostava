@@ -781,7 +781,7 @@ function zk_get_og_image( $url, $scrape = true ) {
 
     // Normalize URL to ensure cache keys match between backend rendering and frontend AJAX
     $url = esc_url_raw( $url );
-    $transient_key = 'zk_og_img_v8_' . md5( $url );
+    $transient_key = 'zk_og_img_v9_' . md5( $url );
     $cached_image = get_transient( $transient_key );
 
     if ( false !== $cached_image ) {
@@ -892,6 +892,23 @@ function zk_fetch_og_image_ajax() {
     }
 }
 
+add_action( 'wp_ajax_zk_cache_og_image', 'zk_cache_og_image_ajax' );
+add_action( 'wp_ajax_nopriv_zk_cache_og_image', 'zk_cache_og_image_ajax' );
+
+function zk_cache_og_image_ajax() {
+    if ( ! isset( $_POST['url'] ) || ! isset( $_POST['image_url'] ) ) {
+        wp_send_json_error( 'Missing parameters' );
+    }
+    
+    $url = esc_url_raw( $_POST['url'] );
+    $image_url = esc_url_raw( $_POST['image_url'] );
+    
+    $transient_key = 'zk_og_img_v9_' . md5( $url );
+    set_transient( $transient_key, $image_url, DAY_IN_SECONDS * 30 );
+    
+    wp_send_json_success();
+}
+
 function zk_fav_tooltip_script() {
     ?>
     <script>
@@ -975,43 +992,81 @@ function zk_fav_tooltip_script() {
             isFetchingImages = true;
             const ajaxUrl = "<?php echo admin_url('admin-ajax.php'); ?>";
             
-            const concurrencyLimit = 2; // Keep at 2 to avoid Goodreads/IMDB blocking the IP
+            const concurrencyLimit = 4; // Since we use Open APIs from client-side, we can use higher concurrency
             let currentIndex = 0;
             
             async function worker() {
                 while (currentIndex < links.length) {
                     const link = links[currentIndex++];
                     const scrapeUrl = link.getAttribute('data-scrape-url');
+                    const titleRaw = link.getAttribute('data-title');
+                    const type = link.getAttribute('data-type');
+                    
                     if (!scrapeUrl) continue;
                     
                     // Immediately remove to prevent duplicate fetching
                     link.removeAttribute('data-scrape-url');
                     
-                    const formData = new FormData();
-                    formData.append('action', 'zk_fetch_og_image');
-                    formData.append('url', scrapeUrl);
-                    
                     try {
-                        const response = await fetch(ajaxUrl, {
-                            method: 'POST',
-                            body: formData
-                        });
-                        const data = await response.json();
+                        let imageUrl = null;
                         
-                        if (data.success && data.data.image) {
-                            const optimizedImg = 'https://wsrv.nl/?url=' + encodeURIComponent(data.data.image) + '&w=150&q=50&output=webp';
+                        // Attempt Open API search by title
+                        if (titleRaw && type) {
+                            const cleanTitle = titleRaw.replace(/\([^)]*\)/g, '').trim();
+                            if (type === 'books') {
+                                try {
+                                    const res = await fetch('https://www.googleapis.com/books/v1/volumes?q=intitle:' + encodeURIComponent(cleanTitle));
+                                    const data = await res.json();
+                                    if (data.items && data.items.length > 0 && data.items[0].volumeInfo.imageLinks) {
+                                        imageUrl = data.items[0].volumeInfo.imageLinks.thumbnail.replace('http:', 'https:');
+                                    }
+                                } catch (e) { console.error(e); }
+                            } else if (type === 'cinema' || type === 'series' || type === 'music') {
+                                try {
+                                    const media = type === 'cinema' ? 'movie' : (type === 'series' ? 'tvShow' : 'music');
+                                    const res = await fetch('https://itunes.apple.com/search?term=' + encodeURIComponent(cleanTitle) + '&media=' + media + '&limit=1');
+                                    const data = await res.json();
+                                    if (data.results && data.results.length > 0 && data.results[0].artworkUrl100) {
+                                        imageUrl = data.results[0].artworkUrl100.replace('100x100bb', '300x300bb');
+                                    }
+                                } catch (e) { console.error(e); }
+                            }
+                        }
+
+                        // Fallback to PHP Server Scraping if API failed
+                        if (!imageUrl) {
+                            const formData = new FormData();
+                            formData.append('action', 'zk_fetch_og_image');
+                            formData.append('url', scrapeUrl);
+                            
+                            const response = await fetch(ajaxUrl, {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const data = await response.json();
+                            if (data.success && data.data.image) {
+                                imageUrl = data.data.image;
+                            }
+                        }
+                        
+                        if (imageUrl) {
+                            const optimizedImg = 'https://wsrv.nl/?url=' + encodeURIComponent(imageUrl) + '&w=150&q=50&output=webp';
                             link.setAttribute('data-hover-image', optimizedImg);
                             const img = link.querySelector('.zk-fav-thumb');
                             if (img) {
                                 img.src = optimizedImg;
                             }
+                            
+                            // Send to backend to cache it for future visits (fire and forget)
+                            const cacheData = new FormData();
+                            cacheData.append('action', 'zk_cache_og_image');
+                            cacheData.append('url', scrapeUrl);
+                            cacheData.append('image_url', imageUrl);
+                            fetch(ajaxUrl, { method: 'POST', body: cacheData }).catch(() => {});
                         }
                     } catch (err) {
                         console.error('Error fetching og:image', err);
                     }
-                    
-                    // Add 1-second delay between requests to avoid rate limit
-                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
             
