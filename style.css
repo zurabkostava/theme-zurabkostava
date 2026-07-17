@@ -366,18 +366,17 @@ body.is-navigating #zk-global-loader {
     left: 50%;
     width: 120vw;
     height: 120vw;
-    max-width: 1000px;
-    max-height: 1000px;
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/NGC_4414_%28NASA-med%29.jpg/1200px-NGC_4414_%28NASA-med%29.jpg');
-    background-size: contain;
+    max-width: 1400px;
+    max-height: 1400px;
+    background-image: url('https://images.unsplash.com/photo-1538370965046-79c0d6907d47?q=80&w=2000&auto=format&fit=crop');
+    background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 0.45; /* Slightly more visible since it's a specific object */
+    opacity: 0.5; /* Increased opacity */
     z-index: 0;
     pointer-events: none;
     /* 10800s = 3 hours */
     animation: galaxyZoom 10800s linear forwards;
-    mix-blend-mode: screen;
     transform-origin: center;
 }
 
