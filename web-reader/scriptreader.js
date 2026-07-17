@@ -2106,9 +2106,13 @@ async function playNativeChunk(chunk, nativeVoice, rate, token) {
                     }
                     
                     if (isUnexpectedDrop) {
-                        isPlaying = false;
-                        updatePlayIcon(false);
+                        // Automatically restart from the currentIdx to retry the failed sentence!
                         resolve(false);
+                        setTimeout(() => {
+                            if (isPlaying) {
+                                playMergedQueue();
+                            }
+                        }, 500); // small delay to let the engine breathe
                         return;
                     }
                 }
