@@ -971,7 +971,7 @@ function zk_fav_tooltip_script() {
             isFetchingImages = true;
             const ajaxUrl = "<?php echo admin_url('admin-ajax.php'); ?>";
             
-            const concurrencyLimit = 2; // Reduced to 2 to avoid Goodreads rate limits
+            const concurrencyLimit = 4;
             let currentIndex = 0;
             
             async function worker() {
@@ -1005,9 +1005,6 @@ function zk_fav_tooltip_script() {
                     } catch (err) {
                         console.error('Error fetching og:image', err);
                     }
-                    
-                    // Small delay to be gentle on servers
-                    await new Promise(resolve => setTimeout(resolve, 250));
                 }
             }
             
