@@ -2495,7 +2495,9 @@ function zk_render_seo_meta() {
     $img = get_option( 'zk_profile_img', '' ); // Default fallback image from Identity Settings
 
     // Override for single posts/pages
-    if ( $is_single ) {
+    if ( is_front_page() || is_home() ) {
+        $type = 'website';
+    } elseif ( $is_single ) {
         if ( get_post_type( $obj_id ) === 'zk_book' ) {
             $type = 'book';
         } else {
@@ -2706,7 +2708,7 @@ function zk_render_json_ld_schema() {
     
     $is_book_page = is_page() && get_page_template_slug( get_queried_object_id() ) === 'book-engine/template-book-reader.php';
 
-    if ( is_singular( 'post' ) || ( is_page() && ! $is_book_page ) ) {
+    if ( is_singular( 'post' ) || ( is_page() && ! is_front_page() && ! $is_book_page ) ) {
         global $post;
         $desc = get_post_meta( $post->ID, '_zk_seo_description', true ) ?: wp_trim_words( wp_strip_all_tags( $post->post_content ), 30, '' );
         
@@ -3018,6 +3020,8 @@ add_filter( 'wp_get_attachment_image_attributes', 'zk_auto_image_alt_text', 10, 
    ============================================================ */
 
 // 1. GEO Meta Tags (Robots Directives & AI Summary)
+remove_action( 'wp_head', 'wp_robots', 1 ); // Prevent WordPress from outputting duplicate robots meta
+
 function zk_render_geo_meta_tags() {
     if ( is_admin() || is_feed() || is_robots() || is_trackback() ) {
         return;
