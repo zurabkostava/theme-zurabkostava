@@ -1631,12 +1631,8 @@
             ctx.strokeStyle = s.color;
             ctx.lineWidth = r;
             ctx.moveTo(px, py);
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            
-            // Draw realistic multi-pass blooming spikes for Morning Star
+            // Draw highly realistic lens flare for Morning Star
             if (s.isMorningStar) {
-                // Fade in smoothly as it comes closer than width * 3.5
                 let flareAlpha = 0;
                 if (s.z < width * 3.5) {
                     flareAlpha = Math.min(1, ((width * 3.5) - s.z) / (width * 1.5));
@@ -1647,47 +1643,78 @@
                     ctx.globalCompositeOperation = 'screen';
                     ctx.globalAlpha = flareAlpha;
                     
-                    let crossLen = Math.min(r * 25, width * 0.4); 
+                    let size = r * 15; // Base scale for the flare
                     
-                    // Central intense glowing core
+                    // 1. Large faint blue outer halo
+                    let halo1 = ctx.createRadialGradient(x, y, 0, x, y, size * 2.5);
+                    halo1.addColorStop(0, 'rgba(40, 90, 255, 0.4)');
+                    halo1.addColorStop(0.3, 'rgba(20, 50, 150, 0.15)');
+                    halo1.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                    ctx.fillStyle = halo1;
                     ctx.beginPath();
-                    ctx.arc(x, y, r * 2.0, 0, Math.PI * 2);
-                    ctx.fillStyle = '#ffffff';
-                    ctx.shadowBlur = 25;
-                    ctx.shadowColor = 'rgba(180, 220, 255, 1)';
+                    ctx.arc(x, y, size * 2.5, 0, Math.PI * 2);
                     ctx.fill();
-                    ctx.shadowBlur = 0;
                     
-                    // Helper to draw realistic multi-pass fading lines for spikes
-                    function drawSpike(dx, dy) {
-                        // Pass 1: Wide, faint outer glow (Blueish)
-                        ctx.beginPath();
-                        ctx.moveTo(x - dx, y - dy);
-                        ctx.lineTo(x + dx, y + dy);
-                        ctx.lineWidth = r * 1.8;
-                        ctx.strokeStyle = 'rgba(100, 150, 255, 0.15)';
-                        ctx.stroke();
+                    // 2. Inner bright blue halo
+                    let halo2 = ctx.createRadialGradient(x, y, 0, x, y, size * 0.8);
+                    halo2.addColorStop(0, 'rgba(150, 220, 255, 0.9)');
+                    halo2.addColorStop(0.5, 'rgba(50, 120, 255, 0.5)');
+                    halo2.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                    ctx.fillStyle = halo2;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size * 0.8, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 3. Spikes (Horizontal and Vertical)
+                    let spikeLen = size * 3.5;
+                    let spikeWidth = Math.max(1, r * 1.5); // Ensure it doesn't get too thin
+                    
+                    function drawDiamond(dx, dy) {
+                        let grad = ctx.createLinearGradient(x - dx, y - dy, x + dx, y + dy);
+                        grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+                        grad.addColorStop(0.4, 'rgba(120, 180, 255, 0.8)');
+                        grad.addColorStop(0.5, 'rgba(255, 255, 255, 1)');
+                        grad.addColorStop(0.6, 'rgba(120, 180, 255, 0.8)');
+                        grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
                         
-                        // Pass 2: Medium, brighter glow
+                        ctx.fillStyle = grad;
                         ctx.beginPath();
-                        ctx.moveTo(x - dx * 0.7, y - dy * 0.7);
-                        ctx.lineTo(x + dx * 0.7, y + dy * 0.7);
-                        ctx.lineWidth = r * 0.8;
-                        ctx.strokeStyle = 'rgba(180, 220, 255, 0.4)';
-                        ctx.stroke();
-                        
-                        // Pass 3: Thin, piercing white core
-                        ctx.beginPath();
-                        ctx.moveTo(x - dx * 0.4, y - dy * 0.4);
-                        ctx.lineTo(x + dx * 0.4, y + dy * 0.4);
-                        ctx.lineWidth = Math.max(0.2, r * 0.2);
-                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-                        ctx.stroke();
+                        if (dx > 0) { // Horizontal
+                            ctx.moveTo(x - dx, y);
+                            ctx.lineTo(x, y - spikeWidth);
+                            ctx.lineTo(x + dx, y);
+                            ctx.lineTo(x, y + spikeWidth);
+                        } else { // Vertical
+                            ctx.moveTo(x, y - dy);
+                            ctx.lineTo(x + spikeWidth, y);
+                            ctx.lineTo(x, y + dy);
+                            ctx.lineTo(x - spikeWidth, y);
+                        }
+                        ctx.fill();
                     }
                     
-                    // Draw the cross
-                    drawSpike(crossLen, 0); // Horizontal
-                    drawSpike(0, crossLen); // Vertical
+                    drawDiamond(spikeLen, 0); // Horizontal
+                    drawDiamond(0, spikeLen); // Vertical
+                    
+                    // 4. Subtle diagonal spikes (the "X")
+                    let diagLen = size * 1.2;
+                    let diagWidth = Math.max(0.5, r * 0.4);
+                    ctx.beginPath();
+                    ctx.moveTo(x - diagLen, y - diagLen);
+                    ctx.lineTo(x + diagLen, y + diagLen);
+                    ctx.moveTo(x + diagLen, y - diagLen);
+                    ctx.lineTo(x - diagLen, y + diagLen);
+                    ctx.lineWidth = diagWidth;
+                    ctx.strokeStyle = 'rgba(150, 200, 255, 0.5)';
+                    ctx.stroke();
+
+                    // 5. Pure white intense center core
+                    ctx.beginPath();
+                    ctx.arc(x, y, r * 1.8, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'rgba(255, 255, 255, 1)';
+                    ctx.fill();
                     
                     ctx.restore();
                 }
