@@ -1551,52 +1551,60 @@
                 glowColor = '240, 240, 255'; // White/Neutral
             }
             
-            // 35% chance for a binary twin (another bright star nearby)
-            if (Math.random() < 0.35) {
+            // Multi-star system probabilities
+            let rTwin = Math.random();
+            let numTwins = 0;
+            if (rTwin < 0.02) numTwins = 3; // 2% chance for 4-star system
+            else if (rTwin < 0.07) numTwins = 2; // 5% chance for 3-star system
+            else if (rTwin < 0.15) numTwins = 1; // 8% chance for 2-star system
+
+            for (let t = 0; t < numTwins; t++) {
                 let twinColor = Math.random() < 0.5 ? '255, 200, 150' : '180, 220, 255';
                 satellites.push({
                     type: 'twin',
-                    dx: (Math.random() - 0.5) * width * 0.4, // close or slightly far
-                    dy: (Math.random() - 0.5) * height * 0.4,
-                    scale: 0.3 + Math.random() * 0.5, // slightly smaller twin
+                    dx: (Math.random() - 0.5) * width * 0.8, // X spread
+                    dy: (Math.random() - 0.5) * height * 0.8, // Y spread
+                    dz: (Math.random() - 0.5) * width * 1.0, // Z spread (near and far)
+                    scale: 0.4 + Math.random() * 0.8, // varying twin sizes
                     color: twinColor
                 });
             }
             
-            // 10% chance for a Mega Planetary System (10-20 planets)
+            // Mega Planetary System (10-20 planets)
             if (Math.random() < 0.1) {
                 let numPlanets = 10 + Math.floor(Math.random() * 11);
                 for (let j = 0; j < numPlanets; j++) {
                     satellites.push({
                         type: 'planet',
-                        dx: (Math.random() - 0.5) * width * 0.3, // wider orbit
+                        dx: (Math.random() - 0.5) * width * 0.3,
                         dy: (Math.random() - 0.5) * height * 0.3,
-                        scale: 0.02 + Math.random() * 0.1, // tiny to small dots
+                        dz: (Math.random() - 0.5) * width * 0.3, // Z depth for planets
+                        scale: 0.02 + Math.random() * 0.1,
                         color: Math.random() < 0.5 ? '180, 220, 255' : '255, 220, 160'
                     });
                 }
             } else if (Math.random() < 0.5) {
-                // 50% chance for regular 1-4 small planets/satellites
+                // Regular 1-4 small planets
                 let numPlanets = Math.floor(Math.random() * 4) + 1;
                 for (let j = 0; j < numPlanets; j++) {
                     satellites.push({
                         type: 'planet',
-                        dx: (Math.random() - 0.5) * width * 0.1, // very close
+                        dx: (Math.random() - 0.5) * width * 0.1,
                         dy: (Math.random() - 0.5) * height * 0.1,
-                        scale: 0.05 + Math.random() * 0.08, // tiny dot
+                        dz: (Math.random() - 0.5) * width * 0.1,
+                        scale: 0.05 + Math.random() * 0.08,
                         color: '180, 220, 255'
                     });
                 }
             }
         } else if (Math.random() < 0.3) {
             // 30% chance to be part of a dense cluster
-            if (!currentCluster || Math.random() < 0.05) { // 5% chance to change cluster center
+            if (!currentCluster || Math.random() < 0.05) {
                 currentCluster = {
                     x: (Math.random() - 0.5) * width * 3,
                     y: (Math.random() - 0.5) * height * 3
                 };
             }
-            // Spawn near cluster center with Gaussian-like spread
             sx = currentCluster.x + (Math.random() + Math.random() - 1) * width * 0.5;
             sy = currentCluster.y + (Math.random() + Math.random() - 1) * height * 0.5;
         } else {
@@ -1610,7 +1618,7 @@
             z: zSpawn,
             pz: 0,
             color: isMorningStar ? `rgba(${glowColor}, 1)` : (giant ? 'rgba(255, 255, 255, 1)' : randomStarColor()),
-            speedFactor: isMorningStar ? 1.0 : (Math.random() * 0.8 + 0.6), // stable speed for morning star
+            speedFactor: isMorningStar ? 1.0 : (Math.random() * 0.8 + 0.6),
             isGiant: giant,
             isMorningStar: isMorningStar,
             morningScale: mScale,
@@ -1632,22 +1640,17 @@
         if (!ctx) return;
         ctx.clearRect(0, 0, width, height);
         
-        // Fixed vanishing point in the center
         const cx = width / 2;
         const cy = height / 2;
-        
-        // Base stable speed
         const activeBaseSpeed = 1.2;
-        
         let elapsedMinutes = (Date.now() - startTime) / 60000;
         
-        // Simulate leaving the galaxy over 10 minutes
         let activeStars = numStars;
         if (elapsedMinutes < 10) {
             let progress = elapsedMinutes / 10;
-            activeStars = Math.floor(numStars - (numStars - 35) * progress); // gradually drops to 35 stars
+            activeStars = Math.floor(numStars - (numStars - 35) * progress);
         } else {
-            activeStars = 35; // very rare stars
+            activeStars = 35;
         }
         
         for (let i = 0; i < numStars; i++) {
@@ -1657,61 +1660,58 @@
             
             if (s.z <= 0) {
                 stars[i] = newStar(true);
-                stars[i].isDead = (i >= activeStars) && !stars[i].isMorningStar; // Never kill a morning star
+                stars[i].isDead = (i >= activeStars) && !stars[i].isMorningStar;
                 continue;
             }
             
             if (s.isDead) continue;
             
-            // 3D Projection
-            let x = (s.x / s.z) * 150 + cx;
-            let y = (s.y / s.z) * 150 + cy;
-            
-            // Previous position for streak (motion blur)
-            let px = (s.x / s.pz) * 150 + cx;
-            let py = (s.y / s.pz) * 150 + cy;
-            
-            // Size scales as it gets closer, adjusted for deeper render distance
-            let r = Math.max(0.1, (1 - s.z / (width * 3)) * 2.5);
-            
-            if (s.isGiant) {
-                r *= 2.5; // Giant stars are larger
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-            } else {
-                ctx.shadowBlur = 0;
-            }
-            
-            // Normal base star rendering
-            ctx.beginPath();
-            ctx.strokeStyle = s.color;
-            ctx.lineWidth = r;
-            ctx.moveTo(px, py);
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            
-            // Draw realistic multi-pass blooming spikes for Morning Star
-            if (s.isMorningStar) {
-                let flareAlpha = 0;
-                if (s.z < width * 3.5) {
-                    flareAlpha = Math.min(1, ((width * 3.5) - s.z) / (width * 1.5));
+            // Base rendering for standard stars
+            if (!s.isMorningStar) {
+                let x = (s.x / s.z) * 150 + cx;
+                let y = (s.y / s.z) * 150 + cy;
+                let px = (s.x / s.pz) * 150 + cx;
+                let py = (s.y / s.pz) * 150 + cy;
+                
+                let r = Math.max(0.1, (1 - s.z / (width * 3)) * 2.5);
+                if (s.isGiant) {
+                    r *= 2.5;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+                } else {
+                    ctx.shadowBlur = 0;
                 }
                 
-                if (flareAlpha > 0.01) {
-                    ctx.save();
-                    ctx.globalCompositeOperation = 'screen';
-                    ctx.globalAlpha = flareAlpha;
+                ctx.beginPath();
+                ctx.strokeStyle = s.color;
+                ctx.lineWidth = r;
+                ctx.moveTo(px, py);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            } else {
+                // Complex rendering for Morning Star and its 3D satellites
+                let objectsToRender = [{ type: 'main', dx: 0, dy: 0, dz: 0, scale: s.morningScale, color: s.glowRgb }].concat(s.satellites);
+                
+                for (let obj of objectsToRender) {
+                    let oz = s.z + (obj.dz || 0);
+                    if (oz <= 0.1) continue; // Behind camera
                     
-                    // Render the main star and all its satellites
-                    let objectsToRender = [{ type: 'main', dx: 0, dy: 0, scale: s.morningScale, color: s.glowRgb }].concat(s.satellites);
+                    let objAlpha = 0;
+                    if (oz < width * 3.5) {
+                        objAlpha = Math.min(1, ((width * 3.5) - oz) / (width * 1.5));
+                    }
                     
-                    for (let obj of objectsToRender) {
-                        let ox = ((s.x + obj.dx) / s.z) * 150 + cx;
-                        let oy = ((s.y + obj.dy) / s.z) * 150 + cy;
-                        let or = r * obj.scale;
+                    if (objAlpha > 0.01) {
+                        ctx.save();
+                        ctx.globalCompositeOperation = 'screen';
+                        ctx.globalAlpha = objAlpha;
+                        
+                        let ox = ((s.x + obj.dx) / oz) * 150 + cx;
+                        let oy = ((s.y + obj.dy) / oz) * 150 + cy;
+                        let orBase = Math.max(0.1, (1 - oz / (width * 3)) * 2.5);
+                        let or = orBase * obj.scale;
                         
                         if (obj.type === 'planet') {
-                            // Render tiny planet dot
                             ctx.beginPath();
                             ctx.arc(ox, oy, or * 2, 0, Math.PI * 2);
                             ctx.fillStyle = `rgba(${obj.color}, 0.8)`;
@@ -1719,62 +1719,60 @@
                             ctx.shadowColor = `rgba(${obj.color}, 1)`;
                             ctx.fill();
                             ctx.shadowBlur = 0;
-                            continue;
+                        } else {
+                            let crossLen = Math.min(or * 30, width * 0.45);
+                            let diagLen = crossLen * 0.35;
+                            let gColor = obj.color;
+                            
+                            // Core
+                            let coreGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, or * 4);
+                            coreGrad.addColorStop(0, '#ffffff');
+                            coreGrad.addColorStop(0.15, `rgba(${gColor}, 0.8)`);
+                            coreGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                            
+                            ctx.beginPath();
+                            ctx.arc(ox, oy, or * 4, 0, Math.PI * 2);
+                            ctx.fillStyle = coreGrad;
+                            ctx.fill();
+                            
+                            // Spikes
+                            let spikeGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, crossLen);
+                            spikeGrad.addColorStop(0, '#ffffff');
+                            spikeGrad.addColorStop(0.1, `rgba(${gColor}, 0.6)`);
+                            spikeGrad.addColorStop(0.4, `rgba(${gColor}, 0.15)`);
+                            spikeGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                            
+                            ctx.strokeStyle = spikeGrad;
+                            ctx.lineCap = 'round';
+                            
+                            // Main Cross
+                            ctx.beginPath();
+                            ctx.lineWidth = or * 1.5;
+                            ctx.moveTo(ox - crossLen, oy); ctx.lineTo(ox + crossLen, oy);
+                            ctx.moveTo(ox, oy - crossLen); ctx.lineTo(ox, oy + crossLen);
+                            ctx.stroke();
+                            
+                            // Core Cross
+                            ctx.beginPath();
+                            ctx.lineWidth = Math.max(0.2, or * 0.4);
+                            ctx.moveTo(ox - crossLen * 0.6, oy); ctx.lineTo(ox + crossLen * 0.6, oy);
+                            ctx.moveTo(ox, oy - crossLen * 0.6); ctx.lineTo(ox, oy + crossLen * 0.6);
+                            ctx.stroke();
+                            
+                            // Diagonal Cross
+                            ctx.beginPath();
+                            ctx.lineWidth = or * 1.0;
+                            ctx.moveTo(ox - diagLen, oy - diagLen); ctx.lineTo(ox + diagLen, oy + diagLen);
+                            ctx.moveTo(ox - diagLen, oy + diagLen); ctx.lineTo(ox + diagLen, oy - diagLen);
+                            ctx.stroke();
                         }
                         
-                        // For Main and Twin, render diffraction spikes
-                        let crossLen = Math.min(or * 30, width * 0.45);
-                        let diagLen = crossLen * 0.35;
-                        let gColor = obj.color;
-                        
-                        // Central soft glowing core (Radial Gradient)
-                        let coreGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, or * 4);
-                        coreGrad.addColorStop(0, '#ffffff');
-                        coreGrad.addColorStop(0.15, `rgba(${gColor}, 0.8)`);
-                        coreGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                        
-                        ctx.beginPath();
-                        ctx.arc(ox, oy, or * 4, 0, Math.PI * 2);
-                        ctx.fillStyle = coreGrad;
-                        ctx.fill();
-                        
-                        // Spikes with fading Radial Gradient stroke
-                        let spikeGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, crossLen);
-                        spikeGrad.addColorStop(0, '#ffffff');
-                        spikeGrad.addColorStop(0.1, `rgba(${gColor}, 0.6)`);
-                        spikeGrad.addColorStop(0.4, `rgba(${gColor}, 0.15)`);
-                        spikeGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                        
-                        ctx.strokeStyle = spikeGrad;
-                        ctx.lineCap = 'round';
-                        
-                        // Main Cross
-                        ctx.beginPath();
-                        ctx.lineWidth = or * 1.5;
-                        ctx.moveTo(ox - crossLen, oy); ctx.lineTo(ox + crossLen, oy); // H
-                        ctx.moveTo(ox, oy - crossLen); ctx.lineTo(ox, oy + crossLen); // V
-                        ctx.stroke();
-                        
-                        // Core Cross (thinner, brighter)
-                        ctx.beginPath();
-                        ctx.lineWidth = Math.max(0.2, or * 0.4);
-                        ctx.moveTo(ox - crossLen * 0.6, oy); ctx.lineTo(ox + crossLen * 0.6, oy); // H
-                        ctx.moveTo(ox, oy - crossLen * 0.6); ctx.lineTo(ox, oy + crossLen * 0.6); // V
-                        ctx.stroke();
-                        
-                        // Diagonal Cross (fainter, shorter)
-                        ctx.beginPath();
-                        ctx.lineWidth = or * 1.0;
-                        ctx.moveTo(ox - diagLen, oy - diagLen); ctx.lineTo(ox + diagLen, oy + diagLen);
-                        ctx.moveTo(ox - diagLen, oy + diagLen); ctx.lineTo(ox + diagLen, oy - diagLen);
-                        ctx.stroke();
+                        ctx.restore();
                     }
-                    
-                    ctx.restore();
                 }
             }
         }
-        ctx.shadowBlur = 0; // Reset after loop
+        ctx.shadowBlur = 0;
     }
 
     function onMouseMove(e) {
