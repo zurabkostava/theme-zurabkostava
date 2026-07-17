@@ -1536,8 +1536,8 @@
         if (isMorningStar) {
             // Spawn anywhere in the wider frustum, not just center
             zSpawn = width * 5; 
-            sx = (Math.random() - 0.5) * width * 2.5;
-            sy = (Math.random() - 0.5) * height * 2.5;
+            sx = (Math.random() - 0.5) * width * 12;
+            sy = (Math.random() - 0.5) * height * 12;
             
             mScale = 0.5 + Math.random() * 1.5; // Random size multiplier (0.5x to 2.0x)
             
