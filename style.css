@@ -364,15 +364,15 @@ body.is-navigating #zk-global-loader {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 120vw;
-    height: 120vw;
-    max-width: 1400px;
-    max-height: 1400px;
+    width: 70vw;
+    height: 70vw;
+    max-width: 800px;
+    max-height: 800px;
     background-image: url('https://www.pngmart.com/files/22/Galaxy-PNG-Isolated-Photos.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 0.6; /* Excellent visibility for a transparent PNG */
+    opacity: 0.35; /* Fainter to look more distant */
     z-index: 0;
     pointer-events: none;
     /* 10800s = 3 hours */
