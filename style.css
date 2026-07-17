@@ -362,20 +362,20 @@ body.is-navigating #zk-global-loader {
 
 .hero-galaxy {
     position: absolute;
-    inset: -10%; /* extend slightly so it can scale without clipping */
-    background-image: url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop');
+    inset: -15%; /* extend slightly so it can scale without clipping */
+    background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fHN0YXJzJTIwYmxhY2t8ZW58MHx8MHx8fDA%3D');
     background-size: cover;
     background-position: center;
-    opacity: 0.25; /* subtle, behind the canvas stars */
+    opacity: 0.35; /* subtle, behind the canvas stars */
     z-index: 0;
     pointer-events: none;
-    animation: galaxyZoom 180s linear infinite alternate;
+    animation: galaxyZoom 90s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
     mix-blend-mode: screen;
 }
 
 @keyframes galaxyZoom {
     0% { transform: scale(1); }
-    100% { transform: scale(1.25); }
+    100% { transform: scale(1.4); }
 }
 
 .zk-starfield {

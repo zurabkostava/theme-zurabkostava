@@ -1515,7 +1515,8 @@
             y: (Math.random() - 0.5) * height * 2,
             z: resetZ ? width : Math.random() * width,
             pz: 0,
-            color: randomStarColor()
+            color: randomStarColor(),
+            speedFactor: Math.random() * 0.8 + 0.6 // Adds realistic randomness to star speeds
         };
     }
 
@@ -1535,13 +1536,13 @@
         const cx = width / 2;
         const cy = height / 2;
         
-        // Stable speed
-        const speed = 1.2;
+        // Base stable speed
+        const baseSpeed = 1.2;
         
         for (let i = 0; i < numStars; i++) {
             let s = stars[i];
             s.pz = s.z;
-            s.z -= speed;
+            s.z -= baseSpeed * s.speedFactor;
             
             if (s.z <= 0) {
                 stars[i] = newStar(true);
