@@ -1377,17 +1377,22 @@ body.zk-lb-open { overflow: hidden; }
 	pointer-events: none;
 }
 .zk-lightbox-thumb-group-title {
-	position: absolute;
-	top: -30px;
+	position: sticky;
 	left: 4px;
+	width: 0;
+	height: 0;
+	align-self: flex-start;
+	transform: translateY(-30px);
 	font-size: 0.65rem;
 	color: rgba(255, 255, 255, 0.6);
 	letter-spacing: 0.05em;
 	font-weight: 500;
 	white-space: nowrap;
+	overflow: visible;
 	pointer-events: none;
 	font-family: var(--font, sans-serif);
 	text-transform: uppercase;
+	z-index: 10;
 }
 .zk-lightbox-thumbs::-webkit-scrollbar { display: none; }
 .zk-lightbox.is-open .zk-lightbox-thumbs { opacity: 1; transform: translateY(0); }
