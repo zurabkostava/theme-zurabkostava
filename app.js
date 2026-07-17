@@ -1510,13 +1510,15 @@
     }
 
     function newStar(resetZ = false) {
+        let giant = Math.random() < 0.015; // 1.5% chance to be a giant shining star
         return {
             x: (Math.random() - 0.5) * width * 2,
             y: (Math.random() - 0.5) * height * 2,
             z: resetZ ? width : Math.random() * width,
             pz: 0,
-            color: randomStarColor(),
-            speedFactor: Math.random() * 0.8 + 0.6 // Adds realistic randomness to star speeds
+            color: giant ? 'rgba(255, 255, 255, 1)' : randomStarColor(),
+            speedFactor: Math.random() * 0.8 + 0.6, // Adds realistic randomness to star speeds
+            isGiant: giant
         };
     }
 
@@ -1560,6 +1562,14 @@
             // Size scales as it gets closer
             let r = Math.max(0.1, (1 - s.z / width) * 2.5);
             
+            if (s.isGiant) {
+                r *= 2.5; // Giant stars are larger
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+            } else {
+                ctx.shadowBlur = 0;
+            }
+            
             ctx.beginPath();
             ctx.strokeStyle = s.color;
             ctx.lineWidth = r;
@@ -1567,6 +1577,7 @@
             ctx.lineTo(x, y);
             ctx.stroke();
         }
+        ctx.shadowBlur = 0; // Reset after loop
     }
 
     function onMouseMove(e) {
