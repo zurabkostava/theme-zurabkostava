@@ -1469,6 +1469,8 @@
     const numStars = 800;
     let stars = [];
     const baseSpeed = 0.6;
+    let startTime = Date.now();
+    let currentCluster = null;
 
     function initHero() {
         hero = document.querySelector('.hero');
@@ -1485,6 +1487,7 @@
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
             
+            startTime = Date.now();
             stars = [];
             for (let i = 0; i < numStars; i++) {
                 stars.push(newStar(false)); // random z initially
@@ -1511,14 +1514,34 @@
 
     function newStar(resetZ = false) {
         let giant = Math.random() < 0.015; // 1.5% chance to be a giant shining star
+        
+        let sx, sy;
+        // 30% chance to be part of a dense cluster
+        if (Math.random() < 0.3) {
+            if (!currentCluster || Math.random() < 0.05) { // 5% chance to change cluster center
+                currentCluster = {
+                    x: (Math.random() - 0.5) * width * 1.5,
+                    y: (Math.random() - 0.5) * height * 1.5
+                };
+            }
+            // Spawn near cluster center with Gaussian-like spread
+            sx = currentCluster.x + (Math.random() + Math.random() - 1) * width * 0.35;
+            sy = currentCluster.y + (Math.random() + Math.random() - 1) * height * 0.35;
+        } else {
+            sx = (Math.random() - 0.5) * width * 2;
+            sy = (Math.random() - 0.5) * height * 2;
+        }
+        
         return {
-            x: (Math.random() - 0.5) * width * 2,
-            y: (Math.random() - 0.5) * height * 2,
+            x: sx,
+            y: sy,
             z: resetZ ? width : Math.random() * width,
             pz: 0,
             color: giant ? 'rgba(255, 255, 255, 1)' : randomStarColor(),
             speedFactor: Math.random() * 0.8 + 0.6, // Adds realistic randomness to star speeds
-            isGiant: giant
+            isGiant: giant,
+            twinkleOffset: Math.random() * Math.PI * 2,
+            isDead: false
         };
     }
 
@@ -1539,17 +1562,31 @@
         const cy = height / 2;
         
         // Base stable speed
-        const baseSpeed = 1.2;
+        const activeBaseSpeed = 1.2;
+        
+        let elapsedMinutes = (Date.now() - startTime) / 60000;
+        
+        // Simulate leaving the galaxy over 10 minutes
+        let activeStars = numStars;
+        if (elapsedMinutes < 10) {
+            let progress = elapsedMinutes / 10;
+            activeStars = Math.floor(numStars - (numStars - 35) * progress); // gradually drops to 35 stars
+        } else {
+            activeStars = 35; // very rare stars
+        }
         
         for (let i = 0; i < numStars; i++) {
             let s = stars[i];
             s.pz = s.z;
-            s.z -= baseSpeed * s.speedFactor;
+            s.z -= activeBaseSpeed * s.speedFactor;
             
             if (s.z <= 0) {
                 stars[i] = newStar(true);
+                stars[i].isDead = (i >= activeStars); // Mark star as dead if we are leaving the galaxy
                 continue;
             }
+            
+            if (s.isDead) continue;
             
             // 3D Projection
             let x = (s.x / s.z) * 150 + cx;
@@ -1570,6 +1607,15 @@
                 ctx.shadowBlur = 0;
             }
             
+            // Twinkling logic after 20 minutes
+            let alphaMulti = 1;
+            if (elapsedMinutes >= 20) {
+                if (s.speedFactor > 1.0) { // arbitrary condition so only a subset blinks
+                    alphaMulti = 0.15 + 0.85 * Math.abs(Math.sin(Date.now() * 0.0005 * s.speedFactor + s.twinkleOffset));
+                }
+            }
+            
+            ctx.globalAlpha = alphaMulti;
             ctx.beginPath();
             ctx.strokeStyle = s.color;
             ctx.lineWidth = r;
@@ -1578,6 +1624,7 @@
             ctx.stroke();
         }
         ctx.shadowBlur = 0; // Reset after loop
+        ctx.globalAlpha = 1;
     }
 
     function onMouseMove(e) {
