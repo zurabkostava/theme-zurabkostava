@@ -1078,7 +1078,7 @@
             activeItems = [];
 
             allItems.forEach(function (item) {
-                var match  = (filter === 'all' || item.getAttribute('data-category') === filter);
+                var match  = (filter === 'all' || item.classList.contains(filter));
                 var hidden = item.style.display === 'none' || item.classList.contains('is-hidden');
                 if (match) {
                     activeItems.push(item);
