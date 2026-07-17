@@ -362,7 +362,7 @@ body.is-navigating #zk-global-loader {
 
 .hero-galaxy {
     position: absolute;
-    top: 38%;
+    top: 50%;
     left: 50%;
     width: 45vw;
     height: 45vw;
@@ -372,7 +372,7 @@ body.is-navigating #zk-global-loader {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 0.6; /* Brighter / more prominent */
+    opacity: 1; /* Full sharpness */
     z-index: 0;
     pointer-events: none;
     /* 10800s = 3 hours */
@@ -439,6 +439,7 @@ body.is-navigating #zk-global-loader {
     flex-direction: column;
     align-items: center;
     gap: 16px;
+    margin-top: 10vh; /* Pushed down */
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
