@@ -362,27 +362,27 @@ body.is-navigating #zk-global-loader {
 
 .hero-galaxy {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 45vw;
-    height: 45vw;
-    max-width: 500px;
-    max-height: 500px;
+    top: 5%;
+    right: 5%;
+    width: 65vw;
+    height: 65vw;
+    max-width: 700px;
+    max-height: 700px;
     background-image: url('https://www.pngmart.com/files/22/Galaxy-PNG-Isolated-Photos.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 1; /* Full sharpness */
+    opacity: 0.7;
     z-index: 0;
     pointer-events: none;
     /* 10800s = 3 hours */
-    animation: galaxyZoom 10800s linear forwards;
+    animation: galaxyPassBy 10800s linear forwards;
     transform-origin: center;
 }
 
-@keyframes galaxyZoom {
-    0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
-    100% { transform: translate(-50%, -50%) scale(1.15) rotate(5deg); }
+@keyframes galaxyPassBy {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    100% { transform: translate(40%, -40%) scale(1.8) rotate(15deg); }
 }
 
 .zk-starfield {
