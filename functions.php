@@ -853,8 +853,9 @@ function zk_render_fav_list($option_key) {
             $og_image = zk_get_og_image( $url, false );
             
             if ( false !== $og_image && ! empty( $og_image ) ) {
-                $hover_attr = ' data-hover-image="' . esc_url( $og_image ) . '" class="zk-fav-link"';
-                $thumb_html = '<img src="' . esc_url( $og_image ) . '" class="zk-fav-thumb" data-shape="' . esc_attr($shape) . '" loading="lazy" alt="" />';
+                $optimized_img = 'https://wsrv.nl/?url=' . urlencode( $og_image ) . '&w=150&q=50&output=webp';
+                $hover_attr = ' data-hover-image="' . esc_url( $optimized_img ) . '" class="zk-fav-link"';
+                $thumb_html = '<img src="' . esc_url( $optimized_img ) . '" class="zk-fav-thumb" data-shape="' . esc_attr($shape) . '" loading="lazy" alt="" />';
             } elseif ( false === $og_image ) {
                 $hover_attr = ' data-scrape-url="' . esc_url( $url ) . '" data-shape="' . esc_attr($shape) . '" class="zk-fav-link"';
                 $thumb_html = '<img src="" class="zk-fav-thumb" data-shape="' . esc_attr($shape) . '" loading="lazy" alt="" />';
@@ -994,10 +995,11 @@ function zk_fav_tooltip_script() {
                         const data = await response.json();
                         
                         if (data.success && data.data.image) {
-                            link.setAttribute('data-hover-image', data.data.image);
+                            const optimizedImg = 'https://wsrv.nl/?url=' + encodeURIComponent(data.data.image) + '&w=150&q=50&output=webp';
+                            link.setAttribute('data-hover-image', optimizedImg);
                             const img = link.querySelector('.zk-fav-thumb');
                             if (img) {
-                                img.src = data.data.image;
+                                img.src = optimizedImg;
                             }
                         }
                     } catch (err) {
