@@ -549,6 +549,7 @@ function zk_cinematic_gallery() {
 
     $output .= '<div class="zk-gallery-grid" id="zkGalleryGrid">';
 
+    $i = 0;
     while ( $query->have_posts() ) {
         $query->the_post();
         $image_id = get_the_ID();
@@ -570,7 +571,7 @@ function zk_cinematic_gallery() {
             $alt_text = 'Zurab Kostava Capture';
         }
 
-        $img_html = wp_get_attachment_image( $image_id, 'large', false, array(
+        $img_attributes = array(
                 'data-full'        => esc_url( $full_img ),
                 'data-thumb'       => esc_url( $thumb_img ? $thumb_img : $full_img ),
                 'data-exif'        => esc_attr( $exif_text ),
@@ -579,11 +580,23 @@ function zk_cinematic_gallery() {
                 'data-description' => esc_attr( $description ),
                 'class'            => 'zk-grid-photo',
                 'alt'              => esc_attr( $alt_text ),
-        ) );
+                'sizes'            => '(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw'
+        );
+
+        if ( $i < 6 ) {
+            $img_attributes['loading']       = 'eager';
+            $img_attributes['fetchpriority'] = 'high';
+        } else {
+            $img_attributes['loading']  = 'lazy';
+            $img_attributes['decoding'] = 'async';
+        }
+
+        $img_html = wp_get_attachment_image( $image_id, 'medium_large', false, $img_attributes );
 
         $output .= '<div class="zk-gallery-item ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '">';
         $output .= '<div class="zk-gallery-image-wrap">' . $img_html . '</div>';
         $output .= '</div>';
+        $i++;
     }
     wp_reset_postdata();
     $output .= '</div></div>';
@@ -1343,6 +1356,7 @@ function zk_get_filebird_gallery( $folder_id ) {
     $output  = '<div class="zk-gallery-wrapper">';
     $output .= '<div class="zk-gallery-grid" id="zkAboutGallery">';
 
+    $i = 0;
     foreach ( $attachment_ids as $id ) {
         $full_img  = wp_get_attachment_image_url( $id, 'full' );
         $thumb_img = wp_get_attachment_image_url( $id, 'thumbnail' ); // light strip image
@@ -1362,9 +1376,7 @@ function zk_get_filebird_gallery( $folder_id ) {
             $alt_text = 'Zurab Kostava Capture';
         }
 
-        // Same image contract initGallery() reads: data-full (lightbox), data-thumb (strip).
-        // Life & Captures has no EXIF, so data-exif stays empty.
-        $img_html = wp_get_attachment_image( $id, 'large', false, array(
+        $img_attributes = array(
                 'data-full'        => esc_url( $full_img ),
                 'data-thumb'       => esc_url( $thumb_img ? $thumb_img : $full_img ),
                 'data-exif'        => '',
@@ -1373,11 +1385,25 @@ function zk_get_filebird_gallery( $folder_id ) {
                 'data-description' => esc_attr( $description ),
                 'class'            => 'zk-grid-photo',
                 'alt'              => esc_attr( $alt_text ),
-        ) );
+                'sizes'            => '(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw'
+        );
+
+        if ( $i < 6 ) {
+            $img_attributes['loading']       = 'eager';
+            $img_attributes['fetchpriority'] = 'high';
+        } else {
+            $img_attributes['loading']  = 'lazy';
+            $img_attributes['decoding'] = 'async';
+        }
+
+        // Same image contract initGallery() reads: data-full (lightbox), data-thumb (strip).
+        // Life & Captures has no EXIF, so data-exif stays empty.
+        $img_html = wp_get_attachment_image( $id, 'medium_large', false, $img_attributes );
 
         $output .= '<div class="zk-gallery-item">';
         $output .= '<div class="zk-gallery-image-wrap">' . $img_html . '</div>';
         $output .= '</div>';
+        $i++;
     }
 
     $output .= '</div></div>';
