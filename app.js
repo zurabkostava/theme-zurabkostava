@@ -914,6 +914,7 @@
 
             activeItems.forEach(function (item) {
                 var carouselTitle = item.getAttribute('data-carousel-title');
+                var sourceTag = item.getAttribute('data-source');
 
                 var src  = item.querySelector('img');
                 var cell = document.createElement('div');
@@ -924,6 +925,14 @@
                 im.decoding = 'async';
                 im.alt = '';
                 cell.appendChild(im);
+                
+                if (sourceTag) {
+                    var tagEl = document.createElement('div');
+                    tagEl.className = 'zk-lightbox-source-tag';
+                    tagEl.textContent = sourceTag;
+                    cell.appendChild(tagEl);
+                }
+                
                 thumbEls.push(cell);
 
                 if (carouselTitle) {

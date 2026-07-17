@@ -1418,6 +1418,22 @@ body.zk-lb-open { overflow: hidden; }
 	transform: scale(1.05);
 }
 
+.zk-lightbox-source-tag {
+	position: absolute;
+	top: 2px;
+	right: 2px;
+	background: rgba(0, 0, 0, 0.75);
+	color: #fff;
+	font-size: 0.45rem;
+	padding: 1px 3px;
+	border-radius: 2px;
+	letter-spacing: 0.05em;
+	font-weight: 600;
+	pointer-events: none;
+	backdrop-filter: blur(2px);
+	z-index: 5;
+}
+
 /* ── ჭკვიანი ცენტრირება ──
    თუ ფოტოები ცოტაა, ზუსტად ცენტრში დგება. თუ ბევრია და ეკრანს სცდება —
    ავტომატურად ინაცვლებს მარცხნივ სქროლისთვის! */

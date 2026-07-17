@@ -535,7 +535,8 @@ function zk_cinematic_gallery() {
     }
 
     $category_map = array(); // attachment_id => filter-xxx (first folder wins)
-    $carousel_map = array(); // folder_id => array of attachment_ids
+    $name_to_carousel = array(); // subfolder_name => array of attachment_ids
+    $carousel_categories = array(); // subfolder_name => array of filter-xxx classes
     $att_to_folder = array(); // attachment_id => folder_id
 
     foreach ( $rows as $row ) {
@@ -547,7 +548,12 @@ function zk_cinematic_gallery() {
         }
         
         if ( isset( $subfolder_ids[ $fid ] ) ) {
-            $carousel_map[ $fid ][] = $att;
+            $name = $subfolder_names[$fid];
+            $name_to_carousel[ $name ][] = $att;
+            
+            if ( isset( $folder_class[ $fid ] ) ) {
+                $carousel_categories[ $name ][] = $folder_class[ $fid ];
+            }
         }
 
         if ( ! isset( $category_map[ $att ] ) && isset( $folder_class[ $fid ] ) ) {
@@ -593,11 +599,21 @@ function zk_cinematic_gallery() {
         $is_carousel = isset($subfolder_ids[$fid]);
 
         if ( $is_carousel ) {
-            if ( isset( $rendered_carousels[ $fid ] ) ) {
+            $carousel_name = $subfolder_names[$fid];
+            if ( isset( $rendered_carousels[ $carousel_name ] ) ) {
                 continue;
             }
-            $rendered_carousels[ $fid ] = true;
-            $cat_class = isset( $category_map[ $image_id ] ) ? $category_map[ $image_id ] : 'all';
+            $rendered_carousels[ $carousel_name ] = true;
+            
+            // Collect unique classes for the merged carousel
+            $cat_classes_array = isset($carousel_categories[$carousel_name]) ? array_unique($carousel_categories[$carousel_name]) : array('all');
+            $cat_class = implode(' ', $cat_classes_array);
+            
+            // Determine tag for cover photo
+            $base_cat = isset( $category_map[ $image_id ] ) ? $category_map[ $image_id ] : '';
+            $source_tag = '';
+            if ($base_cat == 'filter-camera') $source_tag = 'CAM';
+            elseif ($base_cat == 'filter-mobile') $source_tag = 'PHONE';
 
             // Output cover image
             $full_img  = wp_get_attachment_image_url( $image_id, 'full' );
@@ -632,9 +648,9 @@ function zk_cinematic_gallery() {
             }
 
             $img_html = wp_get_attachment_image( $image_id, 'medium_large', false, $img_attributes );
-            $folder_title = isset($subfolder_names[$fid]) ? $subfolder_names[$fid] : '';
+            $folder_title = $carousel_name;
 
-            $output .= '<div class="zk-gallery-item zk-is-carousel ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '" data-carousel-title="' . esc_attr( $folder_title ) . '">';
+            $output .= '<div class="zk-gallery-item zk-is-carousel ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '" data-carousel-title="' . esc_attr( $folder_title ) . '" data-source="' . esc_attr( $source_tag ) . '">';
             $output .= '<div class="zk-gallery-image-wrap">';
             $output .= $img_html;
             if ( $folder_title ) {
@@ -646,9 +662,9 @@ function zk_cinematic_gallery() {
             $rendered_attachments[ $image_id ] = true;
             $i++;
 
-            // Output hidden items for this carousel
-            if ( isset( $carousel_map[ $fid ] ) ) {
-                foreach ( $carousel_map[ $fid ] as $c_att ) {
+            // Output hidden items for this merged carousel
+            if ( isset( $name_to_carousel[ $carousel_name ] ) ) {
+                foreach ( $name_to_carousel[ $carousel_name ] as $c_att ) {
                     if ( $c_att == $image_id ) continue;
 
                     $c_full_img  = wp_get_attachment_image_url( $c_att, 'full' );
@@ -663,6 +679,12 @@ function zk_cinematic_gallery() {
 
                     if ( empty( $c_alt_text ) ) $c_alt_text = $c_title;
                     if ( empty( $c_alt_text ) ) $c_alt_text = 'Zurab Kostava Capture';
+
+                    // Determine tag for hidden photo
+                    $c_base_cat = isset( $category_map[ $c_att ] ) ? $category_map[ $c_att ] : '';
+                    $c_source_tag = '';
+                    if ($c_base_cat == 'filter-camera') $c_source_tag = 'CAM';
+                    elseif ($c_base_cat == 'filter-mobile') $c_source_tag = 'PHONE';
 
                     $c_img_attributes = array(
                             'data-full'        => esc_url( $c_full_img ),
@@ -680,7 +702,7 @@ function zk_cinematic_gallery() {
 
                     $c_img_html = wp_get_attachment_image( $c_att, 'thumbnail', false, $c_img_attributes );
 
-                    $output .= '<div class="zk-gallery-item zk-carousel-hidden ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '" data-carousel-title="' . esc_attr( $folder_title ) . '">';
+                    $output .= '<div class="zk-gallery-item zk-carousel-hidden ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '" data-carousel-title="' . esc_attr( $folder_title ) . '" data-source="' . esc_attr( $c_source_tag ) . '">';
                     $output .= '<div class="zk-gallery-image-wrap">' . $c_img_html . '</div>';
                     $output .= '</div>';
 
