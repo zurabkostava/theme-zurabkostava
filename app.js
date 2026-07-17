@@ -1645,7 +1645,7 @@
             
             if (s.z <= 0) {
                 stars[i] = newStar(true);
-                stars[i].isDead = (i >= activeStars); // Mark star as dead if we are leaving the galaxy
+                stars[i].isDead = (i >= activeStars) && !stars[i].isMorningStar; // Never kill a morning star
                 continue;
             }
             
