@@ -781,7 +781,7 @@ function zk_get_og_image( $url, $scrape = true ) {
 
     // Normalize URL to ensure cache keys match between backend rendering and frontend AJAX
     $url = esc_url_raw( $url );
-    $transient_key = 'zk_og_img_v3_' . md5( $url );
+    $transient_key = 'zk_og_img_v4_' . md5( $url );
     $cached_image = get_transient( $transient_key );
 
     if ( false !== $cached_image ) {
@@ -805,7 +805,7 @@ function zk_get_og_image( $url, $scrape = true ) {
     ) );
 
     if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
-        set_transient( $transient_key, '', DAY_IN_SECONDS * 7 );
+        set_transient( $transient_key, '', 12 * HOUR_IN_SECONDS );
         return '';
     }
 
@@ -857,6 +857,9 @@ function zk_render_fav_list($option_key) {
                 $thumb_html = '<img src="' . esc_url( $og_image ) . '" class="zk-fav-thumb" data-shape="' . esc_attr($shape) . '" loading="lazy" alt="" />';
             } elseif ( false === $og_image ) {
                 $hover_attr = ' data-scrape-url="' . esc_url( $url ) . '" data-shape="' . esc_attr($shape) . '" class="zk-fav-link"';
+                $thumb_html = '<img src="" class="zk-fav-thumb" data-shape="' . esc_attr($shape) . '" loading="lazy" alt="" />';
+            } else {
+                $hover_attr = ' data-shape="' . esc_attr($shape) . '" class="zk-fav-link"';
                 $thumb_html = '<img src="" class="zk-fav-thumb" data-shape="' . esc_attr($shape) . '" loading="lazy" alt="" />';
             }
         }
@@ -967,7 +970,7 @@ function zk_fav_tooltip_script() {
             isFetchingImages = true;
             const ajaxUrl = "<?php echo admin_url('admin-ajax.php'); ?>";
             
-            const concurrencyLimit = 4; // Fetch 4 images concurrently
+            const concurrencyLimit = 2; // Reduced to 2 to avoid Goodreads rate limits
             let currentIndex = 0;
             
             async function worker() {
@@ -1000,6 +1003,9 @@ function zk_fav_tooltip_script() {
                     } catch (err) {
                         console.error('Error fetching og:image', err);
                     }
+                    
+                    // Small delay to be gentle on servers
+                    await new Promise(resolve => setTimeout(resolve, 250));
                 }
             }
             
