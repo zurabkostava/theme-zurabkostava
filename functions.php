@@ -781,7 +781,7 @@ function zk_get_og_image( $url, $scrape = true ) {
 
     // Normalize URL to ensure cache keys match between backend rendering and frontend AJAX
     $url = esc_url_raw( $url );
-    $transient_key = 'zk_og_img_v5_' . md5( $url );
+    $transient_key = 'zk_og_img_v7_' . md5( $url );
     $cached_image = get_transient( $transient_key );
 
     if ( false !== $cached_image ) {
@@ -820,7 +820,11 @@ function zk_get_og_image( $url, $scrape = true ) {
 
     $image_url = html_entity_decode( $image_url );
 
-    set_transient( $transient_key, $image_url, DAY_IN_SECONDS * 30 );
+    if ( ! empty( $image_url ) ) {
+        set_transient( $transient_key, $image_url, DAY_IN_SECONDS * 30 );
+    } else {
+        set_transient( $transient_key, '', HOUR_IN_SECONDS );
+    }
 
     return $image_url;
 }
