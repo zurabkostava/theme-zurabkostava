@@ -1520,22 +1520,22 @@
         if (Math.random() < 0.3) {
             if (!currentCluster || Math.random() < 0.05) { // 5% chance to change cluster center
                 currentCluster = {
-                    x: (Math.random() - 0.5) * width * 1.5,
-                    y: (Math.random() - 0.5) * height * 1.5
+                    x: (Math.random() - 0.5) * width * 3,
+                    y: (Math.random() - 0.5) * height * 3
                 };
             }
             // Spawn near cluster center with Gaussian-like spread
-            sx = currentCluster.x + (Math.random() + Math.random() - 1) * width * 0.35;
-            sy = currentCluster.y + (Math.random() + Math.random() - 1) * height * 0.35;
+            sx = currentCluster.x + (Math.random() + Math.random() - 1) * width * 0.5;
+            sy = currentCluster.y + (Math.random() + Math.random() - 1) * height * 0.5;
         } else {
-            sx = (Math.random() - 0.5) * width * 2;
-            sy = (Math.random() - 0.5) * height * 2;
+            sx = (Math.random() - 0.5) * width * 4;
+            sy = (Math.random() - 0.5) * height * 4;
         }
         
         return {
             x: sx,
             y: sy,
-            z: resetZ ? width : Math.random() * width,
+            z: resetZ ? (width * 3) : Math.random() * (width * 3), // Much deeper render distance
             pz: 0,
             color: giant ? 'rgba(255, 255, 255, 1)' : randomStarColor(),
             speedFactor: Math.random() * 0.8 + 0.6, // Adds realistic randomness to star speeds
@@ -1596,8 +1596,8 @@
             let px = (s.x / s.pz) * 150 + cx;
             let py = (s.y / s.pz) * 150 + cy;
             
-            // Size scales as it gets closer
-            let r = Math.max(0.1, (1 - s.z / width) * 2.5);
+            // Size scales as it gets closer, adjusted for deeper render distance
+            let r = Math.max(0.1, (1 - s.z / (width * 3)) * 2.5);
             
             if (s.isGiant) {
                 r *= 2.5; // Giant stars are larger
