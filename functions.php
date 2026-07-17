@@ -781,7 +781,7 @@ function zk_get_og_image( $url, $scrape = true ) {
 
     // Normalize URL to ensure cache keys match between backend rendering and frontend AJAX
     $url = esc_url_raw( $url );
-    $transient_key = 'zk_og_img_v7_' . md5( $url );
+    $transient_key = 'zk_og_img_v8_' . md5( $url );
     $cached_image = get_transient( $transient_key );
 
     if ( false !== $cached_image ) {
@@ -823,7 +823,7 @@ function zk_get_og_image( $url, $scrape = true ) {
     if ( ! empty( $image_url ) ) {
         set_transient( $transient_key, $image_url, DAY_IN_SECONDS * 30 );
     } else {
-        set_transient( $transient_key, '', HOUR_IN_SECONDS );
+        set_transient( $transient_key, '', MINUTE_IN_SECONDS ); // Reduced to 1 minute to recover faster from rate limits
     }
 
     return $image_url;
@@ -975,7 +975,7 @@ function zk_fav_tooltip_script() {
             isFetchingImages = true;
             const ajaxUrl = "<?php echo admin_url('admin-ajax.php'); ?>";
             
-            const concurrencyLimit = 4;
+            const concurrencyLimit = 2; // Keep at 2 to avoid Goodreads/IMDB blocking the IP
             let currentIndex = 0;
             
             async function worker() {
@@ -1009,6 +1009,9 @@ function zk_fav_tooltip_script() {
                     } catch (err) {
                         console.error('Error fetching og:image', err);
                     }
+                    
+                    // Add 1-second delay between requests to avoid rate limit
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
             
