@@ -1014,6 +1014,9 @@ html.zk-img-js .zk-book-img.is-loaded { opacity: 1; }
 	font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
 	color: var(--text-muted); background: transparent; border: 1px solid transparent;
 	transition: color 0.35s var(--ease), background-color 0.35s var(--ease), border-color 0.35s var(--ease), box-shadow 0.35s var(--ease), transform 0.2s var(--ease);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 .zk-filter-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.04); }
 .zk-filter-btn:active { transform: scale(0.96); }
@@ -1022,6 +1025,29 @@ html.zk-img-js .zk-book-img.is-loaded { opacity: 1; }
 	background: rgba(255, 255, 255, 0.08);
 	border-color: var(--hairline-strong);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.zk-tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.65rem;
+    padding: 3px 7px;
+    border-radius: 12px;
+    font-weight: 700;
+    line-height: 1;
+    transition: all 0.35s var(--ease);
+}
+.zk-filter-btn.is-active .zk-tab-count {
+    background: #e5e0d8;
+    color: #141414;
+    box-shadow: 0 2px 8px rgba(229, 224, 216, 0.4);
+    transform: scale(1.05);
+}
+.zk-filter-btn:hover:not(.is-active) .zk-tab-count {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
 }
 
 /* ── 2. CSS Masonry Grid ── */
