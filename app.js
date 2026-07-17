@@ -1471,6 +1471,10 @@
     const baseSpeed = 0.6;
     let startTime = Date.now();
     let currentCluster = null;
+    
+    // Morning star timing
+    let lastMorningStarTime = Date.now();
+    let nextMorningStarInterval = 30000 + Math.random() * 90000; // 30 to 120 seconds
 
     function initHero() {
         hero = document.querySelector('.hero');
@@ -1488,6 +1492,7 @@
             window.addEventListener('resize', resizeCanvas);
             
             startTime = Date.now();
+            lastMorningStarTime = Date.now();
             stars = [];
             for (let i = 0; i < numStars; i++) {
                 stars.push(newStar(false)); // random z initially
@@ -1513,11 +1518,18 @@
     }
 
     function newStar(resetZ = false) {
-        let giant = Math.random() < 0.015; // 1.5% chance to be a giant shining star
+        let isMorningStar = false;
+        if (Date.now() - lastMorningStarTime > nextMorningStarInterval) {
+            isMorningStar = true;
+            lastMorningStarTime = Date.now();
+            nextMorningStarInterval = 30000 + Math.random() * 90000;
+        }
+        
+        let giant = Math.random() < 0.015 && !isMorningStar; // 1.5% chance to be a giant shining star
         
         let sx, sy;
         // 30% chance to be part of a dense cluster
-        if (Math.random() < 0.3) {
+        if (Math.random() < 0.3 && !isMorningStar) {
             if (!currentCluster || Math.random() < 0.05) { // 5% chance to change cluster center
                 currentCluster = {
                     x: (Math.random() - 0.5) * width * 3,
@@ -1537,9 +1549,10 @@
             y: sy,
             z: resetZ ? (width * 3) : Math.random() * (width * 3), // Much deeper render distance
             pz: 0,
-            color: giant ? 'rgba(255, 255, 255, 1)' : randomStarColor(),
+            color: isMorningStar ? 'rgba(220, 240, 255, 1)' : (giant ? 'rgba(255, 255, 255, 1)' : randomStarColor()),
             speedFactor: Math.random() * 0.8 + 0.6, // Adds realistic randomness to star speeds
             isGiant: giant,
+            isMorningStar: isMorningStar,
             isDead: false
         };
     }
@@ -1598,7 +1611,11 @@
             // Size scales as it gets closer, adjusted for deeper render distance
             let r = Math.max(0.1, (1 - s.z / (width * 3)) * 2.5);
             
-            if (s.isGiant) {
+            if (s.isMorningStar) {
+                r *= 4.0; // Morning stars are huge
+                ctx.shadowBlur = 40;
+                ctx.shadowColor = 'rgba(200, 230, 255, 1)'; // Bright blueish white glow
+            } else if (s.isGiant) {
                 r *= 2.5; // Giant stars are larger
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
@@ -1612,6 +1629,24 @@
             ctx.moveTo(px, py);
             ctx.lineTo(x, y);
             ctx.stroke();
+            
+            // Draw diffraction spikes (cross) for Morning Star
+            if (s.isMorningStar && s.z < width * 2) {
+                // Cross length scales with proximity and base size
+                let crossLen = r * 25; 
+                ctx.beginPath();
+                ctx.lineWidth = r * 0.25;
+                ctx.strokeStyle = 'rgba(220, 240, 255, 0.6)';
+                
+                // Horizontal spike
+                ctx.moveTo(x - crossLen, y);
+                ctx.lineTo(x + crossLen, y);
+                // Vertical spike
+                ctx.moveTo(x, y - crossLen);
+                ctx.lineTo(x, y + crossLen);
+                
+                ctx.stroke();
+            }
         }
         ctx.shadowBlur = 0; // Reset after loop
     }
