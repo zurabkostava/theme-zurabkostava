@@ -1522,7 +1522,7 @@
         if (Date.now() - lastMorningStarTime > nextMorningStarInterval) {
             isMorningStar = true;
             lastMorningStarTime = Date.now();
-            nextMorningStarInterval = 30000 + Math.random() * 30000; // 30-60s
+            nextMorningStarInterval = 40000 + Math.random() * 80000; // 40-120s
         }
         
         let giant = Math.random() < 0.015 && !isMorningStar; // 1.5% chance to be a giant shining star
@@ -1531,6 +1531,7 @@
         let zSpawn = resetZ ? (width * 3) : Math.random() * (width * 3);
         let mScale = 1.0;
         let glowColor = '';
+        let satellites = [];
         
         if (isMorningStar) {
             // Spawn anywhere in the wider frustum, not just center
@@ -1548,6 +1549,32 @@
                 glowColor = '160, 210, 255'; // Bluish
             } else {
                 glowColor = '240, 240, 255'; // White/Neutral
+            }
+            
+            // 35% chance for a binary twin (another bright star nearby)
+            if (Math.random() < 0.35) {
+                let twinColor = Math.random() < 0.5 ? '255, 200, 150' : '180, 220, 255';
+                satellites.push({
+                    type: 'twin',
+                    dx: (Math.random() - 0.5) * width * 0.4, // close or slightly far
+                    dy: (Math.random() - 0.5) * height * 0.4,
+                    scale: 0.3 + Math.random() * 0.5, // slightly smaller twin
+                    color: twinColor
+                });
+            }
+            
+            // 50% chance for 1-4 small planets/satellites
+            if (Math.random() < 0.5) {
+                let numPlanets = Math.floor(Math.random() * 4) + 1;
+                for (let j = 0; j < numPlanets; j++) {
+                    satellites.push({
+                        type: 'planet',
+                        dx: (Math.random() - 0.5) * width * 0.1, // very close
+                        dy: (Math.random() - 0.5) * height * 0.1,
+                        scale: 0.05 + Math.random() * 0.08, // tiny dot
+                        color: '180, 220, 255'
+                    });
+                }
             }
         } else if (Math.random() < 0.3) {
             // 30% chance to be part of a dense cluster
@@ -1576,6 +1603,7 @@
             isMorningStar: isMorningStar,
             morningScale: mScale,
             glowRgb: glowColor,
+            satellites: satellites,
             isDead: false
         };
     }
@@ -1652,10 +1680,6 @@
             
             // Draw realistic multi-pass blooming spikes for Morning Star
             if (s.isMorningStar) {
-                // Apply specific size scale
-                let mr = r * s.morningScale;
-                
-                // Fade in smoothly as it comes closer than width * 3.5
                 let flareAlpha = 0;
                 if (s.z < width * 3.5) {
                     flareAlpha = Math.min(1, ((width * 3.5) - s.z) / (width * 1.5));
@@ -1666,55 +1690,73 @@
                     ctx.globalCompositeOperation = 'screen';
                     ctx.globalAlpha = flareAlpha;
                     
-                    let crossLen = Math.min(mr * 30, width * 0.45); 
-                    let diagLen = crossLen * 0.35; // Diagonal spikes are shorter
-                    let gColor = s.glowRgb;
+                    // Render the main star and all its satellites
+                    let objectsToRender = [{ type: 'main', dx: 0, dy: 0, scale: s.morningScale, color: s.glowRgb }].concat(s.satellites);
                     
-                    // Central intense glowing core
-                    ctx.beginPath();
-                    ctx.arc(x, y, mr * 2.5, 0, Math.PI * 2);
-                    ctx.fillStyle = '#ffffff';
-                    ctx.shadowBlur = 30;
-                    ctx.shadowColor = `rgba(${gColor}, 1)`;
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
-                    
-                    // Helper to draw realistic multi-pass fading lines for spikes
-                    function drawSpike(dx, dy, isDiag = false) {
-                        let scale = isDiag ? 0.6 : 1.0;
+                    for (let obj of objectsToRender) {
+                        let ox = ((s.x + obj.dx) / s.z) * 150 + cx;
+                        let oy = ((s.y + obj.dy) / s.z) * 150 + cy;
+                        let or = r * obj.scale;
                         
-                        // Pass 1: Wide, faint outer glow (Colored)
+                        if (obj.type === 'planet') {
+                            // Render tiny planet dot
+                            ctx.beginPath();
+                            ctx.arc(ox, oy, or * 2, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(${obj.color}, 0.8)`;
+                            ctx.shadowBlur = 5;
+                            ctx.shadowColor = `rgba(${obj.color}, 1)`;
+                            ctx.fill();
+                            ctx.shadowBlur = 0;
+                            continue;
+                        }
+                        
+                        // For Main and Twin, render diffraction spikes
+                        let crossLen = Math.min(or * 30, width * 0.45);
+                        let diagLen = crossLen * 0.35;
+                        let gColor = obj.color;
+                        
+                        // Central soft glowing core (Radial Gradient)
+                        let coreGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, or * 4);
+                        coreGrad.addColorStop(0, '#ffffff');
+                        coreGrad.addColorStop(0.15, `rgba(${gColor}, 0.8)`);
+                        coreGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                        
                         ctx.beginPath();
-                        ctx.moveTo(x - dx, y - dy);
-                        ctx.lineTo(x + dx, y + dy);
-                        ctx.lineWidth = mr * 1.8 * scale;
-                        ctx.strokeStyle = `rgba(${gColor}, 0.15)`;
+                        ctx.arc(ox, oy, or * 4, 0, Math.PI * 2);
+                        ctx.fillStyle = coreGrad;
+                        ctx.fill();
+                        
+                        // Spikes with fading Radial Gradient stroke
+                        let spikeGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, crossLen);
+                        spikeGrad.addColorStop(0, '#ffffff');
+                        spikeGrad.addColorStop(0.1, `rgba(${gColor}, 0.6)`);
+                        spikeGrad.addColorStop(0.4, `rgba(${gColor}, 0.15)`);
+                        spikeGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                        
+                        ctx.strokeStyle = spikeGrad;
+                        ctx.lineCap = 'round';
+                        
+                        // Main Cross
+                        ctx.beginPath();
+                        ctx.lineWidth = or * 1.5;
+                        ctx.moveTo(ox - crossLen, oy); ctx.lineTo(ox + crossLen, oy); // H
+                        ctx.moveTo(ox, oy - crossLen); ctx.lineTo(ox, oy + crossLen); // V
                         ctx.stroke();
                         
-                        // Pass 2: Medium, brighter glow
+                        // Core Cross (thinner, brighter)
                         ctx.beginPath();
-                        ctx.moveTo(x - dx * 0.7, y - dy * 0.7);
-                        ctx.lineTo(x + dx * 0.7, y + dy * 0.7);
-                        ctx.lineWidth = mr * 0.8 * scale;
-                        ctx.strokeStyle = `rgba(${gColor}, 0.4)`;
+                        ctx.lineWidth = Math.max(0.2, or * 0.4);
+                        ctx.moveTo(ox - crossLen * 0.6, oy); ctx.lineTo(ox + crossLen * 0.6, oy); // H
+                        ctx.moveTo(ox, oy - crossLen * 0.6); ctx.lineTo(ox, oy + crossLen * 0.6); // V
                         ctx.stroke();
                         
-                        // Pass 3: Thin, piercing white core
+                        // Diagonal Cross (fainter, shorter)
                         ctx.beginPath();
-                        ctx.moveTo(x - dx * 0.4, y - dy * 0.4);
-                        ctx.lineTo(x + dx * 0.4, y + dy * 0.4);
-                        ctx.lineWidth = Math.max(0.2, mr * 0.2 * scale);
-                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+                        ctx.lineWidth = or * 1.0;
+                        ctx.moveTo(ox - diagLen, oy - diagLen); ctx.lineTo(ox + diagLen, oy + diagLen);
+                        ctx.moveTo(ox - diagLen, oy + diagLen); ctx.lineTo(ox + diagLen, oy - diagLen);
                         ctx.stroke();
                     }
-                    
-                    // Main Cross
-                    drawSpike(crossLen, 0); // Horizontal
-                    drawSpike(0, crossLen); // Vertical
-                    
-                    // Diagonal Cross
-                    drawSpike(diagLen, diagLen, true);
-                    drawSpike(-diagLen, diagLen, true);
                     
                     ctx.restore();
                 }
