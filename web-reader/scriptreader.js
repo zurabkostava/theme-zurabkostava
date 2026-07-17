@@ -2080,11 +2080,39 @@ async function playNativeChunk(chunk, nativeVoice, rate, token) {
                     }
                 }
             };
-            const settle = () => {
+            const settle = (e) => {
                 if (lastActiveWord) {
                     lastActiveWord.classList.remove('active');
                     lastActiveWord.classList.add('read');
                 }
+                
+                // --- Edge/Azure Truncation & Error Safeguard ---
+                if (isPlaying && token === playbackToken) {
+                    let isUnexpectedDrop = false;
+                    
+                    // 1. Check for explicit error
+                    if (e && e.type === 'error' && e.error && e.error !== 'canceled' && e.error !== 'interrupted') {
+                        console.warn("TTS Error encountered:", e.error);
+                        isUnexpectedDrop = true;
+                    }
+                    
+                    // 2. Check for silent truncation (onend fired but currentIdx is lagging)
+                    if (currentBatch.length > 0) {
+                        const lastSent = currentBatch[currentBatch.length - 1];
+                        if (currentIdx < lastSent.idx) {
+                            console.warn(`TTS Truncated silently! currentIdx=${currentIdx}, expected=${lastSent.idx}`);
+                            isUnexpectedDrop = true;
+                        }
+                    }
+                    
+                    if (isUnexpectedDrop) {
+                        isPlaying = false;
+                        updatePlayIcon(false);
+                        resolve(false);
+                        return;
+                    }
+                }
+                
                 resolve(token === playbackToken && isPlaying);
             };
             utt.onend = settle;
