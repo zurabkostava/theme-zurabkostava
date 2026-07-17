@@ -362,29 +362,27 @@ body.is-navigating #zk-global-loader {
 
 .hero-galaxy {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    top: auto; /* Override previous top */
-    right: auto; /* Override previous right */
-    width: 80vw;
-    height: 80vw;
-    max-width: 900px;
-    max-height: 900px;
-    background-image: url('https://www.pngall.com/wp-content/uploads/10/Nebula-PNG-File.png');
+    top: 5%;
+    right: 5%;
+    width: 65vw;
+    height: 65vw;
+    max-width: 700px;
+    max-height: 700px;
+    background-image: url('https://www.pngmart.com/files/22/Galaxy-PNG-Isolated-Photos.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     opacity: 0.7;
     z-index: 0;
     pointer-events: none;
-    /* 900s = 15 minutes */
-    animation: nebulaPassBy 900s linear forwards;
+    /* 2400s = 40 minutes */
+    animation: galaxyPassBy 2400s linear forwards;
     transform-origin: center;
 }
 
-@keyframes nebulaPassBy {
-    0% { transform: translate(-30%, 30%) scale(1) rotate(0deg); opacity: 0.7; }
-    100% { transform: translate(-60%, 60%) scale(3) rotate(-15deg); opacity: 0; }
+@keyframes galaxyPassBy {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    100% { transform: translate(40%, -40%) scale(1.8) rotate(15deg); }
 }
 
 .zk-starfield {
