@@ -362,8 +362,8 @@ body.is-navigating #zk-global-loader {
 
 .hero-galaxy {
     position: absolute;
-    top: 45%;
-    left: 42%;
+    top: 38%;
+    left: 50%;
     width: 45vw;
     height: 45vw;
     max-width: 500px;
@@ -372,7 +372,7 @@ body.is-navigating #zk-global-loader {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 0.3; /* Even fainter */
+    opacity: 0.6; /* Brighter / more prominent */
     z-index: 0;
     pointer-events: none;
     /* 10800s = 3 hours */
