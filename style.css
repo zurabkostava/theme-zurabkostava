@@ -360,6 +360,24 @@ body.is-navigating #zk-global-loader {
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.hero-galaxy {
+    position: absolute;
+    inset: -10%; /* extend slightly so it can scale without clipping */
+    background-image: url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.25; /* subtle, behind the canvas stars */
+    z-index: 0;
+    pointer-events: none;
+    animation: galaxyZoom 180s linear infinite alternate;
+    mix-blend-mode: screen;
+}
+
+@keyframes galaxyZoom {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.25); }
+}
+
 .zk-starfield {
     position: absolute;
     inset: 0;
