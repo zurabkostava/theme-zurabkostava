@@ -1530,6 +1530,8 @@
         let sx, sy;
         let zSpawn = resetZ ? (width * 3) : Math.random() * (width * 3);
         let mScale = 1.0;
+        let mType = 'full';
+        let mBrightness = 1.0;
         let glowColor = '';
         let satellites = [];
         
@@ -1553,10 +1555,9 @@
             
             // Render Type & Brightness for main star
             let rtRand = Math.random();
-            let mType = 'full';
             if (rtRand < 0.25) mType = 'cross';
             else if (rtRand < 0.5) mType = 'ball';
-            let mBrightness = 0.4 + Math.random() * 0.6;
+            mBrightness = 0.4 + Math.random() * 0.6;
             
             // Multi-star system probabilities
             let rTwin = Math.random();
