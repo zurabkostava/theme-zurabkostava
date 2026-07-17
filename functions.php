@@ -793,7 +793,7 @@ function zk_get_og_image( $url, $scrape = true ) {
     }
 
     // Determine the best User-Agent
-    $user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    $user_agent = 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)';
     if ( strpos( $url, 'wikipedia.org' ) !== false ) {
         $user_agent = 'ZurabKostavaThemeBot/1.0 (admin@zurabkostava.com)';
     }
@@ -805,7 +805,7 @@ function zk_get_og_image( $url, $scrape = true ) {
     ) );
 
     if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
-        set_transient( $transient_key, '', 12 * HOUR_IN_SECONDS );
+        set_transient( $transient_key, '', HOUR_IN_SECONDS );
         return '';
     }
 
@@ -971,7 +971,7 @@ function zk_fav_tooltip_script() {
             isFetchingImages = true;
             const ajaxUrl = "<?php echo admin_url('admin-ajax.php'); ?>";
             
-            const concurrencyLimit = 1; // 1 request at a time to prevent strict rate blocks
+            const concurrencyLimit = 2; // Reduced to 2 to avoid Goodreads rate limits
             let currentIndex = 0;
             
             async function worker() {
@@ -1006,8 +1006,8 @@ function zk_fav_tooltip_script() {
                         console.error('Error fetching og:image', err);
                     }
                     
-                    // Wait 1 second between requests to respect external servers
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    // Small delay to be gentle on servers
+                    await new Promise(resolve => setTimeout(resolve, 250));
                 }
             }
             
