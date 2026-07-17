@@ -1612,10 +1612,15 @@ function zk_get_filebird_gallery( $folder_id ) {
 
             $img_html = wp_get_attachment_image( $id, 'medium_large', false, $img_attributes );
             $folder_title = isset($subfolder_names[$fid]) ? $subfolder_names[$fid] : '';
+            
+            $carousel_count = isset($carousel_map[$fid]) ? count($carousel_map[$fid]) : 1;
 
             $output .= '<div class="zk-gallery-item zk-is-carousel" data-carousel-title="' . esc_attr( $folder_title ) . '">';
             $output .= '<div class="zk-gallery-image-wrap">';
             $output .= $img_html;
+            
+            $output .= '<div class="zk-carousel-count"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> ' . $carousel_count . '</div>';
+
             if ( $folder_title ) {
                 $output .= '<div class="zk-carousel-title">' . esc_html( $folder_title ) . '</div>';
             }
