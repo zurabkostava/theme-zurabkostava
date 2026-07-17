@@ -511,14 +511,16 @@ function zk_cinematic_gallery() {
     $folder_ids = array_keys( $folder_class );
     $id_ph      = implode( ', ', array_fill( 0, count( $folder_ids ), '%d' ) );
     $subfolders = $wpdb->get_results(
-            $wpdb->prepare( "SELECT id, parent FROM {$fbv_table} WHERE parent IN ($id_ph)", $folder_ids )
+            $wpdb->prepare( "SELECT id, name, parent FROM {$fbv_table} WHERE parent IN ($id_ph)", $folder_ids )
     );
     
     $subfolder_ids = array();
+    $subfolder_names = array();
     foreach ( $subfolders as $sf ) {
         // Map subfolder to its parent's category class
         $folder_class[ (int) $sf->id ] = $folder_class[ (int) $sf->parent ];
         $subfolder_ids[ (int) $sf->id ] = true;
+        $subfolder_names[ (int) $sf->id ] = $sf->name;
     }
 
     // (2) Folder ids → attachments (+ category map)
@@ -630,10 +632,14 @@ function zk_cinematic_gallery() {
             }
 
             $img_html = wp_get_attachment_image( $image_id, 'medium_large', false, $img_attributes );
+            $c_title  = isset($subfolder_names[$fid]) ? $subfolder_names[$fid] : '';
 
             $output .= '<div class="zk-gallery-item zk-is-carousel ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '">';
             $output .= '<div class="zk-gallery-image-wrap">';
             $output .= $img_html;
+            if ( $c_title ) {
+                $output .= '<div class="zk-carousel-title">' . esc_html( $c_title ) . '</div>';
+            }
             $output .= '<svg class="zk-carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2" ry="2"></rect><path d="M7 21h12a2 2 0 0 0 2-2V7"></path></svg>';
             $output .= '</div></div>';
 
@@ -1474,14 +1480,16 @@ function zk_get_filebird_gallery( $folder_id ) {
 
     // Fetch subfolders of this folder
     $subfolders = $wpdb->get_results(
-            $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}fbv WHERE parent = %d", intval( $folder_id ) )
+            $wpdb->prepare( "SELECT id, name FROM {$wpdb->prefix}fbv WHERE parent = %d", intval( $folder_id ) )
     );
     
     $all_folder_ids = array( intval( $folder_id ) );
     $subfolder_ids = array();
+    $subfolder_names = array();
     foreach ( $subfolders as $sf ) {
         $all_folder_ids[] = (int) $sf->id;
         $subfolder_ids[ (int) $sf->id ] = true;
+        $subfolder_names[ (int) $sf->id ] = $sf->name;
     }
 
     $id_ph = implode( ', ', array_fill( 0, count( $all_folder_ids ), '%d' ) );
@@ -1563,10 +1571,14 @@ function zk_get_filebird_gallery( $folder_id ) {
             }
 
             $img_html = wp_get_attachment_image( $id, 'medium_large', false, $img_attributes );
+            $c_title  = isset($subfolder_names[$fid]) ? $subfolder_names[$fid] : '';
 
             $output .= '<div class="zk-gallery-item zk-is-carousel">';
             $output .= '<div class="zk-gallery-image-wrap">';
             $output .= $img_html;
+            if ( $c_title ) {
+                $output .= '<div class="zk-carousel-title">' . esc_html( $c_title ) . '</div>';
+            }
             $output .= '<svg class="zk-carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2" ry="2"></rect><path d="M7 21h12a2 2 0 0 0 2-2V7"></path></svg>';
             $output .= '</div></div>';
 
