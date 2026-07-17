@@ -909,7 +909,12 @@
         function buildThumbnails() {
             var frag = document.createDocumentFragment();
             thumbEls = [];
+            var currentGroupTitle = null;
+            var currentGroupEl = null;
+
             activeItems.forEach(function (item) {
+                var carouselTitle = item.getAttribute('data-carousel-title');
+
                 var src  = item.querySelector('img');
                 var cell = document.createElement('div');
                 cell.className = 'zk-lightbox-thumb-item';
@@ -919,8 +924,25 @@
                 im.decoding = 'async';
                 im.alt = '';
                 cell.appendChild(im);
-                frag.appendChild(cell);
                 thumbEls.push(cell);
+
+                if (carouselTitle) {
+                    if (carouselTitle !== currentGroupTitle) {
+                        currentGroupTitle = carouselTitle;
+                        currentGroupEl = document.createElement('div');
+                        currentGroupEl.className = 'zk-lightbox-thumb-group';
+                        var titleEl = document.createElement('div');
+                        titleEl.className = 'zk-lightbox-thumb-group-title';
+                        titleEl.textContent = carouselTitle;
+                        currentGroupEl.appendChild(titleEl);
+                        frag.appendChild(currentGroupEl);
+                    }
+                    currentGroupEl.appendChild(cell);
+                } else {
+                    currentGroupTitle = null;
+                    currentGroupEl = null;
+                    frag.appendChild(cell);
+                }
             });
             thumbs.innerHTML = '';
             thumbs.appendChild(frag);
@@ -938,7 +960,9 @@
         function centerThumb(cell, isInitial) {
             if (!cell) return;
             setTimeout(function() {
-                var target = cell.offsetLeft - (thumbs.clientWidth - cell.offsetWidth) / 2;
+                var cellRect = cell.getBoundingClientRect();
+                var thumbsRect = thumbs.getBoundingClientRect();
+                var target = thumbs.scrollLeft + (cellRect.left - thumbsRect.left) - (thumbs.clientWidth - cell.offsetWidth) / 2;
                 target = target < 0 ? 0 : target;
 
                 if (isInitial) {

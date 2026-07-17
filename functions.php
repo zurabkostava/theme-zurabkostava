@@ -632,13 +632,13 @@ function zk_cinematic_gallery() {
             }
 
             $img_html = wp_get_attachment_image( $image_id, 'medium_large', false, $img_attributes );
-            $c_title  = isset($subfolder_names[$fid]) ? $subfolder_names[$fid] : '';
+            $folder_title = isset($subfolder_names[$fid]) ? $subfolder_names[$fid] : '';
 
-            $output .= '<div class="zk-gallery-item zk-is-carousel ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '">';
+            $output .= '<div class="zk-gallery-item zk-is-carousel ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '" data-carousel-title="' . esc_attr( $folder_title ) . '">';
             $output .= '<div class="zk-gallery-image-wrap">';
             $output .= $img_html;
-            if ( $c_title ) {
-                $output .= '<div class="zk-carousel-title">' . esc_html( $c_title ) . '</div>';
+            if ( $folder_title ) {
+                $output .= '<div class="zk-carousel-title">' . esc_html( $folder_title ) . '</div>';
             }
             $output .= '<svg class="zk-carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2" ry="2"></rect><path d="M7 21h12a2 2 0 0 0 2-2V7"></path></svg>';
             $output .= '</div></div>';
@@ -680,7 +680,7 @@ function zk_cinematic_gallery() {
 
                     $c_img_html = wp_get_attachment_image( $c_att, 'thumbnail', false, $c_img_attributes );
 
-                    $output .= '<div class="zk-gallery-item zk-carousel-hidden ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '">';
+                    $output .= '<div class="zk-gallery-item zk-carousel-hidden ' . esc_attr( $cat_class ) . '" data-category="' . esc_attr( $cat_class ) . '" data-carousel-title="' . esc_attr( $folder_title ) . '">';
                     $output .= '<div class="zk-gallery-image-wrap">' . $c_img_html . '</div>';
                     $output .= '</div>';
 
@@ -1571,13 +1571,13 @@ function zk_get_filebird_gallery( $folder_id ) {
             }
 
             $img_html = wp_get_attachment_image( $id, 'medium_large', false, $img_attributes );
-            $c_title  = isset($subfolder_names[$fid]) ? $subfolder_names[$fid] : '';
+            $folder_title = isset($subfolder_names[$fid]) ? $subfolder_names[$fid] : '';
 
-            $output .= '<div class="zk-gallery-item zk-is-carousel">';
+            $output .= '<div class="zk-gallery-item zk-is-carousel" data-carousel-title="' . esc_attr( $folder_title ) . '">';
             $output .= '<div class="zk-gallery-image-wrap">';
             $output .= $img_html;
-            if ( $c_title ) {
-                $output .= '<div class="zk-carousel-title">' . esc_html( $c_title ) . '</div>';
+            if ( $folder_title ) {
+                $output .= '<div class="zk-carousel-title">' . esc_html( $folder_title ) . '</div>';
             }
             $output .= '<svg class="zk-carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2" ry="2"></rect><path d="M7 21h12a2 2 0 0 0 2-2V7"></path></svg>';
             $output .= '</div></div>';
@@ -1617,7 +1617,7 @@ function zk_get_filebird_gallery( $folder_id ) {
 
                     $c_img_html = wp_get_attachment_image( $c_att, 'thumbnail', false, $c_img_attributes );
 
-                    $output .= '<div class="zk-gallery-item zk-carousel-hidden">';
+                    $output .= '<div class="zk-gallery-item zk-carousel-hidden" data-carousel-title="' . esc_attr( $folder_title ) . '">';
                     $output .= '<div class="zk-gallery-image-wrap">' . $c_img_html . '</div>';
                     $output .= '</div>';
 
