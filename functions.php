@@ -2495,10 +2495,10 @@ function zk_render_seo_meta() {
     $img = get_option( 'zk_profile_img', '' ); // Default fallback image from Identity Settings
 
     // Override for single posts/pages
-    if ( is_front_page() || is_home() ) {
-        $type = 'website';
-    } elseif ( $is_single ) {
-        if ( get_post_type( $obj_id ) === 'zk_book' ) {
+    if ( $is_single ) {
+        if ( is_front_page() || is_home() ) {
+            $type = 'website';
+        } elseif ( get_post_type( $obj_id ) === 'zk_book' ) {
             $type = 'book';
         } else {
             $type = 'article';
