@@ -2793,6 +2793,8 @@ function zk_render_json_ld_schema() {
         }
         $schema[] = $book_schema;
 
+    } elseif ( is_front_page() || is_home() ) {
+        // Do nothing here, Person and WebSite schemas were already added above
     } else {
         // Fallback for Archives, Tags, Categories, and Custom Routes (like /music/)
         $schema[] = $person_schema;
