@@ -368,11 +368,11 @@ body.is-navigating #zk-global-loader {
     height: 120vw;
     max-width: 1400px;
     max-height: 1400px;
-    background-image: url('https://images.unsplash.com/photo-1538370965046-79c0d6907d47?q=80&w=2000&auto=format&fit=crop');
-    background-size: cover;
+    background-image: url('https://www.pngmart.com/files/22/Galaxy-PNG-Isolated-Photos.png');
+    background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 0.5; /* Increased opacity */
+    opacity: 0.6; /* Excellent visibility for a transparent PNG */
     z-index: 0;
     pointer-events: none;
     /* 10800s = 3 hours */
