@@ -1474,7 +1474,7 @@
     
     // Morning star timing
     let lastMorningStarTime = Date.now();
-    let nextMorningStarInterval = 30000 + Math.random() * 90000; // 30 to 120 seconds
+    let nextMorningStarInterval = 3500; // Trigger first one quickly in 3.5 seconds!
 
     function initHero() {
         hero = document.querySelector('.hero');
@@ -1522,14 +1522,21 @@
         if (Date.now() - lastMorningStarTime > nextMorningStarInterval) {
             isMorningStar = true;
             lastMorningStarTime = Date.now();
-            nextMorningStarInterval = 30000 + Math.random() * 90000;
+            nextMorningStarInterval = 40000 + Math.random() * 60000; // Reset to 40-100s for subsequent ones
         }
         
         let giant = Math.random() < 0.015 && !isMorningStar; // 1.5% chance to be a giant shining star
         
         let sx, sy;
-        // 30% chance to be part of a dense cluster
-        if (Math.random() < 0.3 && !isMorningStar) {
+        let zSpawn = resetZ ? (width * 3) : Math.random() * (width * 3);
+        
+        if (isMorningStar) {
+            // Spawn morning star much further and closer to center so we can watch it approach
+            zSpawn = width * 5; 
+            sx = (Math.random() - 0.5) * width * 1.2;
+            sy = (Math.random() - 0.5) * height * 1.2;
+        } else if (Math.random() < 0.3) {
+            // 30% chance to be part of a dense cluster
             if (!currentCluster || Math.random() < 0.05) { // 5% chance to change cluster center
                 currentCluster = {
                     x: (Math.random() - 0.5) * width * 3,
@@ -1547,10 +1554,10 @@
         return {
             x: sx,
             y: sy,
-            z: resetZ ? (width * 3) : Math.random() * (width * 3), // Much deeper render distance
+            z: zSpawn,
             pz: 0,
-            color: isMorningStar ? 'rgba(220, 240, 255, 1)' : (giant ? 'rgba(255, 255, 255, 1)' : randomStarColor()),
-            speedFactor: Math.random() * 0.8 + 0.6, // Adds realistic randomness to star speeds
+            color: isMorningStar ? 'rgba(230, 245, 255, 1)' : (giant ? 'rgba(255, 255, 255, 1)' : randomStarColor()),
+            speedFactor: isMorningStar ? 1.0 : (Math.random() * 0.8 + 0.6), // stable speed for morning star
             isGiant: giant,
             isMorningStar: isMorningStar,
             isDead: false
@@ -1611,11 +1618,7 @@
             // Size scales as it gets closer, adjusted for deeper render distance
             let r = Math.max(0.1, (1 - s.z / (width * 3)) * 2.5);
             
-            if (s.isMorningStar) {
-                r *= 4.0; // Morning stars are huge
-                ctx.shadowBlur = 40;
-                ctx.shadowColor = 'rgba(200, 230, 255, 1)'; // Bright blueish white glow
-            } else if (s.isGiant) {
+            if (s.isGiant) {
                 r *= 2.5; // Giant stars are larger
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
@@ -1623,6 +1626,7 @@
                 ctx.shadowBlur = 0;
             }
             
+            // Normal base star rendering
             ctx.beginPath();
             ctx.strokeStyle = s.color;
             ctx.lineWidth = r;
@@ -1630,51 +1634,63 @@
             ctx.lineTo(x, y);
             ctx.stroke();
             
-            // Draw diffraction spikes (cross) for Morning Star
-            if (s.isMorningStar && s.z < width * 2) {
-                // Cross length scales with proximity and base size
-                let crossLen = Math.min(r * 20, width * 0.4); // Cap max size
-                let thickness = r * 0.8;
+            // Draw realistic multi-pass blooming spikes for Morning Star
+            if (s.isMorningStar) {
+                // Fade in smoothly as it comes closer than width * 3.5
+                let flareAlpha = 0;
+                if (s.z < width * 3.5) {
+                    flareAlpha = Math.min(1, ((width * 3.5) - s.z) / (width * 1.5));
+                }
                 
-                // Horizontal spike (Diamond shape with gradient)
-                ctx.beginPath();
-                let gradX = ctx.createLinearGradient(x - crossLen, y, x + crossLen, y);
-                gradX.addColorStop(0, 'rgba(180, 220, 255, 0)');
-                gradX.addColorStop(0.45, 'rgba(180, 220, 255, 0.5)');
-                gradX.addColorStop(0.5, 'rgba(255, 255, 255, 1)');
-                gradX.addColorStop(0.55, 'rgba(180, 220, 255, 0.5)');
-                gradX.addColorStop(1, 'rgba(180, 220, 255, 0)');
-                
-                ctx.fillStyle = gradX;
-                ctx.moveTo(x - crossLen, y);
-                ctx.lineTo(x, y - thickness);
-                ctx.lineTo(x + crossLen, y);
-                ctx.lineTo(x, y + thickness);
-                ctx.fill();
-
-                // Vertical spike (Diamond shape with gradient)
-                ctx.beginPath();
-                let gradY = ctx.createLinearGradient(x, y - crossLen, x, y + crossLen);
-                gradY.addColorStop(0, 'rgba(180, 220, 255, 0)');
-                gradY.addColorStop(0.45, 'rgba(180, 220, 255, 0.5)');
-                gradY.addColorStop(0.5, 'rgba(255, 255, 255, 1)');
-                gradY.addColorStop(0.55, 'rgba(180, 220, 255, 0.5)');
-                gradY.addColorStop(1, 'rgba(180, 220, 255, 0)');
-                
-                ctx.fillStyle = gradY;
-                ctx.moveTo(x, y - crossLen);
-                ctx.lineTo(x + thickness, y);
-                ctx.lineTo(x, y + crossLen);
-                ctx.lineTo(x - thickness, y);
-                ctx.fill();
-                
-                // Central intense core
-                ctx.beginPath();
-                ctx.arc(x, y, r * 1.5, 0, Math.PI * 2);
-                ctx.fillStyle = '#ffffff';
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = 'rgba(200, 230, 255, 1)';
-                ctx.fill();
+                if (flareAlpha > 0.01) {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'screen';
+                    ctx.globalAlpha = flareAlpha;
+                    
+                    let crossLen = Math.min(r * 25, width * 0.4); 
+                    
+                    // Central intense glowing core
+                    ctx.beginPath();
+                    ctx.arc(x, y, r * 2.0, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowBlur = 25;
+                    ctx.shadowColor = 'rgba(180, 220, 255, 1)';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    
+                    // Helper to draw realistic multi-pass fading lines for spikes
+                    function drawSpike(dx, dy) {
+                        // Pass 1: Wide, faint outer glow (Blueish)
+                        ctx.beginPath();
+                        ctx.moveTo(x - dx, y - dy);
+                        ctx.lineTo(x + dx, y + dy);
+                        ctx.lineWidth = r * 1.8;
+                        ctx.strokeStyle = 'rgba(100, 150, 255, 0.15)';
+                        ctx.stroke();
+                        
+                        // Pass 2: Medium, brighter glow
+                        ctx.beginPath();
+                        ctx.moveTo(x - dx * 0.7, y - dy * 0.7);
+                        ctx.lineTo(x + dx * 0.7, y + dy * 0.7);
+                        ctx.lineWidth = r * 0.8;
+                        ctx.strokeStyle = 'rgba(180, 220, 255, 0.4)';
+                        ctx.stroke();
+                        
+                        // Pass 3: Thin, piercing white core
+                        ctx.beginPath();
+                        ctx.moveTo(x - dx * 0.4, y - dy * 0.4);
+                        ctx.lineTo(x + dx * 0.4, y + dy * 0.4);
+                        ctx.lineWidth = Math.max(0.2, r * 0.2);
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+                        ctx.stroke();
+                    }
+                    
+                    // Draw the cross
+                    drawSpike(crossLen, 0); // Horizontal
+                    drawSpike(0, crossLen); // Vertical
+                    
+                    ctx.restore();
+                }
             }
         }
         ctx.shadowBlur = 0; // Reset after loop
