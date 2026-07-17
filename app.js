@@ -1466,7 +1466,7 @@
     let ctx = null;
     let width = 0;
     let height = 0;
-    const numStars = 800;
+    const numStars = 1600;
     let stars = [];
     const baseSpeed = 0.6;
     let startTime = Date.now();
@@ -1540,7 +1540,6 @@
             color: giant ? 'rgba(255, 255, 255, 1)' : randomStarColor(),
             speedFactor: Math.random() * 0.8 + 0.6, // Adds realistic randomness to star speeds
             isGiant: giant,
-            twinkleOffset: Math.random() * Math.PI * 2,
             isDead: false
         };
     }
@@ -1607,15 +1606,6 @@
                 ctx.shadowBlur = 0;
             }
             
-            // Twinkling logic after 20 minutes
-            let alphaMulti = 1;
-            if (elapsedMinutes >= 20) {
-                if (s.speedFactor > 1.0) { // arbitrary condition so only a subset blinks
-                    alphaMulti = 0.15 + 0.85 * Math.abs(Math.sin(Date.now() * 0.0005 * s.speedFactor + s.twinkleOffset));
-                }
-            }
-            
-            ctx.globalAlpha = alphaMulti;
             ctx.beginPath();
             ctx.strokeStyle = s.color;
             ctx.lineWidth = r;
@@ -1624,7 +1614,6 @@
             ctx.stroke();
         }
         ctx.shadowBlur = 0; // Reset after loop
-        ctx.globalAlpha = 1;
     }
 
     function onMouseMove(e) {
