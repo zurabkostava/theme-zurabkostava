@@ -1633,19 +1633,48 @@
             // Draw diffraction spikes (cross) for Morning Star
             if (s.isMorningStar && s.z < width * 2) {
                 // Cross length scales with proximity and base size
-                let crossLen = r * 25; 
+                let crossLen = Math.min(r * 20, width * 0.4); // Cap max size
+                let thickness = r * 0.8;
+                
+                // Horizontal spike (Diamond shape with gradient)
                 ctx.beginPath();
-                ctx.lineWidth = r * 0.25;
-                ctx.strokeStyle = 'rgba(220, 240, 255, 0.6)';
+                let gradX = ctx.createLinearGradient(x - crossLen, y, x + crossLen, y);
+                gradX.addColorStop(0, 'rgba(180, 220, 255, 0)');
+                gradX.addColorStop(0.45, 'rgba(180, 220, 255, 0.5)');
+                gradX.addColorStop(0.5, 'rgba(255, 255, 255, 1)');
+                gradX.addColorStop(0.55, 'rgba(180, 220, 255, 0.5)');
+                gradX.addColorStop(1, 'rgba(180, 220, 255, 0)');
                 
-                // Horizontal spike
+                ctx.fillStyle = gradX;
                 ctx.moveTo(x - crossLen, y);
+                ctx.lineTo(x, y - thickness);
                 ctx.lineTo(x + crossLen, y);
-                // Vertical spike
-                ctx.moveTo(x, y - crossLen);
-                ctx.lineTo(x, y + crossLen);
+                ctx.lineTo(x, y + thickness);
+                ctx.fill();
+
+                // Vertical spike (Diamond shape with gradient)
+                ctx.beginPath();
+                let gradY = ctx.createLinearGradient(x, y - crossLen, x, y + crossLen);
+                gradY.addColorStop(0, 'rgba(180, 220, 255, 0)');
+                gradY.addColorStop(0.45, 'rgba(180, 220, 255, 0.5)');
+                gradY.addColorStop(0.5, 'rgba(255, 255, 255, 1)');
+                gradY.addColorStop(0.55, 'rgba(180, 220, 255, 0.5)');
+                gradY.addColorStop(1, 'rgba(180, 220, 255, 0)');
                 
-                ctx.stroke();
+                ctx.fillStyle = gradY;
+                ctx.moveTo(x, y - crossLen);
+                ctx.lineTo(x + thickness, y);
+                ctx.lineTo(x, y + crossLen);
+                ctx.lineTo(x - thickness, y);
+                ctx.fill();
+                
+                // Central intense core
+                ctx.beginPath();
+                ctx.arc(x, y, r * 1.5, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'rgba(200, 230, 255, 1)';
+                ctx.fill();
             }
         }
         ctx.shadowBlur = 0; // Reset after loop
