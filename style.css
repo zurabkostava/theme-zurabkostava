@@ -141,11 +141,35 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
    ------------------------------------------------------------ */
 .logo {
 	position: relative; z-index: calc(var(--z-overlay) + 1);
-	font-size: clamp(1.05rem, 1.4vw, 1.22rem); font-weight: 600; letter-spacing: 0.015em; color: #fff; white-space: nowrap; transition: opacity 0.4s var(--ease);
+	font-size: clamp(1rem, 1.5vw, 1.35rem); 
+	font-weight: 700; 
+	letter-spacing: 0.2em; 
+	text-transform: uppercase;
+	color: #fff; 
+	white-space: nowrap; 
+	transition: all 0.5s var(--ease);
+	text-shadow: 0 0 10px rgba(255,255,255,0.2), 0 0 20px rgba(255,255,255,0.1);
+	animation: logo-obsession 5s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
 }
-.logo span { font-weight: 300; color: var(--text-muted); transition: color 0.4s var(--ease); }
-.logo:hover { opacity: 0.85; }
-.logo:hover span { color: var(--text); }
+.logo span { 
+	font-weight: 200; 
+	letter-spacing: 0.3em; 
+	color: rgba(255,255,255,0.65); 
+	transition: all 0.5s var(--ease); 
+}
+.logo:hover { 
+	letter-spacing: 0.25em;
+	text-shadow: 0 0 15px rgba(255,255,255,0.6), 0 0 30px rgba(255,255,255,0.4), 0 0 60px rgba(255,255,255,0.2);
+}
+.logo:hover span { 
+	color: #fff; 
+	letter-spacing: 0.35em;
+}
+
+@keyframes logo-obsession {
+	0% { text-shadow: 0 0 10px rgba(255,255,255,0.2), 0 0 20px rgba(255,255,255,0.1); }
+	100% { text-shadow: 0 0 15px rgba(255,255,255,0.4), 0 0 35px rgba(255,255,255,0.2), 0 0 70px rgba(255,255,255,0.1); }
+}
 
 .nav-list { display: flex; align-items: center; gap: clamp(4px, 1.4vw, 14px); }
 .nav-link {
@@ -469,18 +493,15 @@ body.is-navigating #zk-global-loader {
 .hero-title {
     position: relative;
     font-size: clamp(3rem, 10vw, 7rem);
-    font-weight: 800;
-    letter-spacing: -0.04em;
+    font-weight: 600;
+    letter-spacing: -0.03em;
     line-height: 1.05;
     margin: 0;
-    color: #ffffff;
-    /* Intensely Amplified Cyberpunk Glow (Obsession Effect) */
+    color: #fff;
+    /* Cyberpunk Mixed Glow */
     text-shadow: 
-        0 0 10px rgba(255, 255, 255, 0.9),
-        -8px 0 25px rgba(0, 240, 255, 0.9), 
-        8px 0 25px rgba(255, 42, 133, 0.9),
-        -20px 20px 60px rgba(0, 240, 255, 0.7),
-        20px -20px 60px rgba(255, 42, 133, 0.7);
+        -6px -6px 24px rgba(255, 42, 133, 0.3), 
+        6px 6px 24px rgba(0, 240, 255, 0.3);
     
     transform: translateY(100%);
     opacity: 0;
@@ -500,25 +521,24 @@ body.is-navigating #zk-global-loader {
     height: 100%;
     opacity: 0;
     pointer-events: none;
-    z-index: -1;
 }
 
 .hero-title::before {
-    text-shadow: -5px 0 rgba(0, 240, 255, 1);
-    animation: glitchAnim1 4s infinite linear; /* Faster, more erratic */
+    text-shadow: -2px 0 rgba(255, 0, 0, 0.6);
+    animation: glitchAnim1 8s infinite linear;
 }
 
 .hero-title::after {
-    text-shadow: 5px 0 rgba(255, 42, 133, 1);
-    animation: glitchAnim2 4s infinite linear;
+    text-shadow: 2px 0 rgba(0, 255, 255, 0.6);
+    animation: glitchAnim2 8s infinite linear;
 }
 
 @keyframes glitchAnim1 {
-    0%, 94%, 100% { opacity: 0; clip-path: inset(0 0 0 0); transform: translate(0); }
-    94.5% { opacity: 1; clip-path: inset(10% 0 80% 0); transform: translate(-4px, 2px); }
-    95.0% { opacity: 1; clip-path: inset(40% 0 10% 0); transform: translate(4px, -2px); }
-    96.5% { opacity: 1; clip-path: inset(80% 0 5% 0); transform: translate(-4px, 3px); }
-    98.0% { opacity: 1; clip-path: inset(20% 0 50% 0); transform: translate(4px, -3px); }
+    0%, 96%, 100% { opacity: 0; clip-path: inset(0 0 0 0); transform: translate(0); }
+    96.5% { opacity: 1; clip-path: inset(10% 0 80% 0); transform: translate(-3px, 1px); }
+    97.0% { opacity: 1; clip-path: inset(40% 0 10% 0); transform: translate(3px, -1px); }
+    97.5% { opacity: 1; clip-path: inset(80% 0 5% 0); transform: translate(-3px, 2px); }
+    98.0% { opacity: 1; clip-path: inset(20% 0 50% 0); transform: translate(3px, -2px); }
     98.5% { opacity: 0; transform: translate(0); }
 }
 
