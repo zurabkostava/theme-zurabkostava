@@ -1015,6 +1015,7 @@
             var full  = img.getAttribute('data-full');
             var exif  = img.getAttribute('data-exif') || '';
             var title = activeItems[index].getAttribute('data-carousel-title') || '';
+            var photoTitle = img.getAttribute('data-title') || '';
             var token = ++swapToken;
             var hadImage = lbImg.classList.contains('is-ready');
 
@@ -1027,8 +1028,12 @@
                 lbImg.alt = img.alt || '';
                 lbExif.textContent = exif;
                 if (lbTitle) {
-                    lbTitle.textContent = title;
-                    if (title) lbTitle.classList.add('has-title');
+                    var titleHtml = '';
+                    if (title) titleHtml += '<div class="zk-lightbox-col-title">' + title + '</div>';
+                    if (photoTitle && photoTitle !== title) titleHtml += '<div class="zk-lightbox-photo-title">' + photoTitle + '</div>';
+                    
+                    lbTitle.innerHTML = titleHtml;
+                    if (titleHtml) lbTitle.classList.add('has-title');
                     else lbTitle.classList.remove('has-title');
                 }
 
