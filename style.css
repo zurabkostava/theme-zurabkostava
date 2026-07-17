@@ -141,11 +141,35 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
    ------------------------------------------------------------ */
 .logo {
 	position: relative; z-index: calc(var(--z-overlay) + 1);
-	font-size: clamp(1.05rem, 1.4vw, 1.22rem); font-weight: 600; letter-spacing: 0.015em; color: #fff; white-space: nowrap; transition: opacity 0.4s var(--ease);
+	font-size: clamp(1rem, 1.5vw, 1.35rem); 
+	font-weight: 700; 
+	letter-spacing: 0.2em; 
+	text-transform: uppercase;
+	color: #fff; 
+	white-space: nowrap; 
+	transition: all 0.5s var(--ease);
+	text-shadow: 0 0 10px rgba(255,255,255,0.2), 0 0 20px rgba(255,255,255,0.1);
+	animation: logo-obsession 5s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
 }
-.logo span { font-weight: 300; color: var(--text-muted); transition: color 0.4s var(--ease); }
-.logo:hover { opacity: 0.85; }
-.logo:hover span { color: var(--text); }
+.logo span { 
+	font-weight: 200; 
+	letter-spacing: 0.3em; 
+	color: rgba(255,255,255,0.65); 
+	transition: all 0.5s var(--ease); 
+}
+.logo:hover { 
+	letter-spacing: 0.25em;
+	text-shadow: 0 0 15px rgba(255,255,255,0.6), 0 0 30px rgba(255,255,255,0.4), 0 0 60px rgba(255,255,255,0.2);
+}
+.logo:hover span { 
+	color: #fff; 
+	letter-spacing: 0.35em;
+}
+
+@keyframes logo-obsession {
+	0% { text-shadow: 0 0 10px rgba(255,255,255,0.2), 0 0 20px rgba(255,255,255,0.1); }
+	100% { text-shadow: 0 0 15px rgba(255,255,255,0.4), 0 0 35px rgba(255,255,255,0.2), 0 0 70px rgba(255,255,255,0.1); }
+}
 
 .nav-list { display: flex; align-items: center; gap: clamp(4px, 1.4vw, 14px); }
 .nav-link {
@@ -473,27 +497,11 @@ body.is-navigating #zk-global-loader {
     letter-spacing: -0.03em;
     line-height: 1.05;
     margin: 0;
-    
-    /* Liquid Glass Effect */
-    color: transparent;
-    background: linear-gradient(
-        145deg,
-        rgba(255, 255, 255, 0.9) 0%,
-        rgba(255, 255, 255, 0.2) 25%,
-        rgba(255, 255, 255, 0.05) 50%,
-        rgba(255, 255, 255, 0.4) 75%,
-        rgba(255, 255, 255, 0.8) 100%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    
-    /* Glass Edge Reflections */
-    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.5);
-    
-    /* Deep Glass Shadows */
+    color: #fff;
+    /* Cyberpunk Mixed Glow */
     text-shadow: 
-        0px 6px 16px rgba(0, 0, 0, 0.6), /* Drop shadow for physical depth */
-        0px 0px 30px rgba(255, 255, 255, 0.2); /* Soft ambient glow */
+        -6px -6px 24px rgba(255, 42, 133, 0.3), 
+        6px 6px 24px rgba(0, 240, 255, 0.3);
     
     transform: translateY(100%);
     opacity: 0;
