@@ -1570,6 +1570,23 @@
                 });
             }
             
+            // 20% chance for Distant Simultaneous Stars (not clustered together)
+            if (Math.random() < 0.2) {
+                let numDistant = Math.random() < 0.3 ? 2 : 1; // 1 or 2 extra distant stars
+                for (let d = 0; d < numDistant; d++) {
+                    let dColor = Math.random() < 0.3 ? '255, 230, 160' : (Math.random() < 0.7 ? '160, 210, 255' : '240, 240, 255');
+                    satellites.push({
+                        type: 'distant_twin',
+                        // Push them far away from the main star
+                        dx: (Math.random() > 0.5 ? 1 : -1) * (width * 3 + Math.random() * width * 6),
+                        dy: (Math.random() > 0.5 ? 1 : -1) * (height * 3 + Math.random() * height * 6),
+                        dz: (Math.random() - 0.5) * width * 3.0, // Large Z separation
+                        scale: 0.5 + Math.random() * 1.5,
+                        color: dColor
+                    });
+                }
+            }
+            
             // Mega Planetary System (10-20 planets)
             if (Math.random() < 0.1) {
                 let numPlanets = 10 + Math.floor(Math.random() * 11);
