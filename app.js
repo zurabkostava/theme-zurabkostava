@@ -1531,13 +1531,12 @@
         if (!ctx) return;
         ctx.clearRect(0, 0, width, height);
         
-        // Shift vanishing point slightly based on parallax for insane 3D depth
-        const cx = width / 2 - currentX * 2;
-        const cy = height / 2 - currentY * 2;
+        // Fixed vanishing point in the center
+        const cx = width / 2;
+        const cy = height / 2;
         
-        // Speed multiplier increases when mouse moves further from center
-        const speedBoost = Math.abs(currentX) * 0.05 + Math.abs(currentY) * 0.05;
-        const speed = baseSpeed + speedBoost;
+        // Stable speed
+        const speed = 1.2;
         
         for (let i = 0; i < numStars; i++) {
             let s = stars[i];
