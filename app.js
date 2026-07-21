@@ -2037,10 +2037,10 @@
         }
 
         function showNextPhrase() {
-            if (!isPlaying || !phraseContainer) return;
+            if (!isPlaying || !phraseContainer || phraseIndex >= phrases.length) return;
 
             var text = phrases[phraseIndex];
-            phraseIndex = (phraseIndex + 1) % phrases.length;
+            phraseIndex++; // no modulo, just increment
 
             var el = document.createElement('div');
             el.className = 'zk-cinematic-phrase-text';
@@ -2052,16 +2052,18 @@
             void el.offsetWidth;
             el.classList.add('is-visible');
 
-            // duration based on length
-            var duration = Math.min(8000, Math.max(3000, text.length * 80));
+            // duration based on length (slower reading: 120ms per char, min 5s, max 12s)
+            var duration = Math.min(12000, Math.max(5000, text.length * 120));
 
             phraseTimeout = setTimeout(function() {
                 el.classList.remove('is-visible');
                 // wait for fade out (2s) then schedule next
                 phraseTimeout = setTimeout(function() {
                     if (!isPlaying) return;
-                    var delay = 7000 + Math.random() * 8000; // 7-15s
-                    phraseTimeout = setTimeout(showNextPhrase, delay);
+                    if (phraseIndex < phrases.length) {
+                        var delay = 7000 + Math.random() * 8000; // 7-15s
+                        phraseTimeout = setTimeout(showNextPhrase, delay);
+                    }
                 }, 2000);
             }, duration);
         }
