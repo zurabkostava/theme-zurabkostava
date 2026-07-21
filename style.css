@@ -528,6 +528,12 @@ body.is-navigating #zk-global-loader {
     transform: translateY(0) scale(1);
 }
 
+@media (max-width: 768px) {
+    .zk-welcome-tooltip {
+        display: none !important;
+    }
+}
+
 /* Welcome Music Player */
 .zk-welcome-music-wrap {
     position: relative;
