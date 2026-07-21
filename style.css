@@ -3371,9 +3371,9 @@ body.is-cinematic-mode .hero-social-wrap {
    ============================================================ */
 .zk-cinematic-phrase-container {
     position: absolute;
-    top: 18vh;
+    top: 45%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     width: 90%;
     max-width: 800px;
     text-align: center;
@@ -3385,9 +3385,9 @@ body.is-cinematic-mode .hero-social-wrap {
 }
 
 .zk-cinematic-phrase-text {
-    font-size: 2rem;
-    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
-    font-weight: 400;
+    font-size: 1.8rem;
+    font-family: var(--font, sans-serif);
+    font-weight: 300;
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.9);
     text-shadow: 0 4px 25px rgba(0, 0, 0, 0.8);
@@ -3395,7 +3395,6 @@ body.is-cinematic-mode .hero-social-wrap {
     transform: translateY(15px);
     filter: blur(8px);
     transition: opacity 2s ease, transform 2.5s cubic-bezier(0.22, 1, 0.36, 1), filter 2s ease;
-    font-style: italic;
     letter-spacing: 0.5px;
 }
 
