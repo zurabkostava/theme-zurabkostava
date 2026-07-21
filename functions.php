@@ -4039,3 +4039,58 @@ function zk_loopback_diagnostic_shortcode() {
     return $output;
 }
 add_shortcode('zk_loopback_test', 'zk_loopback_diagnostic_shortcode');
+
+/* -------------------------------------------------------------------------
+   WELCOME MUSIC CPT
+   ------------------------------------------------------------------------- */
+function zk_register_welcome_music_cpt() {
+    $labels = array(
+        'name'          => 'Welcome Music',
+        'singular_name' => 'Welcome Music',
+        'menu_name'     => 'Welcome Music',
+        'add_new'       => 'Add New Track',
+        'edit_item'     => 'Edit Track',
+    );
+    $args = array(
+        'labels'        => $labels,
+        'public'        => false,
+        'show_ui'       => true,
+        'menu_icon'     => 'dashicons-controls-volumeon',
+        'supports'      => array( 'title' ),
+    );
+    register_post_type( 'zk_welcome_music', $args );
+}
+add_action( 'init', 'zk_register_welcome_music_cpt' );
+
+function zk_welcome_music_add_meta_box() {
+    add_meta_box( 'zk_welcome_music_details', 'Music Details', 'zk_welcome_music_meta_callback', 'zk_welcome_music', 'normal', 'high' );
+}
+add_action( 'add_meta_boxes', 'zk_welcome_music_add_meta_box' );
+
+function zk_welcome_music_meta_callback( $post ) {
+    wp_nonce_field( 'zk_welcome_music_save_meta', 'zk_welcome_music_meta_nonce' );
+    $audio_url = get_post_meta( $post->ID, '_zk_welcome_music_url', true );
+    ?>
+    <style>
+        .zk-meta-row { margin-bottom: 15px; }
+        .zk-meta-row label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .zk-meta-row input[type="text"] { width: 100%; max-width: 600px; padding: 8px; }
+    </style>
+    <div class="zk-meta-row">
+        <label for="zk_welcome_music_url">Audio File URL (Upload to Media and paste URL here):</label>
+        <input type="text" id="zk_welcome_music_url" name="zk_welcome_music_url" value="<?php echo esc_attr( $audio_url ); ?>" />
+    </div>
+    <?php
+}
+
+function zk_welcome_music_save_meta( $post_id ) {
+    if ( ! isset( $_POST['zk_welcome_music_meta_nonce'] ) ) return;
+    if ( ! wp_verify_nonce( $_POST['zk_welcome_music_meta_nonce'], 'zk_welcome_music_save_meta' ) ) return;
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
+    if ( ! current_user_can( 'edit_post', $post_id ) ) return;
+
+    if ( isset( $_POST['zk_welcome_music_url'] ) ) {
+        update_post_meta( $post_id, '_zk_welcome_music_url', sanitize_text_field( $_POST['zk_welcome_music_url'] ) );
+    }
+}
+add_action( 'save_post', 'zk_welcome_music_save_meta' );

@@ -1875,4 +1875,52 @@
         cleanup();
         initHero();
     });
+
+    /* Welcome Music */
+    function initWelcomeMusic() {
+        var btn = document.getElementById('zk-welcome-music-btn');
+        var audio = document.getElementById('zk-welcome-audio');
+        if (!btn || !audio) return;
+
+        var playIcon = btn.querySelector('.icon-play');
+        var pauseIcon = btn.querySelector('.icon-pause');
+        var isPlaying = !audio.paused && !audio.ended && audio.currentTime > 0;
+
+        // Sync UI with actual audio state in case of SPA navigation keeping audio alive
+        if (isPlaying) {
+            playIcon.style.display = 'none';
+            pauseIcon.style.display = 'block';
+        } else {
+            playIcon.style.display = 'block';
+            pauseIcon.style.display = 'none';
+        }
+
+        btn.addEventListener('click', function() {
+            if (isPlaying) {
+                audio.pause();
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+            } else {
+                var playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        playIcon.style.display = 'none';
+                        pauseIcon.style.display = 'block';
+                    }).catch(error => {
+                        console.error('Audio play failed', error);
+                    });
+                }
+            }
+            isPlaying = !isPlaying;
+        });
+
+        audio.addEventListener('ended', function() {
+            isPlaying = false;
+            playIcon.style.display = 'block';
+            pauseIcon.style.display = 'none';
+        });
+    }
+
+    initWelcomeMusic();
+    document.addEventListener('zk:viewChange', initWelcomeMusic);
 })();

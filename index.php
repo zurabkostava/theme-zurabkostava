@@ -19,6 +19,31 @@ ob_start(); ?>
     
     <!-- Cinematic Content -->
     <div class="hero-inner">
+        <?php
+        $welcome_music = new WP_Query(array(
+            'post_type' => 'zk_welcome_music',
+            'posts_per_page' => 1,
+            'post_status' => 'publish'
+        ));
+        if ( $welcome_music->have_posts() ) :
+            while ( $welcome_music->have_posts() ) : $welcome_music->the_post();
+                $audio_url = get_post_meta( get_the_ID(), '_zk_welcome_music_url', true );
+                if ( $audio_url ) :
+        ?>
+        <div class="zk-welcome-music-wrap">
+            <button class="zk-welcome-music-btn" id="zk-welcome-music-btn" aria-label="Play Welcome Music">
+                <svg class="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                <svg class="icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+            </button>
+            <span class="zk-welcome-music-title"><?php the_title(); ?></span>
+            <audio id="zk-welcome-audio" src="<?php echo esc_url( $audio_url ); ?>" preload="none"></audio>
+        </div>
+        <?php
+                endif;
+            endwhile;
+            wp_reset_postdata();
+        endif;
+        ?>
         <div class="hero-title-wrap">
             <h1 class="hero-title" data-text="<?php echo esc_attr( $zk_site ); ?>"><?php echo esc_html( $zk_site ); ?></h1>
         </div>

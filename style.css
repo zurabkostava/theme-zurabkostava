@@ -443,6 +443,65 @@ body.is-navigating #zk-global-loader {
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Welcome Music Player */
+.zk-welcome-music-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 30px;
+    padding: 6px 14px 6px 6px;
+    margin-bottom: -4px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    animation: fadeUp 1s ease 0.2s forwards;
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.zk-welcome-music-wrap:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.zk-welcome-music-btn {
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    padding: 0;
+}
+
+.zk-welcome-music-btn:hover {
+    transform: scale(1.05);
+}
+
+.zk-welcome-music-btn svg {
+    width: 12px;
+    height: 12px;
+}
+
+.zk-welcome-music-btn svg.icon-play {
+    margin-left: 2px; /* slight visual offset for play icon */
+}
+
+.zk-welcome-music-title {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
 /* Staggered Reveal Wrappers */
 .hero-eyebrow-wrap,
 .hero-title-wrap,
