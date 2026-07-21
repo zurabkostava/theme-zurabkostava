@@ -3332,26 +3332,33 @@ body.zk-lb-open { overflow: hidden; }
    CINEMATIC MODE
    ============================================================ */
 body.is-cinematic-mode .site-header {
-    transform: translateY(-100%);
-    opacity: 0;
-    pointer-events: none;
-    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
-}
-.site-header {
-    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease, height 0.45s var(--ease);
+    transform: translateY(-100%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    filter: blur(10px) !important;
 }
 
 body.is-cinematic-mode .hero-title-wrap,
 body.is-cinematic-mode .hero-sub-wrap,
-body.is-cinematic-mode .hero-social-wrap {
-    transform: translateY(40px);
-    opacity: 0;
-    pointer-events: none;
+body.is-cinematic-mode .hero-social-wrap,
+body.is-cinematic-mode .hero-latest-dock {
+    transform: translateY(60px) !important;
+    opacity: 0 !important;
+    filter: blur(10px) !important;
+    pointer-events: none !important;
 }
-.hero-title-wrap, .hero-sub-wrap, .hero-social-wrap {
-    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
+
+.site-header,
+.hero-title-wrap, 
+.hero-sub-wrap, 
+.hero-social-wrap,
+.hero-latest-dock {
+    transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.5s ease, filter 1.5s ease, height 0.45s var(--ease) !important;
 }
 
 body.is-cinematic-mode .zk-welcome-music-container {
-    transform: translateY(25vh) !important;
+    transform: translateY(40vh) !important;
+}
+.zk-welcome-music-container {
+    transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
