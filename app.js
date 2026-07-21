@@ -1918,19 +1918,19 @@
         if (!btn || !audio || !container) return;
 
         var playIcon = btn.querySelector('.icon-play');
-        var pauseIcon = btn.querySelector('.icon-pause');
+        var stopIcon = btn.querySelector('.icon-stop');
         var isPlaying = !audio.paused && !audio.ended && audio.currentTime > 0;
 
         // Sync UI with actual audio state in case of SPA navigation keeping audio alive
         if (isPlaying) {
             playIcon.style.display = 'none';
-            pauseIcon.style.display = 'block';
+            stopIcon.style.display = 'block';
             btn.classList.add('is-playing');
             document.body.classList.add('is-cinematic-mode');
             startPhrases();
         } else {
             playIcon.style.display = 'block';
-            pauseIcon.style.display = 'none';
+            stopIcon.style.display = 'none';
             btn.classList.remove('is-playing');
             document.body.classList.remove('is-cinematic-mode');
             stopPhrases();
@@ -1959,11 +1959,12 @@
                         clearInterval(fadeInterval);
                         audio.volume = 0;
                         audio.pause();
+                        audio.currentTime = 0; // Reset to start
                     }
                 }, 15);
 
                 playIcon.style.display = 'block';
-                pauseIcon.style.display = 'none';
+                stopIcon.style.display = 'none';
                 btn.classList.remove('is-playing');
                 document.body.classList.remove('is-cinematic-mode');
                 stopPhrases();

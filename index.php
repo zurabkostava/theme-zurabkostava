@@ -86,7 +86,7 @@ ob_start(); ?>
                 <?php endif; ?>
                 <div class="zk-btn-overlay">
                     <svg class="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    <svg class="icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                    <svg class="icon-stop" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:none;"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>
                 </div>
             </button>
             <span class="zk-welcome-music-title"><?php the_title(); ?></span>
