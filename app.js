@@ -1471,6 +1471,7 @@
     const baseSpeed = 0.6;
     let startTime = Date.now();
     let currentCluster = null;
+    let idleTimer = null;
     
     // Morning star timing
     let lastMorningStarTime = Date.now();
@@ -1504,6 +1505,10 @@
         }
 
         document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mousemove', resetIdleTimer);
+        document.addEventListener('touchstart', resetIdleTimer, { passive: true });
+        document.addEventListener('scroll', resetIdleTimer, { passive: true });
+        resetIdleTimer();
         animate();
     }
 
@@ -1861,8 +1866,21 @@
         rafId = requestAnimationFrame(animate);
     }
 
+    function resetIdleTimer() {
+        if (!inner) return;
+        inner.classList.remove('is-idle');
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+            if (inner) inner.classList.add('is-idle');
+        }, 3000);
+    }
+
     function cleanup() {
         document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mousemove', resetIdleTimer);
+        document.removeEventListener('touchstart', resetIdleTimer);
+        document.removeEventListener('scroll', resetIdleTimer);
+        clearTimeout(idleTimer);
         window.removeEventListener('resize', resizeCanvas);
         cancelAnimationFrame(rafId);
         hero = null;
