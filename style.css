@@ -492,15 +492,32 @@ body.is-navigating #zk-global-loader {
     letter-spacing: 0.3px;
 }
 
+.zk-welcome-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    background: #111116; /* Solid dark color to hide the border */
+    transform: translateX(-50%) rotate(45deg);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    z-index: 1;
+}
+
 .zk-welcome-tooltip::after {
     content: '';
     position: absolute;
-    top: 100%;
+    bottom: -7px;
     left: 50%;
-    transform: translateX(-50%);
-    border-width: 6px;
-    border-style: solid;
-    border-color: rgba(15, 15, 20, 0.75) transparent transparent transparent;
+    width: 14px;
+    height: 14px;
+    background: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+    transform: translateX(-50%) rotate(45deg);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    z-index: 2;
 }
 
 .zk-welcome-music-container:hover .zk-welcome-tooltip,
