@@ -456,7 +456,7 @@ body.is-navigating #zk-global-loader {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     transition: all 0.3s ease;
-    animation: fadeUp 1s ease 0.2s forwards;
+    animation: revealUp 1s ease 0.2s forwards;
     opacity: 0;
     transform: translateY(10px);
 }
