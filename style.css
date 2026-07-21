@@ -462,6 +462,7 @@ body.is-navigating #zk-global-loader {
     animation: revealUp 1s ease 0.2s forwards;
     opacity: 0;
     transform: translateY(10px);
+    transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .zk-welcome-tooltip {
@@ -3325,4 +3326,32 @@ body.zk-lb-open { overflow: hidden; }
 }
 .zk-carousel-hidden {
     display: none !important;
+}
+
+/* ============================================================
+   CINEMATIC MODE
+   ============================================================ */
+body.is-cinematic-mode .site-header {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
+}
+.site-header {
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease, height 0.45s var(--ease);
+}
+
+body.is-cinematic-mode .hero-title-wrap,
+body.is-cinematic-mode .hero-sub-wrap,
+body.is-cinematic-mode .hero-social-wrap {
+    transform: translateY(40px);
+    opacity: 0;
+    pointer-events: none;
+}
+.hero-title-wrap, .hero-sub-wrap, .hero-social-wrap {
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
+}
+
+body.is-cinematic-mode .zk-welcome-music-container {
+    transform: translateY(25vh) !important;
 }
