@@ -4087,9 +4087,16 @@ function zk_welcome_music_meta_callback( $post ) {
         <input type="text" id="zk_welcome_music_tooltip" name="zk_welcome_music_tooltip" value="<?php echo esc_attr( $tooltip ); ?>" />
     </div>
     <div class="zk-meta-row">
-        <label for="zk_welcome_music_phrases">Cinematic Phrases (One per line, optional):</label>
-        <textarea id="zk_welcome_music_phrases" name="zk_welcome_music_phrases" rows="6"><?php echo esc_textarea( $phrases ); ?></textarea>
-        <p class="description">These phrases will appear sequentially at the top center of the screen while the music plays in cinematic mode.</p>
+        <label for="zk_welcome_music_phrases" style="margin-bottom:10px; display:inline-block;">Cinematic Phrases (One phrase per line, optional):</label>
+        <?php 
+        wp_editor( $phrases, 'zk_welcome_music_phrases', array(
+            'textarea_name' => 'zk_welcome_music_phrases',
+            'textarea_rows' => 6,
+            'media_buttons' => false,
+            'teeny'         => false
+        ) ); 
+        ?>
+        <p class="description" style="margin-top:10px;">These phrases will appear sequentially at the center of the screen while the music plays in cinematic mode. You can use Bold, Italic, and other formatting.</p>
     </div>
     <?php
 }
@@ -4107,7 +4114,7 @@ function zk_welcome_music_save_meta( $post_id ) {
         update_post_meta( $post_id, '_zk_welcome_music_tooltip', sanitize_text_field( $_POST['zk_welcome_music_tooltip'] ) );
     }
     if ( isset( $_POST['zk_welcome_music_phrases'] ) ) {
-        update_post_meta( $post_id, '_zk_welcome_music_phrases', sanitize_textarea_field( $_POST['zk_welcome_music_phrases'] ) );
+        update_post_meta( $post_id, '_zk_welcome_music_phrases', wp_kses_post( $_POST['zk_welcome_music_phrases'] ) );
     }
 }
 add_action( 'save_post', 'zk_welcome_music_save_meta' );

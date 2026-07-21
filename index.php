@@ -36,10 +36,15 @@ ob_start(); ?>
                 
                 $phrases_array = [];
                 if ( !empty($phrases) ) {
-                    $lines = explode("\n", $phrases);
+                    // wp_editor might output <p> tags and <br> tags. 
+                    // Let's normalize to newlines, then split.
+                    $phrases_html = wpautop($phrases);
+                    $phrases_html = str_replace(array('<p>', '</p>', '<br>', '<br />', '<br/>'), array('', "\n", "\n", "\n", "\n"), $phrases_html);
+                    $lines = explode("\n", $phrases_html);
                     foreach($lines as $line) {
                         $line = trim($line);
-                        if (!empty($line)) {
+                        // We keep the formatting tags (<b>, <i>, etc.), but skip empty ones.
+                        if (!empty(strip_tags($line))) {
                             $phrases_array[] = $line;
                         }
                     }

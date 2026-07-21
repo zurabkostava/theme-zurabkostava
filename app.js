@@ -2044,7 +2044,7 @@
 
             var el = document.createElement('div');
             el.className = 'zk-cinematic-phrase-text';
-            el.textContent = text;
+            el.innerHTML = text; // Use innerHTML to support bold/italic tags
             phraseContainer.innerHTML = '';
             phraseContainer.appendChild(el);
 
@@ -2052,8 +2052,9 @@
             void el.offsetWidth;
             el.classList.add('is-visible');
 
-            // duration based on length (slower reading: 120ms per char, min 5s, max 12s)
-            var duration = Math.min(12000, Math.max(5000, text.length * 120));
+            // duration based on text length (ignoring HTML tags)
+            var plainText = el.textContent || el.innerText || "";
+            var duration = Math.min(12000, Math.max(5000, plainText.length * 120));
 
             phraseTimeout = setTimeout(function() {
                 el.classList.remove('is-visible');
