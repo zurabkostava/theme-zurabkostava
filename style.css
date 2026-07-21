@@ -3400,9 +3400,9 @@ body.is-cinematic-mode .zk-bottom-nav {
     color: rgba(255, 255, 255, 0.75);
     text-shadow: 0 4px 30px rgba(0, 0, 0, 0.9);
     opacity: 0;
-    transform: scale(0.95) translateY(25px);
-    filter: blur(12px);
-    transition: opacity 3.5s ease, transform 6s cubic-bezier(0.1, 0.8, 0.2, 1), filter 3.5s ease;
+    transform: scale(0.98) translateY(15px);
+    filter: blur(10px);
+    transition: all 4s cubic-bezier(0.22, 1, 0.36, 1);
     letter-spacing: 0.15em;
     text-transform: uppercase;
 }
