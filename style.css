@@ -3365,3 +3365,41 @@ body.is-cinematic-mode .hero-social-wrap {
 .hero-social-wrap {
     transition: transform 2.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 2.2s ease, filter 2.5s ease, height 0.45s var(--ease) !important;
 }
+
+/* ============================================================
+   CINEMATIC PHRASES
+   ============================================================ */
+.zk-cinematic-phrase-container {
+    position: absolute;
+    top: 18vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 800px;
+    text-align: center;
+    z-index: 100;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.zk-cinematic-phrase-text {
+    font-size: 1.4rem;
+    font-weight: 300;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transform: translateY(15px);
+    filter: blur(8px);
+    transition: opacity 2s ease, transform 2.5s cubic-bezier(0.22, 1, 0.36, 1), filter 2s ease;
+    font-style: italic;
+    letter-spacing: 0.5px;
+}
+
+.zk-cinematic-phrase-text.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+}

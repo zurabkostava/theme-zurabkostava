@@ -16,7 +16,9 @@ ob_start(); ?>
         <div class="hero-orb hero-orb-1"></div>
         <div class="hero-orb hero-orb-2"></div>
     </div>
-    
+        <!-- Cinematic Phrases Container -->
+    <div id="zk-cinematic-phrase-container" class="zk-cinematic-phrase-container"></div>
+
     <!-- Cinematic Content -->
     <div class="hero-inner">
         <?php
@@ -30,9 +32,23 @@ ob_start(); ?>
                 $audio_url = get_post_meta( get_the_ID(), '_zk_welcome_music_url', true );
                 $artwork_url = get_the_post_thumbnail_url( get_the_ID(), 'thumbnail' );
                 $tooltip = get_post_meta( get_the_ID(), '_zk_welcome_music_tooltip', true );
+                $phrases = get_post_meta( get_the_ID(), '_zk_welcome_music_phrases', true );
+                
+                $phrases_array = [];
+                if ( !empty($phrases) ) {
+                    $lines = explode("\n", $phrases);
+                    foreach($lines as $line) {
+                        $line = trim($line);
+                        if (!empty($line)) {
+                            $phrases_array[] = $line;
+                        }
+                    }
+                }
+                $phrases_json = htmlspecialchars( wp_json_encode( $phrases_array ), ENT_QUOTES, 'UTF-8' );
+
                 if ( $audio_url ) :
         ?>
-        <div class="zk-welcome-music-container">
+        <div class="zk-welcome-music-container" data-phrases="<?php echo $phrases_json; ?>">
             <?php if ( $tooltip ) : ?>
                 <div class="zk-welcome-tooltip"><?php echo esc_html( $tooltip ); ?></div>
             <?php endif; ?>

@@ -4071,11 +4071,12 @@ function zk_welcome_music_meta_callback( $post ) {
     wp_nonce_field( 'zk_welcome_music_save_meta', 'zk_welcome_music_meta_nonce' );
     $audio_url = get_post_meta( $post->ID, '_zk_welcome_music_url', true );
     $tooltip   = get_post_meta( $post->ID, '_zk_welcome_music_tooltip', true );
+    $phrases   = get_post_meta( $post->ID, '_zk_welcome_music_phrases', true );
     ?>
     <style>
         .zk-meta-row { margin-bottom: 15px; }
         .zk-meta-row label { display: block; font-weight: bold; margin-bottom: 5px; }
-        .zk-meta-row input[type="text"] { width: 100%; max-width: 600px; padding: 8px; }
+        .zk-meta-row input[type="text"], .zk-meta-row textarea { width: 100%; max-width: 600px; padding: 8px; }
     </style>
     <div class="zk-meta-row">
         <label for="zk_welcome_music_url">Audio File URL (Upload to Media and paste URL here):</label>
@@ -4084,6 +4085,11 @@ function zk_welcome_music_meta_callback( $post ) {
     <div class="zk-meta-row">
         <label for="zk_welcome_music_tooltip">Tooltip Text (Optional custom message on hover):</label>
         <input type="text" id="zk_welcome_music_tooltip" name="zk_welcome_music_tooltip" value="<?php echo esc_attr( $tooltip ); ?>" />
+    </div>
+    <div class="zk-meta-row">
+        <label for="zk_welcome_music_phrases">Cinematic Phrases (One per line, optional):</label>
+        <textarea id="zk_welcome_music_phrases" name="zk_welcome_music_phrases" rows="6"><?php echo esc_textarea( $phrases ); ?></textarea>
+        <p class="description">These phrases will appear sequentially at the top center of the screen while the music plays in cinematic mode.</p>
     </div>
     <?php
 }
@@ -4099,6 +4105,9 @@ function zk_welcome_music_save_meta( $post_id ) {
     }
     if ( isset( $_POST['zk_welcome_music_tooltip'] ) ) {
         update_post_meta( $post_id, '_zk_welcome_music_tooltip', sanitize_text_field( $_POST['zk_welcome_music_tooltip'] ) );
+    }
+    if ( isset( $_POST['zk_welcome_music_phrases'] ) ) {
+        update_post_meta( $post_id, '_zk_welcome_music_phrases', sanitize_textarea_field( $_POST['zk_welcome_music_phrases'] ) );
     }
 }
 add_action( 'save_post', 'zk_welcome_music_save_meta' );

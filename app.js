@@ -1926,11 +1926,13 @@
             pauseIcon.style.display = 'block';
             btn.classList.add('is-playing');
             document.body.classList.add('is-cinematic-mode');
+            startPhrases();
         } else {
             playIcon.style.display = 'block';
             pauseIcon.style.display = 'none';
             btn.classList.remove('is-playing');
             document.body.classList.remove('is-cinematic-mode');
+            stopPhrases();
         }
 
         var fadeInterval = null;
@@ -1955,6 +1957,7 @@
                 pauseIcon.style.display = 'none';
                 btn.classList.remove('is-playing');
                 document.body.classList.remove('is-cinematic-mode');
+                stopPhrases();
             } else {
                 if (hasPlayedOnce) {
                     audio.volume = 0; // start at 0 for fade in
@@ -1983,6 +1986,7 @@
                         pauseIcon.style.display = 'block';
                         btn.classList.add('is-playing');
                         document.body.classList.add('is-cinematic-mode');
+                        startPhrases();
                     }).catch(error => {
                         console.error('Audio play failed', error);
                         audio.volume = 1;
@@ -1998,10 +2002,69 @@
             pauseIcon.style.display = 'none';
             btn.classList.remove('is-playing');
             document.body.classList.remove('is-cinematic-mode');
+            stopPhrases();
         });
 
         var wrap = btn.closest('.zk-welcome-music-wrap');
         var container = btn.closest('.zk-welcome-music-container');
+        
+        // Cinematic Phrases Logic
+        var phrasesData = container ? container.getAttribute('data-phrases') : null;
+        var phrases = [];
+        if (phrasesData) {
+            try {
+                phrases = JSON.parse(phrasesData);
+            } catch (e) {
+                console.error("Failed to parse phrases", e);
+            }
+        }
+        var phraseContainer = document.getElementById('zk-cinematic-phrase-container');
+        var phraseTimeout = null;
+        var phraseIndex = 0;
+
+        function startPhrases() {
+            if (!phrases || phrases.length === 0 || !phraseContainer) return;
+            stopPhrases(); // clear any existing
+            var delay = 5000 + Math.random() * 3000; // 5-8 seconds
+            phraseTimeout = setTimeout(showNextPhrase, delay);
+        }
+
+        function stopPhrases() {
+            if (phraseTimeout) clearTimeout(phraseTimeout);
+            if (phraseContainer) {
+                phraseContainer.innerHTML = '';
+            }
+        }
+
+        function showNextPhrase() {
+            if (!isPlaying || !phraseContainer) return;
+
+            var text = phrases[phraseIndex];
+            phraseIndex = (phraseIndex + 1) % phrases.length;
+
+            var el = document.createElement('div');
+            el.className = 'zk-cinematic-phrase-text';
+            el.textContent = text;
+            phraseContainer.innerHTML = '';
+            phraseContainer.appendChild(el);
+
+            // trigger reflow for transition
+            void el.offsetWidth;
+            el.classList.add('is-visible');
+
+            // duration based on length
+            var duration = Math.min(8000, Math.max(3000, text.length * 80));
+
+            phraseTimeout = setTimeout(function() {
+                el.classList.remove('is-visible');
+                // wait for fade out (2s) then schedule next
+                phraseTimeout = setTimeout(function() {
+                    if (!isPlaying) return;
+                    var delay = 7000 + Math.random() * 8000; // 7-15s
+                    phraseTimeout = setTimeout(showNextPhrase, delay);
+                }, 2000);
+            }, duration);
+        }
 
         if (container) {
             container.addEventListener('touchstart', function(e) {
