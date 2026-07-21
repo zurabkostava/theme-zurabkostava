@@ -3385,21 +3385,22 @@ body.is-cinematic-mode .hero-social-wrap {
 }
 
 .zk-cinematic-phrase-text {
-    font-size: 1.8rem;
-    font-family: var(--font, sans-serif);
-    font-weight: 300;
-    line-height: 1.6;
-    color: rgba(255, 255, 255, 0.9);
-    text-shadow: 0 4px 25px rgba(0, 0, 0, 0.8);
+    font-size: 1.35rem;
+    font-family: 'Outfit', 'Inter', sans-serif;
+    font-weight: 200;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.75);
+    text-shadow: 0 4px 30px rgba(0, 0, 0, 0.9);
     opacity: 0;
-    transform: translateY(15px);
-    filter: blur(8px);
-    transition: opacity 2s ease, transform 2.5s cubic-bezier(0.22, 1, 0.36, 1), filter 2s ease;
-    letter-spacing: 0.5px;
+    transform: scale(0.95) translateY(25px);
+    filter: blur(12px);
+    transition: opacity 3.5s ease, transform 6s cubic-bezier(0.1, 0.8, 0.2, 1), filter 3.5s ease;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
 }
 
 .zk-cinematic-phrase-text.is-visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1.02) translateY(0);
     filter: blur(0);
 }
