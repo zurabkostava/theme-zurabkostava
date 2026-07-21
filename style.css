@@ -3356,12 +3356,17 @@ body.is-cinematic-mode .hero-social-wrap {
     pointer-events: none !important;
     filter: blur(12px) !important;
 }
-
 body.is-cinematic-mode .zk-bottom-nav {
     transform: translateY(100%) !important;
     opacity: 0 !important;
     pointer-events: none !important;
     filter: blur(10px) !important;
+}
+
+body.is-cinematic-mode .zk-welcome-tooltip {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }
 
 .site-header,
