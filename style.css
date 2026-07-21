@@ -478,7 +478,7 @@ body.is-navigating #zk-global-loader {
     position: absolute;
     top: 0; left: 0; bottom: 0;
     width: var(--music-progress, 0%);
-    background: linear-gradient(90deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 100%);
+    background: linear-gradient(90deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 100%);
     z-index: 0;
     transition: width 0.1s linear;
 }
@@ -503,6 +503,48 @@ body.is-navigating #zk-global-loader {
     cursor: pointer;
     transition: transform 0.2s ease, opacity 0.2s ease;
     padding: 0;
+    overflow: hidden;
+}
+
+/* Artwork Layer */
+.zk-artwork-layer {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.zk-welcome-music-btn.is-playing .zk-artwork-layer {
+    animation: zk-spin-artwork 6s linear infinite;
+}
+
+@keyframes zk-spin-artwork { 
+    100% { transform: rotate(360deg); } 
+}
+
+/* Overlay for icons */
+.zk-btn-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.zk-welcome-music-btn.has-artwork .zk-btn-overlay {
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.zk-welcome-music-btn.has-artwork:hover .zk-btn-overlay,
+.zk-welcome-music-btn.has-artwork:not(.is-playing) .zk-btn-overlay {
+    opacity: 1;
 }
 
 .zk-welcome-music-btn:hover {

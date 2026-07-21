@@ -1908,9 +1908,11 @@
         if (isPlaying) {
             playIcon.style.display = 'none';
             pauseIcon.style.display = 'block';
+            btn.classList.add('is-playing');
         } else {
             playIcon.style.display = 'block';
             pauseIcon.style.display = 'none';
+            btn.classList.remove('is-playing');
         }
 
         btn.addEventListener('click', function() {
@@ -1918,12 +1920,14 @@
                 audio.pause();
                 playIcon.style.display = 'block';
                 pauseIcon.style.display = 'none';
+                btn.classList.remove('is-playing');
             } else {
                 var playPromise = audio.play();
                 if (playPromise !== undefined) {
                     playPromise.then(_ => {
                         playIcon.style.display = 'none';
                         pauseIcon.style.display = 'block';
+                        btn.classList.add('is-playing');
                     }).catch(error => {
                         console.error('Audio play failed', error);
                     });
@@ -1936,6 +1940,7 @@
             isPlaying = false;
             playIcon.style.display = 'block';
             pauseIcon.style.display = 'none';
+            btn.classList.remove('is-playing');
         });
 
         var wrap = btn.closest('.zk-welcome-music-wrap');

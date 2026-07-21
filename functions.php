@@ -4056,7 +4056,7 @@ function zk_register_welcome_music_cpt() {
         'public'        => false,
         'show_ui'       => true,
         'menu_icon'     => 'dashicons-controls-volumeon',
-        'supports'      => array( 'title' ),
+        'supports'      => array( 'title', 'thumbnail' ),
     );
     register_post_type( 'zk_welcome_music', $args );
 }

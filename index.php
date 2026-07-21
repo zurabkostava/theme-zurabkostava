@@ -28,12 +28,18 @@ ob_start(); ?>
         if ( $welcome_music->have_posts() ) :
             while ( $welcome_music->have_posts() ) : $welcome_music->the_post();
                 $audio_url = get_post_meta( get_the_ID(), '_zk_welcome_music_url', true );
+                $artwork_url = get_the_post_thumbnail_url( get_the_ID(), 'thumbnail' );
                 if ( $audio_url ) :
         ?>
         <div class="zk-welcome-music-wrap">
-            <button class="zk-welcome-music-btn" id="zk-welcome-music-btn" aria-label="Play Welcome Music">
-                <svg class="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                <svg class="icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+            <button class="zk-welcome-music-btn <?php echo $artwork_url ? 'has-artwork' : ''; ?>" id="zk-welcome-music-btn" aria-label="Play Welcome Music">
+                <?php if ( $artwork_url ) : ?>
+                    <div class="zk-artwork-layer" style="background-image: url('<?php echo esc_url( $artwork_url ); ?>');"></div>
+                <?php endif; ?>
+                <div class="zk-btn-overlay">
+                    <svg class="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    <svg class="icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                </div>
             </button>
             <span class="zk-welcome-music-title"><?php the_title(); ?></span>
             <audio id="zk-welcome-audio" src="<?php echo esc_url( $audio_url ); ?>" preload="none"></audio>
