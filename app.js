@@ -1509,6 +1509,22 @@
         document.addEventListener('touchstart', resetIdleTimer, { passive: true });
         document.addEventListener('scroll', resetIdleTimer, { passive: true });
         resetIdleTimer();
+
+        // Fix for CSS transition bug on 'forwards' animations
+        setTimeout(function() {
+            var animatedElements = document.querySelectorAll('.hero-title-wrap, .hero-sub-wrap, .hero-social-wrap, .hero-latest-dock');
+            animatedElements.forEach(function(el) {
+                el.style.animation = 'none';
+                el.style.opacity = '1';
+                el.style.filter = 'blur(0)';
+                if (el.classList.contains('hero-latest-dock')) {
+                    el.style.transform = 'translate(-50%, 0)';
+                } else {
+                    el.style.transform = 'translateY(0)';
+                }
+            });
+        }, 2000);
+
         animate();
     }
 
