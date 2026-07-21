@@ -3357,12 +3357,20 @@ body.is-cinematic-mode .hero-social-wrap {
     filter: blur(12px) !important;
 }
 
+body.is-cinematic-mode .zk-bottom-nav {
+    transform: translateY(100%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    filter: blur(10px) !important;
+}
+
 .site-header,
 .hero-latest-dock,
 .hero-inner,
 .hero-title-wrap, 
 .hero-sub-wrap, 
-.hero-social-wrap {
+.hero-social-wrap,
+.zk-bottom-nav {
     transition: transform 2.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 2.2s ease, filter 2.5s ease, height 0.45s var(--ease) !important;
 }
 
