@@ -29,10 +29,15 @@ ob_start(); ?>
             while ( $welcome_music->have_posts() ) : $welcome_music->the_post();
                 $audio_url = get_post_meta( get_the_ID(), '_zk_welcome_music_url', true );
                 $artwork_url = get_the_post_thumbnail_url( get_the_ID(), 'thumbnail' );
+                $tooltip = get_post_meta( get_the_ID(), '_zk_welcome_music_tooltip', true );
                 if ( $audio_url ) :
         ?>
-        <div class="zk-welcome-music-wrap">
-            <button class="zk-welcome-music-btn <?php echo $artwork_url ? 'has-artwork' : ''; ?>" id="zk-welcome-music-btn" aria-label="Play Welcome Music">
+        <div class="zk-welcome-music-container">
+            <?php if ( $tooltip ) : ?>
+                <div class="zk-welcome-tooltip"><?php echo esc_html( $tooltip ); ?></div>
+            <?php endif; ?>
+            <div class="zk-welcome-music-wrap">
+                <button class="zk-welcome-music-btn <?php echo $artwork_url ? 'has-artwork' : ''; ?>" id="zk-welcome-music-btn" aria-label="Play Welcome Music">
                 <?php if ( $artwork_url ) : ?>
                     <div class="zk-artwork-layer" style="background-image: url('<?php echo esc_url( $artwork_url ); ?>');"></div>
                 <?php endif; ?>
@@ -43,6 +48,7 @@ ob_start(); ?>
             </button>
             <span class="zk-welcome-music-title"><?php the_title(); ?></span>
             <audio id="zk-welcome-audio" src="<?php echo esc_url( $audio_url ); ?>" preload="none"></audio>
+            </div>
         </div>
         <?php
                 endif;

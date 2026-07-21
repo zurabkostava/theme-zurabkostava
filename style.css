@@ -453,6 +453,58 @@ body.is-navigating #zk-global-loader {
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
 
+/* Welcome Music Container */
+.zk-welcome-music-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: revealUp 1s ease 0.2s forwards;
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.zk-welcome-tooltip {
+    position: absolute;
+    bottom: 100%;
+    margin-bottom: 14px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 10;
+    letter-spacing: 0.5px;
+}
+
+.zk-welcome-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.6) transparent transparent transparent;
+}
+
+.zk-welcome-music-container:hover .zk-welcome-tooltip,
+.zk-welcome-music-container.show-tooltip .zk-welcome-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
 /* Welcome Music Player */
 .zk-welcome-music-wrap {
     position: relative;
@@ -468,9 +520,6 @@ body.is-navigating #zk-global-loader {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     transition: all 0.3s ease;
-    animation: revealUp 1s ease 0.2s forwards;
-    opacity: 0;
-    transform: translateY(10px);
 }
 
 .zk-welcome-music-wrap::before {

@@ -4070,6 +4070,7 @@ add_action( 'add_meta_boxes', 'zk_welcome_music_add_meta_box' );
 function zk_welcome_music_meta_callback( $post ) {
     wp_nonce_field( 'zk_welcome_music_save_meta', 'zk_welcome_music_meta_nonce' );
     $audio_url = get_post_meta( $post->ID, '_zk_welcome_music_url', true );
+    $tooltip   = get_post_meta( $post->ID, '_zk_welcome_music_tooltip', true );
     ?>
     <style>
         .zk-meta-row { margin-bottom: 15px; }
@@ -4079,6 +4080,10 @@ function zk_welcome_music_meta_callback( $post ) {
     <div class="zk-meta-row">
         <label for="zk_welcome_music_url">Audio File URL (Upload to Media and paste URL here):</label>
         <input type="text" id="zk_welcome_music_url" name="zk_welcome_music_url" value="<?php echo esc_attr( $audio_url ); ?>" />
+    </div>
+    <div class="zk-meta-row">
+        <label for="zk_welcome_music_tooltip">Tooltip Text (Optional custom message on hover):</label>
+        <input type="text" id="zk_welcome_music_tooltip" name="zk_welcome_music_tooltip" value="<?php echo esc_attr( $tooltip ); ?>" />
     </div>
     <?php
 }
@@ -4091,6 +4096,9 @@ function zk_welcome_music_save_meta( $post_id ) {
 
     if ( isset( $_POST['zk_welcome_music_url'] ) ) {
         update_post_meta( $post_id, '_zk_welcome_music_url', sanitize_text_field( $_POST['zk_welcome_music_url'] ) );
+    }
+    if ( isset( $_POST['zk_welcome_music_tooltip'] ) ) {
+        update_post_meta( $post_id, '_zk_welcome_music_tooltip', sanitize_text_field( $_POST['zk_welcome_music_tooltip'] ) );
     }
 }
 add_action( 'save_post', 'zk_welcome_music_save_meta' );

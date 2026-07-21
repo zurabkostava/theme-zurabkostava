@@ -1944,6 +1944,23 @@
         });
 
         var wrap = btn.closest('.zk-welcome-music-wrap');
+        var container = btn.closest('.zk-welcome-music-container');
+
+        if (container) {
+            container.addEventListener('touchstart', function(e) {
+                // If they tap the button, we don't just show tooltip, we also play. But showing tooltip is nice anyway.
+                // However, to allow them to tap outside the button just to see the tooltip:
+                container.classList.toggle('show-tooltip');
+            }, { passive: true });
+            
+            // Remove tooltip if they click elsewhere
+            document.addEventListener('touchstart', function(e) {
+                if (!container.contains(e.target)) {
+                    container.classList.remove('show-tooltip');
+                }
+            }, { passive: true });
+        }
+
         audio.addEventListener('timeupdate', function() {
             if (audio.duration && wrap) {
                 var progress = (audio.currentTime / audio.duration) * 100;
