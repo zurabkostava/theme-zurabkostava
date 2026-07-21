@@ -2019,54 +2019,61 @@
             }
         }
         var phraseContainer = document.getElementById('zk-cinematic-phrase-container');
-        var phraseTimeout = null;
-        var phraseIndex = 0;
+        var activePhraseIndex = -1;
 
-        function startPhrases() {
-            if (!phrases || phrases.length === 0 || !phraseContainer) return;
-            stopPhrases(); // clear any existing
-            var delay = 5000 + Math.random() * 3000; // 5-8 seconds
-            phraseTimeout = setTimeout(showNextPhrase, delay);
+        if (audio && phrases && phrases.length > 0) {
+            audio.addEventListener('timeupdate', function() {
+                if (!isPlaying || !phraseContainer) return;
+                
+                var currentTime = audio.currentTime;
+                var foundIndex = -1;
+                
+                for (var i = 0; i < phrases.length; i++) {
+                    if (currentTime >= phrases[i].start && currentTime <= phrases[i].end) {
+                        foundIndex = i;
+                        break;
+                    }
+                }
+                
+                if (foundIndex !== activePhraseIndex) {
+                    // Hide previous phrase
+                    if (phraseContainer.firstChild) {
+                        phraseContainer.firstChild.classList.remove('is-visible');
+                    }
+                    
+                    activePhraseIndex = foundIndex;
+                    
+                    if (foundIndex !== -1) {
+                        // Show new phrase
+                        var text = phrases[foundIndex].text;
+                        var el = document.createElement('div');
+                        el.className = 'zk-cinematic-phrase-text';
+                        el.innerHTML = text;
+                        phraseContainer.innerHTML = '';
+                        phraseContainer.appendChild(el);
+                        
+                        // trigger reflow for transition
+                        void el.offsetWidth;
+                        el.classList.add('is-visible');
+                    }
+                }
+            });
         }
 
-        function stopPhrases() {
-            if (phraseTimeout) clearTimeout(phraseTimeout);
-            if (phraseContainer) {
-                phraseContainer.innerHTML = '';
+        function startPhrases() {
+            // Logic is now handled by timeupdate. Just force a check.
+            if (audio && audio.currentTime > 0) {
+                // To trigger timeupdate artificially
+                var event = new Event('timeupdate');
+                audio.dispatchEvent(event);
             }
         }
 
-        function showNextPhrase() {
-            if (!isPlaying || !phraseContainer || phraseIndex >= phrases.length) return;
-
-            var text = phrases[phraseIndex];
-            phraseIndex++; // no modulo, just increment
-
-            var el = document.createElement('div');
-            el.className = 'zk-cinematic-phrase-text';
-            el.innerHTML = text; // Use innerHTML to support bold/italic tags
-            phraseContainer.innerHTML = '';
-            phraseContainer.appendChild(el);
-
-            // trigger reflow for transition
-            void el.offsetWidth;
-            el.classList.add('is-visible');
-
-            // duration based on text length (ignoring HTML tags)
-            var plainText = el.textContent || el.innerText || "";
-            var duration = Math.min(12000, Math.max(5000, plainText.length * 120));
-
-            phraseTimeout = setTimeout(function() {
-                el.classList.remove('is-visible');
-                // wait for fade out (2s) then schedule next
-                phraseTimeout = setTimeout(function() {
-                    if (!isPlaying) return;
-                    if (phraseIndex < phrases.length) {
-                        var delay = 7000 + Math.random() * 8000; // 7-15s
-                        phraseTimeout = setTimeout(showNextPhrase, delay);
-                    }
-                }, 2000);
-            }, duration);
+        function stopPhrases() {
+            if (phraseContainer && phraseContainer.firstChild) {
+                phraseContainer.firstChild.classList.remove('is-visible');
+            }
+            activePhraseIndex = -1;
         }
 
         if (container) {

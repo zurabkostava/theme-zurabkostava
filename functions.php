@@ -4087,16 +4087,20 @@ function zk_welcome_music_meta_callback( $post ) {
         <input type="text" id="zk_welcome_music_tooltip" name="zk_welcome_music_tooltip" value="<?php echo esc_attr( $tooltip ); ?>" />
     </div>
     <div class="zk-meta-row">
-        <label for="zk_welcome_music_phrases" style="margin-bottom:10px; display:inline-block;">Cinematic Phrases (One phrase per line, optional):</label>
+        <label for="zk_welcome_music_phrases" style="margin-bottom:10px; display:inline-block;">Cinematic Phrases (Synced with audio):</label>
         <?php 
         wp_editor( $phrases, 'zk_welcome_music_phrases', array(
             'textarea_name' => 'zk_welcome_music_phrases',
-            'textarea_rows' => 6,
+            'textarea_rows' => 8,
             'media_buttons' => false,
             'teeny'         => false
         ) ); 
         ?>
-        <p class="description" style="margin-top:10px;">These phrases will appear sequentially at the center of the screen while the music plays in cinematic mode. You can use Bold, Italic, and other formatting.</p>
+        <p class="description" style="margin-top:10px;">
+            Synchronize phrases with the music by prepending timestamps: <strong>[MM:SS-MM:SS] Your text here</strong><br>
+            Example: <code>[00:15-00:25] Welcome to the universe</code><br>
+            Each timestamped phrase should be on a new line. You can use Bold and Italic formatting.
+        </p>
     </div>
     <?php
 }

@@ -44,8 +44,30 @@ ob_start(); ?>
                     foreach($lines as $line) {
                         $line = trim($line);
                         // We keep the formatting tags (<b>, <i>, etc.), but skip empty ones.
-                        if (!empty(strip_tags($line))) {
-                            $phrases_array[] = $line;
+                        if (empty(strip_tags($line))) continue;
+
+                        if (preg_match('/\[(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\](.*)/i', $line, $matches)) {
+                            $start_str = $matches[1];
+                            $end_str = $matches[2];
+                            $text = trim($matches[3]);
+
+                            // Remove any lingering closing tags at the very beginning of the text (in case they bolded the timestamp)
+                            $text = preg_replace('/^(<\/[^>]+>)+/', '', $text);
+                            $text = trim($text);
+
+                            $start_parts = explode(':', $start_str);
+                            $start_sec = ((int)$start_parts[0] * 60) + (int)$start_parts[1];
+
+                            $end_parts = explode(':', $end_str);
+                            $end_sec = ((int)$end_parts[0] * 60) + (int)$end_parts[1];
+
+                            if (!empty(strip_tags($text))) {
+                                $phrases_array[] = array(
+                                    'start' => $start_sec,
+                                    'end'   => $end_sec,
+                                    'text'  => $text
+                                );
+                            }
                         }
                     }
                 }
