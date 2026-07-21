@@ -1934,6 +1934,7 @@
         }
 
         var fadeInterval = null;
+        var hasPlayedOnce = false;
 
         btn.addEventListener('click', function() {
             if (fadeInterval) clearInterval(fadeInterval);
@@ -1955,19 +1956,28 @@
                 btn.classList.remove('is-playing');
                 document.body.classList.remove('is-cinematic-mode');
             } else {
-                audio.volume = 0; // start at 0 for fade in
+                if (hasPlayedOnce) {
+                    audio.volume = 0; // start at 0 for fade in
+                } else {
+                    audio.volume = 1; // start full volume on first play
+                }
+                
                 var playPromise = audio.play();
                 if (playPromise !== undefined) {
                     playPromise.then(_ => {
-                        // Soft fade in (~150ms)
-                        fadeInterval = setInterval(function() {
-                            if (audio.volume < 0.9) {
-                                audio.volume += 0.1;
-                            } else {
-                                clearInterval(fadeInterval);
-                                audio.volume = 1;
-                            }
-                        }, 15);
+                        if (hasPlayedOnce) {
+                            // Soft fade in (~150ms)
+                            fadeInterval = setInterval(function() {
+                                if (audio.volume < 0.9) {
+                                    audio.volume += 0.1;
+                                } else {
+                                    clearInterval(fadeInterval);
+                                    audio.volume = 1;
+                                }
+                            }, 15);
+                        } else {
+                            hasPlayedOnce = true;
+                        }
 
                         playIcon.style.display = 'none';
                         pauseIcon.style.display = 'block';
