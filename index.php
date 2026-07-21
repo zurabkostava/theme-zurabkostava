@@ -89,8 +89,11 @@ ob_start(); ?>
                     <svg class="icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                 </div>
             </button>
-            <span class="zk-welcome-music-title"><?php the_title(); ?></span>
-            <audio id="zk-welcome-audio" src="<?php echo esc_url( $audio_url ); ?>" preload="none"></audio>
+            <div class="zk-welcome-music-info">
+                <span class="zk-welcome-music-title"><?php the_title(); ?></span>
+                <span class="zk-music-timecode">00:00 / 00:00</span>
+            </div>
+            <audio id="zk-welcome-audio" src="<?php echo esc_url( $audio_url ); ?>" preload="metadata"></audio>
             </div>
         </div>
         <?php

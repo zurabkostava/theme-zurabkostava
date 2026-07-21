@@ -1914,7 +1914,26 @@
     function initWelcomeMusic() {
         var btn = document.getElementById('zk-welcome-music-btn');
         var audio = document.getElementById('zk-welcome-audio');
-        if (!btn || !audio) return;
+        var container = document.querySelector('.zk-welcome-music-container');
+        if (!btn || !audio || !container) return;
+
+        var timecodeEl = container.querySelector('.zk-music-timecode');
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "00:00";
+            var m = Math.floor(seconds / 60);
+            var s = Math.floor(seconds % 60);
+            return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+        }
+
+        if (timecodeEl) {
+            audio.addEventListener('loadedmetadata', function() {
+                timecodeEl.textContent = formatTime(audio.currentTime) + " / " + formatTime(audio.duration);
+            });
+            // Update timecode globally
+            audio.addEventListener('timeupdate', function() {
+                timecodeEl.textContent = formatTime(audio.currentTime) + " / " + formatTime(audio.duration);
+            });
+        }
 
         var playIcon = btn.querySelector('.icon-play');
         var pauseIcon = btn.querySelector('.icon-pause');
@@ -1938,7 +1957,15 @@
         var fadeInterval = null;
         var hasPlayedOnce = false;
 
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Hide tooltip during transition and break sticky hover on mobile
+            container.classList.add('hide-tooltip-temp');
+            setTimeout(function() {
+                container.classList.remove('hide-tooltip-temp');
+            }, 2600);
+
             if (fadeInterval) clearInterval(fadeInterval);
 
             if (isPlaying) {
