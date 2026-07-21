@@ -1993,7 +1993,7 @@
                         }
 
                         playIcon.style.display = 'none';
-                        pauseIcon.style.display = 'block';
+                        stopIcon.style.display = 'block';
                         btn.classList.add('is-playing');
                         document.body.classList.add('is-cinematic-mode');
                         startPhrases();
@@ -2009,7 +2009,7 @@
         audio.addEventListener('ended', function() {
             isPlaying = false;
             playIcon.style.display = 'block';
-            pauseIcon.style.display = 'none';
+            stopIcon.style.display = 'none';
             btn.classList.remove('is-playing');
             document.body.classList.remove('is-cinematic-mode');
             stopPhrases();
