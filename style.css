@@ -455,6 +455,8 @@ body.is-navigating #zk-global-loader {
 
 /* Welcome Music Player */
 .zk-welcome-music-wrap {
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -471,12 +473,24 @@ body.is-navigating #zk-global-loader {
     transform: translateY(10px);
 }
 
+.zk-welcome-music-wrap::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: var(--music-progress, 0%);
+    background: linear-gradient(90deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 100%);
+    z-index: 0;
+    transition: width 0.1s linear;
+}
+
 .zk-welcome-music-wrap:hover {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 255, 255, 0.15);
 }
 
 .zk-welcome-music-btn {
+    position: relative;
+    z-index: 1;
     background: #fff;
     color: #000;
     border: none;
@@ -505,6 +519,8 @@ body.is-navigating #zk-global-loader {
 }
 
 .zk-welcome-music-title {
+    position: relative;
+    z-index: 1;
     font-size: 0.7rem;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.7);

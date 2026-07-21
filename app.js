@@ -1937,6 +1937,14 @@
             playIcon.style.display = 'block';
             pauseIcon.style.display = 'none';
         });
+
+        var wrap = btn.closest('.zk-welcome-music-wrap');
+        audio.addEventListener('timeupdate', function() {
+            if (audio.duration && wrap) {
+                var progress = (audio.currentTime / audio.duration) * 100;
+                wrap.style.setProperty('--music-progress', progress + '%');
+            }
+        });
     }
 
     initWelcomeMusic();
