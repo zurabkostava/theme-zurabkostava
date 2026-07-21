@@ -637,26 +637,13 @@ body.is-navigating #zk-global-loader {
 }
 
 .zk-welcome-music-title {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #fff;
-    white-space: nowrap;
-    letter-spacing: 0.02em;
-}
-
-.zk-welcome-music-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 2px;
-}
-
-.zk-music-timecode {
+    position: relative;
+    z-index: 1;
     font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.45);
-    font-family: monospace;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
     letter-spacing: 0.5px;
-    font-variant-numeric: tabular-nums;
+    text-transform: uppercase;
 }
 
 /* Staggered Reveal Wrappers */
