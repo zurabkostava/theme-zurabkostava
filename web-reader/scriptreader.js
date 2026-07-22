@@ -1693,13 +1693,16 @@ function buildSpokenSentence(sent, lang) {
             resultText += '.';
         }
     }
+    function containsSpeakableText(str) {
+        return /[a-zA-Z0-9\u10D0-\u10FA\u10A0-\u10CF\u0400-\u04FF]/.test(str);
+    }
     
-    return { text: resultText, raw: resultText + " ", wordRanges: wordRanges, totalChars: resultText.length };
+    return { text: resultText, raw: resultText + " ", wordRanges: wordRanges, totalChars: resultText.length, speakable: containsSpeakableText(resultText) };
 }
 
 function piperSynthesize(state, text) {
     return new Promise((resolve, reject) => {
-        if (!text) { resolve(null); return; }
+        if (!text || !/[a-zA-Z0-9\u10D0-\u10FA\u10A0-\u10CF\u0400-\u04FF]/.test(text)) { resolve(null); return; }
         if (!state || !state.worker || !state.ready) { reject(new Error('Piper worker not ready')); return; }
         state.pending.push({ resolve: resolve, reject: reject });
         state.worker.postMessage({ kind: 'synthesize', text: text });
@@ -1887,7 +1890,11 @@ async function playPiperChunk(chunk, rate, token) {
             highlightSentence(currentIdx, true);
             updateMediaPosition();
 
-            if (wav) await playPiperAudio(state, wav, rate, spokenList[idx], token);
+            if (wav) {
+                await playPiperAudio(state, wav, rate, spokenList[idx], token);
+            } else {
+                await new Promise(r => setTimeout(r, 600 / rate));
+            }
         }
     }
     return token === playbackToken && isPlaying;
@@ -1950,6 +1957,7 @@ async function playGoogleChunk(chunk, rate, token) {
         let textToSpeak = spokenList[i].text;
         
         async function fetchBlobUrl(text) {
+            if (!text || !/[a-zA-Z0-9\u10D0-\u10FA\u10A0-\u10CF\u0400-\u04FF]/.test(text)) return null;
             const fetchUrl = base + '/web-reader/google-tts.php?tl=' + encodeURIComponent(chunk.lang.split('-')[0]) + '&text=' + encodeURIComponent(text);
             try {
                 const res = await fetch(fetchUrl);
@@ -1973,11 +1981,19 @@ async function playGoogleChunk(chunk, rate, token) {
             }
             if (temp.trim().length > 0) {
                 const bUrl = await fetchBlobUrl(temp);
-                if (bUrl) await playGoogleAudio(bUrl, rate, null, token);
+                if (bUrl) {
+                    await playGoogleAudio(bUrl, rate, null, token);
+                } else {
+                    await new Promise(r => setTimeout(r, 600 / rate));
+                }
             }
         } else {
             const bUrl = await fetchBlobUrl(textToSpeak);
-            if (bUrl) await playGoogleAudio(bUrl, rate, spokenList[i], token);
+            if (bUrl) {
+                await playGoogleAudio(bUrl, rate, spokenList[i], token);
+            } else {
+                await new Promise(r => setTimeout(r, 600 / rate));
+            }
         }
     }
     return token === playbackToken && isPlaying;
