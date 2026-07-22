@@ -1589,9 +1589,10 @@ function processText(rawHtml) {
 
             const words = originalDisplay.split(/(\s+|—|–)/g).filter(w => w.trim().length > 0 || w === '—' || w === '–');
             let detectedLang = lastDetectedLang;
-            if (/[ა-ჰ]/.test(originalDisplay)) detectedLang = 'ka';
-            else if (/[А-Яа-я]/.test(originalDisplay)) detectedLang = 'ru';
-            else if (/[A-Za-z]/.test(originalDisplay)) detectedLang = 'en';
+            const textForLangCheck = originalDisplay.replace(/___HTML_\d+___/g, '');
+            if (/[ა-ჰ]/.test(textForLangCheck)) detectedLang = 'ka';
+            else if (/[А-Яа-я]/.test(textForLangCheck)) detectedLang = 'ru';
+            else if (/[A-Za-z]/.test(textForLangCheck)) detectedLang = 'en';
             lastDetectedLang = detectedLang;
             detectedBookLanguages.add(detectedLang);
             const sSpan = document.createElement('span');
