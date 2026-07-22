@@ -2172,6 +2172,18 @@ async function playNativeChunk(chunk, nativeVoice, rate, token) {
         }
 
         const spoken = buildSpokenSentence(currentItem, chunk.lang);
+        
+        if (!spoken.speakable) {
+            const ok = await playBatch();
+            if (!ok || token !== playbackToken || !isPlaying) return false;
+            
+            currentIdx = currentItem.index;
+            highlightSentence(currentIdx, true);
+            updateMediaPosition();
+            await new Promise(r => setTimeout(r, 600 / rate));
+            continue;
+        }
+
         const offset = currentBatchText.length;
         const wordRanges = spoken.wordRanges.map(r => ({ el: r.el, start: r.start + offset, end: r.end + offset }));
         currentBatchText += spoken.raw;
