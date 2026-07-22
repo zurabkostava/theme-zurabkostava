@@ -1513,6 +1513,7 @@ function processText(rawHtml) {
     contentArea.scrollTop = 0;
     parsedContent = [];
     let sCounter = 0;
+    let lastDetectedLang = 'ka';
     
     const tags = [];
     let textWithPlaceholders = rawHtml.replace(/<\/?(b|strong|img)[^>]*>/gi, (match) => {
@@ -1587,10 +1588,11 @@ function processText(rawHtml) {
             originalDisplay = prependedTags + originalDisplay + appendedTags;
 
             const words = originalDisplay.split(/(\s+|—|–)/g).filter(w => w.trim().length > 0 || w === '—' || w === '–');
-            let detectedLang = 'en';
+            let detectedLang = lastDetectedLang;
             if (/[ა-ჰ]/.test(originalDisplay)) detectedLang = 'ka';
             else if (/[А-Яа-я]/.test(originalDisplay)) detectedLang = 'ru';
             else if (/[A-Za-z]/.test(originalDisplay)) detectedLang = 'en';
+            lastDetectedLang = detectedLang;
             detectedBookLanguages.add(detectedLang);
             const sSpan = document.createElement('span');
             sSpan.className = 'sentence';
@@ -1694,7 +1696,11 @@ function buildSpokenSentence(sent, lang) {
         }
     }
     function containsSpeakableText(str) {
-        return /[a-zA-Z0-9\u10D0-\u10FA\u10A0-\u10CF\u0400-\u04FF]/.test(str);
+        try {
+            return new RegExp('\\p{L}|\\p{N}', 'u').test(str);
+        } catch(e) {
+            return /[a-zA-Z0-9\u10D0-\u10FA\u10A0-\u10CF\u0400-\u04FF]/.test(str);
+        }
     }
     
     return { text: resultText, raw: resultText + " ", wordRanges: wordRanges, totalChars: resultText.length, speakable: containsSpeakableText(resultText) };
@@ -1702,7 +1708,11 @@ function buildSpokenSentence(sent, lang) {
 
 function piperSynthesize(state, text) {
     return new Promise((resolve, reject) => {
-        if (!text || !/[a-zA-Z0-9\u10D0-\u10FA\u10A0-\u10CF\u0400-\u04FF]/.test(text)) { resolve(null); return; }
+        const hasSpeakable = (() => {
+            try { return new RegExp('\\p{L}|\\p{N}', 'u').test(text); } 
+            catch(e) { return /[a-zA-Z0-9\u10D0-\u10FA\u10A0-\u10CF\u0400-\u04FF]/.test(text); }
+        })();
+        if (!text || !hasSpeakable) { resolve(null); return; }
         if (!state || !state.worker || !state.ready) { reject(new Error('Piper worker not ready')); return; }
         state.pending.push({ resolve: resolve, reject: reject });
         state.worker.postMessage({ kind: 'synthesize', text: text });
@@ -1957,7 +1967,11 @@ async function playGoogleChunk(chunk, rate, token) {
         let textToSpeak = spokenList[i].text;
         
         async function fetchBlobUrl(text) {
-            if (!text || !/[a-zA-Z0-9\u10D0-\u10FA\u10A0-\u10CF\u0400-\u04FF]/.test(text)) return null;
+            const hasSpeakable = (() => {
+                try { return new RegExp('\\p{L}|\\p{N}', 'u').test(text); } 
+                catch(e) { return /[a-zA-Z0-9\u10D0-\u10FA\u10A0-\u10CF\u0400-\u04FF]/.test(text); }
+            })();
+            if (!text || !hasSpeakable) return null;
             const fetchUrl = base + '/web-reader/google-tts.php?tl=' + encodeURIComponent(chunk.lang.split('-')[0]) + '&text=' + encodeURIComponent(text);
             try {
                 const res = await fetch(fetchUrl);
