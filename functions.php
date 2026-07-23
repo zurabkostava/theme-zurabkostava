@@ -3689,6 +3689,18 @@ function zk_upgrade_analytics_table_v5() {
 }
 add_action( 'after_setup_theme', 'zk_upgrade_analytics_table_v5' );
 
+function zk_upgrade_analytics_table_v6() {
+    if ( get_option( 'zk_analytics_db_v6' ) ) {
+        return;
+    }
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'zk_analytics';
+    $wpdb->query("ALTER TABLE $table_name ADD COLUMN music_played tinyint(1) DEFAULT 0 NOT NULL");
+    $wpdb->query("ALTER TABLE $table_name ADD COLUMN music_duration int(11) DEFAULT 0 NOT NULL");
+    update_option( 'zk_analytics_db_v6', true );
+}
+add_action( 'after_setup_theme', 'zk_upgrade_analytics_table_v6' );
+
 // 2. REST API Tracking Endpoint
 add_action( 'rest_api_init', function () {
     register_rest_route( 'zk/v1', '/sync', array(
@@ -3744,9 +3756,11 @@ function zk_track_visitor( WP_REST_Request $request ) {
 
     // Handle duration ping
     if ($action === 'duration_ping' && $view_id > 0) {
+        $music_played = isset($params['music_played']) ? intval($params['music_played']) : 0;
+        $music_duration = isset($params['music_duration']) ? intval($params['music_duration']) : 0;
         $wpdb->update(
             $table_name,
-            array('duration' => $duration),
+            array('duration' => $duration, 'music_played' => $music_played, 'music_duration' => $music_duration),
             array('id' => $view_id)
         );
         return new WP_REST_Response( array('status' => 'duration_updated'), 200 );

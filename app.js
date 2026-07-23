@@ -148,6 +148,8 @@
                 action: 'duration_ping',
                 view_id: currentViewId,
                 duration: durationSecs,
+                music_played: window.zkMusicPlayed ? 1 : 0,
+                music_duration: window.zkMusicDurationTotal ? Math.floor(window.zkMusicDurationTotal) : 0,
                 visitor_id: visitorId,
                 session_id: sessionId
             });
@@ -2061,8 +2063,18 @@
         var phraseContainer = document.getElementById('zk-cinematic-phrase-container');
         var activePhraseIndex = -1;
 
+        window.zkMusicPlayed = window.zkMusicPlayed || false;
+        window.zkMusicDurationTotal = window.zkMusicDurationTotal || 0;
+        var lastAudioTimeAnalytics = 0;
+
+        audio.addEventListener('play', function() {
+            window.zkMusicPlayed = true;
+            lastAudioTimeAnalytics = audio.currentTime;
+        });
+
         if (audio && phrases && phrases.length > 0) {
             audio.addEventListener('timeupdate', function() {
+
                 if (!isPlaying || !phraseContainer) return;
                 
                 var currentTime = audio.currentTime;
@@ -2132,6 +2144,12 @@
         }
 
         audio.addEventListener('timeupdate', function() {
+            var diff = audio.currentTime - lastAudioTimeAnalytics;
+            if (diff > 0 && diff < 1.5) {
+                window.zkMusicDurationTotal += diff;
+            }
+            lastAudioTimeAnalytics = audio.currentTime;
+
             if (audio.duration && wrap) {
                 var progress = (audio.currentTime / audio.duration) * 100;
                 wrap.style.setProperty('--music-progress', progress + '%');

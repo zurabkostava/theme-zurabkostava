@@ -98,6 +98,10 @@ $today_uniques = $wpdb->get_var("SELECT COUNT(DISTINCT visitor_id) FROM $table_n
 $avg_duration_sec = $wpdb->get_var("SELECT AVG(duration) FROM $table_name WHERE duration > 0");
 $avg_duration_formatted = $avg_duration_sec ? gmdate((intval($avg_duration_sec) >= 3600 ? "H:i:s" : "i:s"), intval($avg_duration_sec)) : '00:00';
 
+$music_plays = $wpdb->get_var("SELECT SUM(music_played) FROM $table_name");
+$music_time_sec = $wpdb->get_var("SELECT SUM(music_duration) FROM $table_name");
+$music_time_fmt = $music_time_sec ? (intval($music_time_sec) >= 86400 ? floor(intval($music_time_sec)/86400) . 'd ' . gmdate("H:i", intval($music_time_sec)) : (intval($music_time_sec) >= 3600 ? gmdate("H:i:s", intval($music_time_sec)) : gmdate("i:s", intval($music_time_sec)))) : '00:00';
+
 // 3. Top 10 Pages (All Time)
 $top_pages = $wpdb->get_results("
     SELECT url, COUNT(*) as views, AVG(duration) as avg_duration
@@ -338,6 +342,14 @@ get_header();
             <div class="zk-stat-card highlight">
                 <span class="zk-stat-label">Avg Session Duration</span>
                 <span class="zk-stat-value" style="color: #ff2a85; font-size: 2rem;"><?php echo esc_html($avg_duration_formatted); ?></span>
+            </div>
+            <div class="zk-stat-card" style="border-color: rgba(255, 193, 7, 0.3);">
+                <span class="zk-stat-label" style="color: #ffc107;">Total Music Plays</span>
+                <span class="zk-stat-value" style="color: #ffc107; font-size: 2rem;"><?php echo number_format($music_plays ?: 0); ?></span>
+            </div>
+            <div class="zk-stat-card" style="border-color: rgba(255, 193, 7, 0.3);">
+                <span class="zk-stat-label" style="color: #ffc107;">Total Music Time</span>
+                <span class="zk-stat-value" style="color: #ffc107; font-size: 2rem;"><?php echo esc_html($music_time_fmt); ?></span>
             </div>
         </div>
 
