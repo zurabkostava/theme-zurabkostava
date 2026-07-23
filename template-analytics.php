@@ -100,7 +100,7 @@ $avg_duration_formatted = $avg_duration_sec ? gmdate((intval($avg_duration_sec) 
 
 // 3. Top 10 Pages (All Time)
 $top_pages = $wpdb->get_results("
-    SELECT url, COUNT(*) as views 
+    SELECT url, COUNT(*) as views, AVG(duration) as avg_duration
     FROM $table_name 
     GROUP BY url 
     ORDER BY views DESC 
@@ -145,7 +145,8 @@ $top_fans = $wpdb->get_results("
            MAX(user_agent) as user_agent,
            MAX(visit_time) as last_visit,
            COUNT(DISTINCT session_id) as total_visits, 
-           COUNT(*) as page_views 
+           COUNT(*) as page_views,
+           SUM(duration) as total_duration
     FROM $table_name 
     WHERE visitor_id != '' 
     GROUP BY visitor_id 
@@ -366,11 +367,15 @@ get_header();
                             <tr>
                                 <th>Route URL</th>
                                 <th style="text-align: right;">Views</th>
+                                <th style="text-align: right;">Avg Time</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if ($top_pages): ?>
-                                <?php foreach ($top_pages as $page): ?>
+                                <?php foreach ($top_pages as $page): 
+                                    $p_dur = intval($page->avg_duration);
+                                    $p_dur_fmt = $p_dur > 0 ? gmdate(($p_dur >= 3600 ? "H:i:s" : "i:s"), $p_dur) : '-';
+                                ?>
                                     <tr>
                                         <td>
                                             <?php 
@@ -381,11 +386,14 @@ get_header();
                                         <td style="text-align: right; color: var(--text);">
                                             <strong><?php echo number_format($page->views); ?></strong>
                                         </td>
+                                        <td style="text-align: right; color: var(--text-dim);">
+                                            <?php echo esc_html($p_dur_fmt); ?>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="2" style="text-align: center; color: var(--text-dim);">No data yet.</td>
+                                    <td colspan="3" style="text-align: center; color: var(--text-dim);">No data yet.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
@@ -520,8 +528,9 @@ get_header();
                                     <th style="width: 20%;">Fan Name (Anonymous ID)</th>
                                     <th style="width: 20%;">Location</th>
                                     <th style="width: 15%;">Tech (OS & Browser)</th>
-                                    <th style="text-align: right; width: 15%;">Total Visits</th>
+                                    <th style="text-align: right; width: 10%;">Visits</th>
                                     <th style="text-align: right; width: 10%;">Views</th>
+                                    <th style="text-align: right; width: 10%;">Total Time</th>
                                     <th style="text-align: right; width: 15%;">Last Seen</th>
                                 </tr>
                             </thead>
@@ -536,6 +545,16 @@ get_header();
                                         elseif ($time_diff < 3600) $last_seen = floor($time_diff/60) . ' mins ago';
                                         elseif ($time_diff < 86400) $last_seen = floor($time_diff/3600) . ' hrs ago';
                                         else $last_seen = floor($time_diff/86400) . ' days ago';
+                                        
+                                        // Format total time
+                                        $f_dur = intval($fan->total_duration);
+                                        if ($f_dur > 0) {
+                                            if ($f_dur >= 86400) $f_dur_fmt = floor($f_dur/86400) . 'd ' . gmdate("H:i", $f_dur);
+                                            elseif ($f_dur >= 3600) $f_dur_fmt = gmdate("H:i:s", $f_dur);
+                                            else $f_dur_fmt = gmdate("i:s", $f_dur);
+                                        } else {
+                                            $f_dur_fmt = '-';
+                                        }
                                     ?>
                                         <tr>
                                             <td style="text-align: center;">
@@ -566,6 +585,9 @@ get_header();
                                             <td style="text-align: right; color: var(--text-dim);">
                                                 <?php echo number_format($fan->page_views); ?>
                                             </td>
+                                            <td style="text-align: right; color: #ff2a85; font-family: var(--font-mono, monospace);">
+                                                <?php echo esc_html($f_dur_fmt); ?>
+                                            </td>
                                             <td style="text-align: right; color: var(--text-dim); font-size: 0.85rem;">
                                                 <?php echo esc_html($last_seen); ?>
                                             </td>
@@ -573,7 +595,7 @@ get_header();
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="7" style="text-align: center; color: var(--text-dim);">No loyal fans found yet.</td>
+                                        <td colspan="8" style="text-align: center; color: var(--text-dim);">No loyal fans found yet.</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>
