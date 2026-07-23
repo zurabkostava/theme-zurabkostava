@@ -118,27 +118,57 @@
             }
         } catch (e) {}
 
+        var viewStartTime = Date.now();
+        var currentViewId = 0;
+
         function sendTrack(country, city) {
             var payload = JSON.stringify({ 
                 url: route, 
+                referrer: document.referrer || '',
                 country: country || '', 
                 city: city || '',
                 visitor_id: visitorId,
                 session_id: sessionId
             });
-            var sent = false;
+            fetch(apiRoute, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: payload
+            }).then(r => r.json()).then(data => {
+                if (data && data.view_id) currentViewId = data.view_id;
+            }).catch(e => {});
+        }
+
+        // Setup duration ping on page leave
+        function sendDurationPing() {
+            if (!currentViewId) return;
+            var durationSecs = Math.floor((Date.now() - viewStartTime) / 1000);
+            if (durationSecs <= 0) return;
+            var pingPayload = JSON.stringify({
+                action: 'duration_ping',
+                view_id: currentViewId,
+                duration: durationSecs,
+                visitor_id: visitorId,
+                session_id: sessionId
+            });
             if (navigator.sendBeacon) {
-                try { sent = navigator.sendBeacon(apiRoute, payload); } catch(e) {}
-            }
-            if (!sent) {
-                try {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('POST', apiRoute, true);
-                    xhr.setRequestHeader('Content-Type', 'text/plain');
-                    xhr.send(payload);
-                } catch(err) {}
+                navigator.sendBeacon(apiRoute, pingPayload);
+            } else {
+                fetch(apiRoute, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: pingPayload, keepalive: true }).catch(e => {});
             }
         }
+
+        // Cleanup old listener if SPA route changes
+        if (window.zkLeaveListener) {
+            window.removeEventListener('visibilitychange', window.zkLeaveListener);
+            window.removeEventListener('pagehide', window.zkLeaveListener);
+        }
+        window.zkLeaveListener = function(e) {
+            if (e.type === 'visibilitychange' && document.visibilityState !== 'hidden') return;
+            sendDurationPing();
+        };
+        window.addEventListener('visibilitychange', window.zkLeaveListener);
+        window.addEventListener('pagehide', window.zkLeaveListener);
 
         var geoResolved = false;
         var geoTimeout = setTimeout(function() {

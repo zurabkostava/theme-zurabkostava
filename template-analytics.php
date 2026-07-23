@@ -87,12 +87,16 @@ function zk_generate_fan_name($visitor_id) {
 
 // 1. Basic Stats
 $total_views = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
-$unique_visitors = $wpdb->get_var("SELECT COUNT(DISTINCT ip_hash) FROM $table_name");
+$unique_visitors = $wpdb->get_var("SELECT COUNT(DISTINCT visitor_id) FROM $table_name WHERE visitor_id != ''");
 
 // 2. Today's Stats
 $today = current_time('Y-m-d');
 $today_views = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE DATE(visit_time) = '$today'");
-$today_uniques = $wpdb->get_var("SELECT COUNT(DISTINCT ip_hash) FROM $table_name WHERE DATE(visit_time) = '$today'");
+$today_uniques = $wpdb->get_var("SELECT COUNT(DISTINCT visitor_id) FROM $table_name WHERE DATE(visit_time) = '$today' AND visitor_id != ''");
+
+// 2.5 Engagement Stats
+$avg_duration_sec = $wpdb->get_var("SELECT AVG(duration) FROM $table_name WHERE duration > 0");
+$avg_duration_formatted = $avg_duration_sec ? gmdate((intval($avg_duration_sec) >= 3600 ? "H:i:s" : "i:s"), intval($avg_duration_sec)) : '00:00';
 
 // 3. Top 10 Pages (All Time)
 $top_pages = $wpdb->get_results("
@@ -105,7 +109,7 @@ $top_pages = $wpdb->get_results("
 
 // 3.1 Top Countries
 $top_countries = $wpdb->get_results("
-    SELECT country, COUNT(*) as views, COUNT(DISTINCT ip_hash) as uniques 
+    SELECT country, COUNT(*) as views, COUNT(DISTINCT visitor_id) as uniques 
     FROM $table_name 
     WHERE country != '' AND country IS NOT NULL
     GROUP BY country 
@@ -115,11 +119,21 @@ $top_countries = $wpdb->get_results("
 
 // 3.2 Top Cities
 $top_cities = $wpdb->get_results("
-    SELECT city, country, COUNT(*) as views, COUNT(DISTINCT ip_hash) as uniques 
+    SELECT city, country, COUNT(*) as views, COUNT(DISTINCT visitor_id) as uniques 
     FROM $table_name 
     WHERE city != '' AND city IS NOT NULL
     GROUP BY city, country 
     ORDER BY uniques DESC 
+    LIMIT 10
+");
+
+// 3.2.1 Top Referrers
+$top_referrers = $wpdb->get_results("
+    SELECT referrer, COUNT(*) as views 
+    FROM $table_name 
+    WHERE referrer != '' AND referrer != 'Internal'
+    GROUP BY referrer 
+    ORDER BY views DESC 
     LIMIT 10
 ");
 
@@ -321,8 +335,8 @@ get_header();
                 <span class="zk-stat-value"><?php echo number_format($today_views ?: 0); ?></span>
             </div>
             <div class="zk-stat-card highlight">
-                <span class="zk-stat-label">Today's Uniques</span>
-                <span class="zk-stat-value"><?php echo number_format($today_uniques ?: 0); ?></span>
+                <span class="zk-stat-label">Avg Session Duration</span>
+                <span class="zk-stat-value" style="color: #ff2a85; font-size: 2rem;"><?php echo esc_html($avg_duration_formatted); ?></span>
             </div>
         </div>
 
@@ -372,6 +386,39 @@ get_header();
                             <?php else: ?>
                                 <tr>
                                     <td colspan="2" style="text-align: center; color: var(--text-dim);">No data yet.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right 2: Top Referrers -->
+            <div class="zk-analytics-panel">
+                <h3 class="zk-panel-title">Top Traffic Sources</h3>
+                <div class="zk-table-wrapper">
+                    <table class="zk-table">
+                        <thead>
+                            <tr>
+                                <th>Source / Referrer</th>
+                                <th style="text-align: right;">Views</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($top_referrers): ?>
+                                <?php foreach ($top_referrers as $ref): ?>
+                                    <tr>
+                                        <td>
+                                            <?php echo esc_html($ref->referrer); ?>
+                                        </td>
+                                        <td style="text-align: right; color: var(--text);">
+                                            <strong><?php echo number_format($ref->views); ?></strong>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="2" style="text-align: center; color: var(--text-dim);">No external traffic yet.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>

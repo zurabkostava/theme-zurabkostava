@@ -3651,6 +3651,8 @@ function zk_create_analytics_table() {
         visitor_id varchar(36) DEFAULT '' NOT NULL,
         session_id varchar(36) DEFAULT '' NOT NULL,
         url varchar(255) NOT NULL,
+        referrer varchar(255) DEFAULT '' NOT NULL,
+        duration int(11) DEFAULT 0 NOT NULL,
         country varchar(100) DEFAULT '' NOT NULL,
         city varchar(100) DEFAULT '' NOT NULL,
         user_agent text NOT NULL,
@@ -3674,6 +3676,18 @@ function zk_create_analytics_table() {
     update_option( 'zk_analytics_db_v4', true );
 }
 add_action( 'after_setup_theme', 'zk_create_analytics_table' );
+
+function zk_upgrade_analytics_table_v5() {
+    if ( get_option( 'zk_analytics_db_v5' ) ) {
+        return;
+    }
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'zk_analytics';
+    $wpdb->query("ALTER TABLE $table_name ADD COLUMN referrer varchar(255) DEFAULT '' NOT NULL");
+    $wpdb->query("ALTER TABLE $table_name ADD COLUMN duration int(11) DEFAULT 0 NOT NULL");
+    update_option( 'zk_analytics_db_v5', true );
+}
+add_action( 'after_setup_theme', 'zk_upgrade_analytics_table_v5' );
 
 // 2. REST API Tracking Endpoint
 add_action( 'rest_api_init', function () {
@@ -3723,6 +3737,20 @@ function zk_track_visitor( WP_REST_Request $request ) {
     $city = isset($params['city']) ? sanitize_text_field($params['city']) : '';
     $visitor_id = isset($params['visitor_id']) ? sanitize_text_field($params['visitor_id']) : '';
     $session_id = isset($params['session_id']) ? sanitize_text_field($params['session_id']) : '';
+    $referrer = isset($params['referrer']) ? sanitize_text_field($params['referrer']) : '';
+    $action = isset($params['action']) ? sanitize_text_field($params['action']) : 'track';
+    $duration = isset($params['duration']) ? intval($params['duration']) : 0;
+    $view_id = isset($params['view_id']) ? intval($params['view_id']) : 0;
+
+    // Handle duration ping
+    if ($action === 'duration_ping' && $view_id > 0) {
+        $wpdb->update(
+            $table_name,
+            array('duration' => $duration),
+            array('id' => $view_id)
+        );
+        return new WP_REST_Response( array('status' => 'duration_updated'), 200 );
+    }
 
     $device_model = isset($params['device_model']) ? sanitize_text_field($params['device_model']) : '';
     $screen_data = isset($params['screen_data']) ? sanitize_text_field($params['screen_data']) : '';
