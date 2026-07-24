@@ -3827,7 +3827,8 @@ function zk_track_visitor( WP_REST_Request $request ) {
         array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
     );
 
-    return new WP_REST_Response( array('status' => 'success'), 200 );
+    $view_id = $wpdb->insert_id;
+    return new WP_REST_Response( array('status' => 'success', 'view_id' => $view_id), 200 );
 }
 
 // Inject global flag for JS tracking logic to ignore admins
