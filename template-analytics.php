@@ -17,7 +17,8 @@ if ( isset($_POST['zk_reset_analytics']) && wp_verify_nonce($_POST['zk_reset_ana
     $table_logs = $wpdb->prefix . 'zk_encrolib_logs';
     $wpdb->query("TRUNCATE TABLE $table_name");
     $wpdb->query("TRUNCATE TABLE $table_logs");
-    delete_post_meta_by_key('zk_photo_views');
+    $wpdb->query("DELETE FROM {$wpdb->postmeta} WHERE meta_key = 'zk_photo_views'");
+    wp_cache_flush();
     wp_redirect(home_url('/analytics'));
     exit;
 }
