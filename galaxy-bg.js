@@ -36,7 +36,7 @@
         renderer.setClearColor(0x000000, 0); 
 
         // Generate stars
-        const starCount = 350000; // 350k points for extremely dense noise effect
+        const starCount = 500000; // Increased to 500k to maintain density over a larger area
         const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(starCount * 3);
         const colors = new Float32Array(starCount * 3);
@@ -51,16 +51,16 @@
         ];
 
         // Create cluster centers for nebula-like structures and voids
-        const numClusters = 150;
+        const numClusters = 400; // More clusters to cover the wider area
         const clusters = [];
         for (let c = 0; c < numClusters; c++) {
             clusters.push({
-                x: THREE.MathUtils.randFloatSpread(2000),
-                y: THREE.MathUtils.randFloatSpread(2000),
+                x: THREE.MathUtils.randFloatSpread(8000), // Much wider to fill screen corners
+                y: THREE.MathUtils.randFloatSpread(5000), // Taller to fill screen corners
                 z: THREE.MathUtils.randFloatSpread(15000),
-                radiusX: Math.random() * 400 + 100, // How wide the cluster is
-                radiusY: Math.random() * 400 + 100, // How tall the cluster is
-                radiusZ: Math.random() * 2000 + 500  // How deep the cluster is
+                radiusX: Math.random() * 800 + 200, // Wider clusters
+                radiusY: Math.random() * 800 + 200, 
+                radiusZ: Math.random() * 2000 + 500 
             });
         }
 
@@ -80,8 +80,8 @@
                 y = cluster.y + Math.sign(v) * Math.pow(Math.abs(v), 2) * cluster.radiusY;
                 z = cluster.z + Math.sign(w) * Math.pow(Math.abs(w), 2) * cluster.radiusZ;
             } else {
-                x = THREE.MathUtils.randFloatSpread(2000);
-                y = THREE.MathUtils.randFloatSpread(2000);
+                x = THREE.MathUtils.randFloatSpread(8000);
+                y = THREE.MathUtils.randFloatSpread(5000);
                 z = THREE.MathUtils.randFloatSpread(15000);
             }
 
