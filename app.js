@@ -1089,17 +1089,26 @@
 
                 // Track Photo View
                 if (!window.zkIsAdmin) {
-                    var attId = img.getAttribute('data-id');
-                    if (attId) {
-                        window.zkViewedPhotos = window.zkViewedPhotos || new Set();
-                        if (!window.zkViewedPhotos.has(attId)) {
-                            window.zkViewedPhotos.add(attId);
-                            var apiRoute = (window.ZK && window.ZK.home ? window.ZK.home.replace(/\/$/, '') : '') + '/wp-json/zk/v1/photo-view';
-                            fetch(apiRoute, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ id: attId })
-                            }).catch(function(e) {});
+                    var ignoreTracking = false;
+                    try { 
+                        if (localStorage.getItem('zk_ignore_tracking') === 'true' && window.location.search.indexOf('force_track') === -1) {
+                            ignoreTracking = true;
+                        }
+                    } catch(e) {}
+                    
+                    if (!ignoreTracking) {
+                        var attId = img.getAttribute('data-id');
+                        if (attId) {
+                            window.zkViewedPhotos = window.zkViewedPhotos || new Set();
+                            if (!window.zkViewedPhotos.has(attId)) {
+                                window.zkViewedPhotos.add(attId);
+                                var apiRoute = (window.ZK && window.ZK.home ? window.ZK.home.replace(/\/$/, '') : '') + '/wp-json/zk/v1/photo-view';
+                                fetch(apiRoute, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ id: attId })
+                                }).catch(function(e) {});
+                            }
                         }
                     }
                 }
