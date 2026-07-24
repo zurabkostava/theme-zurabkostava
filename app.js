@@ -1089,7 +1089,8 @@
                         window.zkViewedPhotos = window.zkViewedPhotos || new Set();
                         if (!window.zkViewedPhotos.has(attId)) {
                             window.zkViewedPhotos.add(attId);
-                            fetch('/wp-json/zk/v1/photo-view', {
+                            var apiRoute = (window.ZK && window.ZK.home ? window.ZK.home.replace(/\/$/, '') : '') + '/wp-json/zk/v1/photo-view';
+                            fetch(apiRoute, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ id: attId })
