@@ -51,16 +51,20 @@
             new THREE.Color(0xc2d6ff)  // Pale blue
         ];
 
-        // Create cluster centers for nebula-like structures and voids
+        // Create cluster centers for nebula-like structures
         const numClusters = 300; 
         const clusters = [];
         for (let c = 0; c < numClusters; c++) {
+            // Natural galactic distribution (polar coordinates)
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.pow(Math.random(), 1.5) * 6000;
+            
             clusters.push({
-                x: THREE.MathUtils.randFloatSpread(4500), // Balanced spread to cover edges without diluting density
-                y: THREE.MathUtils.randFloatSpread(3000),
+                x: Math.cos(angle) * radius,
+                y: Math.sin(angle) * radius * 0.5, // flattened Y for a galactic disk feel
                 z: THREE.MathUtils.randFloatSpread(15000),
-                radiusX: Math.random() * 600 + 200, 
-                radiusY: Math.random() * 600 + 200, 
+                radiusX: Math.random() * 800 + 200, 
+                radiusY: Math.random() * 800 + 200, 
                 radiusZ: Math.random() * 2000 + 500 
             });
         }
@@ -68,11 +72,11 @@
         for (let i = 0; i < starCount; i++) {
             let x, y, z;
             
-            // 75% of stars go into clusters, 25% are scattered for background noise
-            if (Math.random() < 0.75) {
+            // 70% of stars go into clusters, 30% are scattered for background noise
+            if (Math.random() < 0.70) {
                 const cluster = clusters[Math.floor(Math.random() * clusters.length)];
                 
-                // Using power of 2 for a soft falloff
+                // Using power of 2 for a soft falloff within the cluster
                 const u = Math.random() * 2 - 1;
                 const v = Math.random() * 2 - 1;
                 const w = Math.random() * 2 - 1;
@@ -81,8 +85,11 @@
                 y = cluster.y + Math.sign(v) * Math.pow(Math.abs(v), 2) * cluster.radiusY;
                 z = cluster.z + Math.sign(w) * Math.pow(Math.abs(w), 2) * cluster.radiusZ;
             } else {
-                x = THREE.MathUtils.randFloatSpread(4500);
-                y = THREE.MathUtils.randFloatSpread(3000);
+                // Background stars also follow the galactic disk shape, not a harsh rectangle
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.pow(Math.random(), 1.2) * 7000; // slightly wider than clusters
+                x = Math.cos(angle) * radius;
+                y = Math.sin(angle) * radius * 0.5;
                 z = THREE.MathUtils.randFloatSpread(15000);
             }
 
@@ -95,7 +102,7 @@
             colors[i * 3 + 1] = color.g;
             colors[i * 3 + 2] = color.b;
             
-            // Increased sizes so they don't anti-alias into nothingness
+            // Random sizes
             sizes[i] = Math.random() * 1.5 + 1.2;
         }
 
