@@ -1624,7 +1624,7 @@
         
         let giant = Math.random() < 0.015 && !isMorningStar; // 1.5% chance to be a giant shining star
         let mediumGiant = Math.random() < 0.030 && !giant && !isMorningStar; // 3% chance to be a medium giant
-        let smallGiant = Math.random() < 0.060 && !giant && !mediumGiant && !isMorningStar; // 6% chance for small bright star
+        let smallGiant = Math.random() < 0.20 && !giant && !mediumGiant && !isMorningStar; // 20% chance for small bright star
         
         let sx, sy;
         let zSpawn = resetZ ? (width * 3) : Math.random() * (width * 3);
