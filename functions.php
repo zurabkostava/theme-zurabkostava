@@ -681,7 +681,7 @@ function zk_cinematic_gallery() {
             
             if ( current_user_can('administrator') ) {
                 $views = (int) get_post_meta( $image_id, 'zk_photo_views', true );
-                $output .= '<div class="zk-photo-admin-views" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.8);color:#0ff;padding:4px 8px;border-radius:4px;font-size:12px;z-index:10;pointer-events:none;display:flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> ' . $views . '</div>';
+                $output .= '<div class="zk-photo-admin-views" style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.8);color:#0ff;padding:4px 8px;border-radius:4px;font-size:12px;z-index:10;pointer-events:none;display:flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> ' . $views . '</div>';
             }
 
             $output .= '</div></div>';
@@ -789,7 +789,7 @@ function zk_cinematic_gallery() {
             
             if ( current_user_can('administrator') ) {
                 $views = (int) get_post_meta( $image_id, 'zk_photo_views', true );
-                $output .= '<div class="zk-photo-admin-views" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.8);color:#0ff;padding:4px 8px;border-radius:4px;font-size:12px;z-index:10;pointer-events:none;display:flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> ' . $views . '</div>';
+                $output .= '<div class="zk-photo-admin-views" style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.8);color:#0ff;padding:4px 8px;border-radius:4px;font-size:12px;z-index:10;pointer-events:none;display:flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> ' . $views . '</div>';
             }
             
             $output .= '</div></div>';
