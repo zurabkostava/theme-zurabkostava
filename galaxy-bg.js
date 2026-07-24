@@ -23,84 +23,83 @@
         const rect = container.parentElement.getBoundingClientRect();
         
         scene = new THREE.Scene();
-        // Give it a very slight fog for depth blending (makes distant stars fade into darkness)
-        scene.fog = new THREE.FogExp2(0x000000, 0.0004);
+        // Thicker fog so distant stars look like tiny noise/dust
+        scene.fog = new THREE.FogExp2(0x000000, 0.0008);
 
-        // Camera with a huge far plane
-        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 4000);
+        // Camera
+        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 6000);
         camera.position.z = 1000;
 
         renderer = new THREE.WebGLRenderer({ canvas: container, alpha: true, antialias: true });
         renderer.setPixelRatio(window.devicePixelRatio || 1);
         renderer.setSize(rect.width, rect.height);
-        // transparent background so CSS background/gradient shines through
         renderer.setClearColor(0x000000, 0); 
 
         // Generate stars
-        const starCount = 30000; // huge number of stars for realistic density
+        const starCount = 150000; // Massively increased count for "noise" and "snow" effect
         const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(starCount * 3);
         const colors = new Float32Array(starCount * 3);
-        const sizes = new Float32Array(starCount); // Custom size per star
+        const sizes = new Float32Array(starCount);
         
         const colorPalette = [
             new THREE.Color(0xffffff), // white
-            new THREE.Color(0xbbccff), // pale blue
-            new THREE.Color(0xffddaa), // pale yellow
-            new THREE.Color(0x88aaff), // deeper blue
-            new THREE.Color(0xffbbbb)  // pale red/orange
+            new THREE.Color(0xffffff), // white (bias)
+            new THREE.Color(0xddf0ff), // ice blue
+            new THREE.Color(0xccddee)  // pale blue
         ];
 
         for (let i = 0; i < starCount; i++) {
-            // Random positions in a huge box, extending very far backwards
-            const x = THREE.MathUtils.randFloatSpread(4000);
-            const y = THREE.MathUtils.randFloatSpread(4000);
-            const z = THREE.MathUtils.randFloatSpread(4000);
+            // Tighter X/Y spread so stars are concentrated in front of the camera
+            // Huge Z spread for massive render distance
+            const x = THREE.MathUtils.randFloatSpread(2500);
+            const y = THREE.MathUtils.randFloatSpread(2500);
+            const z = THREE.MathUtils.randFloatSpread(5000); // from -2500 to +2500
 
             positions[i * 3] = x;
             positions[i * 3 + 1] = y;
             positions[i * 3 + 2] = z;
 
-            // Random color from palette
             const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
             colors[i * 3] = color.r;
             colors[i * 3 + 1] = color.g;
             colors[i * 3 + 2] = color.b;
             
-            // Randomize size slightly for depth illusion
-            sizes[i] = Math.random() * 2 + 1;
+            // Sizes between 1 and 2.5
+            sizes[i] = Math.random() * 1.5 + 1;
         }
 
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
         geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
-        // Create a circular sprite for stars programmatically with less glow (sharper stars)
+        // Tighter gradient for sharp points
         const canvasSprite = document.createElement('canvas');
-        canvasSprite.width = 16;
-        canvasSprite.height = 16;
+        canvasSprite.width = 8;
+        canvasSprite.height = 8;
         const context = canvasSprite.getContext('2d');
-        const gradient = context.createRadialGradient(8, 8, 0, 8, 8, 8);
+        const gradient = context.createRadialGradient(4, 4, 0, 4, 4, 4);
         gradient.addColorStop(0, 'rgba(255,255,255,1)');
-        gradient.addColorStop(0.1, 'rgba(255,255,255,0.8)');
-        gradient.addColorStop(0.2, 'rgba(255,255,255,0.1)');
+        gradient.addColorStop(0.3, 'rgba(255,255,255,0.8)');
         gradient.addColorStop(1, 'rgba(0,0,0,0)');
         context.fillStyle = gradient;
-        context.fillRect(0, 0, 16, 16);
+        context.fillRect(0, 0, 8, 8);
 
         const texture = new THREE.CanvasTexture(canvasSprite);
 
         starsMaterial = new THREE.PointsMaterial({
-            size: 3, // Reduced base size for less glow
+            size: 2.5, // Slightly bigger base size to be visible
             map: texture,
             transparent: true,
-            opacity: 0.9,
+            opacity: 1,
             vertexColors: true,
             blending: THREE.AdditiveBlending,
             depthWrite: false
         });
 
         starSystem = new THREE.Points(geometry, starsMaterial);
+        // Push the whole system back so it aligns with the camera distance
+        starSystem.position.z = -1500;
         scene.add(starSystem);
 
         window.addEventListener('resize', onWindowResize);
@@ -133,14 +132,16 @@
 
         // Straight forward movement
         const positions = starSystem.geometry.attributes.position.array;
-        const speed = 0.3;
+        
+        // Faster movement for "snow" effect
+        const speed = 1.5;
 
         for (let i = 0; i < positions.length; i += 3) {
             positions[i + 2] += speed;
             
-            // If a star goes past the camera, reset it far back in the distance
-            if (positions[i + 2] > 1000) {
-                positions[i + 2] -= 4000;
+            // Reset distance matching the Z spread (5000)
+            if (positions[i + 2] > 2500) {
+                positions[i + 2] -= 5000;
             }
         }
         
