@@ -166,12 +166,20 @@
             window.removeEventListener('visibilitychange', window.zkLeaveListener);
             window.removeEventListener('pagehide', window.zkLeaveListener);
         }
+        if (window.zkDurationInterval) {
+            clearInterval(window.zkDurationInterval);
+        }
+
         window.zkLeaveListener = function(e) {
             if (e.type === 'visibilitychange' && document.visibilityState !== 'hidden') return;
             sendDurationPing();
         };
         window.addEventListener('visibilitychange', window.zkLeaveListener);
         window.addEventListener('pagehide', window.zkLeaveListener);
+
+        window.zkDurationInterval = setInterval(function() {
+            sendDurationPing();
+        }, 10000);
 
         var geoResolved = false;
         var geoTimeout = setTimeout(function() {
