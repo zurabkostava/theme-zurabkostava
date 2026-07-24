@@ -20,14 +20,11 @@
             return;
         }
 
-        const rect = container.parentElement.getBoundingClientRect();
-        
-        scene = new THREE.Scene();
-        // Lower fog density so more stars are visible in the distance before fading to black
-        scene.fog = new THREE.FogExp2(0x000000, 0.0002);
+        // Adjusted fog for new depth
+        scene.fog = new THREE.FogExp2(0x000000, 0.0004);
 
-        // Camera - huge far plane
-        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 15000);
+        // Camera
+        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 10000);
         camera.position.z = 1000;
 
         renderer = new THREE.WebGLRenderer({ canvas: container, alpha: true, antialias: true });
@@ -36,7 +33,7 @@
         renderer.setClearColor(0x000000, 0); 
 
         // Generate stars
-        const starCount = 500000; // 500k is plenty when they are structurally clumped
+        const starCount = 600000; // Balanced count for the new volume
         const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(starCount * 3);
         const colors = new Float32Array(starCount * 3);
@@ -51,34 +48,42 @@
             new THREE.Color(0xc2d6ff)  // Pale blue
         ];
 
+        // Create cluster centers
+        // X and Y must be huge so that far clusters don't all squeeze into the center of the screen due to perspective projection.
+        const numClusters = 300; 
+        const clusters = [];
+        for (let c = 0; c < numClusters; c++) {
+            clusters.push({
+                x: THREE.MathUtils.randFloatSpread(10000), 
+                y: THREE.MathUtils.randFloatSpread(6000),
+                z: THREE.MathUtils.randFloatSpread(8000),
+                radiusX: Math.random() * 800 + 300, 
+                radiusY: Math.random() * 800 + 300, 
+                radiusZ: Math.random() * 1500 + 500 
+            });
+        }
+
         for (let i = 0; i < starCount; i++) {
             let x, y, z;
             
-            z = THREE.MathUtils.randFloatSpread(15000);
-            
-            // Create a sweeping, curving "galactic river" structure along the Z axis
-            // This prevents the distant stars from looking like uniform TV static
-            const waveX1 = Math.sin(z * 0.0003) * 2500;
-            const waveY1 = Math.cos(z * 0.0004) * 1200;
-            
-            const waveX2 = Math.sin(z * 0.001 + 2) * 1000;
-            const waveY2 = Math.cos(z * 0.0008 + 1) * 800;
-
-            const basePathX = waveX1 + waveX2;
-            const basePathY = waveY1 + waveY2;
-
-            // 85% of stars follow the structural bands, 15% are scattered
-            if (Math.random() < 0.85) {
-                // Exponential falloff for dense cores and wispy, natural edges
-                const r = Math.pow(Math.random(), 3) * 3500;
-                const theta = Math.random() * Math.PI * 2;
+            // 75% of stars go into clusters, 25% are scattered for background noise
+            if (Math.random() < 0.75) {
+                const cluster = clusters[Math.floor(Math.random() * clusters.length)];
                 
-                x = basePathX + Math.cos(theta) * r * 1.5; 
-                y = basePathY + Math.sin(theta) * r * 0.8; 
+                // Natural spherical distribution with soft center bias
+                const u = Math.random();
+                const v = Math.random();
+                const theta = u * 2.0 * Math.PI;
+                const phi = Math.acos(2.0 * v - 1.0);
+                const r = Math.random(); // soft center bias
+                
+                x = cluster.x + r * Math.sin(phi) * Math.cos(theta) * cluster.radiusX;
+                y = cluster.y + r * Math.sin(phi) * Math.sin(theta) * cluster.radiusY;
+                z = cluster.z + r * Math.cos(phi) * cluster.radiusZ;
             } else {
-                // Broad scattered stars
-                x = THREE.MathUtils.randFloatSpread(8000);
-                y = THREE.MathUtils.randFloatSpread(5000);
+                x = THREE.MathUtils.randFloatSpread(10000);
+                y = THREE.MathUtils.randFloatSpread(6000);
+                z = THREE.MathUtils.randFloatSpread(8000);
             }
 
             positions[i * 3] = x;
