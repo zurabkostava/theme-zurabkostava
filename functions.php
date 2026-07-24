@@ -1742,10 +1742,15 @@ function zk_get_filebird_gallery( $folder_id ) {
                     'data-title'       => esc_attr( $title ),
                     'data-caption'     => esc_attr( $caption ),
                     'data-description' => esc_attr( $description ),
+                    'data-id'          => esc_attr( $id ),
                     'class'            => 'zk-grid-photo',
                     'alt'              => esc_attr( $alt_text ),
                     'sizes'            => '(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw'
             );
+            
+            if ( current_user_can('administrator') ) {
+                $img_attributes['data-views'] = (int) get_post_meta( $id, 'zk_photo_views', true );
+            }
 
             if ( $i < 6 ) {
                 $img_attributes['loading']       = 'eager';
@@ -1770,6 +1775,12 @@ function zk_get_filebird_gallery( $folder_id ) {
                 $output .= '<div class="zk-carousel-title">' . esc_html( $folder_title ) . '</div>';
             }
             $output .= '<svg class="zk-carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2" ry="2"></rect><path d="M7 21h12a2 2 0 0 0 2-2V7"></path></svg>';
+            
+            if ( current_user_can('administrator') ) {
+                $views = (int) get_post_meta( $id, 'zk_photo_views', true );
+                $output .= '<div class="zk-photo-admin-views" style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.8);color:#0ff;padding:4px 8px;border-radius:4px;font-size:12px;z-index:10;pointer-events:none;display:flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> ' . $views . '</div>';
+            }
+            
             $output .= '</div></div>';
 
             $rendered_attachments[ $id ] = true;
@@ -1798,12 +1809,17 @@ function zk_get_filebird_gallery( $folder_id ) {
                             'data-title'       => esc_attr( $c_title ),
                             'data-caption'     => esc_attr( $c_caption ),
                             'data-description' => esc_attr( $c_description ),
+                            'data-id'          => esc_attr( $c_att ),
                             'class'            => 'zk-grid-photo',
                             'alt'              => esc_attr( $c_alt_text ),
                             'loading'          => 'lazy',
                             'decoding'         => 'async',
                             'sizes'            => '1vw'
                     );
+                    
+                    if ( current_user_can('administrator') ) {
+                        $c_img_attributes['data-views'] = (int) get_post_meta( $c_att, 'zk_photo_views', true );
+                    }
 
                     $c_img_html = wp_get_attachment_image( $c_att, 'thumbnail', false, $c_img_attributes );
 
@@ -1841,10 +1857,15 @@ function zk_get_filebird_gallery( $folder_id ) {
                     'data-title'       => esc_attr( $title ),
                     'data-caption'     => esc_attr( $caption ),
                     'data-description' => esc_attr( $description ),
+                    'data-id'          => esc_attr( $id ),
                     'class'            => 'zk-grid-photo',
                     'alt'              => esc_attr( $alt_text ),
                     'sizes'            => '(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw'
             );
+            
+            if ( current_user_can('administrator') ) {
+                $img_attributes['data-views'] = (int) get_post_meta( $id, 'zk_photo_views', true );
+            }
 
             if ( $i < 6 ) {
                 $img_attributes['loading']       = 'eager';
@@ -1857,8 +1878,14 @@ function zk_get_filebird_gallery( $folder_id ) {
             $img_html = wp_get_attachment_image( $id, 'medium_large', false, $img_attributes );
 
             $output .= '<div class="zk-gallery-item">';
-            $output .= '<div class="zk-gallery-image-wrap">' . $img_html . '</div>';
-            $output .= '</div>';
+            $output .= '<div class="zk-gallery-image-wrap">' . $img_html;
+            
+            if ( current_user_can('administrator') ) {
+                $views = (int) get_post_meta( $id, 'zk_photo_views', true );
+                $output .= '<div class="zk-photo-admin-views" style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.8);color:#0ff;padding:4px 8px;border-radius:4px;font-size:12px;z-index:10;pointer-events:none;display:flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> ' . $views . '</div>';
+            }
+            
+            $output .= '</div></div>';
             
             $rendered_attachments[ $id ] = true;
             $i++;
