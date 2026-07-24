@@ -514,10 +514,10 @@ get_header();
         <!-- TOP FANS -->
         <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr;">
             <div class="zk-analytics-panel">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 class="zk-panel-title" style="color: #00bcd4; margin-bottom: 0;">Loyal Fans</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 class="zk-panel-title" style="color: #00bcd4; margin-bottom: 0; padding-bottom: 0; border: none;">Loyal Fans</h3>
                 </div>
-                <div class="zk-table-wrapper" style="width: 100%;">
+                <div class="zk-table-wrapper" style="width: 100%; max-height: 700px;">
                     <form method="POST" action="">
                         <?php wp_nonce_field('zk_delete_fans_action', 'zk_delete_fans_nonce'); ?>
                         <div style="margin-bottom: 15px;">
@@ -875,13 +875,13 @@ get_header();
     min-width: 0;
 }
 .zk-panel-title {
-    font-size: 1rem;
+    font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--text-dim);
     margin-top: 0;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
     border-bottom: 1px solid var(--hairline);
 }
 
@@ -901,7 +901,7 @@ get_header();
 .zk-table-wrapper {
     overflow-x: auto;
     overflow-y: auto;
-    max-height: 420px;
+    max-height: 450px;
     border-bottom: 1px solid var(--hairline);
     padding-right: 4px;
 }
@@ -934,21 +934,21 @@ get_header();
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    padding: 12px 16px;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--hairline-strong);
     white-space: nowrap;
     font-weight: 500;
 }
 .zk-table td {
-    padding: 14px 16px;
+    padding: 10px 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     font-size: 0.95rem;
     color: var(--text-muted);
     font-family: var(--font-mono, monospace);
-    white-space: nowrap;
+    word-break: break-word;
 }
 .zk-table-fans td, .zk-table-fans th {
-    white-space: normal !important;
+    font-family: var(--font-sans, sans-serif);
 }
 .zk-table tr:last-child td { border-bottom: none; }
 </style>
