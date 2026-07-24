@@ -97,7 +97,15 @@ $today_views = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE DATE(visit
 $today_uniques = $wpdb->get_var("SELECT COUNT(DISTINCT visitor_id) FROM $table_name WHERE DATE(visit_time) = '$today' AND visitor_id != ''");
 
 // 2.5 Engagement Stats
-$avg_duration_sec = $wpdb->get_var("SELECT AVG(duration) FROM $table_name WHERE duration > 0");
+$avg_duration_sec = $wpdb->get_var("
+    SELECT AVG(session_dur) 
+    FROM (
+        SELECT SUM(duration) as session_dur 
+        FROM $table_name 
+        GROUP BY session_id
+    ) as sq 
+    WHERE session_dur > 0
+");
 $avg_duration_formatted = $avg_duration_sec ? gmdate((intval($avg_duration_sec) >= 3600 ? "H:i:s" : "i:s"), intval($avg_duration_sec)) : '00:00';
 
 $music_plays = $wpdb->get_var("SELECT SUM(music_played) FROM $table_name");
@@ -149,7 +157,7 @@ $top_fans = $wpdb->get_results("
            COUNT(DISTINCT t.session_id) as total_visits, 
            COUNT(*) as page_views,
            SUM(t.duration) as total_duration,
-           (SELECT duration FROM $table_name a WHERE a.visitor_id = t.visitor_id ORDER BY visit_time DESC LIMIT 1) as last_duration
+           (SELECT SUM(duration) FROM $table_name a WHERE a.session_id = (SELECT session_id FROM $table_name b WHERE b.visitor_id = t.visitor_id ORDER BY visit_time DESC LIMIT 1)) as last_duration
     FROM $table_name t
     WHERE t.visitor_id != '' 
     GROUP BY t.visitor_id 

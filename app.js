@@ -137,6 +137,10 @@
             }).then(r => r.json()).then(data => {
                 if (data && data.view_id) currentViewId = data.view_id;
             }).catch(e => {});
+
+            // Reset music stats for the new page view so they don't accumulate across views
+            window.zkMusicPlayed = false;
+            window.zkMusicDurationTotal = 0;
         }
 
         // Setup duration ping on page leave
