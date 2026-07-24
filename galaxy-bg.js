@@ -36,7 +36,7 @@
         renderer.setClearColor(0x000000, 0); 
 
         // Generate stars
-        const starCount = 700000; // 700k points for maximum density without massive performance drop
+        const starCount = 400000; // 400k per block (800k total). Zero CPU overhead now!
         const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(starCount * 3);
         const colors = new Float32Array(starCount * 3);
@@ -52,11 +52,11 @@
         ];
 
         // Create cluster centers for nebula-like structures and voids
-        const numClusters = 300; 
+        const numClusters = 250; 
         const clusters = [];
         for (let c = 0; c < numClusters; c++) {
             clusters.push({
-                x: THREE.MathUtils.randFloatSpread(4500), // Balanced spread to cover edges without diluting density
+                x: THREE.MathUtils.randFloatSpread(4500),
                 y: THREE.MathUtils.randFloatSpread(3000),
                 z: THREE.MathUtils.randFloatSpread(15000),
                 radiusX: Math.random() * 600 + 200, 
@@ -68,23 +68,16 @@
         for (let i = 0; i < starCount; i++) {
             let x, y, z;
             
-            // 75% of stars go into clusters, 25% are scattered for background noise
             if (Math.random() < 0.75) {
                 const cluster = clusters[Math.floor(Math.random() * clusters.length)];
                 
-                // Use spherical coordinates for perfectly natural, non-grid clusters
-                const u = Math.random();
-                const v = Math.random();
-                const theta = u * 2.0 * Math.PI;
-                const phi = Math.acos(2.0 * v - 1.0);
+                const u = Math.random() * 2 - 1;
+                const v = Math.random() * 2 - 1;
+                const w = Math.random() * 2 - 1;
                 
-                // Power curve on the radius keeps the core dense and edges soft
-                const r = Math.pow(Math.random(), 2);
-                
-                const sinPhi = Math.sin(phi);
-                x = cluster.x + r * sinPhi * Math.cos(theta) * cluster.radiusX;
-                y = cluster.y + r * sinPhi * Math.sin(theta) * cluster.radiusY;
-                z = cluster.z + r * Math.cos(phi) * cluster.radiusZ;
+                x = cluster.x + Math.sign(u) * Math.pow(Math.abs(u), 2) * cluster.radiusX;
+                y = cluster.y + Math.sign(v) * Math.pow(Math.abs(v), 2) * cluster.radiusY;
+                z = cluster.z + Math.sign(w) * Math.pow(Math.abs(w), 2) * cluster.radiusZ;
             } else {
                 x = THREE.MathUtils.randFloatSpread(4500);
                 y = THREE.MathUtils.randFloatSpread(3000);
@@ -100,7 +93,6 @@
             colors[i * 3 + 1] = color.g;
             colors[i * 3 + 2] = color.b;
             
-            // Increased sizes so they don't anti-alias into nothingness
             sizes[i] = Math.random() * 1.5 + 1.2;
         }
 
@@ -108,7 +100,6 @@
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
         geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
-        // Tighter gradient for sharp points
         const canvasSprite = document.createElement('canvas');
         canvasSprite.width = 8;
         canvasSprite.height = 8;
@@ -123,7 +114,7 @@
         const texture = new THREE.CanvasTexture(canvasSprite);
 
         starsMaterial = new THREE.PointsMaterial({
-            size: 2.5, // Increased base size
+            size: 2.5, 
             map: texture,
             transparent: true,
             opacity: 1,
@@ -132,10 +123,18 @@
             depthWrite: false
         });
 
+        // 🔴 OPTIMIZATION: Dual System Infinite Loop
+        // We use two identical geometries placed back-to-back. 
+        // This eliminates the need to update 800k array positions on the CPU 
+        // and upload 10MB to the GPU every single frame!
         starSystem = new THREE.Points(geometry, starsMaterial);
-        // Push the whole system back so it aligns with the massive camera distance
         starSystem.position.z = -6500;
+        
+        starSystem2 = new THREE.Points(geometry, starsMaterial);
+        starSystem2.position.z = -21500; // Right behind the first one (-6500 - 15000)
+        
         scene.add(starSystem);
+        scene.add(starSystem2);
 
         window.addEventListener('resize', onWindowResize);
 
@@ -165,26 +164,22 @@
 
         animationFrameId = requestAnimationFrame(animate);
 
-        // Straight forward movement
-        const positions = starSystem.geometry.attributes.position.array;
-        
-        // Slower movement
         const speed = 0.4;
-
-        for (let i = 0; i < positions.length; i += 3) {
-            positions[i + 2] += speed;
-            
-            // Reset distance matching the huge Z spread (15000)
-            if (positions[i + 2] > 7500) {
-                positions[i + 2] -= 15000;
-            }
-        }
         
-        starSystem.geometry.attributes.position.needsUpdate = true;
+        // Move both systems forward
+        starSystem.position.z += speed;
+        starSystem2.position.z += speed;
+        
+        // Snap back when they pass the camera
+        if (starSystem.position.z > 8500) {
+            starSystem.position.z -= 30000;
+        }
+        if (starSystem2.position.z > 8500) {
+            starSystem2.position.z -= 30000;
+        }
 
         renderer.render(scene, camera);
     }
-
     const observer = new MutationObserver((mutations) => {
         if (!isRunning && document.getElementById('zk-galaxy-canvas')) {
             initGalaxy();
