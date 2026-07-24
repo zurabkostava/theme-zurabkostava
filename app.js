@@ -1873,7 +1873,7 @@
 (function() {
     var canvas, ctx, w, h;
     var stars = [];
-    var numStars = 1000;
+    var numStars = 2000;
     var speed = 1.0; 
     var fl = 300; 
     var centerX, centerY;
@@ -1896,7 +1896,7 @@
     function createStar() {
         var x = (Math.random() - 0.5) * w * 3;
         var y = (Math.random() - 0.5) * h * 3;
-        var z = Math.random() * w;
+        var z = Math.random() * (w * 2);
         return {
             x: x,
             y: y,
@@ -1982,24 +1982,24 @@
             s.z -= (speed * 150) * dt; 
             
             if (s.z < 1) {
-                s.z = w;
-                s.pz = w;
+                s.z = w * 2;
+                s.pz = w * 2;
                 s.x = (Math.random() - 0.5) * w * 3;
                 s.y = (Math.random() - 0.5) * h * 3;
             }
 
-            var offsetX = currentMouseX * (1 - s.z / w);
-            var offsetY = currentMouseY * (1 - s.z / w);
+            var offsetX = currentMouseX * (1 - s.z / (w * 2));
+            var offsetY = currentMouseY * (1 - s.z / (w * 2));
 
             var cx = centerX + ((s.x + offsetX) / s.z) * fl;
             var cy = centerY + ((s.y + offsetY) / s.z) * fl;
             var px = centerX + ((s.x + offsetX) / s.pz) * fl;
             var py = centerY + ((s.y + offsetY) / s.pz) * fl;
 
-            var size = (1 - s.z / w) * 2; 
+            var size = (1 - s.z / (w * 2)) * 2; 
             if (size < 0) size = 0;
             
-            var opacity = 1 - (s.z / w);
+            var opacity = 1 - (s.z / (w * 2));
             ctx.globalAlpha = opacity;
 
             ctx.beginPath();
