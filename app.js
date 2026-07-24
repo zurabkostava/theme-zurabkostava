@@ -1539,10 +1539,10 @@
 
     // Starfield variables
     let canvas = null;
+    const numStars = 4500;
     let ctx = null;
     let width = 0;
     let height = 0;
-    const numStars = 1600;
     let stars = [];
     const baseSpeed = 0.6;
     let startTime = Date.now();
@@ -1824,24 +1824,35 @@
                 let py = (s.y / s.pz) * 150 + cy;
                 
                 let r = Math.max(0.1, (1 - s.z / (width * 3)) * 2.5);
-                if (s.isGiant) {
-                    r *= 2.5;
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-                } else if (s.isMediumGiant) {
-                    r *= 1.6;
-                    ctx.shadowBlur = 8;
-                    ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
-                } else {
-                    ctx.shadowBlur = 0;
-                }
                 
-                ctx.beginPath();
-                ctx.strokeStyle = s.color;
-                ctx.lineWidth = r;
-                ctx.moveTo(px, py);
-                ctx.lineTo(x, y);
-                ctx.stroke();
+                if (s.isGiant || s.isMediumGiant) {
+                    let isGiant = s.isGiant;
+                    let glowR = isGiant ? r * 2.5 * 3 : r * 1.6 * 3;
+                    let mainR = isGiant ? r * 2.5 : r * 1.6;
+                    
+                    // Draw Glow (simulating shadowBlur much faster)
+                    ctx.beginPath();
+                    ctx.strokeStyle = isGiant ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.1)';
+                    ctx.lineWidth = glowR;
+                    ctx.moveTo(px, py);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    
+                    // Draw Main Body
+                    ctx.beginPath();
+                    ctx.strokeStyle = s.color;
+                    ctx.lineWidth = mainR;
+                    ctx.moveTo(px, py);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                } else {
+                    ctx.beginPath();
+                    ctx.strokeStyle = s.color;
+                    ctx.lineWidth = r;
+                    ctx.moveTo(px, py);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                }
             } else {
                 // Complex rendering for Morning Star and its 3D satellites
                 let objectsToRender = [{ 
