@@ -1866,3 +1866,168 @@
     initWelcomeMusic();
     document.addEventListener('zk:viewChange', initWelcomeMusic);
 })();
+
+/* ============================================================
+   ULTRA-REALISTIC STARFIELD
+   ============================================================ */
+(function() {
+    var canvas, ctx, w, h;
+    var stars = [];
+    var numStars = 1000;
+    var speed = 1.0; 
+    var fl = 300; 
+    var centerX, centerY;
+    var animFrame;
+    var isRunning = false;
+    var lastTime = 0;
+    var mouseX = 0;
+    var mouseY = 0;
+    var currentMouseX = 0;
+    var currentMouseY = 0;
+
+    var colors = [
+        'rgba(255, 255, 255, 0.8)',
+        'rgba(255, 255, 255, 0.6)',
+        'rgba(200, 220, 255, 0.7)',
+        'rgba(255, 230, 200, 0.7)',
+        'rgba(180, 200, 255, 0.8)'
+    ];
+
+    function createStar() {
+        var x = (Math.random() - 0.5) * w * 3;
+        var y = (Math.random() - 0.5) * h * 3;
+        var z = Math.random() * w;
+        return {
+            x: x,
+            y: y,
+            z: z,
+            pz: z,
+            color: colors[Math.floor(Math.random() * colors.length)]
+        };
+    }
+
+    function initStarfield() {
+        canvas = document.getElementById('zk-starfield');
+        if (!canvas) {
+            stopStarfield();
+            return;
+        }
+        
+        if (isRunning) return;
+
+        ctx = canvas.getContext('2d', { alpha: true });
+        resize();
+        window.addEventListener('resize', resize);
+        document.addEventListener('mousemove', onMouseMove);
+        
+        stars = [];
+        for (var i = 0; i < numStars; i++) {
+            stars.push(createStar());
+        }
+
+        isRunning = true;
+        lastTime = performance.now();
+        mouseX = 0; 
+        mouseY = 0;
+        currentMouseX = 0;
+        currentMouseY = 0;
+        loop(lastTime);
+    }
+
+    function resize() {
+        if (!canvas) return;
+        var parent = canvas.parentElement;
+        if (parent) {
+            w = canvas.width = parent.clientWidth;
+            h = canvas.height = parent.clientHeight;
+        } else {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        }
+        centerX = w / 2;
+        centerY = h / 2;
+    }
+    
+    function onMouseMove(e) {
+        mouseX = (e.clientX - window.innerWidth / 2) * 0.05;
+        mouseY = (e.clientY - window.innerHeight / 2) * 0.05;
+    }
+
+    function stopStarfield() {
+        isRunning = false;
+        if (animFrame) {
+            cancelAnimationFrame(animFrame);
+            animFrame = null;
+        }
+        window.removeEventListener('resize', resize);
+        document.removeEventListener('mousemove', onMouseMove);
+    }
+
+    function loop(time) {
+        if (!isRunning || !canvas || !ctx) return;
+        
+        var dt = (time - lastTime) / 1000;
+        lastTime = time;
+        if (dt > 0.1) dt = 0.016; 
+        
+        currentMouseX += (mouseX - currentMouseX) * 0.1;
+        currentMouseY += (mouseY - currentMouseY) * 0.1;
+
+        ctx.clearRect(0, 0, w, h);
+        
+        for (var i = 0; i < numStars; i++) {
+            var s = stars[i];
+            
+            s.pz = s.z;
+            s.z -= (speed * 150) * dt; 
+            
+            if (s.z < 1) {
+                s.z = w;
+                s.pz = w;
+                s.x = (Math.random() - 0.5) * w * 3;
+                s.y = (Math.random() - 0.5) * h * 3;
+            }
+
+            var offsetX = currentMouseX * (1 - s.z / w);
+            var offsetY = currentMouseY * (1 - s.z / w);
+
+            var cx = centerX + ((s.x + offsetX) / s.z) * fl;
+            var cy = centerY + ((s.y + offsetY) / s.z) * fl;
+            var px = centerX + ((s.x + offsetX) / s.pz) * fl;
+            var py = centerY + ((s.y + offsetY) / s.pz) * fl;
+
+            var size = (1 - s.z / w) * 2; 
+            if (size < 0) size = 0;
+            
+            var opacity = 1 - (s.z / w);
+            ctx.globalAlpha = opacity;
+
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(cx, cy);
+            ctx.lineWidth = size;
+            ctx.strokeStyle = s.color;
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(cx, cy, size * 0.8, 0, Math.PI * 2);
+            ctx.fillStyle = s.color;
+            ctx.fill();
+        }
+        
+        ctx.globalAlpha = 1.0;
+        animFrame = requestAnimationFrame(loop);
+    }
+
+    document.addEventListener('zk:viewChange', function() {
+        if (window.location.pathname === '/' || window.location.pathname === '/zurabkostava/') {
+            setTimeout(initStarfield, 100);
+        } else {
+            stopStarfield();
+        }
+    });
+
+    if (window.location.pathname === '/' || window.location.pathname === '/zurabkostava/') {
+        setTimeout(initStarfield, 100);
+    }
+})();
