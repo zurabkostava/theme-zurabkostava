@@ -1548,8 +1548,10 @@
     let startTime = Date.now();
     let cinematicStartTime = null;
     let currentCluster = null;
-    let idleTimer = null;
     
+    // Track galaxy animation mathematically
+    let galaxyProgress = 0;
+    let idleTimer = null;
     // Morning star timing
     let lastMorningStarTime = Date.now();
     let nextMorningStarInterval = 3500; // Trigger first one quickly in 3.5 seconds!
@@ -1822,8 +1824,46 @@
                 activeStars = 200;
             }
         }
-        
         const activeBaseSpeed = 1.2 * speedMultiplier;
+        
+        // Update Galaxy mathematically
+        galaxyProgress += (1 / 144000) * speedMultiplier; 
+        // Note: 144000 frames = 40 minutes at 60fps. At 150x speed, 40 minutes takes ~16 seconds!
+        // To make it last exactly 3 minutes of cubic acceleration, we need to adjust the denominator.
+        // If average speedMultiplier is ~38 over 180 seconds (10800 frames).
+        // Total integrated speed = 38 * 10800 = 410,400.
+        // We want galaxyProgress to reach ~1.0 at 410,400.
+        // So we should add (speedMultiplier / 410400) per frame!
+        let galaxyProgressStep = speedMultiplier / 450000;
+        galaxyProgress += galaxyProgressStep;
+        
+        // Loop galaxy if it passes by
+        if (galaxyProgress > 1.2) {
+            galaxyProgress = 0;
+        }
+        
+        let heroGalaxy = document.querySelector('.hero-galaxy');
+        if (heroGalaxy) {
+            // Smooth perspective approach
+            let gz = Math.max(0.01, 1.0 - galaxyProgress); 
+            let gScale = 1.0 / gz; // Scale starts at 1, approaches infinity as gz approaches 0
+            
+            // Limit max scale to prevent rendering crashes
+            gScale = Math.min(gScale, 50.0);
+            
+            let tx = 40 * galaxyProgress; // Move towards top right
+            let ty = -40 * galaxyProgress;
+            let rot = 15 * galaxyProgress;
+            
+            heroGalaxy.style.transform = `translate(${tx}%, ${ty}%) scale(${gScale}) rotate(${rot}deg)`;
+            
+            // Fade out as it passes camera
+            if (galaxyProgress > 0.9) {
+                heroGalaxy.style.opacity = Math.max(0, 0.7 * (1.0 - (galaxyProgress - 0.9) * 10));
+            } else {
+                heroGalaxy.style.opacity = 0.7;
+            }
+        }
         
         for (let i = 0; i < numStars; i++) {
             let s = stars[i];
