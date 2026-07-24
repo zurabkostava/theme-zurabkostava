@@ -57,7 +57,8 @@ function zk_assets() {
     wp_enqueue_style( 'zk-style', get_stylesheet_uri(), array( 'zk-fonts' ), filemtime( get_stylesheet_directory() . '/style.css' ) );
 
     // ახალი app.js ფაილის მიბმა სუფთად
-    wp_enqueue_script( 'zk-app', get_stylesheet_directory_uri() . '/app.js', array(), filemtime( get_stylesheet_directory() . '/app.js' ), true );
+    wp_enqueue_script( 'zk-galaxy-bg', get_stylesheet_directory_uri() . '/galaxy-bg.js', array(), filemtime( get_stylesheet_directory() . '/galaxy-bg.js' ), true );
+    wp_enqueue_script( 'zk-app', get_stylesheet_directory_uri() . '/app.js', array('zk-galaxy-bg'), filemtime( get_stylesheet_directory() . '/app.js' ), true );
 
     // აქ ვაწვდით app.js-ს ვორდპრესის დინამიურ ლინკებს (ამის წყალობით index.php-დან window.ZK სკრიპტის წაშლაც შეგვიძლია)
     wp_localize_script( 'zk-app', 'ZK', array(

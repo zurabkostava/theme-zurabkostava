@@ -11,7 +11,7 @@ ob_start(); ?>
 <div class="hero">
     <!-- Ambient Cinematic Background -->
     <div class="hero-ambient">
-        <canvas id="zk-starfield" class="zk-starfield"></canvas>
+        <canvas id="zk-galaxy-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%;"></canvas>
         <div class="hero-orb hero-orb-1"></div>
         <div class="hero-orb hero-orb-2"></div>
     </div>
