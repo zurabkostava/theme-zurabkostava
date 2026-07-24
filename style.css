@@ -3337,7 +3337,6 @@ body.zk-lb-open { overflow: hidden; }
    ============================================================ */
 body.is-cinematic-mode .site-header {
     transform: translateY(-100%) !important;
-    opacity: 0 !important;
     pointer-events: none !important;
 }
 
