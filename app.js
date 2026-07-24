@@ -2027,7 +2027,10 @@
 
             if (fadeInterval) clearInterval(fadeInterval);
 
-            if (isPlaying) {
+            // Dynamically evaluate playing state at the moment of click
+            var isCurrentlyPlaying = !audio.paused && !audio.ended && audio.currentTime > 0;
+
+            if (isCurrentlyPlaying) {
                 // Soft fade out (~150ms)
                 fadeInterval = setInterval(function() {
                     if (audio.volume > 0.1) {
