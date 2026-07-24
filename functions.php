@@ -584,6 +584,13 @@ function zk_cinematic_gallery() {
     }
 
     $output  = '<div class="zk-gallery-wrapper">';
+    if ( current_user_can('administrator') ) {
+        $total_views = 0;
+        foreach ( array_keys($category_map) as $att_id ) {
+            $total_views += (int) get_post_meta( $att_id, 'zk_photo_views', true );
+        }
+        $output .= '<div class="zk-total-views-admin" style="text-align:center; padding: 15px 20px; color: #0ff; font-weight: 600; font-family: monospace; font-size: 15px; letter-spacing: 2px; background: rgba(0,255,255,0.05); border-radius: 8px; margin-bottom: 20px;">TOTAL GALLERY VIEWS: ' . $total_views . '</div>';
+    }
     $output .= '<div class="zk-gallery-filters" role="group" aria-label="Filter photography">';
     $output .= '<button class="zk-filter-btn is-active" type="button" data-filter="all" aria-pressed="true">All <span class="zk-tab-count">' . $total_photos . '</span></button>';
     $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-camera" aria-pressed="false">Camera <span class="zk-tab-count">' . $camera_photos . '</span></button>';
@@ -1707,6 +1714,13 @@ function zk_get_filebird_gallery( $folder_id ) {
 
     // ── Masonry grid — identical structure to the photography gallery. ──
     $output  = '<div class="zk-gallery-wrapper">';
+    if ( current_user_can('administrator') ) {
+        $total_views = 0;
+        foreach ( $attachment_ids as $att_id ) {
+            $total_views += (int) get_post_meta( $att_id, 'zk_photo_views', true );
+        }
+        $output .= '<div class="zk-total-views-admin" style="text-align:center; padding: 15px 20px; color: #0ff; font-weight: 600; font-family: monospace; font-size: 15px; letter-spacing: 2px; background: rgba(0,255,255,0.05); border-radius: 8px; margin-bottom: 20px;">TOTAL GALLERY VIEWS: ' . $total_views . '</div>';
+    }
     $output .= '<div class="zk-gallery-grid" id="zkAboutGallery">';
 
     $i = 0;
