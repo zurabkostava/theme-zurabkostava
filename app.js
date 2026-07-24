@@ -1738,15 +1738,15 @@
             // 30% chance to be part of a dense cluster
             if (!currentCluster || Math.random() < 0.05) {
                 currentCluster = {
-                    x: (Math.random() - 0.5) * width * 3,
-                    y: (Math.random() - 0.5) * height * 3
+                    x: (Math.random() - 0.5) * width * 8,
+                    y: (Math.random() - 0.5) * height * 8
                 };
             }
-            sx = currentCluster.x + (Math.random() + Math.random() - 1) * width * 0.5;
-            sy = currentCluster.y + (Math.random() + Math.random() - 1) * height * 0.5;
+            sx = currentCluster.x + (Math.random() + Math.random() - 1) * width * 1.5;
+            sy = currentCluster.y + (Math.random() + Math.random() - 1) * height * 1.5;
         } else {
-            sx = (Math.random() - 0.5) * width * 4;
-            sy = (Math.random() - 0.5) * height * 4;
+            sx = (Math.random() - 0.5) * width * 10;
+            sy = (Math.random() - 0.5) * height * 10;
         }
         
         return {
