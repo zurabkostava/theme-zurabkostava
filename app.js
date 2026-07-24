@@ -1739,19 +1739,22 @@
             // 30% chance to be part of a dense cluster
             if (!currentCluster || Math.random() < 0.05) {
                 currentCluster = {
-                    px: (Math.random() - 0.5) * width * 2.5,
-                    py: (Math.random() - 0.5) * height * 2.5
+                    px: (Math.random() - 0.5) * width * 1.2,
+                    py: (Math.random() - 0.5) * height * 1.2
                 };
             }
-            let spreadX = (Math.random() + Math.random() - 1) * width * 0.5;
-            let spreadY = (Math.random() + Math.random() - 1) * height * 0.5;
+            let spreadX = (Math.random() + Math.random() - 1) * width * 0.3;
+            let spreadY = (Math.random() + Math.random() - 1) * height * 0.3;
             let targetX = currentCluster.px + spreadX;
             let targetY = currentCluster.py + spreadY;
             sx = (targetX / 150) * zSpawn;
             sy = (targetY / 150) * zSpawn;
         } else {
-            let targetX = (Math.random() - 0.5) * width * 2.5;
-            let targetY = (Math.random() - 0.5) * height * 2.5;
+            // Slightly center-biased distribution for realism
+            let rX = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            let rY = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            let targetX = rX * width * 0.7; // Cover up to -0.7 to +0.7
+            let targetY = rY * height * 0.7;
             sx = (targetX / 150) * zSpawn;
             sy = (targetY / 150) * zSpawn;
         }
