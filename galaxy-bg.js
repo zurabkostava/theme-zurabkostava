@@ -1,176 +1,178 @@
 /**
- * Galaxy Background Animation for Zurab Kostava Theme
- * Ultra-realistic, performant 3D starfield effect on a 2D Canvas.
+ * Three.js Galaxy Background Animation for Zurab Kostava Theme
+ * Ultra-realistic, extremely dense, slow-moving 3D starfield.
  */
 
 (function() {
-    let canvas, ctx;
-    let stars = [];
-    let animationFrameId;
+    let container;
+    let camera, scene, renderer;
+    let starsGeometry, starsMaterial, starSystem;
     let isRunning = false;
-    
-    // Config
-    const STAR_COUNT = 800; // Number of stars for realistic dense feeling
-    const STAR_SPEED = 2.5; // Base speed of travel
-    const STAR_Z_MAX = 2000; // Maximum depth
-    
-    class Star {
-        constructor(width, height) {
-            this.width = width;
-            this.height = height;
-            this.x = (Math.random() - 0.5) * width * 2;
-            this.y = (Math.random() - 0.5) * height * 2;
-            this.z = Math.random() * STAR_Z_MAX;
-            this.pz = this.z;
-            
-            // Random colors for stars (mostly white/blue/yellow)
-            const colors = [
-                'rgba(255, 255, 255, 1)',
-                'rgba(255, 255, 255, 0.8)',
-                'rgba(200, 220, 255, 1)',
-                'rgba(255, 250, 200, 1)'
-            ];
-            this.color = colors[Math.floor(Math.random() * colors.length)];
-        }
-        
-        update(speedModifier) {
-            this.pz = this.z;
-            this.z -= STAR_SPEED * speedModifier;
-            
-            if (this.z < 1) {
-                this.z = STAR_Z_MAX;
-                this.x = (Math.random() - 0.5) * this.width * 2;
-                this.y = (Math.random() - 0.5) * this.height * 2;
-                this.pz = this.z;
-            }
-        }
-        
-        draw(ctx, width, height) {
-            let cx = width / 2;
-            let cy = height / 2;
-            
-            // Current position
-            let sx = (this.x / this.z) * cx + cx;
-            let sy = (this.y / this.z) * cy + cy;
-            
-            // Previous position for trails
-            let px = (this.x / this.pz) * cx + cx;
-            let py = (this.y / this.pz) * cy + cy;
-            
-            let radius = Math.max(0.1, (1 - this.z / STAR_Z_MAX) * 2.5);
-            let alpha = Math.max(0.1, 1 - (this.z / STAR_Z_MAX));
+    let animationFrameId;
 
-            // Apply calculated alpha to the color
-            ctx.globalAlpha = alpha;
-            ctx.strokeStyle = this.color;
-            ctx.lineWidth = radius;
-            
-            ctx.beginPath();
-            ctx.moveTo(px, py);
-            ctx.lineTo(sx, sy);
-            ctx.stroke();
-            
-            // Draw a slight glow head
-            ctx.fillStyle = this.color;
-            ctx.beginPath();
-            ctx.arc(sx, sy, radius, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.globalAlpha = 1;
-        }
-    }
-    
     function initGalaxy() {
-        canvas = document.getElementById('zk-galaxy-canvas');
-        if (!canvas) return;
+        container = document.getElementById('zk-galaxy-canvas');
+        if (!container) return;
         
-        ctx = canvas.getContext('2d', { alpha: true });
-        
-        resize();
-        window.addEventListener('resize', resize);
-        
-        // Initialize stars
-        stars = [];
-        for (let i = 0; i < STAR_COUNT; i++) {
-            stars.push(new Star(canvas.width, canvas.height));
+        // Wait for Three.js to be loaded
+        if (typeof THREE === 'undefined') {
+            setTimeout(initGalaxy, 100);
+            return;
         }
+
+        const rect = container.parentElement.getBoundingClientRect();
         
+        scene = new THREE.Scene();
+        // Give it a very slight fog for depth blending (makes distant stars fade into darkness)
+        scene.fog = new THREE.FogExp2(0x000000, 0.0004);
+
+        // Camera with a huge far plane
+        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 4000);
+        camera.position.z = 1000;
+
+        renderer = new THREE.WebGLRenderer({ canvas: container, alpha: true, antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio || 1);
+        renderer.setSize(rect.width, rect.height);
+        // transparent background so CSS background/gradient shines through
+        renderer.setClearColor(0x000000, 0); 
+
+        // Generate stars
+        const starCount = 30000; // huge number of stars for realistic density
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(starCount * 3);
+        const colors = new Float32Array(starCount * 3);
+        const sizes = new Float32Array(starCount); // Custom size per star
+        
+        const colorPalette = [
+            new THREE.Color(0xffffff), // white
+            new THREE.Color(0xbbccff), // pale blue
+            new THREE.Color(0xffddaa), // pale yellow
+            new THREE.Color(0x88aaff), // deeper blue
+            new THREE.Color(0xffbbbb)  // pale red/orange
+        ];
+
+        for (let i = 0; i < starCount; i++) {
+            // Random positions in a huge box, extending very far backwards
+            const x = THREE.MathUtils.randFloatSpread(4000);
+            const y = THREE.MathUtils.randFloatSpread(4000);
+            const z = THREE.MathUtils.randFloatSpread(4000);
+
+            positions[i * 3] = x;
+            positions[i * 3 + 1] = y;
+            positions[i * 3 + 2] = z;
+
+            // Random color from palette
+            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            colors[i * 3] = color.r;
+            colors[i * 3 + 1] = color.g;
+            colors[i * 3 + 2] = color.b;
+            
+            // Randomize size slightly for depth illusion
+            sizes[i] = Math.random() * 2 + 1;
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+        // Create a circular sprite for stars programmatically so we don't need external image assets
+        const canvasSprite = document.createElement('canvas');
+        canvasSprite.width = 16;
+        canvasSprite.height = 16;
+        const context = canvasSprite.getContext('2d');
+        const gradient = context.createRadialGradient(8, 8, 0, 8, 8, 8);
+        gradient.addColorStop(0, 'rgba(255,255,255,1)');
+        gradient.addColorStop(0.2, 'rgba(255,255,255,0.8)');
+        gradient.addColorStop(0.5, 'rgba(255,255,255,0.2)');
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 16, 16);
+
+        const texture = new THREE.CanvasTexture(canvasSprite);
+
+        // We use ShaderMaterial to support individual point sizes if needed, 
+        // but PointsMaterial size mapping also works well for a general size.
+        starsMaterial = new THREE.PointsMaterial({
+            size: 6, // Base size
+            map: texture,
+            transparent: true,
+            opacity: 0.9,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+
+        starSystem = new THREE.Points(geometry, starsMaterial);
+        scene.add(starSystem);
+
+        window.addEventListener('resize', onWindowResize);
+
         if (!isRunning) {
             isRunning = true;
             animate();
         }
     }
-    
-    function resize() {
-        if (!canvas) return;
-        // High DPI canvas support
-        const dpr = window.devicePixelRatio || 1;
-        // Use offsetWidth/Height instead of innerWidth so it fits the container
-        const rect = canvas.parentElement.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        ctx.scale(dpr, dpr);
-        canvas.style.width = `${rect.width}px`;
-        canvas.style.height = `${rect.height}px`;
+
+    function onWindowResize() {
+        if (!camera || !renderer || !container) return;
+        const rect = container.parentElement.getBoundingClientRect();
+        camera.aspect = rect.width / rect.height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(rect.width, rect.height);
     }
-    
+
     function animate() {
         if (!isRunning) return;
         
-        // Ensure canvas is still in DOM (SPA routing support)
         if (!document.getElementById('zk-galaxy-canvas')) {
             isRunning = false;
-            window.removeEventListener('resize', resize);
+            window.removeEventListener('resize', onWindowResize);
+            if (renderer) renderer.dispose();
             return;
         }
-        
-        // Clear canvas with a slight trail effect (motion blur)
-        // Clear canvas with a slight trail effect (motion blur) while keeping background transparent
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.globalCompositeOperation = 'source-over';
-        
-        // Subtle interaction or speed variations
-        let speedModifier = 1;
-        
-        // Dynamic speed based on scroll maybe?
-        const scrollY = window.scrollY;
-        speedModifier += scrollY * 0.005;
-        // Cap speed
-        if (speedModifier > 5) speedModifier = 5;
-        
-        const rect = canvas.parentElement.getBoundingClientRect();
-        const w = rect.width;
-        const h = rect.height;
-        
-        stars.forEach(star => {
-            star.update(speedModifier);
-            star.draw(ctx, w, h);
-        });
-        
+
         animationFrameId = requestAnimationFrame(animate);
+
+        // Very slow, majestic movement
+        const positions = starSystem.geometry.attributes.position.array;
+        
+        // Slower movement
+        const speed = 0.3;
+
+        for (let i = 0; i < positions.length; i += 3) {
+            positions[i + 2] += speed;
+            
+            // If a star goes past the camera, reset it far back in the distance
+            if (positions[i + 2] > 1000) {
+                positions[i + 2] -= 4000;
+            }
+        }
+        
+        starSystem.geometry.attributes.position.needsUpdate = true;
+        
+        // Slight rotation for overall galaxy drift
+        starSystem.rotation.z -= 0.0001;
+        starSystem.rotation.x += 0.00005;
+        starSystem.rotation.y += 0.00002;
+
+        renderer.render(scene, camera);
     }
-    
-    // SPA initialization observer (useful if content is replaced dynamically)
-    // The theme uses an SPA router and replaces content in #app -> #view
+
     const observer = new MutationObserver((mutations) => {
         if (!isRunning && document.getElementById('zk-galaxy-canvas')) {
             initGalaxy();
         } else if (isRunning && !document.getElementById('zk-galaxy-canvas')) {
             isRunning = false;
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            if (renderer) renderer.dispose();
         }
     });
-    
-    // Start observer
+
     document.addEventListener('DOMContentLoaded', () => {
         initGalaxy();
-        
         const appNode = document.getElementById('app');
         if (appNode) {
             observer.observe(appNode, { childList: true, subtree: true });
         }
     });
-    
 })();
