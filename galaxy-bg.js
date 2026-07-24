@@ -36,7 +36,7 @@
         renderer.setClearColor(0x000000, 0); 
 
         // Generate stars
-        const starCount = 150000;
+        const starCount = 350000; // 350k points for extremely dense noise effect
         const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(starCount * 3);
         const colors = new Float32Array(starCount * 3);
@@ -51,10 +51,10 @@
         ];
 
         for (let i = 0; i < starCount; i++) {
-            // Tighter X/Y spread so stars are concentrated in front of the camera
+            // Tightly pack the X and Y so stars aren't wasted outside the screen
             // Huge Z spread for massive render distance (15000 units deep)
-            const x = THREE.MathUtils.randFloatSpread(3500);
-            const y = THREE.MathUtils.randFloatSpread(3500);
+            const x = THREE.MathUtils.randFloatSpread(2000);
+            const y = THREE.MathUtils.randFloatSpread(2000);
             const z = THREE.MathUtils.randFloatSpread(15000);
 
             positions[i * 3] = x;
@@ -66,8 +66,8 @@
             colors[i * 3 + 1] = color.g;
             colors[i * 3 + 2] = color.b;
             
-            // Sizes between 1 and 2.5
-            sizes[i] = Math.random() * 1.5 + 1;
+            // Much smaller sizes for the "noise" / fine dust look
+            sizes[i] = Math.random() * 1.0 + 0.5;
         }
 
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -89,7 +89,7 @@
         const texture = new THREE.CanvasTexture(canvasSprite);
 
         starsMaterial = new THREE.PointsMaterial({
-            size: 2.5,
+            size: 1.5, // Much smaller base size
             map: texture,
             transparent: true,
             opacity: 1,
