@@ -142,10 +142,10 @@ $top_cities = $wpdb->get_results("
 
 // 3.2.1 Top Referrers
 $top_referrers = $wpdb->get_results("
-    SELECT referrer, COUNT(*) as views 
+    SELECT IF(referrer = '', 'Direct', referrer) as referrer, COUNT(*) as views 
     FROM $table_name 
-    WHERE referrer != '' AND referrer != 'Internal'
-    GROUP BY referrer 
+    WHERE referrer != 'Internal'
+    GROUP BY IF(referrer = '', 'Direct', referrer) 
     ORDER BY views DESC 
 ");
 
