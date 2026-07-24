@@ -1546,6 +1546,7 @@
     let stars = [];
     const baseSpeed = 0.6;
     let startTime = Date.now();
+    let cinematicStartTime = null;
     let currentCluster = null;
     let idleTimer = null;
     
@@ -1789,26 +1790,48 @@
         
         const cx = width / 2;
         const cy = height / 2;
-        const activeBaseSpeed = 1.2;
-        let elapsedMinutes = (Date.now() - startTime) / 60000;
         
-        let activeStars = numStars;
-        if (elapsedMinutes < 10) {
-            let progress = elapsedMinutes / 10;
-            activeStars = Math.floor(numStars - (numStars - 35) * progress);
+        let isCinematic = document.body.classList.contains('is-cinematic-mode');
+        if (isCinematic) {
+            if (!cinematicStartTime) cinematicStartTime = Date.now();
         } else {
-            activeStars = 35;
+            cinematicStartTime = null;
         }
+
+        let speedMultiplier = 1.0;
+        let activeStars = numStars;
+
+        if (isCinematic && cinematicStartTime) {
+            // 3 minute cinematic progression
+            let cinematicElapsedMin = (Date.now() - cinematicStartTime) / 60000;
+            let cinematicProgress = Math.min(1.0, cinematicElapsedMin / 3.0); 
+            
+            // Speed increases dramatically (cubic curve) up to 150x 
+            speedMultiplier = 1.0 + Math.pow(cinematicProgress, 3) * 149.0;
+            
+            // Stars decrease proportionally from numStars down to 300 to simulate leaving dense galaxy
+            activeStars = Math.floor(numStars - (numStars - 300) * cinematicProgress);
+        } else {
+            // Normal background behavior
+            let elapsedMinutes = (Date.now() - startTime) / 60000;
+            if (elapsedMinutes < 10) {
+                let progress = elapsedMinutes / 10;
+                activeStars = Math.floor(numStars - (numStars - 200) * progress);
+            } else {
+                activeStars = 200;
+            }
+        }
+        
+        const activeBaseSpeed = 1.2 * speedMultiplier;
         
         for (let i = 0; i < numStars; i++) {
             let s = stars[i];
             s.pz = s.z;
             s.z -= activeBaseSpeed * s.speedFactor;
             
-            if (s.z <= 0) {
-                stars[i] = newStar(true);
-                stars[i].isDead = (i >= activeStars) && !stars[i].isMorningStar;
-                continue;
+            if (s.z <= 0.1) {
+                s.z = 0.1; // Cap to avoid Infinity projection
+                s.needsRespawn = true;
             }
             
             if (s.isDead) continue;
@@ -1818,15 +1841,15 @@
                 let x = (s.x / s.z) * 150 + cx;
                 let y = (s.y / s.z) * 150 + cy;
                 
-                // Recycle stars immediately if they go off screen to maintain density
-                if (x < -100 || x > width + 100 || y < -100 || y > height + 100) {
-                    stars[i] = newStar(true);
-                    stars[i].isDead = (i >= activeStars);
-                    continue;
-                }
-                
                 let px = (s.x / s.pz) * 150 + cx;
                 let py = (s.y / s.pz) * 150 + cy;
+                
+                // Recycle stars immediately if they go off screen or hit camera
+                if (s.needsRespawn || x < -200 || x > width + 200 || y < -200 || y > height + 200) {
+                    stars[i] = newStar(true);
+                    stars[i].isDead = (i >= activeStars) && !stars[i].isMorningStar;
+                    continue;
+                }
                 
                 let r = Math.max(0.1, (1 - s.z / (width * 3)) * 2.5);
                 
