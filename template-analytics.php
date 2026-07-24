@@ -1072,6 +1072,75 @@ function renameFan(visitorId, currentName) {
         document.getElementById('renameFanForm').submit();
     }
 }
+
+// Table Sorting
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.zk-table th').forEach(function(th) {
+        if (th.querySelector('input')) return; // Ignore checkbox columns
+        
+        th.style.cursor = 'pointer';
+        th.title = 'Click to sort';
+        
+        th.addEventListener('click', function() {
+            const table = th.closest('table');
+            const tbody = table.querySelector('tbody');
+            if (!tbody) return;
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            if (rows.length === 0 || rows[0].querySelector('td[colspan]')) return; // Empty table
+            
+            const index = Array.from(th.parentNode.children).indexOf(th);
+            const isAsc = th.dataset.sort === 'asc';
+            
+            // Clear sort state for all th
+            table.querySelectorAll('th').forEach(t => t.dataset.sort = '');
+            th.dataset.sort = isAsc ? 'desc' : 'asc';
+            
+            // Update visual indicator
+            table.querySelectorAll('th span.sort-icon').forEach(el => el.remove());
+            th.insertAdjacentHTML('beforeend', `<span class="sort-icon" style="margin-left:5px; font-size:0.8em; opacity:0.7;">${isAsc ? '▼' : '▲'}</span>`);
+            
+            rows.sort((a, b) => {
+                let cellA = a.children[index].innerText.trim();
+                let cellB = b.children[index].innerText.trim();
+                
+                function parseValue(val) {
+                    let cleanVal = val.replace(/,/g, '').trim();
+                    // try time format 00:00:00 or 00:00
+                    if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(cleanVal)) {
+                        let parts = cleanVal.split(':');
+                        if (parts.length === 2) return parseInt(parts[0])*60 + parseInt(parts[1]);
+                        return parseInt(parts[0])*3600 + parseInt(parts[1])*60 + parseInt(parts[2]);
+                    }
+                    // try relative times
+                    if (cleanVal.includes('ago')) {
+                        let num = parseFloat(cleanVal);
+                        if (cleanVal.includes('sec')) return -num;
+                        if (cleanVal.includes('min')) return -num * 60;
+                        if (cleanVal.includes('hr') || cleanVal.includes('hour')) return -num * 3600;
+                        if (cleanVal.includes('day')) return -num * 86400;
+                        if (cleanVal.includes('month')) return -num * 2592000;
+                    }
+                    if (cleanVal === 'Just now') return 0;
+                    if (cleanVal === '-') return -1;
+                    
+                    let num = parseFloat(cleanVal);
+                    if (!isNaN(num) && /^[\d.-]+$/.test(cleanVal)) return num;
+                    return cleanVal.toLowerCase();
+                }
+                
+                let valA = parseValue(cellA);
+                let valB = parseValue(cellB);
+                
+                if (valA < valB) return isAsc ? -1 : 1;
+                if (valA > valB) return isAsc ? 1 : -1;
+                return 0;
+            });
+            
+            // Re-append sorted rows
+            rows.forEach(row => tbody.appendChild(row));
+        });
+    });
+});
 </script>
 
 <?php get_footer(); ?>
