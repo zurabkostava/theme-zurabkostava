@@ -162,6 +162,7 @@
 
         // Cleanup old listener if SPA route changes
         if (window.zkLeaveListener) {
+            window.zkLeaveListener({ type: 'spa_navigation' }); // Ping the previous page
             window.removeEventListener('visibilitychange', window.zkLeaveListener);
             window.removeEventListener('pagehide', window.zkLeaveListener);
         }
