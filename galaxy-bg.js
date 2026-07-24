@@ -43,10 +43,11 @@
         const sizes = new Float32Array(starCount);
         
         const colorPalette = [
-            new THREE.Color(0xffffff), // white
-            new THREE.Color(0xffffff), // white (bias)
-            new THREE.Color(0xddf0ff), // ice blue
-            new THREE.Color(0xccddee)  // pale blue
+            new THREE.Color(0xffffff), // White
+            new THREE.Color(0xfff4e8), // Pale yellow
+            new THREE.Color(0xffd2a1), // Orange/Red dwarf
+            new THREE.Color(0xa1c4ff), // Blue giant
+            new THREE.Color(0xc2d6ff)  // Pale blue
         ];
 
         for (let i = 0; i < starCount; i++) {
@@ -133,8 +134,8 @@
         // Straight forward movement
         const positions = starSystem.geometry.attributes.position.array;
         
-        // Faster movement for "snow" effect
-        const speed = 1.5;
+        // Slower movement
+        const speed = 0.4;
 
         for (let i = 0; i < positions.length; i += 3) {
             positions[i + 2] += speed;
