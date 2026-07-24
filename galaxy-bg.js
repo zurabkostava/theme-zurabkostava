@@ -20,11 +20,14 @@
             return;
         }
 
-        // Adjusted fog for new depth
-        scene.fog = new THREE.FogExp2(0x000000, 0.0004);
+        const rect = container.parentElement.getBoundingClientRect();
+        
+        scene = new THREE.Scene();
+        // Lower fog density so more stars are visible in the distance before fading to black
+        scene.fog = new THREE.FogExp2(0x000000, 0.0002);
 
-        // Camera
-        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 10000);
+        // Camera - huge far plane
+        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 15000);
         camera.position.z = 1000;
 
         renderer = new THREE.WebGLRenderer({ canvas: container, alpha: true, antialias: true });
@@ -33,7 +36,7 @@
         renderer.setClearColor(0x000000, 0); 
 
         // Generate stars
-        const starCount = 600000; // Balanced count for the new volume
+        const starCount = 700000; // 700k points for maximum density without massive performance drop
         const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(starCount * 3);
         const colors = new Float32Array(starCount * 3);
@@ -48,18 +51,17 @@
             new THREE.Color(0xc2d6ff)  // Pale blue
         ];
 
-        // Create cluster centers
-        // X and Y must be huge so that far clusters don't all squeeze into the center of the screen due to perspective projection.
+        // Create cluster centers for nebula-like structures and voids
         const numClusters = 300; 
         const clusters = [];
         for (let c = 0; c < numClusters; c++) {
             clusters.push({
-                x: THREE.MathUtils.randFloatSpread(10000), 
-                y: THREE.MathUtils.randFloatSpread(6000),
-                z: THREE.MathUtils.randFloatSpread(8000),
-                radiusX: Math.random() * 800 + 300, 
-                radiusY: Math.random() * 800 + 300, 
-                radiusZ: Math.random() * 1500 + 500 
+                x: THREE.MathUtils.randFloatSpread(4500), // Balanced spread to cover edges without diluting density
+                y: THREE.MathUtils.randFloatSpread(3000),
+                z: THREE.MathUtils.randFloatSpread(15000),
+                radiusX: Math.random() * 600 + 200, 
+                radiusY: Math.random() * 600 + 200, 
+                radiusZ: Math.random() * 2000 + 500 
             });
         }
 
@@ -70,20 +72,23 @@
             if (Math.random() < 0.75) {
                 const cluster = clusters[Math.floor(Math.random() * clusters.length)];
                 
-                // Natural spherical distribution with soft center bias
+                // Use spherical coordinates for perfectly natural, non-grid clusters
                 const u = Math.random();
                 const v = Math.random();
                 const theta = u * 2.0 * Math.PI;
                 const phi = Math.acos(2.0 * v - 1.0);
-                const r = Math.random(); // soft center bias
                 
-                x = cluster.x + r * Math.sin(phi) * Math.cos(theta) * cluster.radiusX;
-                y = cluster.y + r * Math.sin(phi) * Math.sin(theta) * cluster.radiusY;
+                // Power curve on the radius keeps the core dense and edges soft
+                const r = Math.pow(Math.random(), 2);
+                
+                const sinPhi = Math.sin(phi);
+                x = cluster.x + r * sinPhi * Math.cos(theta) * cluster.radiusX;
+                y = cluster.y + r * sinPhi * Math.sin(theta) * cluster.radiusY;
                 z = cluster.z + r * Math.cos(phi) * cluster.radiusZ;
             } else {
-                x = THREE.MathUtils.randFloatSpread(10000);
-                y = THREE.MathUtils.randFloatSpread(6000);
-                z = THREE.MathUtils.randFloatSpread(8000);
+                x = THREE.MathUtils.randFloatSpread(4500);
+                y = THREE.MathUtils.randFloatSpread(3000);
+                z = THREE.MathUtils.randFloatSpread(15000);
             }
 
             positions[i * 3] = x;
@@ -95,6 +100,7 @@
             colors[i * 3 + 1] = color.g;
             colors[i * 3 + 2] = color.b;
             
+            // Increased sizes so they don't anti-alias into nothingness
             sizes[i] = Math.random() * 1.5 + 1.2;
         }
 
