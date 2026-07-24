@@ -102,13 +102,12 @@ $music_plays = $wpdb->get_var("SELECT SUM(music_played) FROM $table_name");
 $music_time_sec = $wpdb->get_var("SELECT SUM(music_duration) FROM $table_name");
 $music_time_fmt = $music_time_sec ? (intval($music_time_sec) >= 86400 ? floor(intval($music_time_sec)/86400) . 'd ' . gmdate("H:i", intval($music_time_sec)) : (intval($music_time_sec) >= 3600 ? gmdate("H:i:s", intval($music_time_sec)) : gmdate("i:s", intval($music_time_sec)))) : '00:00';
 
-// 3. Top 10 Pages (All Time)
+// 3. Top Pages (All Time)
 $top_pages = $wpdb->get_results("
     SELECT url, COUNT(*) as views, AVG(duration) as avg_duration
     FROM $table_name 
     GROUP BY url 
     ORDER BY views DESC 
-    LIMIT 10
 ");
 
 // 3.1 Top Countries
@@ -118,7 +117,6 @@ $top_countries = $wpdb->get_results("
     WHERE country != '' AND country IS NOT NULL
     GROUP BY country 
     ORDER BY uniques DESC 
-    LIMIT 10
 ");
 
 // 3.2 Top Cities
@@ -128,7 +126,6 @@ $top_cities = $wpdb->get_results("
     WHERE city != '' AND city IS NOT NULL
     GROUP BY city, country 
     ORDER BY uniques DESC 
-    LIMIT 10
 ");
 
 // 3.2.1 Top Referrers
@@ -138,10 +135,9 @@ $top_referrers = $wpdb->get_results("
     WHERE referrer != '' AND referrer != 'Internal'
     GROUP BY referrer 
     ORDER BY views DESC 
-    LIMIT 10
 ");
 
-// 3.3 Top 20 Fans
+// 3.3 Top Fans
 $top_fans = $wpdb->get_results("
     SELECT visitor_id, 
            MAX(country) as country, 
@@ -155,7 +151,6 @@ $top_fans = $wpdb->get_results("
     WHERE visitor_id != '' 
     GROUP BY visitor_id 
     ORDER BY total_visits DESC, page_views DESC 
-    LIMIT 20
 ");
 
 // 3.5 Encrolib Logs
@@ -234,8 +229,8 @@ if ($ua_data) {
 arsort($browsers);
 arsort($os_devices);
 
-$top_browsers = array_slice($browsers, 0, 15, true);
-$top_os = array_slice($os_devices, 0, 15, true);
+$top_browsers = $browsers;
+$top_os = $os_devices;
 
 // 4. Activity Chart
 $range_param = isset($_GET['range']) ? $_GET['range'] : '7';
@@ -370,9 +365,9 @@ get_header();
                 </div>
             </div>
 
-            <!-- Right: Top Pages -->
+            <!-- Right: All Pages -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Top 10 Pages</h3>
+                <h3 class="zk-panel-title">All Pages</h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -415,7 +410,7 @@ get_header();
 
             <!-- Right 2: Top Referrers -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Top Traffic Sources</h3>
+                <h3 class="zk-panel-title">All Traffic Sources</h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -451,7 +446,7 @@ get_header();
         <div class="zk-analytics-main zk-half" style="margin-top: 24px;">
             <!-- Left: Top Countries -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Top Countries</h3>
+                <h3 class="zk-panel-title">Countries</h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -484,7 +479,7 @@ get_header();
 
             <!-- Right: Top Cities -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Top Cities</h3>
+                <h3 class="zk-panel-title">Cities</h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -516,11 +511,11 @@ get_header();
             </div>
         </div>
 
-        <!-- TOP 20 FANS -->
+        <!-- TOP FANS -->
         <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr;">
             <div class="zk-analytics-panel">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 class="zk-panel-title" style="color: #00bcd4; margin-bottom: 0;">Top 20 Returning Fans</h3>
+                    <h3 class="zk-panel-title" style="color: #00bcd4; margin-bottom: 0;">Loyal Fans</h3>
                 </div>
                 <div class="zk-table-wrapper" style="width: 100%;">
                     <form method="POST" action="">
@@ -621,7 +616,7 @@ get_header();
         <div class="zk-analytics-main zk-half" style="margin-top: 24px;">
             <!-- Left: Top Browsers -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Top Browsers</h3>
+                <h3 class="zk-panel-title">Browsers</h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -652,7 +647,7 @@ get_header();
 
             <!-- Right: Top OS & Devices -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Top Devices & OS</h3>
+                <h3 class="zk-panel-title">Devices & OS</h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -905,24 +900,47 @@ get_header();
 /* TABLE */
 .zk-table-wrapper {
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 420px;
+    border-bottom: 1px solid var(--hairline);
+    padding-right: 4px;
+}
+.zk-table-wrapper::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.zk-table-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+.zk-table-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+.zk-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 .zk-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 .zk-table th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #121212;
     text-align: left;
     font-size: 0.75rem;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding-bottom: 12px;
+    letter-spacing: 0.1em;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--hairline-strong);
-    font-weight: 500;
     white-space: nowrap;
+    font-weight: 500;
 }
 .zk-table td {
-    padding: 14px 0;
+    padding: 14px 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     font-size: 0.95rem;
     color: var(--text-muted);
