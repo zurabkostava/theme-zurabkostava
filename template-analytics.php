@@ -14,7 +14,9 @@ $table_name = $wpdb->prefix . 'zk_analytics';
 
 // Handle Reset Request
 if ( isset($_POST['zk_reset_analytics']) && wp_verify_nonce($_POST['zk_reset_analytics_nonce'], 'zk_reset_action') ) {
+    $table_logs = $wpdb->prefix . 'zk_encrolib_logs';
     $wpdb->query("TRUNCATE TABLE $table_name");
+    $wpdb->query("TRUNCATE TABLE $table_logs");
     wp_redirect(home_url('/analytics'));
     exit;
 }
