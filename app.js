@@ -1091,12 +1091,16 @@
                 if (!window.zkIsAdmin) {
                     var attId = img.getAttribute('data-id');
                     if (attId) {
-                        var apiRoute = (window.ZK && window.ZK.home ? window.ZK.home.replace(/\/$/, '') : '') + '/wp-json/zk/v1/photo-view';
-                        fetch(apiRoute, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ id: attId })
-                        }).catch(function(e) {});
+                        window.zkViewedPhotos = window.zkViewedPhotos || new Set();
+                        if (!window.zkViewedPhotos.has(attId)) {
+                            window.zkViewedPhotos.add(attId);
+                            var apiRoute = (window.ZK && window.ZK.home ? window.ZK.home.replace(/\/$/, '') : '') + '/wp-json/zk/v1/photo-view';
+                            fetch(apiRoute, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ id: attId })
+                            }).catch(function(e) {});
+                        }
                     }
                 }
 
