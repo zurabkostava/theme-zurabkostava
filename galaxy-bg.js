@@ -5,10 +5,12 @@
 
 (function() {
     let container;
-    let camera, scene, renderer;
-    let starsGeometry, starsMaterial, starSystem;
-    let isRunning = false;
+    let canvas, ctx;
+    let scene, camera, renderer;
+    let starSystem, starSystem2, starsMaterial;
+    let heroSystem, heroSystem2, heroMaterial;
     let animationFrameId;
+    let isRunning = false;
 
     function initGalaxy() {
         container = document.getElementById('zk-galaxy-canvas');
@@ -136,6 +138,82 @@
         scene.add(starSystem);
         scene.add(starSystem2);
 
+        // 🌟 NEW: Hero Stars (Lens Flare Stars)
+        const heroStarCount = 5000; // ~1.25% of the total stars
+        const heroGeometry = new THREE.BufferGeometry();
+        const heroPositions = new Float32Array(heroStarCount * 3);
+        const heroColors = new Float32Array(heroStarCount * 3);
+        const heroSizes = new Float32Array(heroStarCount);
+
+        for (let i = 0; i < heroStarCount; i++) {
+            // Uniform spread for hero stars so they don't clump too much
+            heroPositions[i * 3] = THREE.MathUtils.randFloatSpread(4500);
+            heroPositions[i * 3 + 1] = THREE.MathUtils.randFloatSpread(3000);
+            heroPositions[i * 3 + 2] = THREE.MathUtils.randFloatSpread(15000);
+
+            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            // Boost color brightness for hero stars by lerping towards white
+            heroColors[i * 3] = color.r * 0.5 + 0.5;
+            heroColors[i * 3 + 1] = color.g * 0.5 + 0.5;
+            heroColors[i * 3 + 2] = color.b * 0.5 + 0.5;
+            
+            // Sizes vary dramatically
+            heroSizes[i] = Math.random() * 15 + 5;
+        }
+
+        heroGeometry.setAttribute('position', new THREE.BufferAttribute(heroPositions, 3));
+        heroGeometry.setAttribute('color', new THREE.BufferAttribute(heroColors, 3));
+        heroGeometry.setAttribute('size', new THREE.BufferAttribute(heroSizes, 1));
+
+        // Flare Texture
+        const flareCanvas = document.createElement('canvas');
+        flareCanvas.width = 128;
+        flareCanvas.height = 128;
+        const flareCtx = flareCanvas.getContext('2d');
+        const cx = 64, cy = 64;
+        
+        const radialGlow = flareCtx.createRadialGradient(cx, cy, 0, cx, cy, 64);
+        radialGlow.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        radialGlow.addColorStop(0.05, 'rgba(255, 255, 255, 0.8)');
+        radialGlow.addColorStop(0.2, 'rgba(255, 255, 255, 0.2)');
+        radialGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        flareCtx.fillStyle = radialGlow;
+        flareCtx.fillRect(0, 0, 128, 128);
+        
+        // Draw cross spikes
+        const drawSpike = (rx, ry) => {
+            const grad = flareCtx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(rx, ry));
+            grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            flareCtx.fillStyle = grad;
+            flareCtx.beginPath();
+            flareCtx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+            flareCtx.fill();
+        };
+        drawSpike(64, 2); // Horizontal spike
+        drawSpike(2, 64); // Vertical spike
+
+        const flareTexture = new THREE.CanvasTexture(flareCanvas);
+
+        heroMaterial = new THREE.PointsMaterial({
+            size: 20, // Huge base size for flares
+            map: flareTexture,
+            transparent: true,
+            opacity: 1,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+
+        heroSystem = new THREE.Points(heroGeometry, heroMaterial);
+        heroSystem.position.z = -6500;
+        
+        heroSystem2 = new THREE.Points(heroGeometry, heroMaterial);
+        heroSystem2.position.z = -21500;
+        
+        scene.add(heroSystem);
+        scene.add(heroSystem2);
+
         window.addEventListener('resize', onWindowResize);
 
         if (!isRunning) {
@@ -166,9 +244,11 @@
 
         const speed = 0.4;
         
-        // Move both systems forward
+        // Move all systems forward
         starSystem.position.z += speed;
         starSystem2.position.z += speed;
+        heroSystem.position.z += speed;
+        heroSystem2.position.z += speed;
         
         // Snap back when they pass the camera
         if (starSystem.position.z > 8500) {
@@ -176,6 +256,12 @@
         }
         if (starSystem2.position.z > 8500) {
             starSystem2.position.z -= 30000;
+        }
+        if (heroSystem.position.z > 8500) {
+            heroSystem.position.z -= 30000;
+        }
+        if (heroSystem2.position.z > 8500) {
+            heroSystem2.position.z -= 30000;
         }
 
         renderer.render(scene, camera);
