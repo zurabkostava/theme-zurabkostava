@@ -75,25 +75,23 @@
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
         geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
-        // Create a circular sprite for stars programmatically so we don't need external image assets
+        // Create a circular sprite for stars programmatically with less glow (sharper stars)
         const canvasSprite = document.createElement('canvas');
         canvasSprite.width = 16;
         canvasSprite.height = 16;
         const context = canvasSprite.getContext('2d');
         const gradient = context.createRadialGradient(8, 8, 0, 8, 8, 8);
         gradient.addColorStop(0, 'rgba(255,255,255,1)');
-        gradient.addColorStop(0.2, 'rgba(255,255,255,0.8)');
-        gradient.addColorStop(0.5, 'rgba(255,255,255,0.2)');
+        gradient.addColorStop(0.1, 'rgba(255,255,255,0.8)');
+        gradient.addColorStop(0.2, 'rgba(255,255,255,0.1)');
         gradient.addColorStop(1, 'rgba(0,0,0,0)');
         context.fillStyle = gradient;
         context.fillRect(0, 0, 16, 16);
 
         const texture = new THREE.CanvasTexture(canvasSprite);
 
-        // We use ShaderMaterial to support individual point sizes if needed, 
-        // but PointsMaterial size mapping also works well for a general size.
         starsMaterial = new THREE.PointsMaterial({
-            size: 6, // Base size
+            size: 3, // Reduced base size for less glow
             map: texture,
             transparent: true,
             opacity: 0.9,
@@ -133,10 +131,8 @@
 
         animationFrameId = requestAnimationFrame(animate);
 
-        // Very slow, majestic movement
+        // Straight forward movement
         const positions = starSystem.geometry.attributes.position.array;
-        
-        // Slower movement
         const speed = 0.3;
 
         for (let i = 0; i < positions.length; i += 3) {
@@ -149,11 +145,6 @@
         }
         
         starSystem.geometry.attributes.position.needsUpdate = true;
-        
-        // Slight rotation for overall galaxy drift
-        starSystem.rotation.z -= 0.0001;
-        starSystem.rotation.x += 0.00005;
-        starSystem.rotation.y += 0.00002;
 
         renderer.render(scene, camera);
     }
