@@ -23,11 +23,11 @@
         const rect = container.parentElement.getBoundingClientRect();
         
         scene = new THREE.Scene();
-        // Thicker fog so distant stars look like tiny noise/dust
-        scene.fog = new THREE.FogExp2(0x000000, 0.0008);
+        // Lower fog density to see further, but keep it so distant stars still fade
+        scene.fog = new THREE.FogExp2(0x000000, 0.0003);
 
-        // Camera
-        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 6000);
+        // Camera - huge far plane
+        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 15000);
         camera.position.z = 1000;
 
         renderer = new THREE.WebGLRenderer({ canvas: container, alpha: true, antialias: true });
@@ -36,7 +36,7 @@
         renderer.setClearColor(0x000000, 0); 
 
         // Generate stars
-        const starCount = 150000; // Massively increased count for "noise" and "snow" effect
+        const starCount = 150000;
         const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(starCount * 3);
         const colors = new Float32Array(starCount * 3);
@@ -52,10 +52,10 @@
 
         for (let i = 0; i < starCount; i++) {
             // Tighter X/Y spread so stars are concentrated in front of the camera
-            // Huge Z spread for massive render distance
-            const x = THREE.MathUtils.randFloatSpread(2500);
-            const y = THREE.MathUtils.randFloatSpread(2500);
-            const z = THREE.MathUtils.randFloatSpread(5000); // from -2500 to +2500
+            // Huge Z spread for massive render distance (15000 units deep)
+            const x = THREE.MathUtils.randFloatSpread(3500);
+            const y = THREE.MathUtils.randFloatSpread(3500);
+            const z = THREE.MathUtils.randFloatSpread(15000);
 
             positions[i * 3] = x;
             positions[i * 3 + 1] = y;
@@ -89,7 +89,7 @@
         const texture = new THREE.CanvasTexture(canvasSprite);
 
         starsMaterial = new THREE.PointsMaterial({
-            size: 2.5, // Slightly bigger base size to be visible
+            size: 2.5,
             map: texture,
             transparent: true,
             opacity: 1,
@@ -99,8 +99,8 @@
         });
 
         starSystem = new THREE.Points(geometry, starsMaterial);
-        // Push the whole system back so it aligns with the camera distance
-        starSystem.position.z = -1500;
+        // Push the whole system back so it aligns with the massive camera distance
+        starSystem.position.z = -6500;
         scene.add(starSystem);
 
         window.addEventListener('resize', onWindowResize);
@@ -140,9 +140,9 @@
         for (let i = 0; i < positions.length; i += 3) {
             positions[i + 2] += speed;
             
-            // Reset distance matching the Z spread (5000)
-            if (positions[i + 2] > 2500) {
-                positions[i + 2] -= 5000;
+            // Reset distance matching the huge Z spread (15000)
+            if (positions[i + 2] > 7500) {
+                positions[i + 2] -= 15000;
             }
         }
         
