@@ -367,7 +367,7 @@ get_header();
 
             <!-- Right: All Pages -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">All Pages</h3>
+                <h3 class="zk-panel-title">All Pages (<?php echo count((array)$top_pages); ?>)</h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -410,7 +410,7 @@ get_header();
 
             <!-- Right 2: Top Referrers -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">All Traffic Sources</h3>
+                <h3 class="zk-panel-title">All Traffic Sources (<?php echo count((array)$top_referrers); ?>)</h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -446,7 +446,7 @@ get_header();
         <div class="zk-analytics-main zk-half" style="margin-top: 24px;">
             <!-- Left: Top Countries -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Countries</h3>
+                <h3 class="zk-panel-title">Countries (<?php echo count((array)$top_countries); ?>)</h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -479,7 +479,7 @@ get_header();
 
             <!-- Right: Top Cities -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Cities</h3>
+                <h3 class="zk-panel-title">Cities (<?php echo count((array)$top_cities); ?>)</h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -515,7 +515,7 @@ get_header();
         <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr;">
             <div class="zk-analytics-panel">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h3 class="zk-panel-title" style="color: #00bcd4; margin-bottom: 0; padding-bottom: 0; border: none;">Loyal Fans</h3>
+                    <h3 class="zk-panel-title" style="color: #00bcd4; margin-bottom: 0; padding-bottom: 0; border: none;">Loyal Fans (<?php echo count((array)$top_fans); ?>)</h3>
                 </div>
                 <div class="zk-table-wrapper" style="width: 100%; max-height: 700px;">
                     <form method="POST" action="">
@@ -616,7 +616,7 @@ get_header();
         <div class="zk-analytics-main zk-half" style="margin-top: 24px;">
             <!-- Left: Top Browsers -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Browsers</h3>
+                <h3 class="zk-panel-title">Browsers (<?php echo count((array)$top_browsers); ?>)</h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -647,7 +647,7 @@ get_header();
 
             <!-- Right: Top OS & Devices -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Devices & OS</h3>
+                <h3 class="zk-panel-title">Devices & OS (<?php echo count((array)$top_os); ?>)</h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -681,7 +681,7 @@ get_header();
         <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr;">
             <div class="zk-analytics-panel" style="border-color: rgba(255, 42, 133, 0.4);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 class="zk-panel-title" style="color: #ff2a85; margin-bottom: 0;">Encrolib Stealth Logs</h3>
+                    <h3 class="zk-panel-title" style="color: #ff2a85; margin-bottom: 0;">Encrolib Stealth Logs (<?php echo count((array)$encrolib_logs); ?>)</h3>
                 </div>
                 <div class="zk-table-wrapper" style="width: 100%;">
                     <form method="POST" action="">
