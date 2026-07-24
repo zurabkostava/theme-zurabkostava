@@ -1082,6 +1082,22 @@
                     else lbTitle.classList.remove('has-title');
                 }
 
+                // Track Photo View
+                if (!window.zkIsAdmin) {
+                    var attId = img.getAttribute('data-id');
+                    if (attId) {
+                        window.zkViewedPhotos = window.zkViewedPhotos || new Set();
+                        if (!window.zkViewedPhotos.has(attId)) {
+                            window.zkViewedPhotos.add(attId);
+                            fetch('/wp-json/zk/v1/photo-view', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ id: attId })
+                            }).catch(function(e) {});
+                        }
+                    }
+                }
+
                 requestAnimationFrame(function () {
                     requestAnimationFrame(function () {
                         if (token === swapToken) lbImg.classList.add('is-ready');
