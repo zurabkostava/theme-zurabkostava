@@ -1623,10 +1623,9 @@
         }
         
         let giant = Math.random() < 0.015 && !isMorningStar; // 1.5% chance to be a giant shining star
-        let tiny = Math.random() < 0.6 && !isMorningStar && !giant; // 60% chance for tiny twinkling star
         
         let sx, sy;
-        let zSpawn = resetZ ? (width * 5) : Math.random() * (width * 5);
+        let zSpawn = resetZ ? (width * 3) : Math.random() * (width * 3);
         let mScale = 1.0;
         let mType = 'full';
         let mBrightness = 1.0;
@@ -1735,31 +1734,30 @@
                     });
                 }
             }
-        } else if (Math.random() < 0.2) { // Reduced dense clustering for more even spread
-            // 20% chance to be part of a dense cluster
+        } else if (Math.random() < 0.3) {
+            // 30% chance to be part of a dense cluster
             if (!currentCluster || Math.random() < 0.05) {
                 currentCluster = {
-                    x: (Math.random() - 0.5) * width * 10,
-                    y: (Math.random() - 0.5) * height * 10
+                    x: (Math.random() - 0.5) * width * 3,
+                    y: (Math.random() - 0.5) * height * 3
                 };
             }
-            sx = currentCluster.x + (Math.random() + Math.random() - 1) * width * 2;
-            sy = currentCluster.y + (Math.random() + Math.random() - 1) * height * 2;
+            sx = currentCluster.x + (Math.random() + Math.random() - 1) * width * 0.5;
+            sy = currentCluster.y + (Math.random() + Math.random() - 1) * height * 0.5;
         } else {
-            sx = (Math.random() - 0.5) * width * 14;
-            sy = (Math.random() - 0.5) * height * 14;
+            sx = (Math.random() - 0.5) * width * 4;
+            sy = (Math.random() - 0.5) * height * 4;
         }
         
         return {
             x: sx,
             y: sy,
             z: zSpawn,
-            pz: zSpawn,
+            pz: 0,
             color: isMorningStar ? `rgba(${glowColor}, 1)` : (giant ? 'rgba(255, 255, 255, 1)' : randomStarColor()),
             speedFactor: isMorningStar ? 1.0 : (Math.random() * 0.8 + 0.6),
             isGiant: giant,
             isMorningStar: isMorningStar,
-            isTiny: tiny,
             morningScale: mScale,
             morningType: mType,
             morningBrightness: mBrightness,
@@ -1814,25 +1812,17 @@
                 let px = (s.x / s.pz) * 150 + cx;
                 let py = (s.y / s.pz) * 150 + cy;
                 
-                let r = Math.max(0.1, (1 - s.z / (width * 5)) * 2.5);
+                let r = Math.max(0.1, (1 - s.z / (width * 3)) * 2.5);
                 if (s.isGiant) {
                     r *= 2.5;
                     ctx.shadowBlur = 15;
                     ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-                } else if (s.isTiny) {
-                    r *= 0.35;
-                    ctx.shadowBlur = 0;
                 } else {
                     ctx.shadowBlur = 0;
                 }
                 
                 ctx.beginPath();
-                if (s.isTiny) {
-                    let twinkle = 0.2 + Math.random() * 0.8;
-                    ctx.strokeStyle = s.color.replace(', 1)', `, ${twinkle})`);
-                } else {
-                    ctx.strokeStyle = s.color;
-                }
+                ctx.strokeStyle = s.color;
                 ctx.lineWidth = r;
                 ctx.moveTo(px, py);
                 ctx.lineTo(x, y);
@@ -2037,7 +2027,10 @@
 
             if (fadeInterval) clearInterval(fadeInterval);
 
-            if (isPlaying) {
+            // Dynamically evaluate playing state at the moment of click
+            var isCurrentlyPlaying = !audio.paused && !audio.ended && audio.currentTime > 0;
+
+            if (isCurrentlyPlaying) {
                 // Soft fade out (~150ms)
                 fadeInterval = setInterval(function() {
                     if (audio.volume > 0.1) {
@@ -2090,7 +2083,7 @@
                     });
                 }
             }
-            isPlaying = !isPlaying;
+            isPlaying = !isCurrentlyPlaying;
         });
         btn.dataset.initialized = 'true';
         }
