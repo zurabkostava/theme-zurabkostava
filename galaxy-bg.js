@@ -50,12 +50,40 @@
             new THREE.Color(0xc2d6ff)  // Pale blue
         ];
 
+        // Create cluster centers for nebula-like structures and voids
+        const numClusters = 150;
+        const clusters = [];
+        for (let c = 0; c < numClusters; c++) {
+            clusters.push({
+                x: THREE.MathUtils.randFloatSpread(2000),
+                y: THREE.MathUtils.randFloatSpread(2000),
+                z: THREE.MathUtils.randFloatSpread(15000),
+                radiusX: Math.random() * 400 + 100, // How wide the cluster is
+                radiusY: Math.random() * 400 + 100, // How tall the cluster is
+                radiusZ: Math.random() * 2000 + 500  // How deep the cluster is
+            });
+        }
+
         for (let i = 0; i < starCount; i++) {
-            // Tightly pack the X and Y so stars aren't wasted outside the screen
-            // Huge Z spread for massive render distance (15000 units deep)
-            const x = THREE.MathUtils.randFloatSpread(2000);
-            const y = THREE.MathUtils.randFloatSpread(2000);
-            const z = THREE.MathUtils.randFloatSpread(15000);
+            let x, y, z;
+            
+            // 75% of stars go into clusters, 25% are scattered for background noise
+            if (Math.random() < 0.75) {
+                const cluster = clusters[Math.floor(Math.random() * clusters.length)];
+                
+                // Using power of 2 for a soft falloff (denser at center, sparser at edges)
+                const u = Math.random() * 2 - 1;
+                const v = Math.random() * 2 - 1;
+                const w = Math.random() * 2 - 1;
+                
+                x = cluster.x + Math.sign(u) * Math.pow(Math.abs(u), 2) * cluster.radiusX;
+                y = cluster.y + Math.sign(v) * Math.pow(Math.abs(v), 2) * cluster.radiusY;
+                z = cluster.z + Math.sign(w) * Math.pow(Math.abs(w), 2) * cluster.radiusZ;
+            } else {
+                x = THREE.MathUtils.randFloatSpread(2000);
+                y = THREE.MathUtils.randFloatSpread(2000);
+                z = THREE.MathUtils.randFloatSpread(15000);
+            }
 
             positions[i * 3] = x;
             positions[i * 3 + 1] = y;
