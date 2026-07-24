@@ -2118,96 +2118,93 @@
         window.zkMusicDurationTotal = window.zkMusicDurationTotal || 0;
         var lastAudioTimeAnalytics = 0;
 
-        audio.addEventListener('play', function() {
-            window.zkMusicPlayed = true;
-            lastAudioTimeAnalytics = audio.currentTime;
-        });
+            audio.addEventListener('play', function() {
+                window.zkMusicPlayed = true;
+                lastAudioTimeAnalytics = audio.currentTime;
+            });
 
-        if (audio && phrases && phrases.length > 0) {
-            audio.addEventListener('timeupdate', function() {
+            if (audio && phrases && phrases.length > 0) {
+                audio.addEventListener('timeupdate', function() {
 
-                if (!isPlaying || !phraseContainer) return;
-                
-                var currentTime = audio.currentTime;
-                var foundIndex = -1;
-                
-                for (var i = 0; i < phrases.length; i++) {
-                    if (currentTime >= phrases[i].start && currentTime <= phrases[i].end) {
-                        foundIndex = i;
-                        break;
-                    }
-                }
-                
-                if (foundIndex !== activePhraseIndex) {
-                    // Hide previous phrase
-                    if (phraseContainer.firstChild) {
-                        phraseContainer.firstChild.classList.remove('is-visible');
+                    if (!isPlaying || !phraseContainer) return;
+                    
+                    var currentTime = audio.currentTime;
+                    var foundIndex = -1;
+                    
+                    for (var i = 0; i < phrases.length; i++) {
+                        if (currentTime >= phrases[i].start && currentTime <= phrases[i].end) {
+                            foundIndex = i;
+                            break;
+                        }
                     }
                     
-                    activePhraseIndex = foundIndex;
-                    
-                    if (foundIndex !== -1) {
-                        // Show new phrase
-                        var text = phrases[foundIndex].text;
-                        var el = document.createElement('div');
-                        el.className = 'zk-cinematic-phrase-text';
-                        el.innerHTML = text;
-                        phraseContainer.innerHTML = '';
-                        phraseContainer.appendChild(el);
+                    if (foundIndex !== activePhraseIndex) {
+                        // Hide previous phrase
+                        if (phraseContainer.firstChild) {
+                            phraseContainer.firstChild.classList.remove('is-visible');
+                        }
                         
-                        // trigger reflow for transition
-                        void el.offsetWidth;
-                        el.classList.add('is-visible');
+                        activePhraseIndex = foundIndex;
+                        
+                        if (foundIndex !== -1) {
+                            // Show new phrase
+                            var text = phrases[foundIndex].text;
+                            var el = document.createElement('div');
+                            el.className = 'zk-cinematic-phrase-text';
+                            el.innerHTML = text;
+                            phraseContainer.innerHTML = '';
+                            phraseContainer.appendChild(el);
+                            
+                            // trigger reflow for transition
+                            void el.offsetWidth;
+                            el.classList.add('is-visible');
+                        }
                     }
+                });
+            }
+
+            if (container) {
+                container.addEventListener('touchstart', function(e) {
+                    container.classList.toggle('show-tooltip');
+                }, { passive: true });
+                
+                document.addEventListener('touchstart', function(e) {
+                    if (!container.contains(e.target)) {
+                        container.classList.remove('show-tooltip');
+                    }
+                }, { passive: true });
+            }
+
+            audio.addEventListener('timeupdate', function() {
+                var diff = audio.currentTime - lastAudioTimeAnalytics;
+                if (diff > 0 && diff < 1.5) {
+                    window.zkMusicDurationTotal += diff;
+                }
+                lastAudioTimeAnalytics = audio.currentTime;
+
+                if (audio.duration && wrap) {
+                    var progress = (audio.currentTime / audio.duration) * 100;
+                    wrap.style.setProperty('--music-progress', progress + '%');
                 }
             });
-        }
+            audio.dataset.initialized = 'true';
+        } // end of audio init
 
         function startPhrases() {
-            // Logic is now handled by timeupdate. Just force a check.
             if (audio && audio.currentTime > 0) {
-                // To trigger timeupdate artificially
                 var event = new Event('timeupdate');
                 audio.dispatchEvent(event);
             }
         }
 
         function stopPhrases() {
-            if (phraseContainer && phraseContainer.firstChild) {
-                phraseContainer.firstChild.classList.remove('is-visible');
+            var pContainer = document.getElementById('zk-cinematic-phrase-container');
+            if (pContainer && pContainer.firstChild) {
+                pContainer.firstChild.classList.remove('is-visible');
             }
-            activePhraseIndex = -1;
         }
 
-        if (container) {
-            container.addEventListener('touchstart', function(e) {
-                // If they tap the button, we don't just show tooltip, we also play. But showing tooltip is nice anyway.
-                // However, to allow them to tap outside the button just to see the tooltip:
-                container.classList.toggle('show-tooltip');
-            }, { passive: true });
-            
-            // Remove tooltip if they click elsewhere
-            document.addEventListener('touchstart', function(e) {
-                if (!container.contains(e.target)) {
-                    container.classList.remove('show-tooltip');
-                }
-            }, { passive: true });
-        }
 
-        audio.addEventListener('timeupdate', function() {
-            var diff = audio.currentTime - lastAudioTimeAnalytics;
-            if (diff > 0 && diff < 1.5) {
-                window.zkMusicDurationTotal += diff;
-            }
-            lastAudioTimeAnalytics = audio.currentTime;
-
-            if (audio.duration && wrap) {
-                var progress = (audio.currentTime / audio.duration) * 100;
-                wrap.style.setProperty('--music-progress', progress + '%');
-            }
-        });
-        audio.dataset.initialized = 'true';
-        }
     }
 
     initWelcomeMusic();
