@@ -3339,7 +3339,6 @@ body.is-cinematic-mode .site-header {
     transform: translateY(-100%) !important;
     opacity: 0 !important;
     pointer-events: none !important;
-    filter: blur(10px) !important;
 }
 
 body.is-cinematic-mode .hero-latest-dock {
