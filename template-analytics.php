@@ -754,9 +754,7 @@ get_header();
                                                 </div>
                                                 <div style="font-size: 0.65rem; color: rgba(255,255,255,0.3); margin-top: 2px;"><?php echo esc_html(substr($log->visitor_id, 0, 8) . '...'); ?></div>
                                             </td>
-                                            <td style="color: var(--text); white-space: pre-wrap; font-family: var(--font-mono, monospace); font-size: 0.85rem;">
-                                                <?php echo esc_html($log->text_content); ?>
-                                            </td>
+                                            <td style="color: var(--text); white-space: pre-wrap; font-family: var(--font-mono, monospace); font-size: 0.85rem;"><?php echo esc_html($log->text_content); ?></td>
                                             <td style="text-align: right; color: var(--text-dim); font-size: 0.85rem;">
                                                 <?php echo esc_html($last_seen); ?>
                                             </td>
