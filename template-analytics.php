@@ -139,17 +139,18 @@ $top_referrers = $wpdb->get_results("
 
 // 3.3 Top Fans
 $top_fans = $wpdb->get_results("
-    SELECT visitor_id, 
-           MAX(country) as country, 
-           MAX(city) as city, 
-           MAX(user_agent) as user_agent,
-           MAX(visit_time) as last_visit,
-           COUNT(DISTINCT session_id) as total_visits, 
+    SELECT t.visitor_id, 
+           MAX(t.country) as country, 
+           MAX(t.city) as city, 
+           MAX(t.user_agent) as user_agent,
+           MAX(t.visit_time) as last_visit,
+           COUNT(DISTINCT t.session_id) as total_visits, 
            COUNT(*) as page_views,
-           SUM(duration) as total_duration
-    FROM $table_name 
-    WHERE visitor_id != '' 
-    GROUP BY visitor_id 
+           SUM(t.duration) as total_duration,
+           (SELECT duration FROM $table_name a WHERE a.visitor_id = t.visitor_id ORDER BY visit_time DESC LIMIT 1) as last_duration
+    FROM $table_name t
+    WHERE t.visitor_id != '' 
+    GROUP BY t.visitor_id 
     ORDER BY total_visits DESC, page_views DESC 
 ");
 
@@ -568,6 +569,12 @@ get_header();
                                         elseif ($time_diff < 86400) $last_seen = floor($time_diff/3600) . ' hrs ago';
                                         else $last_seen = floor($time_diff/86400) . ' days ago';
                                         
+                                        $l_dur = isset($fan->last_duration) ? intval($fan->last_duration) : 0;
+                                        $l_dur_fmt = '';
+                                        if ($l_dur > 0) {
+                                            $l_dur_fmt = ($l_dur >= 3600) ? gmdate("H:i:s", $l_dur) : gmdate("i:s", $l_dur);
+                                        }
+                                        
                                         // Format total time
                                         $f_dur = intval($fan->total_duration);
                                         if ($f_dur > 0) {
@@ -612,6 +619,7 @@ get_header();
                                             </td>
                                             <td style="text-align: right; color: var(--text-dim); font-size: 0.85rem;">
                                                 <?php echo esc_html($last_seen); ?>
+                                                <?php if ($l_dur_fmt) echo '<span style="color: rgba(255,255,255,0.3); font-size: 0.75rem; margin-left: 4px;">(' . esc_html($l_dur_fmt) . ')</span>'; ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
