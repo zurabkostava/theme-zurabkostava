@@ -900,7 +900,8 @@ get_header();
 }
 .zk-panel-title {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 10px;
     align-items: center;
     font-size: 0.85rem;
     text-transform: uppercase;
