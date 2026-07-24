@@ -1617,7 +1617,7 @@
 
     function newStar(resetZ = false) {
         let isMorningStar = false;
-        if (Date.now() - lastMorningStarTime > nextMorningStarInterval) {
+        if (Date.now() - lastMorningStarTime > nextMorningStarInterval && !document.body.classList.contains('is-cinematic-mode')) {
             isMorningStar = true;
             lastMorningStarTime = Date.now();
             nextMorningStarInterval = 40000 + Math.random() * 80000; // 40-120s
@@ -1793,7 +1793,27 @@
         
         let isCinematic = document.body.classList.contains('is-cinematic-mode');
         if (isCinematic) {
-            if (!cinematicStartTime) cinematicStartTime = Date.now();
+            if (!cinematicStartTime) {
+                cinematicStartTime = Date.now();
+                // When cinematic mode starts, spawn the epic destination galaxy!
+                let msIndex = stars.findIndex(s => s.isMorningStar);
+                if (msIndex < 0) msIndex = 0; // Use first star if none
+                
+                let ms = newStar(true);
+                ms.isMorningStar = true;
+                ms.isDead = false;
+                
+                // Calculate exactly where it needs to be so it reaches camera at 2.8 mins
+                // Total distance = average speed * time = 45.9 * (2.8 * 60 * 60)
+                ms.z = width * 240; 
+                ms.x = (Math.random() - 0.5) * width * 50; 
+                ms.y = (Math.random() - 0.5) * height * 50;
+                ms.morningScale = 20.0; // Massive scale!
+                ms.color = 'rgba(150, 200, 255, 1)';
+                ms.glowRgb = '150, 200, 255';
+                
+                stars[msIndex] = ms;
+            }
         } else {
             cinematicStartTime = null;
         }
@@ -1809,8 +1829,8 @@
             // Speed increases dramatically (cubic curve) up to 150x 
             speedMultiplier = 1.0 + Math.pow(cinematicProgress, 3) * 149.0;
             
-            // Stars decrease proportionally from numStars down to 300 to simulate leaving dense galaxy
-            activeStars = Math.floor(numStars - (numStars - 300) * cinematicProgress);
+            // Stars decrease proportionally from numStars down to a mere 20!
+            activeStars = Math.floor(numStars - (numStars - 20) * cinematicProgress);
         } else {
             // Normal background behavior
             let elapsedMinutes = (Date.now() - startTime) / 60000;
@@ -1910,8 +1930,13 @@
                         
                         let ox = ((s.x + obj.dx) / oz) * 150 + cx;
                         let oy = ((s.y + obj.dy) / oz) * 150 + cy;
-                        let orBase = Math.max(0.1, (1 - oz / (width * 3)) * 2.5);
+                        
+                        // True 3D perspective scale so it can grow infinitely as we approach
+                        let orBase = Math.max(0.1, (width * 15) / Math.max(1, oz));
                         let or = orBase * obj.scale;
+                        
+                        // If it's too big, it has passed us (or enveloped us)
+                        if (or > width * 2) continue; 
                         
                         if (obj.type === 'planet') {
                             ctx.beginPath();
