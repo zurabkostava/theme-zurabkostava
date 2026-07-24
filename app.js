@@ -1984,14 +1984,15 @@
         var fadeInterval = null;
         var hasPlayedOnce = false;
 
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Hide tooltip during transition and break sticky hover on mobile
-            container.classList.add('hide-tooltip-temp');
-            setTimeout(function() {
-                container.classList.remove('hide-tooltip-temp');
-            }, 2600);
+        if (!btn.dataset.initialized) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Hide tooltip during transition and break sticky hover on mobile
+                container.classList.add('hide-tooltip-temp');
+                setTimeout(function() {
+                    container.classList.remove('hide-tooltip-temp');
+                }, 2600);
 
             if (fadeInterval) clearInterval(fadeInterval);
 
@@ -2050,7 +2051,10 @@
             }
             isPlaying = !isPlaying;
         });
+        btn.dataset.initialized = 'true';
+        }
 
+        if (!audio.dataset.initialized) {
         audio.addEventListener('ended', function() {
             isPlaying = false;
             playIcon.style.display = 'block';
@@ -2168,6 +2172,8 @@
                 wrap.style.setProperty('--music-progress', progress + '%');
             }
         });
+        audio.dataset.initialized = 'true';
+        }
     }
 
     initWelcomeMusic();
