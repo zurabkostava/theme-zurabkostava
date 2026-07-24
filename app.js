@@ -1624,6 +1624,7 @@
         
         let giant = Math.random() < 0.015 && !isMorningStar; // 1.5% chance to be a giant shining star
         let mediumGiant = Math.random() < 0.030 && !giant && !isMorningStar; // 3% chance to be a medium giant
+        let smallGiant = Math.random() < 0.060 && !giant && !mediumGiant && !isMorningStar; // 6% chance for small bright star
         
         let sx, sy;
         let zSpawn = resetZ ? (width * 3) : Math.random() * (width * 3);
@@ -1759,10 +1760,11 @@
             y: sy,
             z: zSpawn,
             pz: 0,
-            color: isMorningStar ? `rgba(${glowColor}, 1)` : ((giant || mediumGiant) ? 'rgba(255, 255, 255, 1)' : randomStarColor()),
+            color: isMorningStar ? `rgba(${glowColor}, 1)` : ((giant || mediumGiant || smallGiant) ? 'rgba(255, 255, 255, 1)' : randomStarColor()),
             speedFactor: isMorningStar ? 1.0 : (Math.random() * 0.8 + 0.6),
             isGiant: giant,
             isMediumGiant: mediumGiant,
+            isSmallGiant: smallGiant,
             isMorningStar: isMorningStar,
             morningScale: mScale,
             morningType: mType,
@@ -1828,14 +1830,14 @@
                 
                 let r = Math.max(0.1, (1 - s.z / (width * 3)) * 2.5);
                 
-                if (s.isGiant || s.isMediumGiant) {
-                    let isGiant = s.isGiant;
-                    let glowR = isGiant ? r * 2.5 * 3 : r * 1.6 * 3;
-                    let mainR = isGiant ? r * 2.5 : r * 1.6;
+                if (s.isGiant || s.isMediumGiant || s.isSmallGiant) {
+                    let glowR = s.isGiant ? r * 2.5 * 3 : (s.isMediumGiant ? r * 1.6 * 3 : r * 1.2 * 3);
+                    let mainR = s.isGiant ? r * 2.5 : (s.isMediumGiant ? r * 1.6 : r * 1.2);
+                    let glowAlpha = s.isGiant ? '0.15' : (s.isMediumGiant ? '0.1' : '0.07');
                     
                     // Draw Glow (simulating shadowBlur much faster)
                     ctx.beginPath();
-                    ctx.strokeStyle = isGiant ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.1)';
+                    ctx.strokeStyle = `rgba(255,255,255,${glowAlpha})`;
                     ctx.lineWidth = glowR;
                     ctx.moveTo(px, py);
                     ctx.lineTo(x, y);
