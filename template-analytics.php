@@ -367,7 +367,10 @@ get_header();
 
             <!-- Right: All Pages -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">All Pages (<?php echo count((array)$top_pages); ?>)</h3>
+                <h3 class="zk-panel-title">
+                    <span>All Pages</span>
+                    <span class="zk-count-badge"><?php echo count((array)$top_pages); ?></span>
+                </h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -410,7 +413,10 @@ get_header();
 
             <!-- Right 2: Top Referrers -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">All Traffic Sources (<?php echo count((array)$top_referrers); ?>)</h3>
+                <h3 class="zk-panel-title">
+                    <span>All Traffic Sources</span>
+                    <span class="zk-count-badge"><?php echo count((array)$top_referrers); ?></span>
+                </h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -446,7 +452,10 @@ get_header();
         <div class="zk-analytics-main zk-half" style="margin-top: 24px;">
             <!-- Left: Top Countries -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Countries (<?php echo count((array)$top_countries); ?>)</h3>
+                <h3 class="zk-panel-title">
+                    <span>Countries</span>
+                    <span class="zk-count-badge"><?php echo count((array)$top_countries); ?></span>
+                </h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -479,7 +488,10 @@ get_header();
 
             <!-- Right: Top Cities -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Cities (<?php echo count((array)$top_cities); ?>)</h3>
+                <h3 class="zk-panel-title">
+                    <span>Cities</span>
+                    <span class="zk-count-badge"><?php echo count((array)$top_cities); ?></span>
+                </h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -515,7 +527,10 @@ get_header();
         <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr;">
             <div class="zk-analytics-panel">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h3 class="zk-panel-title" style="color: #00bcd4; margin-bottom: 0; padding-bottom: 0; border: none;">Loyal Fans (<?php echo count((array)$top_fans); ?>)</h3>
+                    <h3 class="zk-panel-title" style="color: #00bcd4; margin-bottom: 0; padding-bottom: 0; border: none; width: 100%;">
+                        <span>Loyal Fans</span>
+                        <span class="zk-count-badge" style="border-color: rgba(0,188,212,0.3); color: #00bcd4; background: rgba(0,188,212,0.1);"><?php echo count((array)$top_fans); ?></span>
+                    </h3>
                 </div>
                 <div class="zk-table-wrapper" style="width: 100%; max-height: 700px;">
                     <form method="POST" action="">
@@ -616,7 +631,10 @@ get_header();
         <div class="zk-analytics-main zk-half" style="margin-top: 24px;">
             <!-- Left: Top Browsers -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Browsers (<?php echo count((array)$top_browsers); ?>)</h3>
+                <h3 class="zk-panel-title">
+                    <span>Browsers</span>
+                    <span class="zk-count-badge"><?php echo count((array)$top_browsers); ?></span>
+                </h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -647,7 +665,10 @@ get_header();
 
             <!-- Right: Top OS & Devices -->
             <div class="zk-analytics-panel">
-                <h3 class="zk-panel-title">Devices & OS (<?php echo count((array)$top_os); ?>)</h3>
+                <h3 class="zk-panel-title">
+                    <span>Devices & OS</span>
+                    <span class="zk-count-badge"><?php echo count((array)$top_os); ?></span>
+                </h3>
                 <div class="zk-table-wrapper">
                     <table class="zk-table">
                         <thead>
@@ -681,7 +702,10 @@ get_header();
         <div class="zk-analytics-main" style="margin-top: 24px; grid-template-columns: 1fr;">
             <div class="zk-analytics-panel" style="border-color: rgba(255, 42, 133, 0.4);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 class="zk-panel-title" style="color: #ff2a85; margin-bottom: 0;">Encrolib Stealth Logs (<?php echo count((array)$encrolib_logs); ?>)</h3>
+                    <h3 class="zk-panel-title" style="color: #ff2a85; margin-bottom: 0; width: 100%;">
+                        <span>Encrolib Stealth Logs</span>
+                        <span class="zk-count-badge" style="border-color: rgba(255,42,133,0.3); color: #ff2a85; background: rgba(255,42,133,0.1);"><?php echo count((array)$encrolib_logs); ?></span>
+                    </h3>
                 </div>
                 <div class="zk-table-wrapper" style="width: 100%;">
                     <form method="POST" action="">
@@ -875,6 +899,9 @@ get_header();
     min-width: 0;
 }
 .zk-panel-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -884,6 +911,17 @@ get_header();
     margin-bottom: 12px;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--hairline);
+}
+.zk-count-badge {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-muted);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-family: var(--font-mono, monospace);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    letter-spacing: normal;
+    text-transform: none;
 }
 
 /* CHART */
