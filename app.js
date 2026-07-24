@@ -1617,15 +1617,15 @@
 
     function newStar(resetZ = false) {
         let isMorningStar = false;
-        if (Date.now() - lastMorningStarTime > nextMorningStarInterval && !document.body.classList.contains('is-cinematic-mode')) {
+        if (Date.now() - lastMorningStarTime > nextMorningStarInterval) {
             isMorningStar = true;
             lastMorningStarTime = Date.now();
             nextMorningStarInterval = 40000 + Math.random() * 80000; // 40-120s
         }
         
-        let giant = Math.random() < 0.015 && !isMorningStar; // 1.5% chance to be a giant shining star
-        let mediumGiant = Math.random() < 0.030 && !giant && !isMorningStar; // 3% chance to be a medium giant
-        let smallGiant = Math.random() < 0.20 && !giant && !mediumGiant && !isMorningStar; // 20% chance for small bright star
+        let giant = Math.random() < 0.08 && !isMorningStar; // 8% chance to be a giant shining star
+        let mediumGiant = Math.random() < 0.15 && !giant && !isMorningStar; // 15% chance to be a medium giant
+        let smallGiant = Math.random() < 0.25 && !giant && !mediumGiant && !isMorningStar; // 25% chance for small bright star
         
         let sx, sy;
         let zSpawn = resetZ ? (width * 3) : Math.random() * (width * 3);
@@ -1748,12 +1748,11 @@
             sx = currentCluster.x + (Math.random() + Math.random() - 1) * (width * width / 200);
             sy = currentCluster.y + (Math.random() + Math.random() - 1) * (height * width / 200);
         } else {
-            // Perfect mathematical frustum bounds so stars always spawn on screen
-            let spreadX = (width * width) / 50;  // 2 * (width^2 / 100)
-            let spreadY = (height * width) / 50; 
-            
-            sx = (Math.random() - 0.5) * spreadX;
-            sy = (Math.random() - 0.5) * spreadY;
+            // Perfectly uniform 2D density: Pick random X/Y on screen and back-project to 3D Z
+            let targetX = (Math.random() - 0.5) * width * 1.5; // Spread slightly beyond screen
+            let targetY = (Math.random() - 0.5) * height * 1.5;
+            sx = (targetX / 150) * zSpawn;
+            sy = (targetY / 150) * zSpawn;
         }
         
         return {
@@ -1795,24 +1794,6 @@
         if (isCinematic) {
             if (!cinematicStartTime) {
                 cinematicStartTime = Date.now();
-                // When cinematic mode starts, spawn the epic destination galaxy!
-                let msIndex = stars.findIndex(s => s.isMorningStar);
-                if (msIndex < 0) msIndex = 0; // Use first star if none
-                
-                let ms = newStar(true);
-                ms.isMorningStar = true;
-                ms.isDead = false;
-                
-                // Calculate exactly where it needs to be so it reaches camera at 2.8 mins
-                // Total distance = average speed * time = 45.9 * (2.8 * 60 * 60)
-                ms.z = width * 240; 
-                ms.x = (Math.random() - 0.5) * width * 50; 
-                ms.y = (Math.random() - 0.5) * height * 50;
-                ms.morningScale = 20.0; // Massive scale!
-                ms.color = 'rgba(150, 200, 255, 1)';
-                ms.glowRgb = '150, 200, 255';
-                
-                stars[msIndex] = ms;
             }
         } else {
             cinematicStartTime = null;

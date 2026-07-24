@@ -380,9 +380,19 @@ body.is-navigating #zk-global-loader {
     transform-origin: center;
 }
 
+body.is-cinematic-mode .hero-galaxy {
+    animation: cinematicGalaxyApproach 180s cubic-bezier(0.5, 0, 1, 1) forwards;
+}
+
 @keyframes galaxyPassBy {
     0% { transform: translate(0, 0) scale(1) rotate(0deg); }
     100% { transform: translate(40%, -40%) scale(1.8) rotate(15deg); }
+}
+
+@keyframes cinematicGalaxyApproach {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.7; }
+    85% { opacity: 0.7; }
+    100% { transform: translate(10%, -10%) scale(30) rotate(5deg); opacity: 0; }
 }
 
 .zk-starfield {
