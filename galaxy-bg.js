@@ -23,8 +23,8 @@
         const rect = container.parentElement.getBoundingClientRect();
         
         scene = new THREE.Scene();
-        // Lower fog density to see further, but keep it so distant stars still fade
-        scene.fog = new THREE.FogExp2(0x000000, 0.0003);
+        // Lower fog density so more stars are visible in the distance before fading to black
+        scene.fog = new THREE.FogExp2(0x000000, 0.0002);
 
         // Camera - huge far plane
         camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 15000);
@@ -36,7 +36,7 @@
         renderer.setClearColor(0x000000, 0); 
 
         // Generate stars
-        const starCount = 500000; // Increased to 500k to maintain density over a larger area
+        const starCount = 700000; // 700k points for maximum density without massive performance drop
         const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(starCount * 3);
         const colors = new Float32Array(starCount * 3);
@@ -44,6 +44,7 @@
         
         const colorPalette = [
             new THREE.Color(0xffffff), // White
+            new THREE.Color(0xffffff), // White (bias)
             new THREE.Color(0xfff4e8), // Pale yellow
             new THREE.Color(0xffd2a1), // Orange/Red dwarf
             new THREE.Color(0xa1c4ff), // Blue giant
@@ -51,15 +52,15 @@
         ];
 
         // Create cluster centers for nebula-like structures and voids
-        const numClusters = 400; // More clusters to cover the wider area
+        const numClusters = 300; 
         const clusters = [];
         for (let c = 0; c < numClusters; c++) {
             clusters.push({
-                x: THREE.MathUtils.randFloatSpread(8000), // Much wider to fill screen corners
-                y: THREE.MathUtils.randFloatSpread(5000), // Taller to fill screen corners
+                x: THREE.MathUtils.randFloatSpread(4500), // Balanced spread to cover edges without diluting density
+                y: THREE.MathUtils.randFloatSpread(3000),
                 z: THREE.MathUtils.randFloatSpread(15000),
-                radiusX: Math.random() * 800 + 200, // Wider clusters
-                radiusY: Math.random() * 800 + 200, 
+                radiusX: Math.random() * 600 + 200, 
+                radiusY: Math.random() * 600 + 200, 
                 radiusZ: Math.random() * 2000 + 500 
             });
         }
@@ -71,7 +72,7 @@
             if (Math.random() < 0.75) {
                 const cluster = clusters[Math.floor(Math.random() * clusters.length)];
                 
-                // Using power of 2 for a soft falloff (denser at center, sparser at edges)
+                // Using power of 2 for a soft falloff
                 const u = Math.random() * 2 - 1;
                 const v = Math.random() * 2 - 1;
                 const w = Math.random() * 2 - 1;
@@ -80,8 +81,8 @@
                 y = cluster.y + Math.sign(v) * Math.pow(Math.abs(v), 2) * cluster.radiusY;
                 z = cluster.z + Math.sign(w) * Math.pow(Math.abs(w), 2) * cluster.radiusZ;
             } else {
-                x = THREE.MathUtils.randFloatSpread(8000);
-                y = THREE.MathUtils.randFloatSpread(5000);
+                x = THREE.MathUtils.randFloatSpread(4500);
+                y = THREE.MathUtils.randFloatSpread(3000);
                 z = THREE.MathUtils.randFloatSpread(15000);
             }
 
@@ -94,8 +95,8 @@
             colors[i * 3 + 1] = color.g;
             colors[i * 3 + 2] = color.b;
             
-            // Much smaller sizes for the "noise" / fine dust look
-            sizes[i] = Math.random() * 1.0 + 0.5;
+            // Increased sizes so they don't anti-alias into nothingness
+            sizes[i] = Math.random() * 1.5 + 1.2;
         }
 
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -117,7 +118,7 @@
         const texture = new THREE.CanvasTexture(canvasSprite);
 
         starsMaterial = new THREE.PointsMaterial({
-            size: 1.5, // Much smaller base size
+            size: 2.5, // Increased base size
             map: texture,
             transparent: true,
             opacity: 1,
