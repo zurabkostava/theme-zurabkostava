@@ -648,6 +648,10 @@ function zk_cinematic_gallery() {
                     'alt'              => esc_attr( $alt_text ),
                     'sizes'            => '(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw'
             );
+            
+            if ( current_user_can('administrator') ) {
+                $img_attributes['data-views'] = (int) get_post_meta( $image_id, 'zk_photo_views', true );
+            }
 
             if ( $i < 6 ) {
                 $img_attributes['loading']       = 'eager';
@@ -723,6 +727,10 @@ function zk_cinematic_gallery() {
                             'decoding'         => 'async',
                             'sizes'            => '1vw' // Minimize browser effort
                     );
+                    
+                    if ( current_user_can('administrator') ) {
+                        $c_img_attributes['data-views'] = (int) get_post_meta( $c_att, 'zk_photo_views', true );
+                    }
 
                     $c_img_html = wp_get_attachment_image( $c_att, 'thumbnail', false, $c_img_attributes );
 
@@ -761,6 +769,10 @@ function zk_cinematic_gallery() {
                     'alt'              => esc_attr( $alt_text ),
                     'sizes'            => '(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw'
             );
+            
+            if ( current_user_can('administrator') ) {
+                $img_attributes['data-views'] = (int) get_post_meta( $image_id, 'zk_photo_views', true );
+            }
 
             if ( $i < 6 ) {
                 $img_attributes['loading']       = 'eager';

@@ -1071,7 +1071,12 @@
                 if (token !== swapToken) return; // a newer swap superseded this one
                 lbImg.src = full;
                 lbImg.alt = img.alt || '';
-                lbExif.textContent = exif;
+                var finalExif = exif;
+                var views = img.getAttribute('data-views');
+                if (views !== null) {
+                    finalExif += (finalExif ? ' • ' : '') + '👁 ' + views;
+                }
+                lbExif.textContent = finalExif;
                 if (lbTitle) {
                     var titleHtml = '';
                     if (title) titleHtml += '<div class="zk-lightbox-col-title">' + title + '</div>';
@@ -1086,16 +1091,12 @@
                 if (!window.zkIsAdmin) {
                     var attId = img.getAttribute('data-id');
                     if (attId) {
-                        window.zkViewedPhotos = window.zkViewedPhotos || new Set();
-                        if (!window.zkViewedPhotos.has(attId)) {
-                            window.zkViewedPhotos.add(attId);
-                            var apiRoute = (window.ZK && window.ZK.home ? window.ZK.home.replace(/\/$/, '') : '') + '/wp-json/zk/v1/photo-view';
-                            fetch(apiRoute, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ id: attId })
-                            }).catch(function(e) {});
-                        }
+                        var apiRoute = (window.ZK && window.ZK.home ? window.ZK.home.replace(/\/$/, '') : '') + '/wp-json/zk/v1/photo-view';
+                        fetch(apiRoute, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: attId })
+                        }).catch(function(e) {});
                     }
                 }
 
