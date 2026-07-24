@@ -1623,6 +1623,7 @@
         }
         
         let giant = Math.random() < 0.015 && !isMorningStar; // 1.5% chance to be a giant shining star
+        let mediumGiant = Math.random() < 0.030 && !giant && !isMorningStar; // 3% chance to be a medium giant
         
         let sx, sy;
         let zSpawn = resetZ ? (width * 3) : Math.random() * (width * 3);
@@ -1754,9 +1755,10 @@
             y: sy,
             z: zSpawn,
             pz: 0,
-            color: isMorningStar ? `rgba(${glowColor}, 1)` : (giant ? 'rgba(255, 255, 255, 1)' : randomStarColor()),
+            color: isMorningStar ? `rgba(${glowColor}, 1)` : ((giant || mediumGiant) ? 'rgba(255, 255, 255, 1)' : randomStarColor()),
             speedFactor: isMorningStar ? 1.0 : (Math.random() * 0.8 + 0.6),
             isGiant: giant,
+            isMediumGiant: mediumGiant,
             isMorningStar: isMorningStar,
             morningScale: mScale,
             morningType: mType,
@@ -1817,6 +1819,10 @@
                     r *= 2.5;
                     ctx.shadowBlur = 15;
                     ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+                } else if (s.isMediumGiant) {
+                    r *= 1.6;
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
                 } else {
                     ctx.shadowBlur = 0;
                 }
