@@ -29,8 +29,8 @@
         // Lower fog density so more stars are visible in the distance before fading to black
         scene.fog = new THREE.FogExp2(0x000000, 0.0002);
 
-        // Camera - huge far plane
-        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 15000);
+        // Camera - huge far plane so large tilted objects don't clip
+        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 25000);
         camera.position.z = 1000;
 
         renderer = new THREE.WebGLRenderer({ canvas: container, alpha: true, antialias: true });
