@@ -9,7 +9,6 @@
     let scene, camera, renderer;
     let starSystem, starSystem2, starsMaterial;
     let heroSystem, heroSystem2, heroMaterial;
-    let cloudSystem, cloudSystem2, cloudMaterial;
     let galaxyMesh;
     let animationFrameId;
     let isRunning = false;
@@ -217,60 +216,36 @@
         scene.add(heroSystem);
         scene.add(heroSystem2);
 
-        // 🌫️ NEW: Dark Nebulas (Cosmic Dust Clouds)
-        const cloudCount = 800; // Few but massive
-        const cloudGeometry = new THREE.BufferGeometry();
-        const cloudPositions = new Float32Array(cloudCount * 3);
-
-        for (let i = 0; i < cloudCount; i++) {
-            // Wide spread to cover the whole space randomly
-            cloudPositions[i * 3] = THREE.MathUtils.randFloatSpread(12000);
-            cloudPositions[i * 3 + 1] = THREE.MathUtils.randFloatSpread(8000);
-            cloudPositions[i * 3 + 2] = THREE.MathUtils.randFloatSpread(15000);
-        }
-
-        cloudGeometry.setAttribute('position', new THREE.BufferAttribute(cloudPositions, 3));
-
-        // Dark smoke texture
-        const smokeCanvas = document.createElement('canvas');
-        smokeCanvas.width = 128;
-        smokeCanvas.height = 128;
-        const smokeCtx = smokeCanvas.getContext('2d');
-        const scx = 64, scy = 64;
-        
-        const smokeGlow = smokeCtx.createRadialGradient(scx, scy, 0, scx, scy, 64);
-        // Very dark blue/black, semi-transparent
-        smokeGlow.addColorStop(0, 'rgba(5, 5, 10, 0.5)'); 
-        smokeGlow.addColorStop(0.5, 'rgba(5, 5, 10, 0.2)');
-        smokeGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        smokeCtx.fillStyle = smokeGlow;
-        smokeCtx.fillRect(0, 0, 128, 128);
-        const smokeTexture = new THREE.CanvasTexture(smokeCanvas);
-
-        cloudMaterial = new THREE.PointsMaterial({
-            size: 2000, // Massive clouds
-            map: smokeTexture,
-            transparent: true,
-            opacity: 0.7,
-            depthWrite: false,
-            blending: THREE.NormalBlending // Normal blending allows darkening objects behind it
-        });
-
-        cloudSystem = new THREE.Points(cloudGeometry, cloudMaterial);
-        cloudSystem.position.z = -6500;
-        
-        cloudSystem2 = new THREE.Points(cloudGeometry, cloudMaterial);
-        cloudSystem2.position.z = -21500;
-
-        scene.add(cloudSystem);
-        scene.add(cloudSystem2);
-
         // 🌌 NEW: Distant Galaxy Background
         const galaxyTexture = new THREE.TextureLoader().load('https://zurabkostava.com/wp-content/uploads/2026/07/Galaxy.webp');
+        
+        // Create radial alpha map for the galaxy to fade edges and keep center bright
+        const alphaCanvas = document.createElement('canvas');
+        alphaCanvas.width = 512;
+        alphaCanvas.height = 512;
+        const actx = alphaCanvas.getContext('2d');
+        
+        // Fill background with black (fully transparent in alpha map)
+        actx.fillStyle = 'black';
+        actx.fillRect(0, 0, 512, 512);
+        
+        // Draw radial white gradient (white = opaque)
+        const agrad = actx.createRadialGradient(256, 256, 0, 256, 256, 256);
+        agrad.addColorStop(0, 'rgba(255, 255, 255, 1)');     // Center bright
+        agrad.addColorStop(0.2, 'rgba(255, 255, 255, 0.9)'); 
+        agrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)'); // Fast fade
+        agrad.addColorStop(1, 'rgba(0, 0, 0, 1)');           // Edges invisible
+        
+        actx.fillStyle = agrad;
+        actx.fillRect(0, 0, 512, 512);
+        
+        const alphaTexture = new THREE.CanvasTexture(alphaCanvas);
+
         const galaxyMaterial = new THREE.MeshBasicMaterial({
             map: galaxyTexture,
+            alphaMap: alphaTexture,
             transparent: true,
-            opacity: 0.85,
+            opacity: 0.5, // Reduced overall opacity
             depthWrite: false,
             blending: THREE.AdditiveBlending,
             fog: false // Prevent the 3D fog from turning the distant galaxy black
@@ -337,8 +312,6 @@
         starSystem2.position.z += speed;
         heroSystem.position.z += speed;
         heroSystem2.position.z += speed;
-        cloudSystem.position.z += speed;
-        cloudSystem2.position.z += speed;
         
         // Snap back when they pass the camera
         if (starSystem.position.z > 8500) {
@@ -352,12 +325,6 @@
         }
         if (heroSystem2.position.z > 8500) {
             heroSystem2.position.z -= 30000;
-        }
-        if (cloudSystem.position.z > 8500) {
-            cloudSystem.position.z -= 30000;
-        }
-        if (cloudSystem2.position.z > 8500) {
-            cloudSystem2.position.z -= 30000;
         }
 
         // Animate the distant galaxy
