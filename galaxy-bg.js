@@ -273,9 +273,9 @@
         glowCanvas.height = 512;
         const gctx = glowCanvas.getContext('2d');
         const ggrad = gctx.createRadialGradient(256, 256, 0, 256, 256, 256);
-        // Soft cosmic blue/white glow
-        ggrad.addColorStop(0, 'rgba(150, 200, 255, 0.5)'); 
-        ggrad.addColorStop(0.3, 'rgba(100, 150, 255, 0.2)');
+        // Subtle deep cosmic purple/blue glow (#221f5c -> rgba(34, 31, 92))
+        ggrad.addColorStop(0, 'rgba(34, 31, 92, 0.6)'); 
+        ggrad.addColorStop(0.4, 'rgba(34, 31, 92, 0.15)');
         ggrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         
         gctx.fillStyle = ggrad;
@@ -290,8 +290,8 @@
             fog: false
         });
         
-        // Make the glow significantly larger than the galaxy itself
-        const glowGeometry = new THREE.PlaneGeometry(24000, 24000);
+        // Make the glow just slightly larger than the galaxy itself
+        const glowGeometry = new THREE.PlaneGeometry(18000, 18000);
         galaxyGlowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
         
         // Match galaxy position and rotation, but place slightly behind
