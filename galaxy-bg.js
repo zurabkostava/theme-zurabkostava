@@ -10,6 +10,7 @@
     let starSystem, starSystem2, starsMaterial;
     let heroSystem, heroSystem2, heroMaterial;
     let galaxyMesh, galaxyGlowMesh, galaxyCoreMesh;
+    let warpLinesSystem, warpLineMaterial;
     let animationFrameId;
     let isRunning = false;
     let timeMultiplier = 1; // Global speed multiplier from slider
@@ -336,6 +337,44 @@
         galaxyCoreMesh.renderOrder = -1;
         scene.add(galaxyCoreMesh);
 
+        // 🚀 Warp Speed Lines (Edges)
+        const warpLineCount = 3000;
+        const warpGeometry = new THREE.BufferGeometry();
+        const warpPositions = new Float32Array(warpLineCount * 2 * 3); // 2 vertices per line
+
+        for (let i = 0; i < warpLineCount; i++) {
+            // Distribute primarily towards the edges to create a tunneling effect
+            const r = 2000 + Math.random() * 8000; 
+            const theta = Math.random() * Math.PI * 2;
+            const x = r * Math.cos(theta);
+            const y = r * Math.sin(theta);
+            const z = -Math.random() * 15000;
+            
+            const length = 500 + Math.random() * 3500;
+
+            // Start vertex
+            warpPositions[i * 6] = x;
+            warpPositions[i * 6 + 1] = y;
+            warpPositions[i * 6 + 2] = z;
+            // End vertex (stretched back)
+            warpPositions[i * 6 + 3] = x;
+            warpPositions[i * 6 + 4] = y;
+            warpPositions[i * 6 + 5] = z - length;
+        }
+
+        warpGeometry.setAttribute('position', new THREE.BufferAttribute(warpPositions, 3));
+        
+        warpLineMaterial = new THREE.LineBasicMaterial({
+            color: 0xa1c4ff, // Soft cosmic blue
+            transparent: true,
+            opacity: 0, // Hidden by default
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        
+        warpLinesSystem = new THREE.LineSegments(warpGeometry, warpLineMaterial);
+        scene.add(warpLinesSystem);
+
         // Connect the time slider if it exists
         const slider = document.getElementById('zk-speed-slider');
         const speedValueDisplay = document.getElementById('zk-speed-value');
@@ -423,14 +462,31 @@
             heroSystem.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
             heroSystem2.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
             
-            // Warp Speed Visual Effects (Camera Shake)
-            if (timeMultiplier > 10) {
+            // Warp Speed Visual Effects (Camera Shake & Speed Lines)
+            if (timeMultiplier > 5) {
+                // Shake
                 const shake = Math.min(3, timeMultiplier / 50);
                 camera.position.x = (Math.random() - 0.5) * shake;
                 camera.position.y = (Math.random() - 0.5) * shake;
+                
+                // Fade in Warp Lines
+                const targetOpacity = Math.min(0.8, (timeMultiplier - 5) / 100);
+                warpLineMaterial.opacity += (targetOpacity - warpLineMaterial.opacity) * 0.1;
+                
+                // Animate Warp Lines very fast
+                warpLinesSystem.position.z += 100 * (timeMultiplier / 10);
+                if (warpLinesSystem.position.z > 15000) warpLinesSystem.position.z -= 15000;
+                
             } else {
+                // Stabilize camera
                 camera.position.x += (0 - camera.position.x) * 0.1;
                 camera.position.y += (0 - camera.position.y) * 0.1;
+                
+                // Fade out Warp Lines
+                warpLineMaterial.opacity += (0 - warpLineMaterial.opacity) * 0.1;
+                // Keep moving them slightly while fading
+                warpLinesSystem.position.z += speed * 5;
+                if (warpLinesSystem.position.z > 15000) warpLinesSystem.position.z -= 15000;
             }
         }
 
