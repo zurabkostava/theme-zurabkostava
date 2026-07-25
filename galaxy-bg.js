@@ -9,7 +9,8 @@
     let scene, camera, renderer;
     let starSystem, starSystem2, starsMaterial;
     let heroSystem, heroSystem2, heroMaterial;
-    let galaxyGroup;
+    let cloudSystem, cloudSystem2, cloudMaterial;
+    let galaxyMesh;
     let animationFrameId;
     let isRunning = false;
     let timeMultiplier = 1; // Global speed multiplier from slider
@@ -216,46 +217,80 @@
         scene.add(heroSystem);
         scene.add(heroSystem2);
 
-        // 🌌 NEW: Volumetric Parallax Galaxy (Card Stack Technique)
-        const galaxyTexture = new THREE.TextureLoader().load('https://zurabkostava.com/wp-content/uploads/2026/07/Galaxy.webp');
-        const galaxyGeometry = new THREE.PlaneGeometry(15000, 15000);
-        
-        galaxyGroup = new THREE.Group();
-        
-        // Create 5 layers to simulate 3D volume
-        const layers = 5;
-        for (let i = 0; i < layers; i++) {
-            const mat = new THREE.MeshBasicMaterial({
-                map: galaxyTexture,
-                transparent: true,
-                // Center layer is the brightest core, outer layers are faint dust
-                opacity: (i === 2) ? 0.7 : 0.25, 
-                depthWrite: false,
-                blending: THREE.AdditiveBlending,
-                fog: false 
-            });
-            const mesh = new THREE.Mesh(galaxyGeometry, mat);
-            
-            // Offset each layer in Z space to create depth
-            mesh.position.z = (i - 2) * 800; // Spaced 800 units apart in local Z
-            
-            // Scale outer layers slightly down so the edges look softer and spherical
-            const scale = 1 - Math.abs(i - 2) * 0.15; 
-            mesh.scale.set(scale, scale, 1);
-            
-            galaxyGroup.add(mesh);
+        // 🌫️ NEW: Dark Nebulas (Cosmic Dust Clouds)
+        const cloudCount = 800; // Few but massive
+        const cloudGeometry = new THREE.BufferGeometry();
+        const cloudPositions = new Float32Array(cloudCount * 3);
+
+        for (let i = 0; i < cloudCount; i++) {
+            // Wide spread to cover the whole space randomly
+            cloudPositions[i * 3] = THREE.MathUtils.randFloatSpread(12000);
+            cloudPositions[i * 3 + 1] = THREE.MathUtils.randFloatSpread(8000);
+            cloudPositions[i * 3 + 2] = THREE.MathUtils.randFloatSpread(15000);
         }
 
-        // Position the entire group far away in the top-right
-        galaxyGroup.position.set(7000, 4500, -14000);
+        cloudGeometry.setAttribute('position', new THREE.BufferAttribute(cloudPositions, 3));
+
+        // Dark smoke texture
+        const smokeCanvas = document.createElement('canvas');
+        smokeCanvas.width = 128;
+        smokeCanvas.height = 128;
+        const smokeCtx = smokeCanvas.getContext('2d');
+        const scx = 64, scy = 64;
         
-        // Tilt the entire 3D volume
-        galaxyGroup.rotation.x = Math.PI / 12;
-        galaxyGroup.rotation.y = Math.PI / 12;
-        galaxyGroup.rotation.z = -Math.PI / 6;
+        const smokeGlow = smokeCtx.createRadialGradient(scx, scy, 0, scx, scy, 64);
+        // Very dark blue/black, semi-transparent
+        smokeGlow.addColorStop(0, 'rgba(5, 5, 10, 0.5)'); 
+        smokeGlow.addColorStop(0.5, 'rgba(5, 5, 10, 0.2)');
+        smokeGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        smokeCtx.fillStyle = smokeGlow;
+        smokeCtx.fillRect(0, 0, 128, 128);
+        const smokeTexture = new THREE.CanvasTexture(smokeCanvas);
+
+        cloudMaterial = new THREE.PointsMaterial({
+            size: 2000, // Massive clouds
+            map: smokeTexture,
+            transparent: true,
+            opacity: 0.7,
+            depthWrite: false,
+            blending: THREE.NormalBlending // Normal blending allows darkening objects behind it
+        });
+
+        cloudSystem = new THREE.Points(cloudGeometry, cloudMaterial);
+        cloudSystem.position.z = -6500;
         
-        galaxyGroup.renderOrder = -1;
-        scene.add(galaxyGroup);
+        cloudSystem2 = new THREE.Points(cloudGeometry, cloudMaterial);
+        cloudSystem2.position.z = -21500;
+
+        scene.add(cloudSystem);
+        scene.add(cloudSystem2);
+
+        // 🌌 NEW: Distant Galaxy Background
+        const galaxyTexture = new THREE.TextureLoader().load('https://zurabkostava.com/wp-content/uploads/2026/07/Galaxy.webp');
+        const galaxyMaterial = new THREE.MeshBasicMaterial({
+            map: galaxyTexture,
+            transparent: true,
+            opacity: 0.85,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+            fog: false // Prevent the 3D fog from turning the distant galaxy black
+        });
+        
+        // Make it massive since it's very far away
+        const galaxyGeometry = new THREE.PlaneGeometry(15000, 15000);
+        galaxyMesh = new THREE.Mesh(galaxyGeometry, galaxyMaterial);
+        
+        // Position it far away (z=-14000) and truly in the top-right corner
+        // At z=-14000, the view is enormous, so X and Y need to be huge to be off-center
+        galaxyMesh.position.set(7000, 4500, -14000);
+        // Tilt it slightly for a more natural angle
+        galaxyMesh.rotation.z = -Math.PI / 6;
+        galaxyMesh.rotation.y = Math.PI / 12; // Slight 3D tilt
+        galaxyMesh.rotation.x = Math.PI / 12;
+        
+        // Ensure it renders behind all stars
+        galaxyMesh.renderOrder = -1;
+        scene.add(galaxyMesh);
 
         // Connect the time slider if it exists
         const slider = document.getElementById('zk-speed-slider');
@@ -302,6 +337,8 @@
         starSystem2.position.z += speed;
         heroSystem.position.z += speed;
         heroSystem2.position.z += speed;
+        cloudSystem.position.z += speed;
+        cloudSystem2.position.z += speed;
         
         // Snap back when they pass the camera
         if (starSystem.position.z > 8500) {
@@ -316,14 +353,18 @@
         if (heroSystem2.position.z > 8500) {
             heroSystem2.position.z -= 30000;
         }
+        if (cloudSystem.position.z > 8500) {
+            cloudSystem.position.z -= 30000;
+        }
+        if (cloudSystem2.position.z > 8500) {
+            cloudSystem2.position.z -= 30000;
+        }
 
         // Animate the distant galaxy
-        if (galaxyGroup) {
+        if (galaxyMesh) {
             // Speed = 0.05 units per frame. 
             // At 60fps = 3 units/sec. To travel 14000 units takes ~77 minutes.
-            galaxyGroup.position.z += 0.05 * timeMultiplier;
-            // Extremely slow rotation to give it life
-            galaxyGroup.rotation.z += 0.00005 * timeMultiplier;
+            galaxyMesh.position.z += 0.05 * timeMultiplier;
         }
 
         renderer.render(scene, camera);
