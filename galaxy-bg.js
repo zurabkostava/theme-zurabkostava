@@ -423,11 +423,7 @@
             heroSystem.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
             heroSystem2.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
             
-            // Warp Speed Visual Effects (FOV stretching & Camera Shake)
-            const targetFov = 60 + Math.min(70, (timeMultiplier - 1) * 0.15);
-            camera.fov += (targetFov - camera.fov) * 0.1; // Smooth interpolation
-            camera.updateProjectionMatrix();
-            
+            // Warp Speed Visual Effects (Camera Shake)
             if (timeMultiplier > 10) {
                 const shake = Math.min(3, timeMultiplier / 50);
                 camera.position.x = (Math.random() - 0.5) * shake;
