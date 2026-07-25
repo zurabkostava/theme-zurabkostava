@@ -10,7 +10,7 @@
     let starSystem, starSystem2, starsMaterial;
     let heroSystem, heroSystem2, heroMaterial;
     let galaxyMesh, galaxyGlowMesh, galaxyCoreMesh;
-    let warpLinesSystem, warpLineMaterial;
+    let warpSystem, warpMaterial;
     let animationFrameId;
     let isRunning = false;
     let timeMultiplier = 1; // Global speed multiplier from slider
@@ -217,6 +217,45 @@
         scene.add(heroSystem);
         scene.add(heroSystem2);
 
+        // 🌠 Warp Lines (Star Trails) for High Speed
+        const warpCount = 3000;
+        const warpGeometry = new THREE.BufferGeometry();
+        const warpPositions = new Float32Array(warpCount * 6); // 2 vertices per line (start and end)
+        
+        for (let i = 0; i < warpCount; i++) {
+            let x = THREE.MathUtils.randFloatSpread(10000);
+            let y = THREE.MathUtils.randFloatSpread(6000);
+            
+            // Push away from the exact center to create a "tunnel" effect (visible mostly at edges)
+            if (Math.abs(x) < 1500 && Math.abs(y) < 1000) {
+                x += Math.sign(x) * 1500;
+                y += Math.sign(y) * 1000;
+            }
+            
+            const z = THREE.MathUtils.randFloatSpread(15000);
+            
+            warpPositions[i * 6] = x;
+            warpPositions[i * 6 + 1] = y;
+            warpPositions[i * 6 + 2] = z;
+            warpPositions[i * 6 + 3] = x;
+            warpPositions[i * 6 + 4] = y;
+            warpPositions[i * 6 + 5] = z - 2000; // Massive stretch for high speed
+        }
+        
+        warpGeometry.setAttribute('position', new THREE.BufferAttribute(warpPositions, 3));
+        
+        warpMaterial = new THREE.LineBasicMaterial({
+            color: 0xa1c4ff, // Light cosmic blue
+            transparent: true,
+            opacity: 0, // Invisible by default
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        
+        warpSystem = new THREE.LineSegments(warpGeometry, warpMaterial);
+        warpSystem.position.z = -5000;
+        scene.add(warpSystem);
+
         // 🌌 NEW: Distant Galaxy Background
         const galaxyTexture = new THREE.TextureLoader().load('https://zurabkostava.com/wp-content/uploads/2026/07/Galaxy.webp');
         
@@ -337,44 +376,6 @@
         galaxyCoreMesh.renderOrder = -1;
         scene.add(galaxyCoreMesh);
 
-        // 🚀 Warp Speed Lines (Edges)
-        const warpLineCount = 3000;
-        const warpGeometry = new THREE.BufferGeometry();
-        const warpPositions = new Float32Array(warpLineCount * 2 * 3); // 2 vertices per line
-
-        for (let i = 0; i < warpLineCount; i++) {
-            // Distribute primarily towards the edges to create a tunneling effect
-            const r = 2000 + Math.random() * 8000; 
-            const theta = Math.random() * Math.PI * 2;
-            const x = r * Math.cos(theta);
-            const y = r * Math.sin(theta);
-            const z = -Math.random() * 15000;
-            
-            const length = 500 + Math.random() * 3500;
-
-            // Start vertex
-            warpPositions[i * 6] = x;
-            warpPositions[i * 6 + 1] = y;
-            warpPositions[i * 6 + 2] = z;
-            // End vertex (stretched back)
-            warpPositions[i * 6 + 3] = x;
-            warpPositions[i * 6 + 4] = y;
-            warpPositions[i * 6 + 5] = z - length;
-        }
-
-        warpGeometry.setAttribute('position', new THREE.BufferAttribute(warpPositions, 3));
-        
-        warpLineMaterial = new THREE.LineBasicMaterial({
-            color: 0xa1c4ff, // Soft cosmic blue
-            transparent: true,
-            opacity: 0, // Hidden by default
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
-        });
-        
-        warpLinesSystem = new THREE.LineSegments(warpGeometry, warpLineMaterial);
-        scene.add(warpLinesSystem);
-
         // Connect the time slider if it exists
         const slider = document.getElementById('zk-speed-slider');
         const speedValueDisplay = document.getElementById('zk-speed-value');
@@ -462,31 +463,25 @@
             heroSystem.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
             heroSystem2.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
             
-            // Warp Speed Visual Effects (Camera Shake & Speed Lines)
-            if (timeMultiplier > 5) {
-                // Shake
+            // Warp Speed Visual Effects (Camera Shake)
+            if (timeMultiplier > 10) {
                 const shake = Math.min(3, timeMultiplier / 50);
                 camera.position.x = (Math.random() - 0.5) * shake;
                 camera.position.y = (Math.random() - 0.5) * shake;
-                
-                // Fade in Warp Lines
-                const targetOpacity = Math.min(0.8, (timeMultiplier - 5) / 100);
-                warpLineMaterial.opacity += (targetOpacity - warpLineMaterial.opacity) * 0.1;
-                
-                // Animate Warp Lines very fast
-                warpLinesSystem.position.z += 100 * (timeMultiplier / 10);
-                if (warpLinesSystem.position.z > 15000) warpLinesSystem.position.z -= 15000;
-                
             } else {
-                // Stabilize camera
                 camera.position.x += (0 - camera.position.x) * 0.1;
                 camera.position.y += (0 - camera.position.y) * 0.1;
+            }
+            
+            // Warp Lines Motion
+            if (warpSystem) {
+                const targetOpacity = timeMultiplier > 5 ? Math.min(0.6, (timeMultiplier) / 300) : 0;
+                warpMaterial.opacity += (targetOpacity - warpMaterial.opacity) * 0.1;
                 
-                // Fade out Warp Lines
-                warpLineMaterial.opacity += (0 - warpLineMaterial.opacity) * 0.1;
-                // Keep moving them slightly while fading
-                warpLinesSystem.position.z += speed * 5;
-                if (warpLinesSystem.position.z > 15000) warpLinesSystem.position.z -= 15000;
+                warpSystem.position.z += speed * 2.5; // Lines move even faster than stars
+                if (warpSystem.position.z > 8000) {
+                    warpSystem.position.z -= 15000;
+                }
             }
         }
 
