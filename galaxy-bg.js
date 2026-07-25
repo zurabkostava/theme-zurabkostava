@@ -372,11 +372,15 @@
             planeMat.color.setHex(nebColors[Math.floor(Math.random() * nebColors.length)]);
             
             const plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size), planeMat);
-            // Stretched horizontally to look like a galactic arm or map
+            // Gaussian-like random to avoid hard cube edges
+            const rx = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            const ry = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            const rz = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            
             plane.position.set(
-                (Math.random() - 0.5) * 20000,
-                (Math.random() - 0.5) * 6000,
-                (Math.random() - 0.5) * 4000
+                rx * 20000,
+                ry * 6000,
+                rz * 4000
             );
             plane.rotation.z = Math.random() * Math.PI * 2;
             clusterSystem.add(plane);
@@ -386,10 +390,14 @@
         const nebStarsGeom = new THREE.BufferGeometry();
         const nebStarsPos = new Float32Array(500 * 3);
         for(let i=0; i<500; i++) {
-            // Stretch stars across the new wider nebula
-            nebStarsPos[i*3] = (Math.random() - 0.5) * 25000;
-            nebStarsPos[i*3+1] = (Math.random() - 0.5) * 10000;
-            nebStarsPos[i*3+2] = (Math.random() - 0.5) * 4000;
+            // Gaussian distribution for natural scattering
+            const rx = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            const ry = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            const rz = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            
+            nebStarsPos[i*3] = rx * 25000;
+            nebStarsPos[i*3+1] = ry * 10000;
+            nebStarsPos[i*3+2] = rz * 4000;
         }
         nebStarsGeom.setAttribute('position', new THREE.BufferAttribute(nebStarsPos, 3));
         const nebStarsMat = new THREE.PointsMaterial({
