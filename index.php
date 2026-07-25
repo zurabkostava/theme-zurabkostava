@@ -12,14 +12,14 @@ ob_start(); ?>
     <!-- Ambient Cinematic Background -->
     <div class="hero-ambient">
         <canvas id="zk-galaxy-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%;"></canvas>
-        
-        <!-- Temporary Time Control Slider -->
-        <div id="zk-time-control" style="position: absolute; bottom: 30px; right: 30px; z-index: 9999; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); color: white; font-family: 'Inter', sans-serif; backdrop-filter: blur(10px);">
-            <label for="zk-speed-slider" style="font-size: 14px; font-weight: 500; letter-spacing: 1px;">TIME LAPSE: <span id="zk-speed-value" style="color: #a1c4ff;">1x</span></label><br>
-            <input type="range" id="zk-speed-slider" min="1" max="500" value="1" style="width: 250px; margin-top: 15px; cursor: pointer;">
-        </div>
         <div class="hero-orb hero-orb-1"></div>
         <div class="hero-orb hero-orb-2"></div>
+    </div>
+
+    <!-- Temporary Time Control Slider -->
+    <div id="zk-time-control" style="position: fixed; bottom: 30px; right: 30px; z-index: 999999; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); color: white; font-family: 'Inter', sans-serif; backdrop-filter: blur(10px); pointer-events: auto;">
+        <label for="zk-speed-slider" style="font-size: 14px; font-weight: 500; letter-spacing: 1px;">TIME LAPSE: <span id="zk-speed-value" style="color: #a1c4ff;">1x</span></label><br>
+        <input type="range" id="zk-speed-slider" min="1" max="500" value="1" style="width: 250px; margin-top: 15px; cursor: pointer; pointer-events: auto;">
     </div>
         <!-- Cinematic Phrases Container -->
     <div id="zk-cinematic-phrase-container" class="zk-cinematic-phrase-container"></div>
