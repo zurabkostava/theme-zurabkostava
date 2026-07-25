@@ -308,6 +308,9 @@
             // Speed = 0.05 units per frame. 
             // At 60fps = 3 units/sec. To travel 14000 units takes ~77 minutes.
             galaxyMesh.position.z += 0.05 * timeMultiplier;
+            
+            // Add a very slow rotation for realism
+            galaxyMesh.rotation.z -= 0.0001 * timeMultiplier;
         }
 
         renderer.render(scene, camera);
