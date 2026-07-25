@@ -64,22 +64,17 @@
             new THREE.Color(0xc2d6ff)  // Pale blue
         ];
 
-        // Helper for natural Gaussian distribution (denser in center, no hard edges)
-        const getGaussian = (spread) => {
-            return ((Math.random() + Math.random() + Math.random() + Math.random() - 2) / 2) * spread;
-        };
-
         // Create cluster centers for nebula-like structures and voids
         const numClusters = 250; 
         const clusters = [];
         for (let c = 0; c < numClusters; c++) {
             clusters.push({
-                x: getGaussian(35000), // Massive spread
-                y: getGaussian(25000),
-                z: THREE.MathUtils.randFloatSpread(15000), // Uniform Z for seamless looping
-                radiusX: Math.random() * 2000 + 500, 
-                radiusY: Math.random() * 2000 + 500, 
-                radiusZ: Math.random() * 4000 + 1000 
+                x: THREE.MathUtils.randFloatSpread(4500),
+                y: THREE.MathUtils.randFloatSpread(3000),
+                z: THREE.MathUtils.randFloatSpread(15000),
+                radiusX: Math.random() * 600 + 200, 
+                radiusY: Math.random() * 600 + 200, 
+                radiusZ: Math.random() * 2000 + 500 
             });
         }
 
@@ -97,8 +92,8 @@
                 y = cluster.y + Math.sign(v) * Math.pow(Math.abs(v), 2) * cluster.radiusY;
                 z = cluster.z + Math.sign(w) * Math.pow(Math.abs(w), 2) * cluster.radiusZ;
             } else {
-                x = getGaussian(35000);
-                y = getGaussian(25000);
+                x = THREE.MathUtils.randFloatSpread(4500);
+                y = THREE.MathUtils.randFloatSpread(3000);
                 z = THREE.MathUtils.randFloatSpread(15000);
             }
 
@@ -162,9 +157,9 @@
         const heroSizes = new Float32Array(heroStarCount);
 
         for (let i = 0; i < heroStarCount; i++) {
-            // Wide Gaussian spread for hero stars so they don't form a box
-            heroPositions[i * 3] = getGaussian(35000);
-            heroPositions[i * 3 + 1] = getGaussian(25000);
+            // Uniform spread for hero stars so they don't clump too much
+            heroPositions[i * 3] = THREE.MathUtils.randFloatSpread(4500);
+            heroPositions[i * 3 + 1] = THREE.MathUtils.randFloatSpread(3000);
             heroPositions[i * 3 + 2] = THREE.MathUtils.randFloatSpread(15000);
 
             const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
@@ -500,9 +495,11 @@
         if (isEntering) {
             // Glide forward and smoothly barrel-roll into position
             camera.position.z += (1000 - camera.position.z) * 0.03;
-            camera.rotation.z += (0 - camera.rotation.z) * 0.02;
+            // Make rotation faster so it settles naturally before position finishes
+            camera.rotation.z += (0 - camera.rotation.z) * 0.04;
             
-            if (Math.abs(camera.position.z - 1000) < 5) {
+            // Wait until both are virtually perfect before turning off the animation
+            if (Math.abs(camera.position.z - 1000) < 1 && Math.abs(camera.rotation.z) < 0.005) {
                 camera.position.z = 1000;
                 camera.rotation.z = 0;
                 isEntering = false;
