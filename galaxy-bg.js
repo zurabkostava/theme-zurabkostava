@@ -9,6 +9,7 @@
     let scene, camera, renderer;
     let starSystem, starSystem2, starsMaterial;
     let heroSystem, heroSystem2, heroMaterial;
+    let galaxyMesh;
     let animationFrameId;
     let isRunning = false;
 
@@ -214,6 +215,27 @@
         scene.add(heroSystem);
         scene.add(heroSystem2);
 
+        // 🌌 NEW: Giant Galaxy (1 hour flyby)
+        const textureLoader = new THREE.TextureLoader();
+        textureLoader.load('https://zurabkostava.com/wp-content/uploads/2026/07/Galaxy.webp', (texture) => {
+            const galGeometry = new THREE.PlaneGeometry(8000, 8000);
+            const galMaterial = new THREE.MeshBasicMaterial({
+                map: texture,
+                transparent: true,
+                opacity: 0.8,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending // Glows beautifully against the black background
+            });
+            galaxyMesh = new THREE.Mesh(galGeometry, galMaterial);
+            // Position far away in the top right
+            galaxyMesh.position.set(4000, 2500, -15000);
+            // Tilt for a nice 3D perspective
+            galaxyMesh.rotation.z = Math.PI / 6;
+            galaxyMesh.rotation.x = Math.PI / 8;
+            galaxyMesh.rotation.y = -Math.PI / 8;
+            scene.add(galaxyMesh);
+        });
+
         window.addEventListener('resize', onWindowResize);
 
         if (!isRunning) {
@@ -262,6 +284,25 @@
         }
         if (heroSystem2.position.z > 8500) {
             heroSystem2.position.z -= 30000;
+        }
+
+        // Move the giant galaxy VERY slowly (takes 1 hour to pass by)
+        if (galaxyMesh) {
+            // Distance from -15000 to 1000 is 16000 units.
+            // 1 hour = 3600 seconds = ~216000 frames at 60fps.
+            // 16000 / 216000 = 0.074 units per frame
+            galaxyMesh.position.z += 0.074;
+            
+            // Very slow rotation to make it feel alive
+            galaxyMesh.rotation.z -= 0.00005;
+
+            // Loop back after passing the camera
+            if (galaxyMesh.position.z > 2000) {
+                galaxyMesh.position.z = -15000;
+                // Randomize position slightly for the next flyby
+                galaxyMesh.position.x = 2000 + Math.random() * 4000;
+                galaxyMesh.position.y = 1000 + Math.random() * 3000;
+            }
         }
 
         renderer.render(scene, camera);
