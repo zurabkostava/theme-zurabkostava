@@ -422,6 +422,20 @@
             const heroCount = heroSystem.geometry.attributes.position.count;
             heroSystem.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
             heroSystem2.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
+            
+            // Warp Speed Visual Effects (FOV stretching & Camera Shake)
+            const targetFov = 60 + Math.min(70, (timeMultiplier - 1) * 0.15);
+            camera.fov += (targetFov - camera.fov) * 0.1; // Smooth interpolation
+            camera.updateProjectionMatrix();
+            
+            if (timeMultiplier > 10) {
+                const shake = Math.min(3, timeMultiplier / 50);
+                camera.position.x = (Math.random() - 0.5) * shake;
+                camera.position.y = (Math.random() - 0.5) * shake;
+            } else {
+                camera.position.x += (0 - camera.position.x) * 0.1;
+                camera.position.y += (0 - camera.position.y) * 0.1;
+            }
         }
 
         renderer.render(scene, camera);
