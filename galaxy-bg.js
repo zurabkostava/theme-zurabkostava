@@ -405,6 +405,24 @@
             galaxyMesh.position.z += moveZ;
             if (galaxyGlowMesh) galaxyGlowMesh.position.z += moveZ;
             if (galaxyCoreMesh) galaxyCoreMesh.position.z += moveZ;
+            
+            // Calculate how many stars to draw based on galaxy approach
+            // Starts decreasing at z=-10000, finishes decreasing at z=-4000
+            let starFactor = 1.0;
+            if (galaxyMesh.position.z > -10000) {
+                const progress = (galaxyMesh.position.z - (-10000)) / 6000;
+                const clampedProgress = Math.max(0, Math.min(1, progress));
+                starFactor = 1.0 - (clampedProgress * 0.995); // Drops to 0.5% stars remaining
+            }
+
+            // Apply the factor using setDrawRange (highly performant GPU trick)
+            const baseCount = starSystem.geometry.attributes.position.count;
+            starSystem.geometry.setDrawRange(0, Math.floor(baseCount * starFactor));
+            starSystem2.geometry.setDrawRange(0, Math.floor(baseCount * starFactor));
+            
+            const heroCount = heroSystem.geometry.attributes.position.count;
+            heroSystem.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
+            heroSystem2.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
         }
 
         renderer.render(scene, camera);
