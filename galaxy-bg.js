@@ -9,7 +9,7 @@
     let scene, camera, renderer;
     let starSystem, starSystem2, starsMaterial;
     let heroSystem, heroSystem2, heroMaterial;
-    let galaxyMesh;
+    let galaxyGroup;
     let animationFrameId;
     let isRunning = false;
     let timeMultiplier = 1; // Global speed multiplier from slider
@@ -216,32 +216,46 @@
         scene.add(heroSystem);
         scene.add(heroSystem2);
 
-        // 🌌 NEW: Distant Galaxy Background
+        // 🌌 NEW: Volumetric Parallax Galaxy (Card Stack Technique)
         const galaxyTexture = new THREE.TextureLoader().load('https://zurabkostava.com/wp-content/uploads/2026/07/Galaxy.webp');
-        const galaxyMaterial = new THREE.MeshBasicMaterial({
-            map: galaxyTexture,
-            transparent: true,
-            opacity: 0.85,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending,
-            fog: false // Prevent the 3D fog from turning the distant galaxy black
-        });
-        
-        // Make it massive since it's very far away
         const galaxyGeometry = new THREE.PlaneGeometry(15000, 15000);
-        galaxyMesh = new THREE.Mesh(galaxyGeometry, galaxyMaterial);
         
-        // Position it far away (z=-14000) and truly in the top-right corner
-        // At z=-14000, the view is enormous, so X and Y need to be huge to be off-center
-        galaxyMesh.position.set(7000, 4500, -14000);
-        // Tilt it slightly for a more natural angle
-        galaxyMesh.rotation.z = -Math.PI / 6;
-        galaxyMesh.rotation.y = Math.PI / 12; // Slight 3D tilt
-        galaxyMesh.rotation.x = Math.PI / 12;
+        galaxyGroup = new THREE.Group();
         
-        // Ensure it renders behind all stars
-        galaxyMesh.renderOrder = -1;
-        scene.add(galaxyMesh);
+        // Create 5 layers to simulate 3D volume
+        const layers = 5;
+        for (let i = 0; i < layers; i++) {
+            const mat = new THREE.MeshBasicMaterial({
+                map: galaxyTexture,
+                transparent: true,
+                // Center layer is the brightest core, outer layers are faint dust
+                opacity: (i === 2) ? 0.7 : 0.25, 
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+                fog: false 
+            });
+            const mesh = new THREE.Mesh(galaxyGeometry, mat);
+            
+            // Offset each layer in Z space to create depth
+            mesh.position.z = (i - 2) * 800; // Spaced 800 units apart in local Z
+            
+            // Scale outer layers slightly down so the edges look softer and spherical
+            const scale = 1 - Math.abs(i - 2) * 0.15; 
+            mesh.scale.set(scale, scale, 1);
+            
+            galaxyGroup.add(mesh);
+        }
+
+        // Position the entire group far away in the top-right
+        galaxyGroup.position.set(7000, 4500, -14000);
+        
+        // Tilt the entire 3D volume
+        galaxyGroup.rotation.x = Math.PI / 12;
+        galaxyGroup.rotation.y = Math.PI / 12;
+        galaxyGroup.rotation.z = -Math.PI / 6;
+        
+        galaxyGroup.renderOrder = -1;
+        scene.add(galaxyGroup);
 
         // Connect the time slider if it exists
         const slider = document.getElementById('zk-speed-slider');
@@ -304,13 +318,12 @@
         }
 
         // Animate the distant galaxy
-        if (galaxyMesh) {
+        if (galaxyGroup) {
             // Speed = 0.05 units per frame. 
             // At 60fps = 3 units/sec. To travel 14000 units takes ~77 minutes.
-            galaxyMesh.position.z += 0.05 * timeMultiplier;
-            
-            // Add a very slow rotation for realism
-            galaxyMesh.rotation.z -= 0.0001 * timeMultiplier;
+            galaxyGroup.position.z += 0.05 * timeMultiplier;
+            // Extremely slow rotation to give it life
+            galaxyGroup.rotation.z += 0.00005 * timeMultiplier;
         }
 
         renderer.render(scene, camera);
