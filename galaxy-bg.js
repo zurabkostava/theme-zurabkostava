@@ -10,7 +10,7 @@
     let starSystem, starSystem2, starsMaterial;
     let heroSystem, heroSystem2, heroMaterial;
     let galaxyMesh, galaxyGlowMesh, galaxyCoreMesh;
-    let warpSystem, warpMaterial;
+    let clusterSystem, clusterGlowMesh;
     let animationFrameId;
     let isRunning = false;
     let timeMultiplier = 1; // Global speed multiplier from slider
@@ -217,45 +217,6 @@
         scene.add(heroSystem);
         scene.add(heroSystem2);
 
-        // 🌠 Warp Lines (Star Trails) for High Speed
-        const warpCount = 3000;
-        const warpGeometry = new THREE.BufferGeometry();
-        const warpPositions = new Float32Array(warpCount * 6); // 2 vertices per line (start and end)
-        
-        for (let i = 0; i < warpCount; i++) {
-            let x = THREE.MathUtils.randFloatSpread(10000);
-            let y = THREE.MathUtils.randFloatSpread(6000);
-            
-            // Push away from the exact center to create a "tunnel" effect (visible mostly at edges)
-            if (Math.abs(x) < 1500 && Math.abs(y) < 1000) {
-                x += Math.sign(x) * 1500;
-                y += Math.sign(y) * 1000;
-            }
-            
-            const z = THREE.MathUtils.randFloatSpread(15000);
-            
-            warpPositions[i * 6] = x;
-            warpPositions[i * 6 + 1] = y;
-            warpPositions[i * 6 + 2] = z;
-            warpPositions[i * 6 + 3] = x;
-            warpPositions[i * 6 + 4] = y;
-            warpPositions[i * 6 + 5] = z - 2000; // Massive stretch for high speed
-        }
-        
-        warpGeometry.setAttribute('position', new THREE.BufferAttribute(warpPositions, 3));
-        
-        warpMaterial = new THREE.LineBasicMaterial({
-            color: 0xa1c4ff, // Light cosmic blue
-            transparent: true,
-            opacity: 0, // Invisible by default
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
-        });
-        
-        warpSystem = new THREE.LineSegments(warpGeometry, warpMaterial);
-        warpSystem.position.z = -5000;
-        scene.add(warpSystem);
-
         // 🌌 NEW: Distant Galaxy Background
         const galaxyTexture = new THREE.TextureLoader().load('https://zurabkostava.com/wp-content/uploads/2026/07/Galaxy.webp');
         
@@ -305,6 +266,70 @@
         // Ensure it renders behind all stars
         galaxyMesh.renderOrder = -1;
         scene.add(galaxyMesh);
+
+        // 🌟 NEW: Final Edge Cluster (Bottom-Left)
+        // Positioned at Z=-56000 so it reaches the camera exactly when leaving the old galaxy
+        const clusterStarCount = 40000;
+        const cGeometry = new THREE.BufferGeometry();
+        const cPositions = new Float32Array(clusterStarCount * 3);
+        const cColors = new Float32Array(clusterStarCount * 3);
+        const cSizes = new Float32Array(clusterStarCount);
+        
+        for (let i = 0; i < clusterStarCount; i++) {
+            // Spherical distribution with extreme density in the center
+            const r = 6000 * Math.pow(Math.random(), 3); // Cubed for heavy center bias
+            const theta = Math.random() * 2 * Math.PI;
+            const phi = Math.acos(2 * Math.random() - 1);
+            
+            cPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+            cPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+            cPositions[i * 3 + 2] = r * Math.cos(phi);
+            
+            // Warm fiery colors for the cluster
+            const color = new THREE.Color();
+            color.setHSL(Math.random() * 0.1 + 0.02, 0.9, Math.random() * 0.5 + 0.4); 
+            
+            cColors[i * 3] = color.r;
+            cColors[i * 3 + 1] = color.g;
+            cColors[i * 3 + 2] = color.b;
+            
+            cSizes[i] = Math.random() * 2.0 + 0.5;
+        }
+        cGeometry.setAttribute('position', new THREE.BufferAttribute(cPositions, 3));
+        cGeometry.setAttribute('color', new THREE.BufferAttribute(cColors, 3));
+        cGeometry.setAttribute('size', new THREE.BufferAttribute(cSizes, 1));
+        
+        clusterSystem = new THREE.Points(cGeometry, starsMaterial); 
+        clusterSystem.position.set(-18000, -10000, -56000);
+        scene.add(clusterSystem);
+
+        // Cluster Nebula Glow
+        const cGlowCanvas = document.createElement('canvas');
+        cGlowCanvas.width = 512;
+        cGlowCanvas.height = 512;
+        const cGlowCtx = cGlowCanvas.getContext('2d');
+        const cGlowGrad = cGlowCtx.createRadialGradient(256, 256, 0, 256, 256, 256);
+        cGlowGrad.addColorStop(0, 'rgba(180, 50, 10, 0.4)'); // Deep warm fiery nebula
+        cGlowGrad.addColorStop(0.5, 'rgba(80, 15, 5, 0.1)');
+        cGlowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        
+        cGlowCtx.fillStyle = cGlowGrad;
+        cGlowCtx.fillRect(0, 0, 512, 512);
+        
+        const cGlowTexture = new THREE.CanvasTexture(cGlowCanvas);
+        const cGlowMaterial = new THREE.MeshBasicMaterial({
+            map: cGlowTexture,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            fog: false
+        });
+        
+        clusterGlowMesh = new THREE.Mesh(new THREE.PlaneGeometry(25000, 25000), cGlowMaterial);
+        clusterGlowMesh.position.copy(clusterSystem.position);
+        clusterGlowMesh.position.z -= 200;
+        clusterGlowMesh.renderOrder = -3; // Behind cluster stars
+        scene.add(clusterGlowMesh);
 
         // 🌌 Galaxy Glow (Volumetric Light Effect)
         const glowCanvas = document.createElement('canvas');
@@ -421,6 +446,8 @@
         starSystem2.position.z += speed;
         heroSystem.position.z += speed;
         heroSystem2.position.z += speed;
+        if (clusterSystem) clusterSystem.position.z += speed;
+        if (clusterGlowMesh) clusterGlowMesh.position.z += speed;
         
         // Snap back when they pass the camera
         if (starSystem.position.z > 8500) {
@@ -471,17 +498,6 @@
             } else {
                 camera.position.x += (0 - camera.position.x) * 0.1;
                 camera.position.y += (0 - camera.position.y) * 0.1;
-            }
-            
-            // Warp Lines Motion
-            if (warpSystem) {
-                const targetOpacity = timeMultiplier > 5 ? Math.min(0.6, (timeMultiplier) / 300) : 0;
-                warpMaterial.opacity += (targetOpacity - warpMaterial.opacity) * 0.1;
-                
-                warpSystem.position.z += speed * 2.5; // Lines move even faster than stars
-                if (warpSystem.position.z > 8000) {
-                    warpSystem.position.z -= 15000;
-                }
             }
         }
 
