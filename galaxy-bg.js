@@ -338,48 +338,53 @@
         scene.add(galaxyCoreMesh);
 
         // 🎇 NEW: Massive Boundary Cluster (Bottom-Left)
-        const clusterCount = 150000; // Increased star count
+        const clusterCount = 100000; 
         const clusterGeom = new THREE.BufferGeometry();
         const clusterPos = new Float32Array(clusterCount * 3);
         const clusterCol = new Float32Array(clusterCount * 3);
         
         for (let i=0; i<clusterCount; i++) {
-            // Cubic distribution for extremely dense core and sparse edges
-            const rx = (Math.random() - 0.5) * 2; // [-1, 1]
-            const ry = (Math.random() - 0.5) * 2;
-            const rz = (Math.random() - 0.5) * 2;
+            // Proper spherical Gaussian-like distribution
+            const u = Math.random();
+            const v = Math.random();
+            const theta = 2 * Math.PI * u;
+            const phi = Math.acos(2 * v - 1);
             
-            const x = rx * rx * rx * 12000;
-            const y = ry * ry * ry * 8000;
-            const z = rz * rz * rz * 15000; 
+            // Concentrated in the center, tapering off
+            const r = Math.random() * Math.random() * 6000; 
+            
+            // Slightly elliptical/flattened
+            const x = r * Math.sin(phi) * Math.cos(theta) * 1.5;
+            const y = r * Math.sin(phi) * Math.sin(theta) * 0.8;
+            const z = r * Math.cos(phi);
             
             clusterPos[i*3] = x;
             clusterPos[i*3+1] = y;
             clusterPos[i*3+2] = z;
             
             const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-            clusterCol[i*3] = color.r * 1.5; // Extra bright
-            clusterCol[i*3+1] = color.g * 1.5;
-            clusterCol[i*3+2] = color.b * 1.5;
+            clusterCol[i*3] = color.r; 
+            clusterCol[i*3+1] = color.g;
+            clusterCol[i*3+2] = color.b;
         }
         clusterGeom.setAttribute('position', new THREE.BufferAttribute(clusterPos, 3));
         clusterGeom.setAttribute('color', new THREE.BufferAttribute(clusterCol, 3));
         
-        // Custom material to disable fog so it's visible from -30000 distance
+        // Custom material to disable fog so it's visible from afar
         const clusterMaterial = new THREE.PointsMaterial({
-            size: 2.5, // Larger stars for the cluster
+            size: 1.0, // Small natural stars
             transparent: true,
-            opacity: 1.0,
+            opacity: 0.6, // Soft look
             vertexColors: true,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
-            fog: false // Crucial!
+            fog: false
         });
         
         clusterSystem = new THREE.Points(clusterGeom, clusterMaterial);
         
-        // Position it very far away in the extreme bottom left
-        clusterSystem.position.set(-14000, -8000, -30000);
+        // Position it far away in the bottom left
+        clusterSystem.position.set(-10000, -6000, -30000);
         // Tilt it slightly
         clusterSystem.rotation.z = Math.PI / 8;
         
