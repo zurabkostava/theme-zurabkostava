@@ -566,6 +566,10 @@
         // Screensaver Logic
         const screensaverBtn = document.getElementById('zk-screensaver-btn');
         if (screensaverBtn) {
+            // Apply transition class to all elements we want to fade out
+            const elementsToHide = document.querySelectorAll('.site-header, .site-footer, .hero-inner, .hero-latest-dock, .zk-welcome-music-container, #zk-cinematic-phrase-container, #zk-time-control');
+            elementsToHide.forEach(el => el.classList.add('screensaver-element'));
+            
             screensaverBtn.addEventListener('click', () => {
                 document.body.classList.toggle('screensaver-mode');
                 const isScreensaver = document.body.classList.contains('screensaver-mode');
