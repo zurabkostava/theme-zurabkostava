@@ -30,8 +30,8 @@
         // Lower fog density so more stars are visible in the distance before fading to black
         scene.fog = new THREE.FogExp2(0x000000, 0.0002);
 
-        // Camera - huge far plane so large tilted objects don't clip
-        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 25000);
+        // Camera - huge far plane so large tilted objects don't clip at extreme distances
+        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 35000);
         camera.position.z = 1000;
 
         renderer = new THREE.WebGLRenderer({ canvas: container, alpha: true, antialias: true });
@@ -252,12 +252,11 @@
         });
         
         // Make it massive since it's very far away
-        const galaxyGeometry = new THREE.PlaneGeometry(15000, 15000);
+        const galaxyGeometry = new THREE.PlaneGeometry(26000, 26000);
         galaxyMesh = new THREE.Mesh(galaxyGeometry, galaxyMaterial);
         
-        // Position it far away (z=-14000) and truly in the top-right corner
-        // At z=-14000, the view is enormous, so X and Y need to be huge to be off-center
-        galaxyMesh.position.set(7000, 4500, -14000);
+        // Position it extremely far away (z=-25000)
+        galaxyMesh.position.set(12000, 8000, -25000);
         // Tilt it slightly for a more natural angle
         galaxyMesh.rotation.z = -Math.PI / 6;
         galaxyMesh.rotation.y = Math.PI / 12; // Slight 3D tilt
@@ -291,7 +290,7 @@
         });
         
         // Make the glow just slightly larger than the galaxy itself
-        const glowGeometry = new THREE.PlaneGeometry(18000, 18000);
+        const glowGeometry = new THREE.PlaneGeometry(32000, 32000);
         galaxyGlowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
         
         // Match galaxy position and rotation, but place slightly behind
@@ -325,8 +324,8 @@
             fog: false
         });
         
-        // Make the core much smaller than the galaxy (which is 15000)
-        const coreGeometry = new THREE.PlaneGeometry(5000, 5000);
+        // Make the core much smaller than the galaxy
+        const coreGeometry = new THREE.PlaneGeometry(9000, 9000);
         galaxyCoreMesh = new THREE.Mesh(coreGeometry, coreMaterial);
         
         // Match galaxy position and rotation, but place slightly in front
@@ -407,10 +406,10 @@
             if (galaxyCoreMesh) galaxyCoreMesh.position.z += moveZ;
             
             // Calculate how many stars to draw based on galaxy approach
-            // Starts decreasing at z=-10000, finishes decreasing at z=-4000
+            // Starts decreasing at z=-20000 (early in the journey), finishes decreasing at z=-15000
             let starFactor = 1.0;
-            if (galaxyMesh.position.z > -10000) {
-                const progress = (galaxyMesh.position.z - (-10000)) / 6000;
+            if (galaxyMesh.position.z > -20000) {
+                const progress = (galaxyMesh.position.z - (-20000)) / 5000;
                 const clampedProgress = Math.max(0, Math.min(1, progress));
                 starFactor = 1.0 - (clampedProgress * 0.995); // Drops to 0.5% stars remaining
             }
