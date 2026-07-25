@@ -222,19 +222,19 @@
             transparent: true,
             opacity: 0.85,
             depthWrite: false,
-            fog: false, // Critical: prevent it from turning black in the distance due to scene fog
-            blending: THREE.AdditiveBlending 
+            blending: THREE.AdditiveBlending,
+            fog: false // Prevent the 3D fog from turning the distant galaxy black
         });
         
         // Make it massive since it's very far away
-        const galaxyGeometry = new THREE.PlaneGeometry(12000, 12000);
+        const galaxyGeometry = new THREE.PlaneGeometry(15000, 15000);
         galaxyMesh = new THREE.Mesh(galaxyGeometry, galaxyMaterial);
         
-        // Position it far away (z=-14000) and in the top-right corner
-        // 10000X and 5000Y pushes it to the edge of the massive frustum
-        galaxyMesh.position.set(10000, 6000, -14000);
+        // Position it far away (z=-14000) and truly in the top-right corner
+        // At z=-14000, the view is enormous, so X and Y need to be huge to be off-center
+        galaxyMesh.position.set(7000, 4500, -14000);
         // Tilt it slightly for a more natural angle
-        galaxyMesh.rotation.z = -Math.PI / 8;
+        galaxyMesh.rotation.z = -Math.PI / 6;
         galaxyMesh.rotation.y = Math.PI / 12; // Slight 3D tilt
         galaxyMesh.rotation.x = Math.PI / 12;
         
