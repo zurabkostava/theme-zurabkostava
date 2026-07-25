@@ -12,6 +12,7 @@
     let galaxyMesh;
     let animationFrameId;
     let isRunning = false;
+    let timeMultiplier = 1; // Global speed multiplier from slider
 
     function initGalaxy() {
         container = document.getElementById('zk-galaxy-canvas');
@@ -242,6 +243,16 @@
         galaxyMesh.renderOrder = -1;
         scene.add(galaxyMesh);
 
+        // Connect the time slider if it exists
+        const slider = document.getElementById('zk-speed-slider');
+        const speedValueDisplay = document.getElementById('zk-speed-value');
+        if (slider) {
+            slider.addEventListener('input', (e) => {
+                timeMultiplier = parseFloat(e.target.value);
+                if (speedValueDisplay) speedValueDisplay.innerText = timeMultiplier + 'x';
+            });
+        }
+
         window.addEventListener('resize', onWindowResize);
 
         if (!isRunning) {
@@ -270,7 +281,7 @@
 
         animationFrameId = requestAnimationFrame(animate);
 
-        const speed = 0.4;
+        const speed = 0.4 * timeMultiplier;
         
         // Move all systems forward
         starSystem.position.z += speed;
@@ -296,7 +307,7 @@
         if (galaxyMesh) {
             // Speed = 0.05 units per frame. 
             // At 60fps = 3 units/sec. To travel 14000 units takes ~77 minutes.
-            galaxyMesh.position.z += 0.05;
+            galaxyMesh.position.z += 0.05 * timeMultiplier;
         }
 
         renderer.render(scene, camera);
