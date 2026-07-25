@@ -337,56 +337,67 @@
         galaxyCoreMesh.renderOrder = -1;
         scene.add(galaxyCoreMesh);
 
-        // 🎇 NEW: Massive Boundary Cluster (Bottom-Left)
-        const clusterCount = 200000; // Very large number of stars
-        const clusterGeom = new THREE.BufferGeometry();
-        const clusterPos = new Float32Array(clusterCount * 3);
-        const clusterCol = new Float32Array(clusterCount * 3);
+        // 🎇 NEW: Massive Boundary Nebula (Bottom-Left)
+        clusterSystem = new THREE.Group();
+
+        // Create a soft radial gradient texture for the gas clouds
+        const nebulaCanvas = document.createElement('canvas');
+        nebulaCanvas.width = 512;
+        nebulaCanvas.height = 512;
+        const nctx = nebulaCanvas.getContext('2d');
+        const ngrad = nctx.createRadialGradient(256, 256, 0, 256, 256, 256);
+        ngrad.addColorStop(0, 'rgba(255, 255, 255, 1)'); 
+        ngrad.addColorStop(0.2, 'rgba(255, 255, 255, 0.6)');
+        ngrad.addColorStop(0.6, 'rgba(255, 255, 255, 0.1)');
+        ngrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        nctx.fillStyle = ngrad;
+        nctx.fillRect(0, 0, 512, 512);
+        const nebulaTexture = new THREE.CanvasTexture(nebulaCanvas);
         
-        for (let i=0; i<clusterCount; i++) {
-            // Uniform spherical distribution (no bright core)
-            const u = Math.random();
-            const v = Math.random();
-            const theta = 2 * Math.PI * u;
-            const phi = Math.acos(2 * v - 1);
-            
-            // Math.cbrt ensures stars are evenly distributed throughout the volume
-            const r = Math.cbrt(Math.random()) * 18000; 
-            
-            // Make it an enormous, wide field
-            const x = r * Math.sin(phi) * Math.cos(theta) * 1.5;
-            const y = r * Math.sin(phi) * Math.sin(theta) * 0.8;
-            const z = r * Math.cos(phi) * 1.2;
-            
-            clusterPos[i*3] = x;
-            clusterPos[i*3+1] = y;
-            clusterPos[i*3+2] = z;
-            
-            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-            // Normal colors to blend with the rest of the stars, no extra brightness
-            clusterCol[i*3] = color.r; 
-            clusterCol[i*3+1] = color.g;
-            clusterCol[i*3+2] = color.b;
-        }
-        clusterGeom.setAttribute('position', new THREE.BufferAttribute(clusterPos, 3));
-        clusterGeom.setAttribute('color', new THREE.BufferAttribute(clusterCol, 3));
-        
-        // Material with normal size, no fog so it stays visible
-        const clusterMaterial = new THREE.PointsMaterial({
-            size: 1.2, 
+        const nebulaMaterial = new THREE.MeshBasicMaterial({
+            map: nebulaTexture,
             transparent: true,
-            opacity: 0.7, 
-            vertexColors: true,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
-            fog: false
+            fog: false,
+            opacity: 0.12 // Very soft volumetric look
         });
         
-        clusterSystem = new THREE.Points(clusterGeom, clusterMaterial);
+        // Add 15 overlapping soft planes to form an irregular nebula cloud
+        const nebColors = [0x4a0080, 0x0033aa, 0x880044, 0x001144]; // Purples, blues, magentas
+        for (let i = 0; i < 15; i++) {
+            const size = 8000 + Math.random() * 12000; // Massive clouds
+            const planeMat = nebulaMaterial.clone();
+            planeMat.color.setHex(nebColors[Math.floor(Math.random() * nebColors.length)]);
+            
+            const plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size), planeMat);
+            // Randomize position to create an irregular shape
+            plane.position.set(
+                (Math.random() - 0.5) * 10000,
+                (Math.random() - 0.5) * 6000,
+                (Math.random() - 0.5) * 4000
+            );
+            plane.rotation.z = Math.random() * Math.PI * 2;
+            clusterSystem.add(plane);
+        }
         
-        // Position it extremely far away, huge and spanning the left side
-        clusterSystem.position.set(-15000, -8000, -30000);
-        clusterSystem.rotation.z = Math.PI / 6;
+        // Add a few bright stars inside the nebula
+        const nebStarsGeom = new THREE.BufferGeometry();
+        const nebStarsPos = new Float32Array(400 * 3);
+        for(let i=0; i<400; i++) {
+            nebStarsPos[i*3] = (Math.random() - 0.5) * 12000;
+            nebStarsPos[i*3+1] = (Math.random() - 0.5) * 8000;
+            nebStarsPos[i*3+2] = (Math.random() - 0.5) * 4000;
+        }
+        nebStarsGeom.setAttribute('position', new THREE.BufferAttribute(nebStarsPos, 3));
+        const nebStarsMat = new THREE.PointsMaterial({
+            size: 2.0, color: 0xffffff, transparent: true, opacity: 0.8, fog: false
+        });
+        const nebStars = new THREE.Points(nebStarsGeom, nebStarsMat);
+        clusterSystem.add(nebStars);
+        
+        // Position it far away in the bottom left
+        clusterSystem.position.set(-10000, -6000, -30000);
         
         scene.add(clusterSystem);
 
