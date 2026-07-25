@@ -407,14 +407,6 @@
             if (galaxyCoreMesh) galaxyCoreMesh.position.z += moveZ;
         }
 
-        // Warp Speed / Motion Blur effect via FOV stretching
-        // Base FOV is 60. Max FOV at 500x speed is ~130, which creates extreme radial stretching at edges
-        const targetFov = 60 + Math.min((timeMultiplier - 1) * 0.15, 70); 
-        if (Math.abs(camera.fov - targetFov) > 0.1) {
-            camera.fov += (targetFov - camera.fov) * 0.05; // Smooth transition
-            camera.updateProjectionMatrix();
-        }
-
         renderer.render(scene, camera);
     }
     const observer = new MutationObserver((mutations) => {
