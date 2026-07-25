@@ -10,8 +10,9 @@
     let starSystem, starSystem2, starsMaterial;
     let heroSystem, heroSystem2, heroMaterial;
     let galaxyMesh, galaxyGlowMesh, galaxyCoreMesh;
-    let clusterSystem; // The dense cluster at the edge
+    let clusterSystem; 
     let animationFrameId;
+    let isEntering = false; // For cinematic entrance
     let isRunning = false;
     let timeMultiplier = 1; // Global speed multiplier from slider
 
@@ -33,11 +34,18 @@
 
         // Camera - huge far plane so large tilted objects don't clip at extreme distances
         camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 35000);
-        camera.position.z = 1000;
+        
+        // Start far away and rotated for cinematic barrel roll entrance
+        camera.position.z = 25000;
+        camera.rotation.z = Math.PI * 0.5;
 
         renderer = new THREE.WebGLRenderer({ canvas: container, alpha: true, antialias: true });
-        renderer.setPixelRatio(window.devicePixelRatio || 1);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // optimize performance
         renderer.setSize(rect.width, rect.height);
+        
+        // Hide canvas initially to prevent pop-in
+        container.style.opacity = 0;
+        container.style.transition = 'opacity 3s ease-out';
         renderer.setClearColor(0x000000, 0); 
 
         // Generate stars
@@ -218,7 +226,14 @@
         scene.add(heroSystem2);
 
         // 🌌 NEW: Distant Galaxy Background
-        const galaxyTexture = new THREE.TextureLoader().load('https://zurabkostava.com/wp-content/uploads/2026/07/Galaxy.webp');
+        const loadingManager = new THREE.LoadingManager();
+        loadingManager.onLoad = function() {
+            // Trigger cinematic entrance when galaxy texture is fully loaded
+            container.style.opacity = 1;
+            isEntering = true;
+        };
+        
+        const galaxyTexture = new THREE.TextureLoader(loadingManager).load('https://zurabkostava.com/wp-content/uploads/2026/07/Galaxy.webp');
         
         // Create radial alpha map for the galaxy to fade edges and keep center bright
         const alphaCanvas = document.createElement('canvas');
@@ -474,6 +489,19 @@
         // Move the boundary cluster
         if (clusterSystem) {
             clusterSystem.position.z += speed;
+        }
+        
+        // Cinematic Entrance Animation
+        if (isEntering) {
+            // Glide forward and smoothly barrel-roll into position
+            camera.position.z += (1000 - camera.position.z) * 0.03;
+            camera.rotation.z += (0 - camera.rotation.z) * 0.02;
+            
+            if (Math.abs(camera.position.z - 1000) < 5) {
+                camera.position.z = 1000;
+                camera.rotation.z = 0;
+                isEntering = false;
+            }
         }
 
         // Animate the distant galaxy
