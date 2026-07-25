@@ -10,7 +10,6 @@
     let starSystem, starSystem2, starsMaterial;
     let heroSystem, heroSystem2, heroMaterial;
     let galaxyMesh, galaxyGlowMesh, galaxyCoreMesh;
-    let warpMesh, streakTexture;
     let animationFrameId;
     let isRunning = false;
     let timeMultiplier = 1; // Global speed multiplier from slider
@@ -338,47 +337,6 @@
         galaxyCoreMesh.renderOrder = -1;
         scene.add(galaxyCoreMesh);
 
-        // 🚀 Warp Speed Lines (Edge Motion Blur Effect)
-        const streakCanvas = document.createElement('canvas');
-        streakCanvas.width = 512;
-        streakCanvas.height = 1024;
-        const sctx = streakCanvas.getContext('2d');
-        // Black background
-        sctx.fillStyle = 'black';
-        sctx.fillRect(0, 0, 512, 1024);
-        // Draw vertical streaks
-        for(let i=0; i<150; i++) {
-            const x = Math.random() * 512;
-            const y = Math.random() * 1024;
-            const w = Math.random() * 2 + 1; // thin
-            const h = Math.random() * 300 + 100; // very long
-            // Faint blue/white color
-            sctx.fillStyle = `rgba(200, 220, 255, ${Math.random() * 0.5 + 0.2})`;
-            sctx.fillRect(x, y, w, h);
-        }
-        
-        streakTexture = new THREE.CanvasTexture(streakCanvas);
-        streakTexture.wrapS = THREE.RepeatWrapping;
-        streakTexture.wrapT = THREE.RepeatWrapping;
-        
-        const warpMaterial = new THREE.MeshBasicMaterial({
-            map: streakTexture,
-            transparent: true,
-            opacity: 0, // Hidden at normal speed
-            blending: THREE.AdditiveBlending,
-            side: THREE.BackSide,
-            depthWrite: false,
-            fog: false
-        });
-        
-        // Cylinder around camera (radius matches screen edges)
-        const warpGeometry = new THREE.CylinderGeometry(800, 1500, 5000, 32, 1, true);
-        warpGeometry.rotateX(Math.PI / 2); // align along Z axis
-        
-        warpMesh = new THREE.Mesh(warpGeometry, warpMaterial);
-        warpMesh.position.z = 1000; // Same as camera
-        scene.add(warpMesh);
-
         // Connect the time slider if it exists
         const slider = document.getElementById('zk-speed-slider');
         const speedValueDisplay = document.getElementById('zk-speed-value');
@@ -449,15 +407,12 @@
             if (galaxyCoreMesh) galaxyCoreMesh.position.z += moveZ;
         }
 
-        // Handle Warp Speed effect at screen edges
-        if (warpMesh && streakTexture) {
-            // Target opacity depends on how much we accelerated (starts showing heavily after 10x)
-            const targetOpacity = Math.min(Math.max((timeMultiplier - 10) / 100, 0), 0.8);
-            // Smoothly fade in/out
-            warpMesh.material.opacity += (targetOpacity - warpMesh.material.opacity) * 0.05;
-            
-            // Scroll streaks based on speed
-            streakTexture.offset.y -= 0.01 * timeMultiplier;
+        // Warp Speed / Motion Blur effect via FOV stretching
+        // Base FOV is 60. Max FOV at 500x speed is ~130, which creates extreme radial stretching at edges
+        const targetFov = 60 + Math.min((timeMultiplier - 1) * 0.15, 70); 
+        if (Math.abs(camera.fov - targetFov) > 0.1) {
+            camera.fov += (targetFov - camera.fov) * 0.05; // Smooth transition
+            camera.updateProjectionMatrix();
         }
 
         renderer.render(scene, camera);
