@@ -9,7 +9,7 @@
     let scene, camera, renderer;
     let starSystem, starSystem2, starsMaterial;
     let heroSystem, heroSystem2, heroMaterial;
-    let galaxyMesh;
+    let galaxyMesh, galaxyGlowMesh;
     let animationFrameId;
     let isRunning = false;
     let timeMultiplier = 1; // Global speed multiplier from slider
@@ -267,6 +267,42 @@
         galaxyMesh.renderOrder = -1;
         scene.add(galaxyMesh);
 
+        // 🌌 Galaxy Glow (Volumetric Light Effect)
+        const glowCanvas = document.createElement('canvas');
+        glowCanvas.width = 512;
+        glowCanvas.height = 512;
+        const gctx = glowCanvas.getContext('2d');
+        const ggrad = gctx.createRadialGradient(256, 256, 0, 256, 256, 256);
+        // Soft cosmic blue/white glow
+        ggrad.addColorStop(0, 'rgba(150, 200, 255, 0.5)'); 
+        ggrad.addColorStop(0.3, 'rgba(100, 150, 255, 0.2)');
+        ggrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        
+        gctx.fillStyle = ggrad;
+        gctx.fillRect(0, 0, 512, 512);
+        
+        const glowTexture = new THREE.CanvasTexture(glowCanvas);
+        const glowMaterial = new THREE.MeshBasicMaterial({
+            map: glowTexture,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            fog: false
+        });
+        
+        // Make the glow significantly larger than the galaxy itself
+        const glowGeometry = new THREE.PlaneGeometry(24000, 24000);
+        galaxyGlowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+        
+        // Match galaxy position and rotation, but place slightly behind
+        galaxyGlowMesh.position.copy(galaxyMesh.position);
+        galaxyGlowMesh.position.z -= 100;
+        galaxyGlowMesh.rotation.copy(galaxyMesh.rotation);
+        
+        // Render behind the galaxy
+        galaxyGlowMesh.renderOrder = -2;
+        scene.add(galaxyGlowMesh);
+
         // Connect the time slider if it exists
         const slider = document.getElementById('zk-speed-slider');
         const speedValueDisplay = document.getElementById('zk-speed-value');
@@ -331,7 +367,9 @@
         if (galaxyMesh) {
             // Speed = 0.05 units per frame. 
             // At 60fps = 3 units/sec. To travel 14000 units takes ~77 minutes.
-            galaxyMesh.position.z += 0.05 * timeMultiplier;
+            const moveZ = 0.05 * timeMultiplier;
+            galaxyMesh.position.z += moveZ;
+            if (galaxyGlowMesh) galaxyGlowMesh.position.z += moveZ;
         }
 
         renderer.render(scene, camera);
