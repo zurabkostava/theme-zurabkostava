@@ -10,7 +10,7 @@
     let starSystem, starSystem2, starsMaterial;
     let heroSystem, heroSystem2, heroMaterial;
     let galaxyMesh, galaxyGlowMesh, galaxyCoreMesh;
-    let clusterSystem, clusterGlowMesh;
+    let clusterSystem; // The dense cluster at the edge
     let animationFrameId;
     let isRunning = false;
     let timeMultiplier = 1; // Global speed multiplier from slider
@@ -267,70 +267,6 @@
         galaxyMesh.renderOrder = -1;
         scene.add(galaxyMesh);
 
-        // 🌟 NEW: Final Edge Cluster (Bottom-Left)
-        // Positioned at Z=-56000 so it reaches the camera exactly when leaving the old galaxy
-        const clusterStarCount = 40000;
-        const cGeometry = new THREE.BufferGeometry();
-        const cPositions = new Float32Array(clusterStarCount * 3);
-        const cColors = new Float32Array(clusterStarCount * 3);
-        const cSizes = new Float32Array(clusterStarCount);
-        
-        for (let i = 0; i < clusterStarCount; i++) {
-            // Spherical distribution with extreme density in the center
-            const r = 6000 * Math.pow(Math.random(), 3); // Cubed for heavy center bias
-            const theta = Math.random() * 2 * Math.PI;
-            const phi = Math.acos(2 * Math.random() - 1);
-            
-            cPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-            cPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-            cPositions[i * 3 + 2] = r * Math.cos(phi);
-            
-            // Warm fiery colors for the cluster
-            const color = new THREE.Color();
-            color.setHSL(Math.random() * 0.1 + 0.02, 0.9, Math.random() * 0.5 + 0.4); 
-            
-            cColors[i * 3] = color.r;
-            cColors[i * 3 + 1] = color.g;
-            cColors[i * 3 + 2] = color.b;
-            
-            cSizes[i] = Math.random() * 2.0 + 0.5;
-        }
-        cGeometry.setAttribute('position', new THREE.BufferAttribute(cPositions, 3));
-        cGeometry.setAttribute('color', new THREE.BufferAttribute(cColors, 3));
-        cGeometry.setAttribute('size', new THREE.BufferAttribute(cSizes, 1));
-        
-        clusterSystem = new THREE.Points(cGeometry, starsMaterial); 
-        clusterSystem.position.set(-18000, -10000, -56000);
-        scene.add(clusterSystem);
-
-        // Cluster Nebula Glow
-        const cGlowCanvas = document.createElement('canvas');
-        cGlowCanvas.width = 512;
-        cGlowCanvas.height = 512;
-        const cGlowCtx = cGlowCanvas.getContext('2d');
-        const cGlowGrad = cGlowCtx.createRadialGradient(256, 256, 0, 256, 256, 256);
-        cGlowGrad.addColorStop(0, 'rgba(180, 50, 10, 0.4)'); // Deep warm fiery nebula
-        cGlowGrad.addColorStop(0.5, 'rgba(80, 15, 5, 0.1)');
-        cGlowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        
-        cGlowCtx.fillStyle = cGlowGrad;
-        cGlowCtx.fillRect(0, 0, 512, 512);
-        
-        const cGlowTexture = new THREE.CanvasTexture(cGlowCanvas);
-        const cGlowMaterial = new THREE.MeshBasicMaterial({
-            map: cGlowTexture,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            fog: false
-        });
-        
-        clusterGlowMesh = new THREE.Mesh(new THREE.PlaneGeometry(25000, 25000), cGlowMaterial);
-        clusterGlowMesh.position.copy(clusterSystem.position);
-        clusterGlowMesh.position.z -= 200;
-        clusterGlowMesh.renderOrder = -3; // Behind cluster stars
-        scene.add(clusterGlowMesh);
-
         // 🌌 Galaxy Glow (Volumetric Light Effect)
         const glowCanvas = document.createElement('canvas');
         glowCanvas.width = 512;
@@ -401,6 +337,40 @@
         galaxyCoreMesh.renderOrder = -1;
         scene.add(galaxyCoreMesh);
 
+        // 🎇 NEW: Massive Boundary Cluster (Bottom-Left)
+        const clusterCount = 100000;
+        const clusterGeom = new THREE.BufferGeometry();
+        const clusterPos = new Float32Array(clusterCount * 3);
+        const clusterCol = new Float32Array(clusterCount * 3);
+        
+        for (let i=0; i<clusterCount; i++) {
+            // Center-weighted distribution for a dense core
+            const x = (Math.random() - 0.5) * (Math.random() - 0.5) * 16000;
+            const y = (Math.random() - 0.5) * (Math.random() - 0.5) * 12000;
+            const z = (Math.random() - 0.5) * 15000; // Stretch along Z
+            
+            clusterPos[i*3] = x;
+            clusterPos[i*3+1] = y;
+            clusterPos[i*3+2] = z;
+            
+            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            clusterCol[i*3] = color.r;
+            clusterCol[i*3+1] = color.g;
+            clusterCol[i*3+2] = color.b;
+        }
+        clusterGeom.setAttribute('position', new THREE.BufferAttribute(clusterPos, 3));
+        clusterGeom.setAttribute('color', new THREE.BufferAttribute(clusterCol, 3));
+        
+        // We reuse the existing starsMaterial for performance
+        clusterSystem = new THREE.Points(clusterGeom, starsMaterial);
+        
+        // Position it very far away in the bottom left
+        clusterSystem.position.set(-8000, -6000, -30000);
+        // Tilt it slightly
+        clusterSystem.rotation.z = Math.PI / 8;
+        
+        scene.add(clusterSystem);
+
         // Connect the time slider if it exists
         const slider = document.getElementById('zk-speed-slider');
         const speedValueDisplay = document.getElementById('zk-speed-value');
@@ -446,8 +416,6 @@
         starSystem2.position.z += speed;
         heroSystem.position.z += speed;
         heroSystem2.position.z += speed;
-        if (clusterSystem) clusterSystem.position.z += speed;
-        if (clusterGlowMesh) clusterGlowMesh.position.z += speed;
         
         // Snap back when they pass the camera
         if (starSystem.position.z > 8500) {
@@ -461,6 +429,11 @@
         }
         if (heroSystem2.position.z > 8500) {
             heroSystem2.position.z -= 30000;
+        }
+        
+        // Move the boundary cluster
+        if (clusterSystem) {
+            clusterSystem.position.z += speed;
         }
 
         // Animate the distant galaxy
