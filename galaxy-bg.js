@@ -9,7 +9,7 @@
     let scene, camera, renderer;
     let starSystem, starSystem2, starsMaterial;
     let heroSystem, heroSystem2, heroMaterial;
-    let galaxyMesh, galaxyGlowMesh;
+    let galaxyMesh, galaxyGlowMesh, galaxyCoreMesh;
     let animationFrameId;
     let isRunning = false;
     let timeMultiplier = 1; // Global speed multiplier from slider
@@ -303,6 +303,40 @@
         galaxyGlowMesh.renderOrder = -2;
         scene.add(galaxyGlowMesh);
 
+        // 🌌 Galaxy Core (Bright Center)
+        const coreCanvas = document.createElement('canvas');
+        coreCanvas.width = 256;
+        coreCanvas.height = 256;
+        const cctx = coreCanvas.getContext('2d');
+        const cgrad = cctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+        cgrad.addColorStop(0, 'rgba(255, 255, 255, 0.8)'); // Bright white center
+        cgrad.addColorStop(0.3, 'rgba(255, 245, 220, 0.3)'); // Slight warm glow
+        cgrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        
+        cctx.fillStyle = cgrad;
+        cctx.fillRect(0, 0, 256, 256);
+        
+        const coreTexture = new THREE.CanvasTexture(coreCanvas);
+        const coreMaterial = new THREE.MeshBasicMaterial({
+            map: coreTexture,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            fog: false
+        });
+        
+        // Make the core much smaller than the galaxy (which is 15000)
+        const coreGeometry = new THREE.PlaneGeometry(5000, 5000);
+        galaxyCoreMesh = new THREE.Mesh(coreGeometry, coreMaterial);
+        
+        // Match galaxy position and rotation, but place slightly in front
+        galaxyCoreMesh.position.copy(galaxyMesh.position);
+        galaxyCoreMesh.position.z += 50;
+        galaxyCoreMesh.rotation.copy(galaxyMesh.rotation);
+        
+        galaxyCoreMesh.renderOrder = -1;
+        scene.add(galaxyCoreMesh);
+
         // Connect the time slider if it exists
         const slider = document.getElementById('zk-speed-slider');
         const speedValueDisplay = document.getElementById('zk-speed-value');
@@ -370,6 +404,7 @@
             const moveZ = 0.05 * timeMultiplier;
             galaxyMesh.position.z += moveZ;
             if (galaxyGlowMesh) galaxyGlowMesh.position.z += moveZ;
+            if (galaxyCoreMesh) galaxyCoreMesh.position.z += moveZ;
         }
 
         renderer.render(scene, camera);
