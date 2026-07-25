@@ -16,9 +16,15 @@ ob_start(); ?>
         <div class="hero-orb hero-orb-2"></div>
     </div>
 
+    <!-- Screensaver Button -->
+    <button id="zk-screensaver-btn" aria-label="Screensaver Mode" title="Screensaver Mode" style="position: fixed; bottom: 30px; right: 30px; z-index: 999998; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px); pointer-events: auto; transition: background 0.3s ease;">
+        <svg class="icon-expand" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+        <svg class="icon-collapse" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path></svg>
+    </button>
+
     <?php if ( current_user_can( 'administrator' ) ) : ?>
     <!-- Temporary Time Control Slider -->
-    <div id="zk-time-control" style="position: fixed; bottom: 30px; right: 30px; z-index: 999999; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); color: white; font-family: 'Inter', sans-serif; backdrop-filter: blur(10px); pointer-events: auto;">
+    <div id="zk-time-control" style="position: fixed; bottom: 90px; right: 30px; z-index: 999999; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); color: white; font-family: 'Inter', sans-serif; backdrop-filter: blur(10px); pointer-events: auto;">
         <label for="zk-speed-slider" style="font-size: 14px; font-weight: 500; letter-spacing: 1px;">TIME LAPSE: <span id="zk-speed-value" style="color: #a1c4ff;">1x</span></label><br>
         <input type="range" id="zk-speed-slider" min="1" max="500" value="1" style="width: 250px; margin-top: 15px; cursor: pointer; pointer-events: auto;">
     </div>

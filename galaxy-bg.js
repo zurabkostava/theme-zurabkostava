@@ -562,5 +562,39 @@
         if (appNode) {
             observer.observe(appNode, { childList: true, subtree: true });
         }
+        
+        // Screensaver Logic
+        const screensaverBtn = document.getElementById('zk-screensaver-btn');
+        if (screensaverBtn) {
+            screensaverBtn.addEventListener('click', () => {
+                document.body.classList.toggle('screensaver-mode');
+                const isScreensaver = document.body.classList.contains('screensaver-mode');
+                
+                const expandIcon = screensaverBtn.querySelector('.icon-expand');
+                const collapseIcon = screensaverBtn.querySelector('.icon-collapse');
+                if (expandIcon) expandIcon.style.display = isScreensaver ? 'none' : 'block';
+                if (collapseIcon) collapseIcon.style.display = isScreensaver ? 'block' : 'none';
+                
+                // Handle Music
+                const audio = document.getElementById('zk-welcome-audio');
+                if (audio) {
+                    if (isScreensaver && !audio.paused) {
+                        audio.dataset.wasPlaying = 'true';
+                        audio.pause();
+                        const playIcon = document.querySelector('.icon-play');
+                        const stopIcon = document.querySelector('.icon-stop');
+                        if (playIcon) playIcon.style.display = 'block';
+                        if (stopIcon) stopIcon.style.display = 'none';
+                    } else if (!isScreensaver && audio.dataset.wasPlaying === 'true') {
+                        audio.play();
+                        audio.dataset.wasPlaying = 'false';
+                        const playIcon = document.querySelector('.icon-play');
+                        const stopIcon = document.querySelector('.icon-stop');
+                        if (playIcon) playIcon.style.display = 'none';
+                        if (stopIcon) stopIcon.style.display = 'block';
+                    }
+                }
+            });
+        }
     });
 })();

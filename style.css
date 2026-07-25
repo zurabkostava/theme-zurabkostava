@@ -3384,3 +3384,23 @@ body.is-cinematic-mode .zk-welcome-tooltip {
     transform: scale(1.02) translateY(0);
     filter: blur(0);
 }
+
+/* ============================================================
+   SCREENSAVER MODE
+   ============================================================ */
+body.screensaver-mode .site-header,
+body.screensaver-mode .site-footer,
+body.screensaver-mode .hero-inner,
+body.screensaver-mode .hero-latest-dock,
+body.screensaver-mode .zk-welcome-music-container,
+body.screensaver-mode #zk-cinematic-phrase-container,
+body.screensaver-mode #zk-time-control {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden;
+    transition: opacity 1s ease, visibility 1s;
+}
+
+.site-header, .site-footer, .hero-inner, .hero-latest-dock, .zk-welcome-music-container, #zk-cinematic-phrase-container, #zk-time-control {
+    transition: opacity 1s ease, visibility 1s;
+}
