@@ -360,20 +360,21 @@
             blending: THREE.AdditiveBlending,
             depthWrite: false,
             fog: false,
-            opacity: 0.12 // Very soft volumetric look
+            opacity: 0.05 // Much fainter, more map-like
         });
         
-        // Add 15 overlapping soft planes to form an irregular nebula cloud
-        const nebColors = [0x4a0080, 0x0033aa, 0x880044, 0x001144]; // Purples, blues, magentas
-        for (let i = 0; i < 15; i++) {
-            const size = 8000 + Math.random() * 12000; // Massive clouds
+        // Add 20 overlapping soft planes to form an irregular nebula cloud
+        // Subtler, desaturated cosmic colors for a faint galactic band
+        const nebColors = [0x221144, 0x112244, 0x331133, 0x1a1a3a]; 
+        for (let i = 0; i < 20; i++) {
+            const size = 15000 + Math.random() * 15000; // Even larger clouds
             const planeMat = nebulaMaterial.clone();
             planeMat.color.setHex(nebColors[Math.floor(Math.random() * nebColors.length)]);
             
             const plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size), planeMat);
-            // Randomize position to create an irregular shape
+            // Stretched horizontally to look like a galactic arm or map
             plane.position.set(
-                (Math.random() - 0.5) * 10000,
+                (Math.random() - 0.5) * 20000,
                 (Math.random() - 0.5) * 6000,
                 (Math.random() - 0.5) * 4000
             );
@@ -383,21 +384,22 @@
         
         // Add a few bright stars inside the nebula
         const nebStarsGeom = new THREE.BufferGeometry();
-        const nebStarsPos = new Float32Array(400 * 3);
-        for(let i=0; i<400; i++) {
-            nebStarsPos[i*3] = (Math.random() - 0.5) * 12000;
-            nebStarsPos[i*3+1] = (Math.random() - 0.5) * 8000;
+        const nebStarsPos = new Float32Array(500 * 3);
+        for(let i=0; i<500; i++) {
+            // Stretch stars across the new wider nebula
+            nebStarsPos[i*3] = (Math.random() - 0.5) * 25000;
+            nebStarsPos[i*3+1] = (Math.random() - 0.5) * 10000;
             nebStarsPos[i*3+2] = (Math.random() - 0.5) * 4000;
         }
         nebStarsGeom.setAttribute('position', new THREE.BufferAttribute(nebStarsPos, 3));
         const nebStarsMat = new THREE.PointsMaterial({
-            size: 2.0, color: 0xffffff, transparent: true, opacity: 0.8, fog: false
+            size: 2.0, color: 0xffffff, transparent: true, opacity: 0.6, fog: false
         });
         const nebStars = new THREE.Points(nebStarsGeom, nebStarsMat);
         clusterSystem.add(nebStars);
         
-        // Position it far away in the bottom left
-        clusterSystem.position.set(-10000, -6000, -30000);
+        // Position it much further left and slightly lower
+        clusterSystem.position.set(-16000, -8000, -30000);
         
         scene.add(clusterSystem);
 
