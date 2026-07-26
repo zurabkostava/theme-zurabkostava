@@ -39,14 +39,16 @@
         camera.position.z = 25000;
         camera.rotation.z = Math.PI * 0.5;
 
-        renderer = new THREE.WebGLRenderer({ canvas: container, alpha: true, antialias: true });
+        renderer = new THREE.WebGLRenderer({ canvas: container, alpha: false, antialias: true });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // optimize performance
         renderer.setSize(rect.width, rect.height);
         
         // Hide canvas initially to prevent pop-in
         container.style.opacity = 0;
         container.style.transition = 'opacity 3s ease-out';
-        renderer.setClearColor(0x000000, 0); 
+        
+        // Opaque background matching the CSS body background to prevent alpha channel accumulation bug with AdditiveBlending
+        renderer.setClearColor(0x020205, 1.0); 
 
         // Generate stars
         const starCount = 400000; // 400k per block (800k total). Zero CPU overhead now!
