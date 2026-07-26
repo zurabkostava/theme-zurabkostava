@@ -89,17 +89,16 @@
             if (Math.random() < 0.75) {
                 const cluster = clusters[Math.floor(Math.random() * clusters.length)];
                 
-                // Use polar coordinates for X/Y to avoid axis-aligned cross shapes!
-                const angle = Math.random() * Math.PI * 2;
-                // Power of 2 to concentrate stars at the core of the cluster
+                // Spherical coordinates for natural round clusters without grid/cross artifacts
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                
+                // Biased radius to make the core extremely dense and the edges sparse
                 const r = Math.pow(Math.random(), 2); 
                 
-                x = cluster.x + Math.cos(angle) * r * cluster.radiusX;
-                y = cluster.y + Math.sin(angle) * r * cluster.radiusY;
-                
-                // Z can still use independent clustering since it's just depth
-                const w = Math.random() * 2 - 1;
-                z = cluster.z + Math.sign(w) * Math.pow(Math.abs(w), 2) * cluster.radiusZ;
+                x = cluster.x + r * Math.sin(phi) * Math.cos(theta) * cluster.radiusX;
+                y = cluster.y + r * Math.sin(phi) * Math.sin(theta) * cluster.radiusY;
+                z = cluster.z + r * Math.cos(phi) * cluster.radiusZ;
             } else {
                 const angle = Math.random() * Math.PI * 2;
                 const radius = Math.sqrt(Math.random()) * 2500;
