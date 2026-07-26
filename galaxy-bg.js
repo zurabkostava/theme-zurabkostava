@@ -73,13 +73,21 @@
         for (let c = 0; c < numClusters; c++) {
             const angle = Math.random() * Math.PI * 2;
             const radius = Math.sqrt(Math.random()) * 2500;
+            
+            // 🌌 Randomly assign density profiles to clusters
+            const typeRand = Math.random();
+            let densityExponent = 2.0; // Default: Highly concentrated core (Globular cluster)
+            if (typeRand > 0.8) densityExponent = 0.33; // 20% chance: Uniformly scattered/loose
+            else if (typeRand > 0.4) densityExponent = 1.0; // 40% chance: Medium linear falloff
+            
             clusters.push({
                 x: Math.cos(angle) * radius,
                 y: Math.sin(angle) * radius * 0.7,
                 z: THREE.MathUtils.randFloatSpread(15000),
                 radiusX: Math.random() * 600 + 200, 
                 radiusY: Math.random() * 600 + 200, 
-                radiusZ: Math.random() * 2000 + 500 
+                radiusZ: Math.random() * 2000 + 500,
+                densityExponent: densityExponent
             });
         }
 
@@ -93,8 +101,8 @@
                 const theta = Math.random() * Math.PI * 2;
                 const phi = Math.acos(2 * Math.random() - 1);
                 
-                // Biased radius to make the core extremely dense and the edges sparse
-                const r = Math.pow(Math.random(), 2); 
+                // Radius based on the cluster's specific density profile
+                const r = Math.pow(Math.random(), cluster.densityExponent); 
                 
                 x = cluster.x + r * Math.sin(phi) * Math.cos(theta) * cluster.radiusX;
                 y = cluster.y + r * Math.sin(phi) * Math.sin(theta) * cluster.radiusY;
