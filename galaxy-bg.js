@@ -473,6 +473,8 @@
         renderer.setSize(rect.width, rect.height);
     }
 
+    let smoothMusicMultiplier = 0;
+
     function animate() {
         if (!isRunning) return;
         
@@ -485,7 +487,22 @@
 
         animationFrameId = requestAnimationFrame(animate);
 
-        const speed = 0.4 * timeMultiplier;
+        // 🎵 Sync Galaxy Speed with Music Progress 🎵
+        const audio = document.getElementById('zk-welcome-audio');
+        let targetMusicMultiplier = 0;
+        
+        if (audio && !audio.paused && audio.duration > 0) {
+            const progress = audio.currentTime / audio.duration;
+            // Exponential acceleration: starts gentle, gets crazy fast towards the end (up to 100x)
+            targetMusicMultiplier = 100 * Math.pow(progress, 3);
+        }
+        
+        // Smoothly interpolate the music speed bonus so it doesn't snap if paused
+        smoothMusicMultiplier += (targetMusicMultiplier - smoothMusicMultiplier) * 0.015;
+
+        // Base speed (timeMultiplier from slider, default 1) + Music bonus
+        const currentSpeedMultiplier = timeMultiplier + smoothMusicMultiplier;
+        const speed = 0.4 * currentSpeedMultiplier;
         
         // Move all systems forward
         starSystem.position.z += speed;
