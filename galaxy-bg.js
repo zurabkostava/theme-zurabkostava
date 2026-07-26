@@ -378,13 +378,13 @@
         const cloudCanvas = document.createElement('canvas');
         cloudCanvas.width = 32;
         cloudCanvas.height = 32;
-        const cctx = cloudCanvas.getContext('2d');
-        const cgrad = cctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-        cgrad.addColorStop(0, 'rgba(255,255,255,0.15)'); // Very soft core
-        cgrad.addColorStop(0.5, 'rgba(255,255,255,0.05)'); // Fast fade
-        cgrad.addColorStop(1, 'rgba(0,0,0,0)');
-        cctx.fillStyle = cgrad;
-        cctx.fillRect(0, 0, 32, 32);
+        const cloudCtx = cloudCanvas.getContext('2d');
+        const cloudGrad = cloudCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+        cloudGrad.addColorStop(0, 'rgba(255,255,255,0.15)'); // Very soft core
+        cloudGrad.addColorStop(0.5, 'rgba(255,255,255,0.05)'); // Fast fade
+        cloudGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        cloudCtx.fillStyle = cloudGrad;
+        cloudCtx.fillRect(0, 0, 32, 32);
         const cloudTexture = new THREE.CanvasTexture(cloudCanvas);
 
         const giantNebulaMaterial = new THREE.PointsMaterial({
