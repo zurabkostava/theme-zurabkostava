@@ -332,12 +332,12 @@
         const giantNebulaSubClusters = [];
         for(let i=0; i<8; i++) {
             giantNebulaSubClusters.push({
-                x: (Math.random() - 0.5) * 12000,
-                y: (Math.random() - 0.5) * 8000,
-                z: (Math.random() - 0.5) * 15000,
-                radiusX: Math.random() * 5000 + 2000,
-                radiusY: Math.random() * 5000 + 2000,
-                radiusZ: Math.random() * 10000 + 4000,
+                x: (Math.random() - 0.5) * 18000, // Spread out further
+                y: (Math.random() - 0.5) * 12000,
+                z: (Math.random() - 0.5) * 20000,
+                radiusX: Math.random() * 8000 + 4000,
+                radiusY: Math.random() * 8000 + 4000,
+                radiusZ: Math.random() * 12000 + 4000,
                 color: giantNebulaColorsPalette[Math.floor(Math.random() * giantNebulaColorsPalette.length)]
             });
         }
@@ -347,7 +347,9 @@
             
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.acos(2 * Math.random() - 1);
-            const r = Math.pow(Math.random(), 1.5); // Dense cores
+            
+            // Soft scattered distribution without sharp bright epicenters
+            const r = Math.pow(Math.random(), 0.6); 
             
             giantNebulaPositions[i * 3] = sub.x + r * Math.sin(phi) * Math.cos(theta) * sub.radiusX;
             giantNebulaPositions[i * 3 + 1] = sub.y + r * Math.sin(phi) * Math.sin(theta) * sub.radiusY;
@@ -361,7 +363,7 @@
             giantNebulaColors[i * 3 + 1] = finalColor.g;
             giantNebulaColors[i * 3 + 2] = finalColor.b;
             
-            giantNebulaSizes[i] = Math.random() * 25 + 5;
+            giantNebulaSizes[i] = Math.random() * 40 + 10; // Larger particles for smoother blending
         }
 
         giantNebulaGeometry.setAttribute('position', new THREE.BufferAttribute(giantNebulaPositions, 3));
@@ -372,7 +374,7 @@
             size: 1,
             map: texture, // Soft texture for cloud-like feel
             transparent: true,
-            opacity: 0.8,
+            opacity: 0.12, // Much lower opacity for a soft gas cloud effect (Additive Blending accumulates it)
             vertexColors: true,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
