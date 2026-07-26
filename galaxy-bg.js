@@ -30,10 +30,10 @@
         
         scene = new THREE.Scene();
         // Lower fog density so more stars are visible in the distance before fading to black
-        scene.fog = new THREE.FogExp2(0x000000, 0.0002);
+        scene.fog = new THREE.FogExp2(0x000000, 0.00012); // 🚀 Expanded visual depth
 
         // Camera - huge far plane so large tilted objects don't clip at extreme distances
-        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 35000);
+        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 50000);
         
         // Start far away and rotated for cinematic barrel roll entrance
         camera.position.z = 25000;
@@ -104,7 +104,7 @@
                 const radius = Math.sqrt(Math.random()) * 2500;
                 x = Math.cos(angle) * radius;
                 y = Math.sin(angle) * radius * 0.7;
-                z = THREE.MathUtils.randFloatSpread(15000);
+                z = THREE.MathUtils.randFloatSpread(20000); // 🚀 Stretched for depth
             }
 
             positions[i * 3] = x;
@@ -150,11 +150,11 @@
         // 🔴 OPTIMIZATION: Dual System Infinite Loop
         // We use two identical geometries placed back-to-back. 
         starSystem = new THREE.Points(geometry, starsMaterial);
-        starSystem.position.z = -6500;
+        starSystem.position.z = -9000;
         starSystem.frustumCulled = false; // CPU Optimization
         
         starSystem2 = new THREE.Points(geometry, starsMaterial);
-        starSystem2.position.z = -21500; // Right behind the first one
+        starSystem2.position.z = -29000; // Right behind the first one
         starSystem2.frustumCulled = false;
         
         scene.add(starSystem);
@@ -175,7 +175,7 @@
             const radius = Math.sqrt(Math.random()) * 2500;
             const gx = Math.cos(angle) * radius;
             const gy = Math.sin(angle) * radius * 0.7;
-            const gz = THREE.MathUtils.randFloatSpread(15000);
+            const gz = THREE.MathUtils.randFloatSpread(20000); // 🚀 Stretched for depth
 
             // 1. Giant Star
             heroPositions[gIndex * 3] = gx;
@@ -285,11 +285,11 @@
         };
 
         heroSystem = new THREE.Points(heroGeometry, heroMaterial);
-        heroSystem.position.z = -6500;
+        heroSystem.position.z = -9000;
         heroSystem.frustumCulled = false;
         
         heroSystem2 = new THREE.Points(heroGeometry, heroMaterial);
-        heroSystem2.position.z = -21500;
+        heroSystem2.position.z = -29000;
         heroSystem2.frustumCulled = false;
         
         scene.add(heroSystem);
@@ -559,18 +559,18 @@
         heroSystem.position.z += speed;
         heroSystem2.position.z += speed;
         
-        // Snap back when they pass the camera (2 systems * 15000 distance = 30000 total loop)
-        if (starSystem.position.z > 8500) {
-            starSystem.position.z -= 30000;
+        // Snap back when they pass the camera
+        if (starSystem.position.z > 11000) {
+            starSystem.position.z -= 40000;
         }
-        if (starSystem2.position.z > 8500) {
-            starSystem2.position.z -= 30000;
+        if (starSystem2.position.z > 11000) {
+            starSystem2.position.z -= 40000;
         }
-        if (heroSystem.position.z > 8500) {
-            heroSystem.position.z -= 30000;
+        if (heroSystem.position.z > 11000) {
+            heroSystem.position.z -= 40000;
         }
-        if (heroSystem2.position.z > 8500) {
-            heroSystem2.position.z -= 30000;
+        if (heroSystem2.position.z > 11000) {
+            heroSystem2.position.z -= 40000;
         }
         
         // Move the boundary cluster
