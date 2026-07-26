@@ -599,7 +599,7 @@
         }
         
         // Add beautifully colored, varied-size bright stars inside the nebula
-        const nebStarsCount = 816; // 800 regular small stars + 15 distinct large stars + 1 Gigantic Special Star
+        const nebStarsCount = 8000; // 🚀 Increased to 8000 for high density!
         const nebStarsGeom = new THREE.BufferGeometry();
         const nebStarsPos = new Float32Array(nebStarsCount * 3);
         const nebStarsColors = new Float32Array(nebStarsCount * 3);
@@ -615,33 +615,12 @@
             nebStarsPos[i*3+1] = ry * 15000;
             nebStarsPos[i*3+2] = rz * 8000;
             
-            if (i === 815) {
-                // 🌟 THE ONE GIGANTIC SPECIAL STAR (Exactly in the middle of the nebula)
-                nebStarsPos[i*3] = 0;
-                nebStarsPos[i*3+1] = 0;
-                nebStarsPos[i*3+2] = 0;
-                
-                nebStarsColors[i*3] = 2.2; // Brilliant White-Cyan core
-                nebStarsColors[i*3+1] = 2.6;
-                nebStarsColors[i*3+2] = 3.0;
-                nebStarsSizes[i] = 1200; // Unimaginably huge!
-                
-            } else if (i >= 800) {
-                // ✨ The 15 Distinctly Large, Colored Stars scattered around
-                const cColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-                nebStarsColors[i*3] = cColor.r * 1.5; 
-                nebStarsColors[i*3+1] = cColor.g * 1.5;
-                nebStarsColors[i*3+2] = cColor.b * 1.5;
-                nebStarsSizes[i] = Math.random() * 250 + 150; // 150 to 400 sizes
-                
-            } else {
-                // ⭐ Regular majestic stars (small like normal clusters so giants stand out)
-                const cColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-                nebStarsColors[i*3] = cColor.r * 1.0;
-                nebStarsColors[i*3+1] = cColor.g * 1.0;
-                nebStarsColors[i*3+2] = cColor.b * 1.0;
-                nebStarsSizes[i] = Math.random() * 30 + 10;
-            }
+            // ⭐ Regular majestic stars (small like normal clusters so giants stand out)
+            const cColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            nebStarsColors[i*3] = cColor.r * 1.0;
+            nebStarsColors[i*3+1] = cColor.g * 1.0;
+            nebStarsColors[i*3+2] = cColor.b * 1.0;
+            nebStarsSizes[i] = Math.random() * 30 + 10;
         }
         
         nebStarsGeom.setAttribute('position', new THREE.BufferAttribute(nebStarsPos, 3));
@@ -674,6 +653,51 @@
         
         const nebStars = new THREE.Points(nebStarsGeom, nebStarsMat);
         clusterSystem.add(nebStars);
+
+        // 🌟 CREATE TRUE GIANT STARS USING SPRITES 
+        // PointsMaterial is limited by WebGL ALIASED_POINT_SIZE_RANGE (often 64px on Windows).
+        // Sprites are actual geometry planes, allowing infinitely massive stars in world space!
+
+        // 1. The 15 Distinctly Large, Colored Stars scattered around
+        for (let i = 0; i < 15; i++) {
+            const rx = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            const ry = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            const rz = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            
+            const cColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            const giantMat = new THREE.SpriteMaterial({
+                map: flareTexture,
+                color: new THREE.Color(cColor.r * 1.5, cColor.g * 1.5, cColor.b * 1.5),
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                depthTest: false,
+                fog: false
+            });
+            const giantSprite = new THREE.Sprite(giantMat);
+            giantSprite.position.set(rx * 25000, ry * 10000, rz * 5000);
+            
+            // True world size (not pixels!)
+            const scale = Math.random() * 2000 + 1000; 
+            giantSprite.scale.set(scale, scale, 1);
+            clusterSystem.add(giantSprite);
+        }
+        
+        // 2. THE ONE GIGANTIC SPECIAL STAR (Exactly in the middle)
+        const specialMat = new THREE.SpriteMaterial({
+            map: flareTexture,
+            color: new THREE.Color(2.0, 2.6, 3.0), // Brilliant White-Cyan core
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            depthTest: false,
+            fog: false
+        });
+        const specialSprite = new THREE.Sprite(specialMat);
+        specialSprite.position.set(0, 0, 0);
+        // Colossal world size!
+        specialSprite.scale.set(15000, 15000, 1); 
+        clusterSystem.add(specialSprite);
         
         // Position it much further left and slightly lower
         clusterSystem.position.set(-16000, -8000, -30000);
