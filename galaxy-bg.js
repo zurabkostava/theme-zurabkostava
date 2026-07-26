@@ -7,11 +7,10 @@
     let container;
     let canvas, ctx;
     let scene, camera, renderer;
-    let starSystem, starSystem2, starSystem3, starsMaterial;
-    let heroSystem, heroSystem2, heroSystem3, heroMaterial;
+    let starSystem, starSystem2, starsMaterial;
+    let heroSystem, heroSystem2, heroMaterial, heroSystem3;
     let galaxyMesh, galaxyGlowMesh, galaxyCoreMesh;
-    let clusterSystem; 
-    let superCluster;
+    let clusterSystem, nebulaSystem; 
     let animationFrameId;
     let isEntering = false; // For cinematic entrance
     let isRunning = false;
@@ -314,58 +313,87 @@
         scene.add(heroSystem2);
         scene.add(heroSystem3);
 
-        // 🌌 NEW: Super Cluster (Visible from afar, entered at peak speed)
-        const superClusterCount = 150000; // 150k stars for a massive dense system
-        const superGeometry = new THREE.BufferGeometry();
-        const superPositions = new Float32Array(superClusterCount * 3);
-        const superColors = new Float32Array(superClusterCount * 3);
+        // 🌌 NEW: Giant Colorful Nebula Cluster (Appears from the very beginning, reached at 500x speed)
+        const nebulaStarCount = 80000;
+        const nebulaGeometry = new THREE.BufferGeometry();
+        const nebulaPositions = new Float32Array(nebulaStarCount * 3);
+        const nebulaColors = new Float32Array(nebulaStarCount * 3);
+        const nebulaSizes = new Float32Array(nebulaStarCount);
+        
+        const nebulaColorsPalette = [
+            new THREE.Color(0xff007f), // Neon Pink
+            new THREE.Color(0x7f00ff), // Deep Purple
+            new THREE.Color(0x00ffff), // Cyan
+            new THREE.Color(0xffaa00), // Gold
+            new THREE.Color(0xffffff)  // White core
+        ];
 
-        for (let i = 0; i < superClusterCount; i++) {
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(2 * Math.random() - 1);
-            const r = Math.pow(Math.random(), 2.5); // Extremely dense core
-            
-            superPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta) * 12000;
-            superPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta) * 8000;
-            superPositions[i * 3 + 2] = r * Math.cos(phi) * 15000;
-            
-            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-            // Hotter, brighter core
-            const intensity = 1.0 - r; // Closer to core = brighter
-            superColors[i * 3] = Math.min(1, color.r + intensity * 0.5);
-            superColors[i * 3 + 1] = Math.min(1, color.g + intensity * 0.3);
-            superColors[i * 3 + 2] = Math.min(1, color.b + intensity * 0.1);
+        // Create 8 massive sub-clusters to form a complex nebula shape
+        const nebulaSubClusters = [];
+        for(let i=0; i<8; i++) {
+            nebulaSubClusters.push({
+                x: (Math.random() - 0.5) * 12000,
+                y: (Math.random() - 0.5) * 8000,
+                z: (Math.random() - 0.5) * 15000,
+                radiusX: Math.random() * 5000 + 2000,
+                radiusY: Math.random() * 5000 + 2000,
+                radiusZ: Math.random() * 10000 + 4000,
+                color: nebulaColorsPalette[Math.floor(Math.random() * nebulaColorsPalette.length)]
+            });
         }
 
-        superGeometry.setAttribute('position', new THREE.BufferAttribute(superPositions, 3));
-        superGeometry.setAttribute('color', new THREE.BufferAttribute(superColors, 3));
+        for (let i = 0; i < nebulaStarCount; i++) {
+            const sub = nebulaSubClusters[Math.floor(Math.random() * nebulaSubClusters.length)];
+            
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            const r = Math.pow(Math.random(), 1.5); // Dense cores
+            
+            nebulaPositions[i * 3] = sub.x + r * Math.sin(phi) * Math.cos(theta) * sub.radiusX;
+            nebulaPositions[i * 3 + 1] = sub.y + r * Math.sin(phi) * Math.sin(theta) * sub.radiusY;
+            nebulaPositions[i * 3 + 2] = sub.z + r * Math.cos(phi) * sub.radiusZ;
+            
+            // Mix sub-cluster color with a random palette color for beautiful gradients
+            const mixColor = nebulaColorsPalette[Math.floor(Math.random() * nebulaColorsPalette.length)];
+            const finalColor = sub.color.clone().lerp(mixColor, 0.3);
+            
+            nebulaColors[i * 3] = finalColor.r;
+            nebulaColors[i * 3 + 1] = finalColor.g;
+            nebulaColors[i * 3 + 2] = finalColor.b;
+            
+            nebulaSizes[i] = Math.random() * 25 + 5;
+        }
 
-        const superMaterial = new THREE.PointsMaterial({
-            size: 3.0, 
-            map: texture, // Uses the normal star texture
+        nebulaGeometry.setAttribute('position', new THREE.BufferAttribute(nebulaPositions, 3));
+        nebulaGeometry.setAttribute('color', new THREE.BufferAttribute(nebulaColors, 3));
+        nebulaGeometry.setAttribute('aSize', new THREE.BufferAttribute(nebulaSizes, 1));
+
+        const nebulaMaterial = new THREE.PointsMaterial({
+            size: 1,
+            map: texture, // Soft texture for cloud-like feel
             transparent: true,
-            opacity: 0.9,
+            opacity: 0.8,
             vertexColors: true,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
-            alphaTest: 0.01,
-            fog: false // Critical: Ensures it's visible from -50000 away despite the black fog!
+            fog: false // 🚀 IMPORTANT: Visible from infinite distance!
         });
 
-        // Ensure minimum pixel size so it doesn't vanish into sub-pixels from 50,000 units away
-        superMaterial.onBeforeCompile = function (shader) {
+        nebulaMaterial.onBeforeCompile = function (shader) {
             shader.vertexShader = shader.vertexShader.replace(
-                '#include <fog_vertex>',
-                `#include <fog_vertex>
-                 gl_PointSize = max(gl_PointSize, 1.5);
-                `
+                'void main() {',
+                'attribute float aSize;\nvoid main() {'
+            ).replace(
+                'gl_PointSize = size;',
+                'gl_PointSize = aSize;'
             );
         };
 
-        superCluster = new THREE.Points(superGeometry, superMaterial);
-        superCluster.position.z = -50000; // So far away it takes 3-4s at 500x speed to reach
-        superCluster.frustumCulled = false;
-        scene.add(superCluster);
+        nebulaSystem = new THREE.Points(nebulaGeometry, nebulaMaterial);
+        // Placed at -42000. At 500x speed (200 units/frame), it reaches the camera in 3.5 seconds.
+        nebulaSystem.position.z = -42000;
+        nebulaSystem.frustumCulled = false;
+        scene.add(nebulaSystem);
 
         // 🌌 NEW: Distant Galaxy Background
         const loadingManager = new THREE.LoadingManager();
@@ -653,12 +681,15 @@
             heroSystem3.position.z -= 45000;
         }
         
-        // Move the boundary cluster & super cluster
+        // Move the boundary cluster and nebula
         if (clusterSystem) {
             clusterSystem.position.z += speed;
         }
-        if (superCluster) {
-            superCluster.position.z += speed;
+        if (nebulaSystem) {
+            nebulaSystem.position.z += speed;
+            if (nebulaSystem.position.z > 20000) {
+                nebulaSystem.position.z -= 150000;
+            }
         }
         
         // Cinematic Entrance Animation
