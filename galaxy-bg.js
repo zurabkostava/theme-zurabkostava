@@ -160,67 +160,110 @@
         scene.add(starSystem);
         scene.add(starSystem2);
 
-        // 🌟 NEW: Hero Stars (Lens Flare Stars)
-        const heroStarCount = 5000; // ~1.25% of the total stars
+        // 🌟 NEW: Giant Stars (0.2% of stars, 8-pointed flares, with companions)
+        const giantBaseCount = 800; // 0.2% of 400,000
+        const giantMaxCount = giantBaseCount * 3; // Buffer for companions
         const heroGeometry = new THREE.BufferGeometry();
-        const heroPositions = new Float32Array(heroStarCount * 3);
-        const heroColors = new Float32Array(heroStarCount * 3);
-        const heroSizes = new Float32Array(heroStarCount);
+        const heroPositions = new Float32Array(giantMaxCount * 3);
+        const heroColors = new Float32Array(giantMaxCount * 3);
+        const heroSizes = new Float32Array(giantMaxCount);
 
-        for (let i = 0; i < heroStarCount; i++) {
-            // Match the cylindrical distribution of normal stars
+        let gIndex = 0;
+        for (let i = 0; i < giantBaseCount; i++) {
+            // Match cylindrical distribution
             const angle = Math.random() * Math.PI * 2;
             const radius = Math.sqrt(Math.random()) * 2500;
-            heroPositions[i * 3] = Math.cos(angle) * radius;
-            heroPositions[i * 3 + 1] = Math.sin(angle) * radius * 0.7;
-            heroPositions[i * 3 + 2] = THREE.MathUtils.randFloatSpread(15000);
+            const gx = Math.cos(angle) * radius;
+            const gy = Math.sin(angle) * radius * 0.7;
+            const gz = THREE.MathUtils.randFloatSpread(15000);
 
-            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-            // Boost color brightness for hero stars by lerping towards white
-            heroColors[i * 3] = color.r * 0.5 + 0.5;
-            heroColors[i * 3 + 1] = color.g * 0.5 + 0.5;
-            heroColors[i * 3 + 2] = color.b * 0.5 + 0.5;
+            // 1. Giant Star
+            heroPositions[gIndex * 3] = gx;
+            heroPositions[gIndex * 3 + 1] = gy;
+            heroPositions[gIndex * 3 + 2] = gz;
             
-            // Sizes vary dramatically
-            heroSizes[i] = Math.random() * 15 + 5;
+            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            // Make giants very bright
+            heroColors[gIndex * 3] = color.r * 0.8 + 0.2;
+            heroColors[gIndex * 3 + 1] = color.g * 0.8 + 0.2;
+            heroColors[gIndex * 3 + 2] = color.b * 0.8 + 0.2;
+            
+            // Varied giant sizes (30 to 80)
+            heroSizes[gIndex] = Math.random() * 50 + 30;
+            gIndex++;
+            
+            // 2. Companions (50% chance for 1, 20% chance for 2)
+            const compChance = Math.random();
+            let companions = 0;
+            if (compChance > 0.8) companions = 2;
+            else if (compChance > 0.3) companions = 1;
+            
+            for(let j=0; j<companions; j++) {
+                const cAngle = Math.random() * Math.PI * 2;
+                const cDist = Math.random() * 40 + 20; // 20 to 60 units away
+                heroPositions[gIndex * 3] = gx + Math.cos(cAngle) * cDist;
+                heroPositions[gIndex * 3 + 1] = gy + Math.sin(cAngle) * cDist;
+                heroPositions[gIndex * 3 + 2] = gz + (Math.random() - 0.5) * cDist;
+                
+                const cColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                heroColors[gIndex * 3] = cColor.r;
+                heroColors[gIndex * 3 + 1] = cColor.g;
+                heroColors[gIndex * 3 + 2] = cColor.b;
+                
+                // Companion sizes (10 to 20)
+                heroSizes[gIndex] = Math.random() * 10 + 10;
+                gIndex++;
+            }
         }
 
-        heroGeometry.setAttribute('position', new THREE.BufferAttribute(heroPositions, 3));
-        heroGeometry.setAttribute('color', new THREE.BufferAttribute(heroColors, 3));
-        heroGeometry.setAttribute('size', new THREE.BufferAttribute(heroSizes, 1));
+        // Only assign the array buffer slice we actually populated
+        heroGeometry.setAttribute('position', new THREE.BufferAttribute(heroPositions.slice(0, gIndex * 3), 3));
+        heroGeometry.setAttribute('color', new THREE.BufferAttribute(heroColors.slice(0, gIndex * 3), 3));
+        heroGeometry.setAttribute('aSize', new THREE.BufferAttribute(heroSizes.slice(0, gIndex), 1));
 
-        // Flare Texture
+        // Flare Texture (8-pointed JWST style)
         const flareCanvas = document.createElement('canvas');
-        flareCanvas.width = 128;
-        flareCanvas.height = 128;
+        flareCanvas.width = 256;
+        flareCanvas.height = 256;
         const flareCtx = flareCanvas.getContext('2d');
-        const cx = 64, cy = 64;
+        const cx = 128, cy = 128;
         
-        const radialGlow = flareCtx.createRadialGradient(cx, cy, 0, cx, cy, 64);
+        // Main Glow
+        const radialGlow = flareCtx.createRadialGradient(cx, cy, 0, cx, cy, 128);
         radialGlow.addColorStop(0, 'rgba(255, 255, 255, 1)');
-        radialGlow.addColorStop(0.05, 'rgba(255, 255, 255, 0.8)');
+        radialGlow.addColorStop(0.05, 'rgba(255, 255, 255, 0.9)');
         radialGlow.addColorStop(0.2, 'rgba(255, 255, 255, 0.2)');
         radialGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
         flareCtx.fillStyle = radialGlow;
-        flareCtx.fillRect(0, 0, 128, 128);
+        flareCtx.fillRect(0, 0, 256, 256);
         
-        // Draw cross spikes
-        const drawSpike = (rx, ry) => {
-            const grad = flareCtx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(rx, ry));
+        // Draw spikes
+        const drawSpike = (rx, ry, angle = 0) => {
+            flareCtx.save();
+            flareCtx.translate(cx, cy);
+            flareCtx.rotate(angle);
+            const grad = flareCtx.createRadialGradient(0, 0, 0, 0, 0, Math.max(rx, ry));
             grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            grad.addColorStop(0.1, 'rgba(255, 255, 255, 0.8)');
             grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
             flareCtx.fillStyle = grad;
             flareCtx.beginPath();
-            flareCtx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+            flareCtx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
             flareCtx.fill();
+            flareCtx.restore();
         };
-        drawSpike(64, 2); // Horizontal spike
-        drawSpike(2, 64); // Vertical spike
+        
+        // Massive cross
+        drawSpike(128, 2, 0); // Horizontal
+        drawSpike(2, 128, 0); // Vertical
+        // Shorter diagonal X
+        drawSpike(64, 2, Math.PI / 4);
+        drawSpike(64, 2, -Math.PI / 4);
 
         const flareTexture = new THREE.CanvasTexture(flareCanvas);
 
         heroMaterial = new THREE.PointsMaterial({
-            size: 20, // Huge base size for flares
+            size: 1, // Base size overridden by aSize
             map: flareTexture,
             transparent: true,
             opacity: 1,
@@ -229,6 +272,17 @@
             depthWrite: false,
             alphaTest: 0.01 // 🚀 GPU Fill-rate Optimization
         });
+
+        // 🚀 Add custom shader hook to read `aSize` attribute for different star sizes
+        heroMaterial.onBeforeCompile = function (shader) {
+            shader.vertexShader = shader.vertexShader.replace(
+                'void main() {',
+                'attribute float aSize;\nvoid main() {'
+            ).replace(
+                'gl_PointSize = size;',
+                'gl_PointSize = aSize;'
+            );
+        };
 
         heroSystem = new THREE.Points(heroGeometry, heroMaterial);
         heroSystem.position.z = -6500;
@@ -417,38 +471,28 @@
             clusterSystem.add(plane);
         }
         
-        // Add a giant globular cluster of stars inside the nebula
+        // Add a few bright stars inside the nebula
         const nebStarsGeom = new THREE.BufferGeometry();
-        const nebStarsCount = 15000;
-        const nebStarsPos = new Float32Array(nebStarsCount * 3);
-        const nebStarsColors = new Float32Array(nebStarsCount * 3);
-        for(let i=0; i<nebStarsCount; i++) {
-            // Spherical distribution for a natural globular cluster look
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(2 * Math.random() - 1);
-            // Dense core, sparse edges
-            const r = Math.pow(Math.random(), 2) * 12000; 
+        const nebStarsPos = new Float32Array(500 * 3);
+        for(let i=0; i<500; i++) {
+            // Gaussian distribution for natural scattering
+            const rx = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            const ry = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            const rz = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
             
-            nebStarsPos[i*3] = Math.sin(phi) * Math.cos(theta) * r;
-            nebStarsPos[i*3+1] = Math.sin(phi) * Math.sin(theta) * (r * 0.5); // Flatter
-            nebStarsPos[i*3+2] = Math.cos(phi) * r;
-            
-            // Subtle color tinting
-            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-            nebStarsColors[i*3] = color.r;
-            nebStarsColors[i*3+1] = color.g;
-            nebStarsColors[i*3+2] = color.b;
+            nebStarsPos[i*3] = rx * 25000;
+            nebStarsPos[i*3+1] = ry * 10000;
+            nebStarsPos[i*3+2] = rz * 4000;
         }
         nebStarsGeom.setAttribute('position', new THREE.BufferAttribute(nebStarsPos, 3));
-        nebStarsGeom.setAttribute('color', new THREE.BufferAttribute(nebStarsColors, 3));
-        
-        // REUSE the main starsMaterial! This is crucial: it HAS FOG. 
-        // So the stars will be invisible from far away, leaving only the fogless nebula visible!
-        const nebStars = new THREE.Points(nebStarsGeom, starsMaterial);
+        const nebStarsMat = new THREE.PointsMaterial({
+            size: 2.0, color: 0xffffff, transparent: true, opacity: 0.6, fog: false
+        });
+        const nebStars = new THREE.Points(nebStarsGeom, nebStarsMat);
         clusterSystem.add(nebStars);
         
-        // Position it extremely far away for a long approach
-        clusterSystem.position.set(-16000, -8000, -60000);
+        // Position it much further left and slightly lower
+        clusterSystem.position.set(-16000, -8000, -30000);
         
         scene.add(clusterSystem);
 
@@ -529,17 +573,9 @@
             heroSystem2.position.z -= 30000;
         }
         
-        // Move the boundary cluster and loop it
+        // Move the boundary cluster
         if (clusterSystem) {
             clusterSystem.position.z += speed;
-            if (clusterSystem.position.z > 10000) {
-                // Respawn it super far away with a random offset
-                clusterSystem.position.set(
-                    (Math.random() - 0.5) * 40000, // random X
-                    (Math.random() - 0.5) * 15000, // random Y
-                    -80000 - Math.random() * 40000 // random Z (deep space)
-                );
-            }
         }
         
         // Cinematic Entrance Animation
