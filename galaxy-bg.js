@@ -89,17 +89,17 @@
             if (Math.random() < 0.75) {
                 const cluster = clusters[Math.floor(Math.random() * clusters.length)];
                 
-                // Spherical generation with dense core (u^3 biases towards 0)
-                const u = Math.random();
-                const r = Math.pow(u, 3); 
+                // Use polar coordinates for X/Y to avoid axis-aligned cross shapes!
+                const angle = Math.random() * Math.PI * 2;
+                // Power of 2 to concentrate stars at the core of the cluster
+                const r = Math.pow(Math.random(), 2); 
                 
-                // Random 3D direction
-                const theta = Math.random() * Math.PI * 2;
-                const phi = Math.acos((Math.random() * 2) - 1);
+                x = cluster.x + Math.cos(angle) * r * cluster.radiusX;
+                y = cluster.y + Math.sin(angle) * r * cluster.radiusY;
                 
-                x = cluster.x + (r * Math.sin(phi) * Math.cos(theta)) * cluster.radiusX;
-                y = cluster.y + (r * Math.sin(phi) * Math.sin(theta)) * cluster.radiusY;
-                z = cluster.z + (r * Math.cos(phi)) * cluster.radiusZ;
+                // Z can still use independent clustering since it's just depth
+                const w = Math.random() * 2 - 1;
+                z = cluster.z + Math.sign(w) * Math.pow(Math.abs(w), 2) * cluster.radiusZ;
             } else {
                 const angle = Math.random() * Math.PI * 2;
                 const radius = Math.sqrt(Math.random()) * 2500;
