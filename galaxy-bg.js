@@ -67,40 +67,34 @@
         ];
 
         // Create cluster centers for nebula-like structures and voids
-        const numClusters = 300; 
+        const numClusters = 250; 
         const clusters = [];
         
         for (let c = 0; c < numClusters; c++) {
             const angle = Math.random() * Math.PI * 2;
             const radius = Math.sqrt(Math.random()) * 2500;
-            
-            // Highly randomized cluster parameters
-            // Some can be massive and loose, some small and super dense
-            const sizeMultiplier = Math.random() * 2.5 + 0.2; 
-            
             clusters.push({
                 x: Math.cos(angle) * radius,
                 y: Math.sin(angle) * radius * 0.7,
                 z: THREE.MathUtils.randFloatSpread(15000),
-                radiusX: (Math.random() * 800 + 100) * sizeMultiplier, 
-                radiusY: (Math.random() * 800 + 100) * sizeMultiplier, 
-                radiusZ: (Math.random() * 3000 + 500) * sizeMultiplier, 
-                densityPower: Math.random() * 2.5 + 0.5 // 0.5 = loose/uniform, 3.0 = super dense core
+                radiusX: Math.random() * 600 + 200, 
+                radiusY: Math.random() * 600 + 200, 
+                radiusZ: Math.random() * 2000 + 500 
             });
         }
 
         for (let i = 0; i < starCount; i++) {
             let x, y, z;
             
-            if (Math.random() < 0.8) { // 80% clustered for more dramatic clumps
+            if (Math.random() < 0.75) {
                 const cluster = clusters[Math.floor(Math.random() * clusters.length)];
                 
                 // Spherical coordinates for natural round clusters without grid/cross artifacts
                 const theta = Math.random() * Math.PI * 2;
                 const phi = Math.acos(2 * Math.random() - 1);
                 
-                // Dynamic density per cluster
-                const r = Math.pow(Math.random(), cluster.densityPower); 
+                // Biased radius to make the core extremely dense and the edges sparse
+                const r = Math.pow(Math.random(), 2); 
                 
                 x = cluster.x + r * Math.sin(phi) * Math.cos(theta) * cluster.radiusX;
                 y = cluster.y + r * Math.sin(phi) * Math.sin(theta) * cluster.radiusY;
@@ -423,28 +417,38 @@
             clusterSystem.add(plane);
         }
         
-        // Add a few bright stars inside the nebula
+        // Add a giant globular cluster of stars inside the nebula
         const nebStarsGeom = new THREE.BufferGeometry();
-        const nebStarsPos = new Float32Array(500 * 3);
-        for(let i=0; i<500; i++) {
-            // Gaussian distribution for natural scattering
-            const rx = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
-            const ry = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
-            const rz = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+        const nebStarsCount = 15000;
+        const nebStarsPos = new Float32Array(nebStarsCount * 3);
+        const nebStarsColors = new Float32Array(nebStarsCount * 3);
+        for(let i=0; i<nebStarsCount; i++) {
+            // Spherical distribution for a natural globular cluster look
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            // Dense core, sparse edges
+            const r = Math.pow(Math.random(), 2) * 12000; 
             
-            nebStarsPos[i*3] = rx * 25000;
-            nebStarsPos[i*3+1] = ry * 10000;
-            nebStarsPos[i*3+2] = rz * 4000;
+            nebStarsPos[i*3] = Math.sin(phi) * Math.cos(theta) * r;
+            nebStarsPos[i*3+1] = Math.sin(phi) * Math.sin(theta) * (r * 0.5); // Flatter
+            nebStarsPos[i*3+2] = Math.cos(phi) * r;
+            
+            // Subtle color tinting
+            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            nebStarsColors[i*3] = color.r;
+            nebStarsColors[i*3+1] = color.g;
+            nebStarsColors[i*3+2] = color.b;
         }
         nebStarsGeom.setAttribute('position', new THREE.BufferAttribute(nebStarsPos, 3));
-        const nebStarsMat = new THREE.PointsMaterial({
-            size: 2.0, color: 0xffffff, transparent: true, opacity: 0.6, fog: false
-        });
-        const nebStars = new THREE.Points(nebStarsGeom, nebStarsMat);
+        nebStarsGeom.setAttribute('color', new THREE.BufferAttribute(nebStarsColors, 3));
+        
+        // REUSE the main starsMaterial! This is crucial: it HAS FOG. 
+        // So the stars will be invisible from far away, leaving only the fogless nebula visible!
+        const nebStars = new THREE.Points(nebStarsGeom, starsMaterial);
         clusterSystem.add(nebStars);
         
-        // Position it much further left and slightly lower
-        clusterSystem.position.set(-16000, -8000, -30000);
+        // Position it extremely far away for a long approach
+        clusterSystem.position.set(-16000, -8000, -60000);
         
         scene.add(clusterSystem);
 
@@ -525,9 +529,17 @@
             heroSystem2.position.z -= 30000;
         }
         
-        // Move the boundary cluster
+        // Move the boundary cluster and loop it
         if (clusterSystem) {
             clusterSystem.position.z += speed;
+            if (clusterSystem.position.z > 10000) {
+                // Respawn it super far away with a random offset
+                clusterSystem.position.set(
+                    (Math.random() - 0.5) * 40000, // random X
+                    (Math.random() - 0.5) * 15000, // random Y
+                    -80000 - Math.random() * 40000 // random Z (deep space)
+                );
+            }
         }
         
         // Cinematic Entrance Animation
