@@ -157,18 +157,21 @@
             depthWrite: false
         });
 
-        // 🔴 OPTIMIZATION: Dual System Infinite Loop
-        // We use two identical geometries placed back-to-back. 
-        // This eliminates the need to update 800k array positions on the CPU 
-        // and upload 10MB to the GPU every single frame!
+        // 🔴 OPTIMIZATION: Triple System Infinite Loop
+        // We use three identical geometries placed back-to-back. 
+        // This ensures the far distance never runs out of stars before snapping!
         starSystem = new THREE.Points(geometry, starsMaterial);
         starSystem.position.z = -6500;
         
         starSystem2 = new THREE.Points(geometry, starsMaterial);
-        starSystem2.position.z = -21500; // Right behind the first one (-6500 - 15000)
+        starSystem2.position.z = -21500; // Right behind the first one
+        
+        starSystem3 = new THREE.Points(geometry, starsMaterial);
+        starSystem3.position.z = -36500; // Right behind the second one
         
         scene.add(starSystem);
         scene.add(starSystem2);
+        scene.add(starSystem3);
 
         // 🌟 NEW: Hero Stars (Lens Flare Stars)
         const heroStarCount = 5000; // ~1.25% of the total stars
@@ -243,8 +246,12 @@
         heroSystem2 = new THREE.Points(heroGeometry, heroMaterial);
         heroSystem2.position.z = -21500;
         
+        heroSystem3 = new THREE.Points(heroGeometry, heroMaterial);
+        heroSystem3.position.z = -36500;
+        
         scene.add(heroSystem);
         scene.add(heroSystem2);
+        scene.add(heroSystem3);
 
         // 🌌 NEW: Distant Galaxy Background
         const loadingManager = new THREE.LoadingManager();
@@ -507,21 +514,29 @@
         // Move all systems forward
         starSystem.position.z += speed;
         starSystem2.position.z += speed;
+        starSystem3.position.z += speed;
         heroSystem.position.z += speed;
         heroSystem2.position.z += speed;
+        heroSystem3.position.z += speed;
         
-        // Snap back when they pass the camera
+        // Snap back when they pass the camera (3 systems * 15000 distance = 45000 total loop)
         if (starSystem.position.z > 8500) {
-            starSystem.position.z -= 30000;
+            starSystem.position.z -= 45000;
         }
         if (starSystem2.position.z > 8500) {
-            starSystem2.position.z -= 30000;
+            starSystem2.position.z -= 45000;
+        }
+        if (starSystem3.position.z > 8500) {
+            starSystem3.position.z -= 45000;
         }
         if (heroSystem.position.z > 8500) {
-            heroSystem.position.z -= 30000;
+            heroSystem.position.z -= 45000;
         }
         if (heroSystem2.position.z > 8500) {
-            heroSystem2.position.z -= 30000;
+            heroSystem2.position.z -= 45000;
+        }
+        if (heroSystem3.position.z > 8500) {
+            heroSystem3.position.z -= 45000;
         }
         
         // Move the boundary cluster
