@@ -632,6 +632,39 @@
                 if (speedValueDisplay) speedValueDisplay.innerText = timeMultiplier + 'x';
             });
         }
+        
+        // 🚀 Create HUD for Speedometer if it doesn't exist
+        let speedHud = document.getElementById('zk-warp-speedometer');
+        if (!speedHud) {
+            speedHud = document.createElement('div');
+            speedHud.id = 'zk-warp-speedometer';
+            speedHud.style.position = 'fixed';
+            speedHud.style.bottom = '30px';
+            speedHud.style.right = '30px';
+            speedHud.style.color = '#00ffff';
+            speedHud.style.fontFamily = '"Courier New", Courier, monospace';
+            speedHud.style.textShadow = '0 0 10px rgba(0, 255, 255, 0.8)';
+            speedHud.style.pointerEvents = 'none';
+            speedHud.style.zIndex = '9999';
+            speedHud.style.opacity = '0'; // Hidden initially
+            speedHud.style.transition = 'opacity 1s ease-in-out';
+            speedHud.style.background = 'rgba(0, 5, 20, 0.6)';
+            speedHud.style.backdropFilter = 'blur(10px)';
+            speedHud.style.WebkitBackdropFilter = 'blur(10px)';
+            speedHud.style.border = '1px solid rgba(0, 255, 255, 0.2)';
+            speedHud.style.padding = '15px 25px';
+            speedHud.style.borderRadius = '12px';
+            speedHud.style.display = 'flex';
+            speedHud.style.flexDirection = 'column';
+            speedHud.style.alignItems = 'flex-end';
+            speedHud.style.boxShadow = '0 0 20px rgba(0,255,255,0.1)';
+            
+            speedHud.innerHTML = `
+                <div style="font-size: 11px; color: #88bbff; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 5px;">Orbital Velocity</div>
+                <div style="font-size: 28px; font-weight: bold; line-height: 1;"><span id="zk-warp-speed-val">756,000,000</span> <span style="font-size:14px; color:#aaa;">c</span></div>
+            `;
+            document.body.appendChild(speedHud);
+        }
 
         window.addEventListener('resize', onWindowResize);
 
@@ -679,6 +712,24 @@
         // Base speed (timeMultiplier from slider, default 1) + Music bonus
         const currentSpeedMultiplier = timeMultiplier + smoothMusicMultiplier;
         const speed = 0.4 * currentSpeedMultiplier;
+        
+        // 🚀 Update Speedometer UI
+        const hud = document.getElementById('zk-warp-speedometer');
+        if (hud) {
+            // Show HUD only if music is accelerating
+            if (smoothMusicMultiplier > 0.5 || (audio && !audio.paused)) {
+                hud.style.opacity = '1';
+            } else {
+                hud.style.opacity = '0';
+            }
+            
+            const speedValEl = document.getElementById('zk-warp-speed-val');
+            if (speedValEl) {
+                // Calculated true speed: 1x multiplier = 756 Million times the speed of light
+                const currentDisplaySpeed = Math.floor(756000000 * currentSpeedMultiplier);
+                speedValEl.innerText = currentDisplaySpeed.toLocaleString('en-US');
+            }
+        }
         
         // Move all systems forward
         starSystem.position.z += speed;
