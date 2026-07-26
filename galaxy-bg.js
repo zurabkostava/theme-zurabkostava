@@ -7,10 +7,11 @@
     let container;
     let canvas, ctx;
     let scene, camera, renderer;
-    let starSystem, starSystem2, starsMaterial;
-    let heroSystem, heroSystem2, heroMaterial;
+    let starSystem, starSystem2, starSystem3, starsMaterial;
+    let heroSystem, heroSystem2, heroSystem3, heroMaterial;
     let galaxyMesh, galaxyGlowMesh, galaxyCoreMesh;
     let clusterSystem; 
+    let superCluster;
     let animationFrameId;
     let isEntering = false; // For cinematic entrance
     let isRunning = false;
@@ -313,6 +314,59 @@
         scene.add(heroSystem2);
         scene.add(heroSystem3);
 
+        // 🌌 NEW: Super Cluster (Visible from afar, entered at peak speed)
+        const superClusterCount = 150000; // 150k stars for a massive dense system
+        const superGeometry = new THREE.BufferGeometry();
+        const superPositions = new Float32Array(superClusterCount * 3);
+        const superColors = new Float32Array(superClusterCount * 3);
+
+        for (let i = 0; i < superClusterCount; i++) {
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            const r = Math.pow(Math.random(), 2.5); // Extremely dense core
+            
+            superPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta) * 12000;
+            superPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta) * 8000;
+            superPositions[i * 3 + 2] = r * Math.cos(phi) * 15000;
+            
+            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            // Hotter, brighter core
+            const intensity = 1.0 - r; // Closer to core = brighter
+            superColors[i * 3] = Math.min(1, color.r + intensity * 0.5);
+            superColors[i * 3 + 1] = Math.min(1, color.g + intensity * 0.3);
+            superColors[i * 3 + 2] = Math.min(1, color.b + intensity * 0.1);
+        }
+
+        superGeometry.setAttribute('position', new THREE.BufferAttribute(superPositions, 3));
+        superGeometry.setAttribute('color', new THREE.BufferAttribute(superColors, 3));
+
+        const superMaterial = new THREE.PointsMaterial({
+            size: 3.0, 
+            map: texture, // Uses the normal star texture
+            transparent: true,
+            opacity: 0.9,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            alphaTest: 0.01,
+            fog: false // Critical: Ensures it's visible from -50000 away despite the black fog!
+        });
+
+        // Ensure minimum pixel size so it doesn't vanish into sub-pixels from 50,000 units away
+        superMaterial.onBeforeCompile = function (shader) {
+            shader.vertexShader = shader.vertexShader.replace(
+                '#include <fog_vertex>',
+                `#include <fog_vertex>
+                 gl_PointSize = max(gl_PointSize, 1.5);
+                `
+            );
+        };
+
+        superCluster = new THREE.Points(superGeometry, superMaterial);
+        superCluster.position.z = -50000; // So far away it takes 3-4s at 500x speed to reach
+        superCluster.frustumCulled = false;
+        scene.add(superCluster);
+
         // 🌌 NEW: Distant Galaxy Background
         const loadingManager = new THREE.LoadingManager();
         loadingManager.onLoad = function() {
@@ -560,8 +614,8 @@
         
         if (audio && !audio.paused && audio.duration > 0) {
             const progress = audio.currentTime / audio.duration;
-            // Exponential acceleration: starts gentle, gets crazy fast towards the end (up to 100x)
-            targetMusicMultiplier = 100 * Math.pow(progress, 3);
+            // Exponential acceleration: starts gentle, gets crazy fast towards the end (up to 500x)
+            targetMusicMultiplier = 500 * Math.pow(progress, 3);
         }
         
         // Smoothly interpolate the music speed bonus so it doesn't snap if paused
@@ -599,9 +653,12 @@
             heroSystem3.position.z -= 45000;
         }
         
-        // Move the boundary cluster
+        // Move the boundary cluster & super cluster
         if (clusterSystem) {
             clusterSystem.position.z += speed;
+        }
+        if (superCluster) {
+            superCluster.position.z += speed;
         }
         
         // Cinematic Entrance Animation
