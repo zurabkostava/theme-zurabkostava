@@ -825,6 +825,24 @@
             `;
             document.body.appendChild(speedHud);
         }
+        // 🌟 HUD Lens Flare Effect for Special Star
+        if (!document.getElementById('zk-special-star-glow')) {
+            const starGlowOverlay = document.createElement('div');
+            starGlowOverlay.id = 'zk-special-star-glow';
+            starGlowOverlay.style.position = 'fixed';
+            starGlowOverlay.style.bottom = '0';
+            starGlowOverlay.style.left = '0';
+            starGlowOverlay.style.width = '100vw';
+            starGlowOverlay.style.height = '100vh';
+            // Large faint reddish/orange gradient in bottom left corner
+            starGlowOverlay.style.background = 'radial-gradient(circle at 10% 90%, rgba(255, 100, 40, 0.35) 0%, rgba(255, 60, 20, 0.1) 40%, rgba(0,0,0,0) 80%)';
+            starGlowOverlay.style.mixBlendMode = 'screen';
+            starGlowOverlay.style.pointerEvents = 'none';
+            starGlowOverlay.style.zIndex = '999'; 
+            starGlowOverlay.style.transition = 'opacity 0.2s ease-out';
+            starGlowOverlay.style.opacity = '0';
+            document.body.appendChild(starGlowOverlay);
+        }
 
         window.addEventListener('resize', onWindowResize);
 
@@ -922,6 +940,25 @@
         // Move the boundary cluster and nebula
         if (clusterSystem) {
             clusterSystem.position.z += speed;
+            
+            // Optical lens glow effect based on Special Star distance
+            const starGlow = document.getElementById('zk-special-star-glow');
+            if (starGlow) {
+                // Camera is at z = 1000. When cluster Z > 1000, it's behind us.
+                if (clusterSystem.position.z < 1000) {
+                    // Calculate a fade in based on distance
+                    const dist = 1000 - clusterSystem.position.z; 
+                    let op = 0;
+                    if (dist < 30000) {
+                        op = 1.0 - (dist / 30000); // Fades in as we approach
+                        op = Math.min(op, 1.0); // Full intensity when very near
+                    }
+                    starGlow.style.opacity = op.toString();
+                } else {
+                    // Passed the camera, immediately disappear
+                    starGlow.style.opacity = '0';
+                }
+            }
         }
         if (nebulaSystem) {
             nebulaSystem.position.z += speed;
