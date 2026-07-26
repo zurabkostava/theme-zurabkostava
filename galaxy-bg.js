@@ -72,7 +72,8 @@
         
         for (let c = 0; c < numClusters; c++) {
             const angle = Math.random() * Math.PI * 2;
-            const radius = Math.sqrt(Math.random()) * 2500;
+            // Push clusters away from the exact center (x=0, y=0) so we fly past them, not through epicenters
+            const radius = 800 + Math.sqrt(Math.random()) * 1700;
             
             // 🌌 Randomly assign density profiles to clusters
             const typeRand = Math.random();
@@ -331,9 +332,11 @@
         // Create 8 massive sub-clusters to form a complex nebula shape
         const giantNebulaSubClusters = [];
         for(let i=0; i<8; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 3500 + Math.random() * 4500; // Keep massive clouds away from direct flight path
             giantNebulaSubClusters.push({
-                x: (Math.random() - 0.5) * 12000, // Revert to original spread so they aren't too thin
-                y: (Math.random() - 0.5) * 8000,
+                x: Math.cos(angle) * dist,
+                y: Math.sin(angle) * dist * 0.7,
                 z: (Math.random() - 0.5) * 15000,
                 radiusX: Math.random() * 6000 + 3000, // Large soft clouds
                 radiusY: Math.random() * 6000 + 3000,
