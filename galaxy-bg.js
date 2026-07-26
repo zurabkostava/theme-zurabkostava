@@ -140,24 +140,22 @@
             opacity: 1,
             vertexColors: true,
             blending: THREE.AdditiveBlending,
-            depthWrite: false
+            depthWrite: false,
+            alphaTest: 0.01 // 🚀 GPU Fill-rate Optimization: Discard empty pixels!
         });
 
-        // 🔴 OPTIMIZATION: Triple System Infinite Loop
-        // We use three identical geometries placed back-to-back. 
-        // This ensures the far distance never runs out of stars before snapping!
+        // 🔴 OPTIMIZATION: Dual System Infinite Loop
+        // We use two identical geometries placed back-to-back. 
         starSystem = new THREE.Points(geometry, starsMaterial);
         starSystem.position.z = -6500;
+        starSystem.frustumCulled = false; // CPU Optimization
         
         starSystem2 = new THREE.Points(geometry, starsMaterial);
         starSystem2.position.z = -21500; // Right behind the first one
-        
-        starSystem3 = new THREE.Points(geometry, starsMaterial);
-        starSystem3.position.z = -36500; // Right behind the second one
+        starSystem2.frustumCulled = false;
         
         scene.add(starSystem);
         scene.add(starSystem2);
-        scene.add(starSystem3);
 
         // 🌟 NEW: Hero Stars (Lens Flare Stars)
         const heroStarCount = 5000; // ~1.25% of the total stars
@@ -167,9 +165,11 @@
         const heroSizes = new Float32Array(heroStarCount);
 
         for (let i = 0; i < heroStarCount; i++) {
-            // Uniform spread for hero stars so they don't clump too much
-            heroPositions[i * 3] = THREE.MathUtils.randFloatSpread(4500);
-            heroPositions[i * 3 + 1] = THREE.MathUtils.randFloatSpread(3000);
+            // Match the cylindrical distribution of normal stars
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.sqrt(Math.random()) * 2500;
+            heroPositions[i * 3] = Math.cos(angle) * radius;
+            heroPositions[i * 3 + 1] = Math.sin(angle) * radius * 0.7;
             heroPositions[i * 3 + 2] = THREE.MathUtils.randFloatSpread(15000);
 
             const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
@@ -223,21 +223,20 @@
             opacity: 1,
             vertexColors: true,
             blending: THREE.AdditiveBlending,
-            depthWrite: false
+            depthWrite: false,
+            alphaTest: 0.01 // 🚀 GPU Fill-rate Optimization
         });
 
         heroSystem = new THREE.Points(heroGeometry, heroMaterial);
         heroSystem.position.z = -6500;
+        heroSystem.frustumCulled = false;
         
         heroSystem2 = new THREE.Points(heroGeometry, heroMaterial);
         heroSystem2.position.z = -21500;
-        
-        heroSystem3 = new THREE.Points(heroGeometry, heroMaterial);
-        heroSystem3.position.z = -36500;
+        heroSystem2.frustumCulled = false;
         
         scene.add(heroSystem);
         scene.add(heroSystem2);
-        scene.add(heroSystem3);
 
         // 🌌 NEW: Distant Galaxy Background
         const loadingManager = new THREE.LoadingManager();
@@ -500,29 +499,21 @@
         // Move all systems forward
         starSystem.position.z += speed;
         starSystem2.position.z += speed;
-        starSystem3.position.z += speed;
         heroSystem.position.z += speed;
         heroSystem2.position.z += speed;
-        heroSystem3.position.z += speed;
         
-        // Snap back when they pass the camera (3 systems * 15000 distance = 45000 total loop)
+        // Snap back when they pass the camera (2 systems * 15000 distance = 30000 total loop)
         if (starSystem.position.z > 8500) {
-            starSystem.position.z -= 45000;
+            starSystem.position.z -= 30000;
         }
         if (starSystem2.position.z > 8500) {
-            starSystem2.position.z -= 45000;
-        }
-        if (starSystem3.position.z > 8500) {
-            starSystem3.position.z -= 45000;
+            starSystem2.position.z -= 30000;
         }
         if (heroSystem.position.z > 8500) {
-            heroSystem.position.z -= 45000;
+            heroSystem.position.z -= 30000;
         }
         if (heroSystem2.position.z > 8500) {
-            heroSystem2.position.z -= 45000;
-        }
-        if (heroSystem3.position.z > 8500) {
-            heroSystem3.position.z -= 45000;
+            heroSystem2.position.z -= 30000;
         }
         
         // Move the boundary cluster
@@ -567,12 +558,10 @@
             const baseCount = starSystem.geometry.attributes.position.count;
             starSystem.geometry.setDrawRange(0, Math.floor(baseCount * starFactor));
             starSystem2.geometry.setDrawRange(0, Math.floor(baseCount * starFactor));
-            starSystem3.geometry.setDrawRange(0, Math.floor(baseCount * starFactor));
             
             const heroCount = heroSystem.geometry.attributes.position.count;
             heroSystem.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
             heroSystem2.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
-            heroSystem3.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
             
             // Warp Speed Visual Effects (Camera Shake)
             if (timeMultiplier > 10) {
