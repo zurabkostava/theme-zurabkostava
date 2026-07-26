@@ -39,8 +39,8 @@
         camera.position.z = 25000;
         camera.rotation.z = Math.PI * 0.5;
 
-        renderer = new THREE.WebGLRenderer({ canvas: container, alpha: false, antialias: true });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // optimize performance
+        renderer = new THREE.WebGLRenderer({ canvas: container, alpha: false, antialias: false, powerPreference: "high-performance", stencil: false, depth: false });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25)); // 🚀 MASSIVE GPU FILL-RATE OPTIMIZATION
         renderer.setSize(rect.width, rect.height);
         
         // Hide canvas initially to prevent pop-in
@@ -153,6 +153,7 @@
             vertexColors: true,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
+            depthTest: false, // 🚀 Z-Buffer Read Optimization
             alphaTest: 0.01 // 🚀 GPU Fill-rate Optimization: Discard empty pixels!
         });
 
@@ -284,6 +285,7 @@
             vertexColors: true,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
+            depthTest: false, // 🚀 Z-Buffer Read Optimization
             alphaTest: 0.01 // 🚀 GPU Fill-rate Optimization
         });
 
@@ -395,6 +397,8 @@
             vertexColors: true,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
+            depthTest: false, // 🚀 Z-Buffer Read Optimization
+            alphaTest: 0.005, // 🚀 Fragment Shader Early Discard
             fog: false // 🚀 IMPORTANT: Visible from infinite distance!
         });
 
@@ -451,8 +455,9 @@
             alphaMap: alphaTexture,
             transparent: true,
             opacity: 0.5, // Reduced overall opacity
-            depthWrite: false,
             blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            depthTest: false,
             fog: false // Prevent the 3D fog from turning the distant galaxy black
         });
         
@@ -491,6 +496,7 @@
             transparent: true,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
+            depthTest: false,
             fog: false
         });
         
@@ -526,6 +532,7 @@
             transparent: true,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
+            depthTest: false,
             fog: false
         });
         
@@ -563,6 +570,7 @@
             transparent: true,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
+            depthTest: false,
             fog: false,
             opacity: 0.05 // Much fainter, more map-like
         });
