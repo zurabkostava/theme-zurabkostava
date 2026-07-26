@@ -598,10 +598,14 @@
             clusterSystem.add(plane);
         }
         
-        // Add a few bright stars inside the nebula
+        // Add beautifully colored, varied-size bright stars inside the nebula
+        const nebStarsCount = 800; // Increased for a more majestic look
         const nebStarsGeom = new THREE.BufferGeometry();
-        const nebStarsPos = new Float32Array(500 * 3);
-        for(let i=0; i<500; i++) {
+        const nebStarsPos = new Float32Array(nebStarsCount * 3);
+        const nebStarsColors = new Float32Array(nebStarsCount * 3);
+        const nebStarsSizes = new Float32Array(nebStarsCount);
+        
+        for(let i=0; i<nebStarsCount; i++) {
             // Gaussian distribution for natural scattering
             const rx = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
             const ry = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
@@ -610,11 +614,45 @@
             nebStarsPos[i*3] = rx * 25000;
             nebStarsPos[i*3+1] = ry * 10000;
             nebStarsPos[i*3+2] = rz * 4000;
+            
+            // Random majestic colors (using existing palette)
+            const cColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            nebStarsColors[i*3] = cColor.r * 1.5; // Boost brightness
+            nebStarsColors[i*3+1] = cColor.g * 1.5;
+            nebStarsColors[i*3+2] = cColor.b * 1.5;
+            
+            // Varied sizes for massive super-giants and smaller bright stars
+            nebStarsSizes[i] = Math.random() > 0.9 ? Math.random() * 200 + 100 : Math.random() * 60 + 30;
         }
+        
         nebStarsGeom.setAttribute('position', new THREE.BufferAttribute(nebStarsPos, 3));
+        nebStarsGeom.setAttribute('color', new THREE.BufferAttribute(nebStarsColors, 3));
+        nebStarsGeom.setAttribute('aSize', new THREE.BufferAttribute(nebStarsSizes, 1));
+        
         const nebStarsMat = new THREE.PointsMaterial({
-            size: 2.0, color: 0xffffff, transparent: true, opacity: 0.6, fog: false
+            size: 1, // Overridden by aSize
+            map: flareTexture, // Use the glorious 8-pointed JWST flare
+            transparent: true,
+            opacity: 1,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            depthTest: false,
+            alphaTest: 0.01,
+            fog: false
         });
+        
+        // Inject shader hook to read `aSize` attribute for different star sizes
+        nebStarsMat.onBeforeCompile = function (shader) {
+            shader.vertexShader = shader.vertexShader.replace(
+                'void main() {',
+                'attribute float aSize;\nvoid main() {'
+            ).replace(
+                'gl_PointSize = size;',
+                'gl_PointSize = aSize;'
+            );
+        };
+        
         const nebStars = new THREE.Points(nebStarsGeom, nebStarsMat);
         clusterSystem.add(nebStars);
         
