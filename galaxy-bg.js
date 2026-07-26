@@ -674,6 +674,14 @@
         // Ensure Additive Blending within Canvas for perfect glows
         sctx.globalCompositeOperation = 'screen'; 
 
+        // 0. Massive ambient space glow (Illuminates the region around the star)
+        const ambientGrad = sctx.createRadialGradient(scx, scy, 0, scx, scy, 500);
+        ambientGrad.addColorStop(0, 'rgba(255, 100, 40, 0.12)'); // Soft golden-orange ambient light
+        ambientGrad.addColorStop(0.4, 'rgba(255, 60, 20, 0.05)');
+        ambientGrad.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Fades gently into space
+        sctx.fillStyle = ambientGrad;
+        sctx.fillRect(0, 0, 1024, 1024);
+
         // 1. Smaller, Faint Golden-Red Halo
         const haloGrad = sctx.createRadialGradient(scx, scy, 80, scx, scy, 180);
         haloGrad.addColorStop(0, 'rgba(0, 0, 0, 0)'); // Transparent inside
