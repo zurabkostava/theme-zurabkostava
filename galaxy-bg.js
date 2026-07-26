@@ -839,7 +839,6 @@
             starGlowOverlay.style.mixBlendMode = 'screen';
             starGlowOverlay.style.pointerEvents = 'none';
             starGlowOverlay.style.zIndex = '999'; 
-            starGlowOverlay.style.transition = 'opacity 0.2s ease-out';
             starGlowOverlay.style.opacity = '0';
             document.body.appendChild(starGlowOverlay);
         }
@@ -944,20 +943,19 @@
             // Optical lens glow effect based on Special Star distance
             const starGlow = document.getElementById('zk-special-star-glow');
             if (starGlow) {
-                // Camera is at z = 1000. When cluster Z > 1000, it's behind us.
-                if (clusterSystem.position.z < 1000) {
-                    // Calculate a fade in based on distance
-                    const dist = 1000 - clusterSystem.position.z; 
-                    let op = 0;
-                    if (dist < 30000) {
-                        op = 1.0 - (dist / 30000); // Fades in as we approach
-                        op = Math.min(op, 1.0); // Full intensity when very near
-                    }
-                    starGlow.style.opacity = op.toString();
-                } else {
-                    // Passed the camera, immediately disappear
-                    starGlow.style.opacity = '0';
+                const dist = 1000 - clusterSystem.position.z; 
+                let op = 0;
+                
+                if (dist > 15000 && dist < 45000) {
+                    // Fade in smoothly as we approach
+                    op = (45000 - dist) / 30000;
+                } else if (dist <= 15000 && dist > -5000) {
+                    // Fade out smoothly as it leaves the screen edges and passes the camera
+                    op = (dist + 5000) / 20000;
                 }
+                
+                op = Math.max(0, Math.min(op, 1.0));
+                starGlow.style.opacity = op.toString();
             }
         }
         if (nebulaSystem) {
