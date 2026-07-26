@@ -579,7 +579,7 @@
         // Subtler, desaturated cosmic colors for a faint galactic band
         const nebColors = [0x221144, 0x112244, 0x331133, 0x1a1a3a]; 
         for (let i = 0; i < 20; i++) {
-            const size = 15000 + Math.random() * 15000; // Even larger clouds
+            const size = 20000 + Math.random() * 20000; // Even larger clouds
             const planeMat = nebulaMaterial.clone();
             planeMat.color.setHex(nebColors[Math.floor(Math.random() * nebColors.length)]);
             
@@ -590,16 +590,16 @@
             const rz = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
             
             plane.position.set(
-                rx * 20000,
-                ry * 6000,
-                rz * 4000
+                rx * 30000,
+                ry * 10000,
+                rz * 6000
             );
             plane.rotation.z = Math.random() * Math.PI * 2;
             clusterSystem.add(plane);
         }
         
         // Add beautifully colored, varied-size bright stars inside the nebula
-        const nebStarsCount = 808; // 800 regular majestic stars + 8 Ultra-Massive ones
+        const nebStarsCount = 815; // 800 regular majestic stars + 15 Ultra-Massive ones
         const nebStarsGeom = new THREE.BufferGeometry();
         const nebStarsPos = new Float32Array(nebStarsCount * 3);
         const nebStarsColors = new Float32Array(nebStarsCount * 3);
@@ -611,19 +611,19 @@
             const ry = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
             const rz = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
             
-            nebStarsPos[i*3] = rx * 25000;
-            nebStarsPos[i*3+1] = ry * 10000;
-            nebStarsPos[i*3+2] = rz * 4000;
+            nebStarsPos[i*3] = rx * 35000;
+            nebStarsPos[i*3+1] = ry * 15000;
+            nebStarsPos[i*3+2] = rz * 6000;
             
             // Random majestic colors (using existing palette)
             const cColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
             
             if (i >= 800) {
-                // The 8 Ultra-Massive Stars (Reduced bloom to preserve true colors)
+                // The 15 Ultra-Massive Stars (Reduced bloom to preserve true colors)
                 nebStarsColors[i*3] = cColor.r * 1.3; 
                 nebStarsColors[i*3+1] = cColor.g * 1.3;
                 nebStarsColors[i*3+2] = cColor.b * 1.3;
-                nebStarsSizes[i] = Math.random() * 200 + 200; // 200 to 400 sizes
+                nebStarsSizes[i] = Math.random() * 300 + 100; // 100 to 400 sizes
             } else {
                 // Regular majestic stars
                 nebStarsColors[i*3] = cColor.r * 1.1;
@@ -664,8 +664,8 @@
         const nebStars = new THREE.Points(nebStarsGeom, nebStarsMat);
         clusterSystem.add(nebStars);
         
-        // Position it much further left and slightly lower
-        clusterSystem.position.set(-16000, -8000, -30000);
+        // Position it much further left and lower
+        clusterSystem.position.set(-25000, -14000, -30000);
         
         scene.add(clusterSystem);
 
