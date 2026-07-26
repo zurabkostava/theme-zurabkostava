@@ -393,8 +393,8 @@
         };
 
         nebulaSystem = new THREE.Points(giantNebulaGeometry, giantNebulaMaterial);
-        // Placed at -42000. At 500x speed (200 units/frame), it reaches the camera in 3.5 seconds.
-        nebulaSystem.position.z = -42000;
+        // Placed at -8000. At 100x speed (40 units/frame), it reaches the camera in 3.5 seconds.
+        nebulaSystem.position.z = -8000;
         nebulaSystem.frustumCulled = false;
         scene.add(nebulaSystem);
 
@@ -645,8 +645,8 @@
         
         if (audio && !audio.paused && audio.duration > 0) {
             const progress = audio.currentTime / audio.duration;
-            // Exponential acceleration: starts gentle, gets crazy fast towards the end (up to 500x)
-            targetMusicMultiplier = 500 * Math.pow(progress, 3);
+            // Exponential acceleration: starts gentle, gets crazy fast towards the end (up to 100x)
+            targetMusicMultiplier = 100 * Math.pow(progress, 3);
         }
         
         // Smoothly interpolate the music speed bonus so it doesn't snap if paused
