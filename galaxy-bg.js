@@ -599,7 +599,7 @@
         }
         
         // Add beautifully colored, varied-size bright stars inside the nebula
-        const nebStarsCount = 8000; // 🚀 Increased to 8000 for high density!
+        const nebStarsCount = 815; // 800 regular small stars + 15 distinct large stars
         const nebStarsGeom = new THREE.BufferGeometry();
         const nebStarsPos = new Float32Array(nebStarsCount * 3);
         const nebStarsColors = new Float32Array(nebStarsCount * 3);
@@ -615,12 +615,22 @@
             nebStarsPos[i*3+1] = ry * 15000;
             nebStarsPos[i*3+2] = rz * 8000;
             
-            // ⭐ Regular majestic stars (small like normal clusters so giants stand out)
-            const cColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-            nebStarsColors[i*3] = cColor.r * 1.0;
-            nebStarsColors[i*3+1] = cColor.g * 1.0;
-            nebStarsColors[i*3+2] = cColor.b * 1.0;
-            nebStarsSizes[i] = Math.random() * 30 + 10;
+            if (i >= 800) {
+                // ✨ The 15 Distinctly Large, Colored Stars scattered around
+                const cColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                nebStarsColors[i*3] = cColor.r * 1.5; 
+                nebStarsColors[i*3+1] = cColor.g * 1.5;
+                nebStarsColors[i*3+2] = cColor.b * 1.5;
+                nebStarsSizes[i] = Math.random() * 250 + 150; // 150 to 400 sizes
+                
+            } else {
+                // ⭐ Regular majestic stars (small like normal clusters so giants stand out)
+                const cColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                nebStarsColors[i*3] = cColor.r * 1.0;
+                nebStarsColors[i*3+1] = cColor.g * 1.0;
+                nebStarsColors[i*3+2] = cColor.b * 1.0;
+                nebStarsSizes[i] = Math.random() * 30 + 10;
+            }
         }
         
         nebStarsGeom.setAttribute('position', new THREE.BufferAttribute(nebStarsPos, 3));
@@ -653,51 +663,81 @@
         
         const nebStars = new THREE.Points(nebStarsGeom, nebStarsMat);
         clusterSystem.add(nebStars);
-
-        // 🌟 CREATE TRUE GIANT STARS USING SPRITES 
-        // PointsMaterial is limited by WebGL ALIASED_POINT_SIZE_RANGE (often 64px on Windows).
-        // Sprites are actual geometry planes, allowing infinitely massive stars in world space!
-
-        // 1. The 15 Distinctly Large, Colored Stars scattered around
-        for (let i = 0; i < 15; i++) {
-            const rx = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
-            const ry = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
-            const rz = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
-            
-            const cColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-            const giantMat = new THREE.SpriteMaterial({
-                map: flareTexture,
-                color: new THREE.Color(cColor.r * 1.5, cColor.g * 1.5, cColor.b * 1.5),
-                transparent: true,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                depthTest: false,
-                fog: false
-            });
-            const giantSprite = new THREE.Sprite(giantMat);
-            giantSprite.position.set(rx * 25000, ry * 10000, rz * 5000);
-            
-            // True world size (not pixels!)
-            const scale = Math.random() * 2000 + 1000; 
-            giantSprite.scale.set(scale, scale, 1);
-            clusterSystem.add(giantSprite);
-        }
         
-        // 2. THE ONE GIGANTIC SPECIAL STAR (Exactly in the middle)
-        const specialMat = new THREE.SpriteMaterial({
-            map: flareTexture,
-            color: new THREE.Color(2.0, 2.6, 3.0), // Brilliant White-Cyan core
-            transparent: true,
+        // 🌟 THE ONE GIGANTIC SPECIAL STAR (Custom Drawn Sprite matching the photo)
+        const specialStarCanvas = document.createElement('canvas');
+        specialStarCanvas.width = 1024;
+        specialStarCanvas.height = 1024;
+        const sctx = specialStarCanvas.getContext('2d');
+        const scx = 512, scy = 512;
+
+        // 1. Reddish/Orange Outer Halo
+        sctx.beginPath();
+        sctx.arc(scx, scy, 350, 0, Math.PI * 2);
+        sctx.strokeStyle = 'rgba(255, 60, 20, 0.15)';
+        sctx.lineWidth = 15;
+        sctx.stroke();
+        
+        // 2. Fainter Inner Ring
+        sctx.beginPath();
+        sctx.arc(scx, scy, 150, 0, Math.PI * 2);
+        sctx.strokeStyle = 'rgba(255, 100, 50, 0.2)';
+        sctx.lineWidth = 40;
+        sctx.stroke();
+
+        // 3. Colossal 4-Pointed Cross Flare (Horizontal & Vertical)
+        const crossGradX = sctx.createLinearGradient(0, scy, 1024, scy);
+        crossGradX.addColorStop(0, 'rgba(0,0,0,0)');
+        crossGradX.addColorStop(0.45, 'rgba(255, 80, 20, 0.8)');
+        crossGradX.addColorStop(0.5, 'rgba(255, 255, 255, 1)');
+        crossGradX.addColorStop(0.55, 'rgba(255, 80, 20, 0.8)');
+        crossGradX.addColorStop(1, 'rgba(0,0,0,0)');
+        sctx.fillStyle = crossGradX;
+        sctx.fillRect(0, scy - 4, 1024, 8); // Thin wide line
+        
+        const crossGradY = sctx.createLinearGradient(scx, 0, scx, 1024);
+        crossGradY.addColorStop(0, 'rgba(0,0,0,0)');
+        crossGradY.addColorStop(0.45, 'rgba(255, 80, 20, 0.8)');
+        crossGradY.addColorStop(0.5, 'rgba(255, 255, 255, 1)');
+        crossGradY.addColorStop(0.55, 'rgba(255, 80, 20, 0.8)');
+        crossGradY.addColorStop(1, 'rgba(0,0,0,0)');
+        sctx.fillStyle = crossGradY;
+        sctx.fillRect(scx - 4, 0, 8, 1024); // Thin tall line
+
+        // 4. Intensely Bright Core
+        const coreGrad = sctx.createRadialGradient(scx, scy, 0, scx, scy, 120);
+        coreGrad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        coreGrad.addColorStop(0.15, 'rgba(255, 230, 180, 1)');
+        coreGrad.addColorStop(0.4, 'rgba(255, 100, 20, 0.8)');
+        coreGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        sctx.fillStyle = coreGrad;
+        sctx.beginPath();
+        sctx.arc(scx, scy, 120, 0, Math.PI * 2);
+        sctx.fill();
+        
+        // 5. Small Blue Companion Star (on the left flare)
+        const compGrad = sctx.createRadialGradient(scx - 120, scy + 10, 0, scx - 120, scy + 10, 30);
+        compGrad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        compGrad.addColorStop(0.2, 'rgba(100, 200, 255, 0.9)');
+        compGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        sctx.fillStyle = compGrad;
+        sctx.beginPath();
+        sctx.arc(scx - 120, scy + 10, 30, 0, Math.PI * 2);
+        sctx.fill();
+
+        const specialStarTexture = new THREE.CanvasTexture(specialStarCanvas);
+        const specialStarMat = new THREE.SpriteMaterial({
+            map: specialStarTexture,
             blending: THREE.AdditiveBlending,
+            transparent: true,
             depthWrite: false,
             depthTest: false,
             fog: false
         });
-        const specialSprite = new THREE.Sprite(specialMat);
-        specialSprite.position.set(0, 0, 0);
-        // Colossal world size!
-        specialSprite.scale.set(15000, 15000, 1); 
-        clusterSystem.add(specialSprite);
+        const specialStar = new THREE.Sprite(specialStarMat);
+        specialStar.scale.set(6000, 6000, 1); // Absolutely colossal
+        specialStar.position.set(0, 0, 0); // Center of the boundary nebula
+        clusterSystem.add(specialStar);
         
         // Position it much further left and slightly lower
         clusterSystem.position.set(-16000, -8000, -30000);
