@@ -486,8 +486,8 @@
         
         if (audio && !audio.paused && audio.duration > 0) {
             const progress = audio.currentTime / audio.duration;
-            // Exponential acceleration: starts gentle, gets crazy fast towards the end (up to 300x)
-            targetMusicMultiplier = 300 * Math.pow(progress, 3);
+            // Exponential acceleration: starts gentle, gets crazy fast towards the end (up to 200x)
+            targetMusicMultiplier = 200 * Math.pow(progress, 3);
         }
         
         // Smoothly interpolate the music speed bonus so it doesn't snap if paused
