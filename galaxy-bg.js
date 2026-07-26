@@ -393,8 +393,8 @@
         };
 
         nebulaSystem = new THREE.Points(giantNebulaGeometry, giantNebulaMaterial);
-        // Placed at -8000. At 100x speed (40 units/frame), it reaches the camera in 3.5 seconds.
-        nebulaSystem.position.z = -8000;
+        // Placed at -42000. At 500x speed (200 units/frame), it reaches the camera in 3.5 seconds.
+        nebulaSystem.position.z = -42000;
         nebulaSystem.frustumCulled = false;
         scene.add(nebulaSystem);
 
