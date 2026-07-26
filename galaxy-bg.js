@@ -674,17 +674,17 @@
         // Ensure Additive Blending within Canvas for perfect glows
         sctx.globalCompositeOperation = 'screen'; 
 
-        // 1. Massive Faint Red Halo (The outer ring in the photo)
-        const haloGrad = sctx.createRadialGradient(scx, scy, 150, scx, scy, 300);
+        // 1. Smaller, Faint Golden-Red Halo
+        const haloGrad = sctx.createRadialGradient(scx, scy, 80, scx, scy, 180);
         haloGrad.addColorStop(0, 'rgba(0, 0, 0, 0)'); // Transparent inside
-        haloGrad.addColorStop(0.8, 'rgba(255, 30, 0, 0.15)'); // Peak of the red ring
+        haloGrad.addColorStop(0.7, 'rgba(255, 60, 20, 0.1)'); // Peak of the fainter ring
         haloGrad.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Fades out
         sctx.fillStyle = haloGrad;
         sctx.fillRect(0, 0, 1024, 1024);
         
-        // Add a slight reddish inner glow inside the ring to mimic the space dust
-        const dustGrad = sctx.createRadialGradient(scx, scy, 0, scx, scy, 300);
-        dustGrad.addColorStop(0, 'rgba(255, 100, 50, 0.2)');
+        // Add a slight golden-orange inner glow inside the ring
+        const dustGrad = sctx.createRadialGradient(scx, scy, 0, scx, scy, 180);
+        dustGrad.addColorStop(0, 'rgba(255, 120, 60, 0.12)');
         dustGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         sctx.fillStyle = dustGrad;
         sctx.fillRect(0, 0, 1024, 1024);
@@ -693,9 +693,9 @@
         // Horizontal Flare Aura
         const crossAuraX = sctx.createLinearGradient(0, scy, 1024, scy);
         crossAuraX.addColorStop(0, 'rgba(0,0,0,0)');
-        crossAuraX.addColorStop(0.4, 'rgba(255, 50, 0, 0.4)');
+        crossAuraX.addColorStop(0.4, 'rgba(255, 80, 20, 0.25)'); // Less opaque red
         crossAuraX.addColorStop(0.5, 'rgba(255, 200, 150, 1)');
-        crossAuraX.addColorStop(0.6, 'rgba(255, 50, 0, 0.4)');
+        crossAuraX.addColorStop(0.6, 'rgba(255, 80, 20, 0.25)');
         crossAuraX.addColorStop(1, 'rgba(0,0,0,0)');
         sctx.fillStyle = crossAuraX;
         sctx.fillRect(0, scy - 3, 1024, 6);
@@ -703,9 +703,9 @@
         // Vertical Flare Aura
         const crossAuraY = sctx.createLinearGradient(scx, 0, scx, 1024);
         crossAuraY.addColorStop(0, 'rgba(0,0,0,0)');
-        crossAuraY.addColorStop(0.4, 'rgba(255, 50, 0, 0.4)');
+        crossAuraY.addColorStop(0.4, 'rgba(255, 80, 20, 0.25)');
         crossAuraY.addColorStop(0.5, 'rgba(255, 200, 150, 1)');
-        crossAuraY.addColorStop(0.6, 'rgba(255, 50, 0, 0.4)');
+        crossAuraY.addColorStop(0.6, 'rgba(255, 80, 20, 0.25)');
         crossAuraY.addColorStop(1, 'rgba(0,0,0,0)');
         sctx.fillStyle = crossAuraY;
         sctx.fillRect(scx - 3, 0, 6, 1024);
@@ -730,11 +730,11 @@
         sctx.fillRect(scx - 1, 0, 2, 1024);
 
         // 3. Intensely Bright Multi-layered Core
-        // Outer Core (Orange/Red)
+        // Outer Core (Golden/Orange)
         const coreOuter = sctx.createRadialGradient(scx, scy, 0, scx, scy, 100);
         coreOuter.addColorStop(0, 'rgba(255, 200, 100, 1)');
-        coreOuter.addColorStop(0.2, 'rgba(255, 80, 0, 0.8)');
-        coreOuter.addColorStop(0.5, 'rgba(255, 30, 0, 0.3)');
+        coreOuter.addColorStop(0.2, 'rgba(255, 120, 20, 0.8)');
+        coreOuter.addColorStop(0.5, 'rgba(255, 60, 10, 0.2)');
         coreOuter.addColorStop(1, 'rgba(0, 0, 0, 0)');
         sctx.fillStyle = coreOuter;
         sctx.beginPath(); sctx.arc(scx, scy, 100, 0, Math.PI * 2); sctx.fill();
