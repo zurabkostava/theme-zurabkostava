@@ -33,7 +33,7 @@
         scene.fog = new THREE.FogExp2(0x000000, 0.0002);
 
         // Camera - huge far plane so large tilted objects don't clip at extreme distances
-        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 35000);
+        camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 50000);
         
         // Start far away and rotated for cinematic barrel roll entrance
         camera.position.z = 25000;
