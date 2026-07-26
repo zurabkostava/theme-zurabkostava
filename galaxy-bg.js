@@ -89,13 +89,17 @@
             if (Math.random() < 0.75) {
                 const cluster = clusters[Math.floor(Math.random() * clusters.length)];
                 
-                const u = Math.random() * 2 - 1;
-                const v = Math.random() * 2 - 1;
-                const w = Math.random() * 2 - 1;
+                // Spherical generation with dense core (u^3 biases towards 0)
+                const u = Math.random();
+                const r = Math.pow(u, 3); 
                 
-                x = cluster.x + Math.sign(u) * Math.pow(Math.abs(u), 2) * cluster.radiusX;
-                y = cluster.y + Math.sign(v) * Math.pow(Math.abs(v), 2) * cluster.radiusY;
-                z = cluster.z + Math.sign(w) * Math.pow(Math.abs(w), 2) * cluster.radiusZ;
+                // Random 3D direction
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos((Math.random() * 2) - 1);
+                
+                x = cluster.x + (r * Math.sin(phi) * Math.cos(theta)) * cluster.radiusX;
+                y = cluster.y + (r * Math.sin(phi) * Math.sin(theta)) * cluster.radiusY;
+                z = cluster.z + (r * Math.cos(phi)) * cluster.radiusZ;
             } else {
                 const angle = Math.random() * Math.PI * 2;
                 const radius = Math.sqrt(Math.random()) * 2500;
