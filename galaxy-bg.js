@@ -949,10 +949,11 @@
                 // it physically leaves the screen around z = -12000, way before passing the camera!
                 if (z < -8000) {
                     let op = 0;
-                    if (z > -35000 && z <= -22000) {
-                        // Exponential fade in: stays very faint when far, grows rapidly when close
-                        const progress = (z - (-35000)) / 13000;
-                        op = Math.pow(progress, 3) * 0.85; // Peak intensity 0.85
+                    if (z <= -22000) {
+                        // Always have a very slight baseline opacity from the very beginning
+                        // Cluster spawns around -30000. 
+                        const progress = Math.max(0, (z - (-35000)) / 13000);
+                        op = 0.1 + (Math.pow(progress, 4) * 0.75); // Base 0.1, peaks at 0.85
                     } else if (z > -22000 && z <= -16000) {
                         op = 0.85; // Peak intensity while fully visible and close
                     } else if (z > -16000 && z <= -8000) {
