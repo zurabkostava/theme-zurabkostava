@@ -599,7 +599,7 @@
         }
         
         // Add beautifully colored, varied-size bright stars inside the nebula
-        const nebStarsCount = 800; // Increased for a more majestic look
+        const nebStarsCount = 815; // 800 regular majestic stars + 15 Ultra-Massive ones
         const nebStarsGeom = new THREE.BufferGeometry();
         const nebStarsPos = new Float32Array(nebStarsCount * 3);
         const nebStarsColors = new Float32Array(nebStarsCount * 3);
@@ -617,12 +617,20 @@
             
             // Random majestic colors (using existing palette)
             const cColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-            nebStarsColors[i*3] = cColor.r * 1.5; // Boost brightness
-            nebStarsColors[i*3+1] = cColor.g * 1.5;
-            nebStarsColors[i*3+2] = cColor.b * 1.5;
             
-            // Varied sizes for massive super-giants and smaller bright stars
-            nebStarsSizes[i] = Math.random() > 0.9 ? Math.random() * 200 + 100 : Math.random() * 60 + 30;
+            if (i >= 800) {
+                // The 15 Ultra-Massive, Blindingly Bright Stars!
+                nebStarsColors[i*3] = cColor.r * 2.5; 
+                nebStarsColors[i*3+1] = cColor.g * 2.5;
+                nebStarsColors[i*3+2] = cColor.b * 2.5;
+                nebStarsSizes[i] = Math.random() * 600 + 400; // Colossal sizes!
+            } else {
+                // Regular majestic stars
+                nebStarsColors[i*3] = cColor.r * 1.5;
+                nebStarsColors[i*3+1] = cColor.g * 1.5;
+                nebStarsColors[i*3+2] = cColor.b * 1.5;
+                nebStarsSizes[i] = Math.random() > 0.9 ? Math.random() * 200 + 100 : Math.random() * 60 + 30;
+            }
         }
         
         nebStarsGeom.setAttribute('position', new THREE.BufferAttribute(nebStarsPos, 3));
