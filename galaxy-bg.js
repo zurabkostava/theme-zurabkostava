@@ -67,34 +67,40 @@
         ];
 
         // Create cluster centers for nebula-like structures and voids
-        const numClusters = 250; 
+        const numClusters = 300; 
         const clusters = [];
         
         for (let c = 0; c < numClusters; c++) {
             const angle = Math.random() * Math.PI * 2;
             const radius = Math.sqrt(Math.random()) * 2500;
+            
+            // Highly randomized cluster parameters
+            // Some can be massive and loose, some small and super dense
+            const sizeMultiplier = Math.random() * 2.5 + 0.2; 
+            
             clusters.push({
                 x: Math.cos(angle) * radius,
                 y: Math.sin(angle) * radius * 0.7,
                 z: THREE.MathUtils.randFloatSpread(15000),
-                radiusX: Math.random() * 600 + 200, 
-                radiusY: Math.random() * 600 + 200, 
-                radiusZ: Math.random() * 2000 + 500 
+                radiusX: (Math.random() * 800 + 100) * sizeMultiplier, 
+                radiusY: (Math.random() * 800 + 100) * sizeMultiplier, 
+                radiusZ: (Math.random() * 3000 + 500) * sizeMultiplier, 
+                densityPower: Math.random() * 2.5 + 0.5 // 0.5 = loose/uniform, 3.0 = super dense core
             });
         }
 
         for (let i = 0; i < starCount; i++) {
             let x, y, z;
             
-            if (Math.random() < 0.75) {
+            if (Math.random() < 0.8) { // 80% clustered for more dramatic clumps
                 const cluster = clusters[Math.floor(Math.random() * clusters.length)];
                 
                 // Spherical coordinates for natural round clusters without grid/cross artifacts
                 const theta = Math.random() * Math.PI * 2;
                 const phi = Math.acos(2 * Math.random() - 1);
                 
-                // Biased radius to make the core extremely dense and the edges sparse
-                const r = Math.pow(Math.random(), 2); 
+                // Dynamic density per cluster
+                const r = Math.pow(Math.random(), cluster.densityPower); 
                 
                 x = cluster.x + r * Math.sin(phi) * Math.cos(theta) * cluster.radiusX;
                 y = cluster.y + r * Math.sin(phi) * Math.sin(theta) * cluster.radiusY;
