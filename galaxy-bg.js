@@ -839,6 +839,7 @@
             starGlowOverlay.style.mixBlendMode = 'screen';
             starGlowOverlay.style.pointerEvents = 'none';
             starGlowOverlay.style.zIndex = '999'; 
+            starGlowOverlay.style.transition = 'opacity 0.2s ease-out';
             starGlowOverlay.style.opacity = '0';
             document.body.appendChild(starGlowOverlay);
         }
@@ -943,19 +944,24 @@
             // Optical lens glow effect based on Special Star distance
             const starGlow = document.getElementById('zk-special-star-glow');
             if (starGlow) {
-                const dist = 1000 - clusterSystem.position.z; 
-                let op = 0;
-                
-                if (dist > 15000 && dist < 45000) {
-                    // Fade in smoothly as we approach
-                    op = (45000 - dist) / 30000;
-                } else if (dist <= 15000 && dist > -5000) {
-                    // Fade out smoothly as it leaves the screen edges and passes the camera
-                    op = (dist + 5000) / 20000;
+                const z = clusterSystem.position.z;
+                // The star is far on the left (x = -16000). Due to camera FOV, 
+                // it physically leaves the screen around z = -12000, way before passing the camera!
+                if (z < -8000) {
+                    let op = 0;
+                    if (z > -40000 && z <= -25000) {
+                        op = (z - (-40000)) / 15000; // Fades in smoothly as we approach
+                    } else if (z > -25000 && z <= -18000) {
+                        op = 1.0; // Peak intensity while fully visible
+                    } else if (z > -18000 && z <= -8000) {
+                        // Fades out gracefully as it slides off the left edge of the screen!
+                        op = (-8000 - z) / 10000; 
+                    }
+                    starGlow.style.opacity = Math.max(0, Math.min(op, 1.0)).toString();
+                } else {
+                    // Star is completely off-screen, glow disappears
+                    starGlow.style.opacity = '0';
                 }
-                
-                op = Math.max(0, Math.min(op, 1.0));
-                starGlow.style.opacity = op.toString();
             }
         }
         if (nebulaSystem) {
