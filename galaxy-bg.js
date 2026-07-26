@@ -549,7 +549,7 @@
         if (galaxyMesh) {
             // Speed = 0.05 units per frame. 
             // At 60fps = 3 units/sec. To travel 14000 units takes ~77 minutes.
-            const moveZ = 0.05 * timeMultiplier;
+            const moveZ = 0.05 * currentSpeedMultiplier;
             galaxyMesh.position.z += moveZ;
             if (galaxyGlowMesh) galaxyGlowMesh.position.z += moveZ;
             if (galaxyCoreMesh) galaxyCoreMesh.position.z += moveZ;
@@ -567,10 +567,12 @@
             const baseCount = starSystem.geometry.attributes.position.count;
             starSystem.geometry.setDrawRange(0, Math.floor(baseCount * starFactor));
             starSystem2.geometry.setDrawRange(0, Math.floor(baseCount * starFactor));
+            starSystem3.geometry.setDrawRange(0, Math.floor(baseCount * starFactor));
             
             const heroCount = heroSystem.geometry.attributes.position.count;
             heroSystem.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
             heroSystem2.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
+            heroSystem3.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
             
             // Warp Speed Visual Effects (Camera Shake)
             if (timeMultiplier > 10) {
