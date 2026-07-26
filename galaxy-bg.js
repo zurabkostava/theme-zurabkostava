@@ -351,8 +351,8 @@
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.acos(2 * Math.random() - 1);
             
-            // 0.8 gives a nice soft gradient without an extremely sharp pinpoint core
-            const r = Math.pow(Math.random(), 0.8); 
+            // 0.7 gives a very soft volumetric distribution
+            const r = Math.pow(Math.random(), 0.7); 
             
             giantNebulaPositions[i * 3] = sub.x + r * Math.sin(phi) * Math.cos(theta) * sub.radiusX;
             giantNebulaPositions[i * 3 + 1] = sub.y + r * Math.sin(phi) * Math.sin(theta) * sub.radiusY;
@@ -366,19 +366,32 @@
             giantNebulaColors[i * 3 + 1] = finalColor.g;
             giantNebulaColors[i * 3 + 2] = finalColor.b;
             
-            // Huge particles to overlap and create a continuous gas cloud effect rather than individual stars
-            giantNebulaSizes[i] = Math.random() * 80 + 20; 
+            // Massive particles to overlap and create a continuous volumetric gas cloud effect rather than individual stars
+            giantNebulaSizes[i] = Math.random() * 200 + 50; 
         }
 
         giantNebulaGeometry.setAttribute('position', new THREE.BufferAttribute(giantNebulaPositions, 3));
         giantNebulaGeometry.setAttribute('color', new THREE.BufferAttribute(giantNebulaColors, 3));
         giantNebulaGeometry.setAttribute('aSize', new THREE.BufferAttribute(giantNebulaSizes, 1));
 
+        // Create a custom ultra-soft texture specifically for gas clouds (no sharp center)
+        const cloudCanvas = document.createElement('canvas');
+        cloudCanvas.width = 32;
+        cloudCanvas.height = 32;
+        const cctx = cloudCanvas.getContext('2d');
+        const cgrad = cctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+        cgrad.addColorStop(0, 'rgba(255,255,255,0.15)'); // Very soft core
+        cgrad.addColorStop(0.5, 'rgba(255,255,255,0.05)'); // Fast fade
+        cgrad.addColorStop(1, 'rgba(0,0,0,0)');
+        cctx.fillStyle = cgrad;
+        cctx.fillRect(0, 0, 32, 32);
+        const cloudTexture = new THREE.CanvasTexture(cloudCanvas);
+
         const giantNebulaMaterial = new THREE.PointsMaterial({
             size: 1,
-            map: texture, // Soft texture for cloud-like feel
+            map: cloudTexture, 
             transparent: true,
-            opacity: 0.6, // Restored opacity so the gas cloud is visible!
+            opacity: 0.8, // Additive blending with soft texture makes this accumulate gorgeously without blowing out
             vertexColors: true,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
