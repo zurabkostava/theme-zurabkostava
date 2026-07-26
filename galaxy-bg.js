@@ -664,83 +664,97 @@
         const nebStars = new THREE.Points(nebStarsGeom, nebStarsMat);
         clusterSystem.add(nebStars);
         
-        // 🌟 THE ONE GIGANTIC SPECIAL STAR (Custom Drawn Sprite matching user's exact specs)
+        // 🌟 THE ONE GIGANTIC SPECIAL STAR (Custom Drawn Sprite matching the photo)
         const specialStarCanvas = document.createElement('canvas');
-        specialStarCanvas.width = 512;
-        specialStarCanvas.height = 512;
+        specialStarCanvas.width = 1024;
+        specialStarCanvas.height = 1024;
         const sctx = specialStarCanvas.getContext('2d');
-        const scx = 256, scy = 256;
-        const S = 4; // High-res scale factor
-
-        // 1. Full White 3px
-        sctx.fillStyle = 'rgba(255, 255, 255, 1)';
-        sctx.beginPath();
-        sctx.arc(scx, scy, 3 * S, 0, Math.PI * 2);
-        sctx.fill();
-
-        // 2. Bloom 2px
-        sctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-        sctx.lineWidth = 2 * S;
-        sctx.beginPath();
-        sctx.arc(scx, scy, 4 * S, 0, Math.PI * 2);
-        sctx.stroke();
-
-        // 3. Orange 7px, Opacity 70%
-        sctx.strokeStyle = 'rgba(255, 165, 0, 0.7)';
-        sctx.lineWidth = 7 * S;
-        sctx.beginPath();
-        sctx.arc(scx, scy, 8.5 * S, 0, Math.PI * 2);
-        sctx.stroke();
-
-        // 4. Dark Orange 10px, Opacity 50%
-        sctx.strokeStyle = 'rgba(255, 100, 0, 0.5)';
-        sctx.lineWidth = 10 * S;
-        sctx.beginPath();
-        sctx.arc(scx, scy, 17 * S, 0, Math.PI * 2);
-        sctx.stroke();
-
-        // 5. Yellow 4px, Opacity 40%
-        sctx.strokeStyle = 'rgba(255, 255, 0, 0.4)';
-        sctx.lineWidth = 4 * S;
-        sctx.beginPath();
-        sctx.arc(scx, scy, 24 * S, 0, Math.PI * 2);
-        sctx.stroke();
-
-        // 6. Reddish 12px, Opacity 30%
-        sctx.strokeStyle = 'rgba(255, 80, 80, 0.3)';
-        sctx.lineWidth = 12 * S;
-        sctx.beginPath();
-        sctx.arc(scx, scy, 32 * S, 0, Math.PI * 2);
-        sctx.stroke();
-
-        // Stroke on the bottom side of the reddish part
-        sctx.strokeStyle = 'rgba(255, 80, 80, 0.8)';
-        sctx.lineWidth = 1 * S;
-        sctx.beginPath();
-        sctx.arc(scx, scy, 38 * S, 0, Math.PI); // Bottom half at outer edge
-        sctx.stroke();
-
-        // The Cross (Extends 20px beyond the 38px outer edge, fading out)
-        const crossRad = 58 * S;
-        const crossGradX = sctx.createLinearGradient(scx - crossRad, scy, scx + crossRad, scy);
-        crossGradX.addColorStop(0, 'rgba(255,255,255,0)');
-        crossGradX.addColorStop(0.4, 'rgba(255,255,255,0.6)');
-        crossGradX.addColorStop(0.5, 'rgba(255,255,255,1)');
-        crossGradX.addColorStop(0.6, 'rgba(255,255,255,0.6)');
-        crossGradX.addColorStop(1, 'rgba(255,255,255,0)');
+        const scx = 512, scy = 512;
         
-        sctx.fillStyle = crossGradX;
-        sctx.fillRect(scx - crossRad, scy - (0.5 * S), crossRad * 2, 1 * S);
+        // Ensure Additive Blending within Canvas for perfect glows
+        sctx.globalCompositeOperation = 'screen'; 
+
+        // 1. Massive Faint Red Halo (The outer ring in the photo)
+        const haloGrad = sctx.createRadialGradient(scx, scy, 150, scx, scy, 300);
+        haloGrad.addColorStop(0, 'rgba(0, 0, 0, 0)'); // Transparent inside
+        haloGrad.addColorStop(0.8, 'rgba(255, 30, 0, 0.15)'); // Peak of the red ring
+        haloGrad.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Fades out
+        sctx.fillStyle = haloGrad;
+        sctx.fillRect(0, 0, 1024, 1024);
         
-        const crossGradY = sctx.createLinearGradient(scx, scy - crossRad, scx, scy + crossRad);
-        crossGradY.addColorStop(0, 'rgba(255,255,255,0)');
-        crossGradY.addColorStop(0.4, 'rgba(255,255,255,0.6)');
-        crossGradY.addColorStop(0.5, 'rgba(255,255,255,1)');
-        crossGradY.addColorStop(0.6, 'rgba(255,255,255,0.6)');
-        crossGradY.addColorStop(1, 'rgba(255,255,255,0)');
-        
-        sctx.fillStyle = crossGradY;
-        sctx.fillRect(scx - (0.5 * S), scy - crossRad, 1 * S, crossRad * 2);
+        // Add a slight reddish inner glow inside the ring to mimic the space dust
+        const dustGrad = sctx.createRadialGradient(scx, scy, 0, scx, scy, 300);
+        dustGrad.addColorStop(0, 'rgba(255, 100, 50, 0.2)');
+        dustGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        sctx.fillStyle = dustGrad;
+        sctx.fillRect(0, 0, 1024, 1024);
+
+        // 2. Colossal 4-Pointed Cross Flare (Horizontal & Vertical)
+        // Horizontal Flare Aura
+        const crossAuraX = sctx.createLinearGradient(0, scy, 1024, scy);
+        crossAuraX.addColorStop(0, 'rgba(0,0,0,0)');
+        crossAuraX.addColorStop(0.4, 'rgba(255, 50, 0, 0.4)');
+        crossAuraX.addColorStop(0.5, 'rgba(255, 200, 150, 1)');
+        crossAuraX.addColorStop(0.6, 'rgba(255, 50, 0, 0.4)');
+        crossAuraX.addColorStop(1, 'rgba(0,0,0,0)');
+        sctx.fillStyle = crossAuraX;
+        sctx.fillRect(0, scy - 3, 1024, 6);
+
+        // Vertical Flare Aura
+        const crossAuraY = sctx.createLinearGradient(scx, 0, scx, 1024);
+        crossAuraY.addColorStop(0, 'rgba(0,0,0,0)');
+        crossAuraY.addColorStop(0.4, 'rgba(255, 50, 0, 0.4)');
+        crossAuraY.addColorStop(0.5, 'rgba(255, 200, 150, 1)');
+        crossAuraY.addColorStop(0.6, 'rgba(255, 50, 0, 0.4)');
+        crossAuraY.addColorStop(1, 'rgba(0,0,0,0)');
+        sctx.fillStyle = crossAuraY;
+        sctx.fillRect(scx - 3, 0, 6, 1024);
+
+        // Thin intense core of the cross
+        const crossCoreX = sctx.createLinearGradient(0, scy, 1024, scy);
+        crossCoreX.addColorStop(0, 'rgba(0,0,0,0)');
+        crossCoreX.addColorStop(0.48, 'rgba(255,255,255,0.8)');
+        crossCoreX.addColorStop(0.5, 'rgba(255,255,255,1)');
+        crossCoreX.addColorStop(0.52, 'rgba(255,255,255,0.8)');
+        crossCoreX.addColorStop(1, 'rgba(0,0,0,0)');
+        sctx.fillStyle = crossCoreX;
+        sctx.fillRect(0, scy - 1, 1024, 2);
+
+        const crossCoreY = sctx.createLinearGradient(scx, 0, scx, 1024);
+        crossCoreY.addColorStop(0, 'rgba(0,0,0,0)');
+        crossCoreY.addColorStop(0.48, 'rgba(255,255,255,0.8)');
+        crossCoreY.addColorStop(0.5, 'rgba(255,255,255,1)');
+        crossCoreY.addColorStop(0.52, 'rgba(255,255,255,0.8)');
+        crossCoreY.addColorStop(1, 'rgba(0,0,0,0)');
+        sctx.fillStyle = crossCoreY;
+        sctx.fillRect(scx - 1, 0, 2, 1024);
+
+        // 3. Intensely Bright Multi-layered Core
+        // Outer Core (Orange/Red)
+        const coreOuter = sctx.createRadialGradient(scx, scy, 0, scx, scy, 100);
+        coreOuter.addColorStop(0, 'rgba(255, 200, 100, 1)');
+        coreOuter.addColorStop(0.2, 'rgba(255, 80, 0, 0.8)');
+        coreOuter.addColorStop(0.5, 'rgba(255, 30, 0, 0.3)');
+        coreOuter.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        sctx.fillStyle = coreOuter;
+        sctx.beginPath(); sctx.arc(scx, scy, 100, 0, Math.PI * 2); sctx.fill();
+
+        // Inner Core (Blinding White/Yellow)
+        const coreInner = sctx.createRadialGradient(scx, scy, 0, scx, scy, 40);
+        coreInner.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        coreInner.addColorStop(0.3, 'rgba(255, 250, 200, 1)');
+        coreInner.addColorStop(0.8, 'rgba(255, 200, 50, 0.5)');
+        coreInner.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        sctx.fillStyle = coreInner;
+        sctx.beginPath(); sctx.arc(scx, scy, 40, 0, Math.PI * 2); sctx.fill();
+
+        // 4. Tiny Blue Companion Star (on the left horizontal flare)
+        const compGrad = sctx.createRadialGradient(scx - 120, scy, 0, scx - 120, scy, 25);
+        compGrad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        compGrad.addColorStop(0.2, 'rgba(100, 200, 255, 0.9)');
+        compGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        sctx.fillStyle = compGrad;
+        sctx.beginPath(); sctx.arc(scx - 120, scy, 25, 0, Math.PI * 2); sctx.fill();
 
         const specialStarTexture = new THREE.CanvasTexture(specialStarCanvas);
         const specialStarMat = new THREE.SpriteMaterial({
