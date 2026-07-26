@@ -731,22 +731,22 @@
 
         // 3. Intensely Bright Multi-layered Core
         // Outer Core (Golden/Orange)
-        const coreOuter = sctx.createRadialGradient(scx, scy, 0, scx, scy, 100);
+        const coreOuter = sctx.createRadialGradient(scx, scy, 0, scx, scy, 65);
         coreOuter.addColorStop(0, 'rgba(255, 200, 100, 1)');
         coreOuter.addColorStop(0.2, 'rgba(255, 120, 20, 0.8)');
         coreOuter.addColorStop(0.5, 'rgba(255, 60, 10, 0.2)');
         coreOuter.addColorStop(1, 'rgba(0, 0, 0, 0)');
         sctx.fillStyle = coreOuter;
-        sctx.beginPath(); sctx.arc(scx, scy, 100, 0, Math.PI * 2); sctx.fill();
+        sctx.beginPath(); sctx.arc(scx, scy, 65, 0, Math.PI * 2); sctx.fill();
 
         // Inner Core (Blinding White/Yellow)
-        const coreInner = sctx.createRadialGradient(scx, scy, 0, scx, scy, 40);
+        const coreInner = sctx.createRadialGradient(scx, scy, 0, scx, scy, 25);
         coreInner.addColorStop(0, 'rgba(255, 255, 255, 1)');
         coreInner.addColorStop(0.3, 'rgba(255, 250, 200, 1)');
         coreInner.addColorStop(0.8, 'rgba(255, 200, 50, 0.5)');
         coreInner.addColorStop(1, 'rgba(0, 0, 0, 0)');
         sctx.fillStyle = coreInner;
-        sctx.beginPath(); sctx.arc(scx, scy, 40, 0, Math.PI * 2); sctx.fill();
+        sctx.beginPath(); sctx.arc(scx, scy, 25, 0, Math.PI * 2); sctx.fill();
 
         // 4. Tiny Blue Companion Star (on the left horizontal flare)
         const compGrad = sctx.createRadialGradient(scx - 120, scy, 0, scx - 120, scy, 25);
