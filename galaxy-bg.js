@@ -949,13 +949,16 @@
                 // it physically leaves the screen around z = -12000, way before passing the camera!
                 if (z < -8000) {
                     let op = 0;
-                    if (z > -40000 && z <= -25000) {
-                        op = (z - (-40000)) / 15000; // Fades in smoothly as we approach
-                    } else if (z > -25000 && z <= -18000) {
-                        op = 1.0; // Peak intensity while fully visible
-                    } else if (z > -18000 && z <= -8000) {
-                        // Fades out gracefully as it slides off the left edge of the screen!
-                        op = (-8000 - z) / 10000; 
+                    if (z > -35000 && z <= -22000) {
+                        // Exponential fade in: stays very faint when far, grows rapidly when close
+                        const progress = (z - (-35000)) / 13000;
+                        op = Math.pow(progress, 3) * 0.85; // Peak intensity 0.85
+                    } else if (z > -22000 && z <= -16000) {
+                        op = 0.85; // Peak intensity while fully visible and close
+                    } else if (z > -16000 && z <= -8000) {
+                        // Fades out gracefully as it slides off the left edge of the screen
+                        const progress = (-8000 - z) / 8000; 
+                        op = Math.pow(progress, 2) * 0.85;
                     }
                     starGlow.style.opacity = Math.max(0, Math.min(op, 1.0)).toString();
                 } else {
