@@ -314,13 +314,13 @@
         scene.add(heroSystem3);
 
         // 🌌 NEW: Giant Colorful Nebula Cluster (Appears from the very beginning, reached at 500x speed)
-        const nebulaStarCount = 80000;
-        const nebulaGeometry = new THREE.BufferGeometry();
-        const nebulaPositions = new Float32Array(nebulaStarCount * 3);
-        const nebulaColors = new Float32Array(nebulaStarCount * 3);
-        const nebulaSizes = new Float32Array(nebulaStarCount);
+        const giantNebulaStarCount = 80000;
+        const giantNebulaGeometry = new THREE.BufferGeometry();
+        const giantNebulaPositions = new Float32Array(giantNebulaStarCount * 3);
+        const giantNebulaColors = new Float32Array(giantNebulaStarCount * 3);
+        const giantNebulaSizes = new Float32Array(giantNebulaStarCount);
         
-        const nebulaColorsPalette = [
+        const giantNebulaColorsPalette = [
             new THREE.Color(0xff007f), // Neon Pink
             new THREE.Color(0x7f00ff), // Deep Purple
             new THREE.Color(0x00ffff), // Cyan
@@ -329,46 +329,46 @@
         ];
 
         // Create 8 massive sub-clusters to form a complex nebula shape
-        const nebulaSubClusters = [];
+        const giantNebulaSubClusters = [];
         for(let i=0; i<8; i++) {
-            nebulaSubClusters.push({
+            giantNebulaSubClusters.push({
                 x: (Math.random() - 0.5) * 12000,
                 y: (Math.random() - 0.5) * 8000,
                 z: (Math.random() - 0.5) * 15000,
                 radiusX: Math.random() * 5000 + 2000,
                 radiusY: Math.random() * 5000 + 2000,
                 radiusZ: Math.random() * 10000 + 4000,
-                color: nebulaColorsPalette[Math.floor(Math.random() * nebulaColorsPalette.length)]
+                color: giantNebulaColorsPalette[Math.floor(Math.random() * giantNebulaColorsPalette.length)]
             });
         }
 
-        for (let i = 0; i < nebulaStarCount; i++) {
-            const sub = nebulaSubClusters[Math.floor(Math.random() * nebulaSubClusters.length)];
+        for (let i = 0; i < giantNebulaStarCount; i++) {
+            const sub = giantNebulaSubClusters[Math.floor(Math.random() * giantNebulaSubClusters.length)];
             
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.acos(2 * Math.random() - 1);
             const r = Math.pow(Math.random(), 1.5); // Dense cores
             
-            nebulaPositions[i * 3] = sub.x + r * Math.sin(phi) * Math.cos(theta) * sub.radiusX;
-            nebulaPositions[i * 3 + 1] = sub.y + r * Math.sin(phi) * Math.sin(theta) * sub.radiusY;
-            nebulaPositions[i * 3 + 2] = sub.z + r * Math.cos(phi) * sub.radiusZ;
+            giantNebulaPositions[i * 3] = sub.x + r * Math.sin(phi) * Math.cos(theta) * sub.radiusX;
+            giantNebulaPositions[i * 3 + 1] = sub.y + r * Math.sin(phi) * Math.sin(theta) * sub.radiusY;
+            giantNebulaPositions[i * 3 + 2] = sub.z + r * Math.cos(phi) * sub.radiusZ;
             
             // Mix sub-cluster color with a random palette color for beautiful gradients
-            const mixColor = nebulaColorsPalette[Math.floor(Math.random() * nebulaColorsPalette.length)];
+            const mixColor = giantNebulaColorsPalette[Math.floor(Math.random() * giantNebulaColorsPalette.length)];
             const finalColor = sub.color.clone().lerp(mixColor, 0.3);
             
-            nebulaColors[i * 3] = finalColor.r;
-            nebulaColors[i * 3 + 1] = finalColor.g;
-            nebulaColors[i * 3 + 2] = finalColor.b;
+            giantNebulaColors[i * 3] = finalColor.r;
+            giantNebulaColors[i * 3 + 1] = finalColor.g;
+            giantNebulaColors[i * 3 + 2] = finalColor.b;
             
-            nebulaSizes[i] = Math.random() * 25 + 5;
+            giantNebulaSizes[i] = Math.random() * 25 + 5;
         }
 
-        nebulaGeometry.setAttribute('position', new THREE.BufferAttribute(nebulaPositions, 3));
-        nebulaGeometry.setAttribute('color', new THREE.BufferAttribute(nebulaColors, 3));
-        nebulaGeometry.setAttribute('aSize', new THREE.BufferAttribute(nebulaSizes, 1));
+        giantNebulaGeometry.setAttribute('position', new THREE.BufferAttribute(giantNebulaPositions, 3));
+        giantNebulaGeometry.setAttribute('color', new THREE.BufferAttribute(giantNebulaColors, 3));
+        giantNebulaGeometry.setAttribute('aSize', new THREE.BufferAttribute(giantNebulaSizes, 1));
 
-        const nebulaMaterial = new THREE.PointsMaterial({
+        const giantNebulaMaterial = new THREE.PointsMaterial({
             size: 1,
             map: texture, // Soft texture for cloud-like feel
             transparent: true,
@@ -379,7 +379,7 @@
             fog: false // 🚀 IMPORTANT: Visible from infinite distance!
         });
 
-        nebulaMaterial.onBeforeCompile = function (shader) {
+        giantNebulaMaterial.onBeforeCompile = function (shader) {
             shader.vertexShader = shader.vertexShader.replace(
                 'void main() {',
                 'attribute float aSize;\nvoid main() {'
@@ -389,7 +389,7 @@
             );
         };
 
-        nebulaSystem = new THREE.Points(nebulaGeometry, nebulaMaterial);
+        nebulaSystem = new THREE.Points(giantNebulaGeometry, giantNebulaMaterial);
         // Placed at -42000. At 500x speed (200 units/frame), it reaches the camera in 3.5 seconds.
         nebulaSystem.position.z = -42000;
         nebulaSystem.frustumCulled = false;
