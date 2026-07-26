@@ -68,30 +68,12 @@
         const numClusters = 250; 
         const clusters = [];
         
-        // 🎇 NEW: Massive Central Core Cluster to prevent the "empty tunnel" illusion
-        clusters.push({
-            x: 0,
-            y: 0,
-            z: -5000,
-            radiusX: 1200, 
-            radiusY: 800, 
-            radiusZ: 25000 // Stretch it all the way through our flight path
-        });
-        
-        // Add another dense cluster slightly deeper to guarantee center density
-        clusters.push({
-            x: 0,
-            y: 0,
-            z: -15000,
-            radiusX: 600,
-            radiusY: 400,
-            radiusZ: 10000
-        });
-
-        for (let c = 2; c < numClusters; c++) {
+        for (let c = 0; c < numClusters; c++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.sqrt(Math.random()) * 2500;
             clusters.push({
-                x: THREE.MathUtils.randFloatSpread(4500),
-                y: THREE.MathUtils.randFloatSpread(3000),
+                x: Math.cos(angle) * radius,
+                y: Math.sin(angle) * radius * 0.7,
                 z: THREE.MathUtils.randFloatSpread(15000),
                 radiusX: Math.random() * 600 + 200, 
                 radiusY: Math.random() * 600 + 200, 
@@ -113,8 +95,10 @@
                 y = cluster.y + Math.sign(v) * Math.pow(Math.abs(v), 2) * cluster.radiusY;
                 z = cluster.z + Math.sign(w) * Math.pow(Math.abs(w), 2) * cluster.radiusZ;
             } else {
-                x = THREE.MathUtils.randFloatSpread(4500);
-                y = THREE.MathUtils.randFloatSpread(3000);
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.sqrt(Math.random()) * 2500;
+                x = Math.cos(angle) * radius;
+                y = Math.sin(angle) * radius * 0.7;
                 z = THREE.MathUtils.randFloatSpread(15000);
             }
 
