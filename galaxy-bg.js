@@ -1048,44 +1048,6 @@
         if (appNode) {
             observer.observe(appNode, { childList: true, subtree: true });
         }
-        
-        // Screensaver Logic
-        const screensaverBtn = document.getElementById('zk-screensaver-btn');
-        if (screensaverBtn) {
-            // Apply transition class to all elements we want to fade out
-            // We use .header-inner instead of .site-header so the top blur gradient remains visible
-            const elementsToHide = document.querySelectorAll('.header-inner, .site-footer, .hero-inner, .hero-latest-dock, .zk-welcome-music-container, #zk-cinematic-phrase-container, #zk-time-control');
-            elementsToHide.forEach(el => el.classList.add('screensaver-element'));
-            
-            screensaverBtn.addEventListener('click', () => {
-                document.body.classList.toggle('screensaver-mode');
-                const isScreensaver = document.body.classList.contains('screensaver-mode');
-                
-                const expandIcon = screensaverBtn.querySelector('.icon-expand');
-                const collapseIcon = screensaverBtn.querySelector('.icon-collapse');
-                if (expandIcon) expandIcon.style.display = isScreensaver ? 'none' : 'block';
-                if (collapseIcon) collapseIcon.style.display = isScreensaver ? 'block' : 'none';
-                
-                // Handle Music
-                const audio = document.getElementById('zk-welcome-audio');
-                if (audio) {
-                    if (isScreensaver && !audio.paused) {
-                        audio.dataset.wasPlaying = 'true';
-                        audio.pause();
-                        const playIcon = document.querySelector('.icon-play');
-                        const stopIcon = document.querySelector('.icon-stop');
-                        if (playIcon) playIcon.style.display = 'block';
-                        if (stopIcon) stopIcon.style.display = 'none';
-                    } else if (!isScreensaver && audio.dataset.wasPlaying === 'true') {
-                        audio.play();
-                        audio.dataset.wasPlaying = 'false';
-                        const playIcon = document.querySelector('.icon-play');
-                        const stopIcon = document.querySelector('.icon-stop');
-                        if (playIcon) playIcon.style.display = 'none';
-                        if (stopIcon) stopIcon.style.display = 'block';
-                    }
-                }
-            });
-        }
+
     });
 })();
