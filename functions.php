@@ -3857,8 +3857,6 @@ function zk_track_visitor( WP_REST_Request $request ) {
 
     // Handle duration ping
     if ($action === 'duration_ping' && $view_id > 0) {
-        // Cap duration at 2 hours (7200 seconds) to prevent infinite active time from background tabs
-        $duration = min($duration, 7200);
         $music_played = isset($params['music_played']) ? intval($params['music_played']) : 0;
         $music_duration = isset($params['music_duration']) ? intval($params['music_duration']) : 0;
         $wpdb->update(
