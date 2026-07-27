@@ -123,12 +123,26 @@
         var isHidden = document.visibilityState === 'hidden';
         var currentViewId = 0;
 
+        function isMediaPlaying() {
+            var mediaNodes = document.querySelectorAll('audio, video');
+            for (var i = 0; i < mediaNodes.length; i++) {
+                if (!mediaNodes[i].paused && !mediaNodes[i].ended && mediaNodes[i].readyState > 2) {
+                    return true;
+                }
+            }
+            if (window.speechSynthesis && window.speechSynthesis.speaking) {
+                return true;
+            }
+            return false;
+        }
+
         function updateActiveDuration() {
-            if (!isHidden) {
+            var playing = isMediaPlaying();
+            if (!isHidden || playing) {
                 var now = Date.now();
                 activeDurationSecs += Math.floor((now - lastActiveTime) / 1000);
-                lastActiveTime = now;
             }
+            lastActiveTime = Date.now();
         }
 
         function sendTrack(country, city) {
@@ -201,7 +215,7 @@
         window.addEventListener('pagehide', window.zkLeaveListener);
 
         window.zkDurationInterval = setInterval(function() {
-            if (!isHidden) {
+            if (!isHidden || isMediaPlaying()) {
                 sendDurationPing();
             }
         }, 10000);
