@@ -130,7 +130,12 @@ ob_start(); ?>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
             </a>
             <a href="<?php echo esc_url( get_option( 'zk_social_spotify', '#' ) ); ?>" class="zk-social-link" aria-label="Spotify" target="_blank" rel="noopener noreferrer">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.587 14.42c-.18.293-.564.385-.857.205-2.35-1.435-5.305-1.76-8.784-.964-.325.074-.645-.13-.718-.455-.073-.325.13-.645.455-.718 3.82-.875 7.07-.5 9.7 1.104.292.178.384.56.204.852zm1.22-3.237c-.227.37-.714.488-1.085.26-2.695-1.657-6.8-2.148-9.974-1.176-.41.127-.84-.105-.968-.516-.128-.41.106-.84.516-.967 3.65-1.118 8.167-.57 11.25 1.328.37.228.49.715.26 1.085zm.116-3.39c-3.23-1.918-8.55-2.096-11.62-1.16-.48.146-.99-.125-1.136-.604-.146-.48.125-.99.604-1.137 3.52-1.074 9.38-.87 13.104 1.344.433.257.576.818.318 1.25-.257.433-.817.575-1.25.317z" /></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M8 11.973c2.5 -1.473 5.5 -.473 7.5 .527"></path>
+                    <path d="M9 15c1.5 -1 4 -1 5 .5"></path>
+                    <path d="M7 9c2 -1 6 -2 10 .5"></path>
+                </svg>
             </a>
         </div>
     </div>
