@@ -3814,8 +3814,13 @@ function zk_track_visitor( WP_REST_Request $request ) {
 
     $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
     
-    // Basic bot detection
-    $bots = array('bot', 'spider', 'crawler', 'google', 'bing', 'yandex', 'baidu', 'ahrefs', 'semrush');
+    // Advanced bot detection
+    $bots = array(
+        'bot', 'spider', 'crawler', 'google', 'bing', 'yandex', 'baidu', 'ahrefs', 'semrush',
+        'slurp', 'duckduckbot', 'baiduspider', 'yandexbot', 'sogou', 'exabot', 'facebot', 'facebookexternalhit',
+        'ia_archiver', 'petalbot', 'mj12bot', 'dotbot', 'applebot', 'twitterbot', 'linkedinbot', 'discordbot',
+        'telegrambot', 'whatsapp', 'skypeuripreview'
+    );
     $is_bot = false;
     $ua_lower = strtolower($user_agent);
     foreach ($bots as $bot) {
@@ -3852,6 +3857,8 @@ function zk_track_visitor( WP_REST_Request $request ) {
 
     // Handle duration ping
     if ($action === 'duration_ping' && $view_id > 0) {
+        // Cap duration at 2 hours (7200 seconds) to prevent infinite active time from background tabs
+        $duration = min($duration, 7200);
         $music_played = isset($params['music_played']) ? intval($params['music_played']) : 0;
         $music_duration = isset($params['music_duration']) ? intval($params['music_duration']) : 0;
         $wpdb->update(
@@ -3869,7 +3876,7 @@ function zk_track_visitor( WP_REST_Request $request ) {
         $user_agent .= ' [Device: ' . $device_model . ']';
     }
 
-    if (stripos($user_agent, 'iPhone') !== false && !empty($screen_data)) {
+    if (!empty($screen_data)) {
         $user_agent .= ' [Screen: ' . $screen_data . ']';
     }
 
@@ -3907,6 +3914,15 @@ function zk_track_visitor( WP_REST_Request $request ) {
         return new WP_REST_Response( array('status' => 'success'), 200 );
     }
 
+    // Process Referrer to label internal traffic
+    $home_url = home_url();
+    $parsed_home = parse_url($home_url, PHP_URL_HOST);
+    if (!empty($referrer) && !empty($parsed_home)) {
+        if (strpos($referrer, $parsed_home) !== false) {
+            $referrer = 'Internal';
+        }
+    }
+
     // NORMAL PAGE VIEW TRACKING
     $wpdb->insert(
         $table_name,
@@ -3917,10 +3933,11 @@ function zk_track_visitor( WP_REST_Request $request ) {
             'url' => $url,
             'country' => $country,
             'city' => $city,
+            'referrer' => $referrer,
             'user_agent' => substr($user_agent, 0, 250),
             'visit_time' => current_time('mysql')
         ),
-        array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
+        array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
     );
 
     $view_id = $wpdb->insert_id;

@@ -194,6 +194,12 @@ function zk_get_browser_and_os($ua) {
     $browser = 'Unknown Browser';
     $os = 'Unknown OS';
 
+    // Extract Screen Data if present
+    $screen = '';
+    if (preg_match('/\[Screen: (.*?)\]/', $ua, $matches)) {
+        $screen = ' (' . $matches[1] . ')';
+    }
+
     // In-App Browser Detection
     if (stripos($ua, 'Instagram') !== false) { $browser = 'Instagram In-App'; }
     elseif (stripos($ua, 'FB_IAB') !== false || stripos($ua, 'FBAN') !== false || stripos($ua, 'FBAV') !== false || stripos($ua, 'FacebookApp') !== false) { $browser = 'Facebook In-App'; }
@@ -209,6 +215,9 @@ function zk_get_browser_and_os($ua) {
     elseif (stripos($ua, 'Threads') !== false) { $browser = 'Threads In-App'; }
     elseif (stripos($ua, 'Discord') !== false) { $browser = 'Discord In-App'; }
     elseif (stripos($ua, 'GSA/') !== false || stripos($ua, 'GoogleApp') !== false) { $browser = 'Google Search App'; }
+    elseif (stripos($ua, 'YaBrowser') !== false || stripos($ua, 'Yowser') !== false) { $browser = 'Yandex Browser'; }
+    elseif (stripos($ua, 'SamsungBrowser') !== false) { $browser = 'Samsung Internet'; }
+    elseif (stripos($ua, 'MiuiBrowser') !== false) { $browser = 'Miui Browser'; }
 
     // Regular Browser Detection
     elseif (stripos($ua, 'Edg') !== false) { $browser = 'Microsoft Edge'; }
@@ -218,13 +227,14 @@ function zk_get_browser_and_os($ua) {
     elseif (stripos($ua, 'Safari') !== false && stripos($ua, 'Chrome') === false) { $browser = 'Apple Safari'; }
 
     // OS Detection
-    if (stripos($ua, 'Windows NT 10.0') !== false || stripos($ua, 'Windows NT 11.0') !== false) { $os = 'Windows 10/11'; }
-    elseif (stripos($ua, 'Windows NT') !== false) { $os = 'Windows (Older)'; }
-    elseif (stripos($ua, 'iPhone') !== false) { $os = 'Apple iPhone'; }
-    elseif (stripos($ua, 'iPad') !== false) { $os = 'Apple iPad'; }
-    elseif (stripos($ua, 'Mac OS X') !== false || stripos($ua, 'Macintosh') !== false) { $os = 'Apple Mac'; }
-    elseif (stripos($ua, 'Android') !== false) { $os = 'Android Device'; }
-    elseif (stripos($ua, 'Linux') !== false) { $os = 'Linux'; }
+    if (stripos($ua, 'Windows NT 10.0') !== false || stripos($ua, 'Windows NT 11.0') !== false) { $os = 'Windows 10/11' . $screen; }
+    elseif (stripos($ua, 'Windows NT') !== false) { $os = 'Windows (Older)' . $screen; }
+    elseif (stripos($ua, 'iPhone') !== false) { $os = 'Apple iPhone' . $screen; }
+    elseif (stripos($ua, 'iPad') !== false) { $os = 'Apple iPad' . $screen; }
+    elseif (stripos($ua, 'Mac OS X') !== false || stripos($ua, 'Macintosh') !== false) { $os = 'Apple Mac' . $screen; }
+    elseif (stripos($ua, 'Android') !== false) { $os = 'Android Device' . $screen; }
+    elseif (stripos($ua, 'Linux') !== false) { $os = 'Linux' . $screen; }
+    elseif (stripos($ua, 'CrOS') !== false) { $os = 'Chrome OS' . $screen; }
 
     return [$browser, $os];
 }

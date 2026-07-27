@@ -118,8 +118,18 @@
             }
         } catch (e) {}
 
-        var viewStartTime = Date.now();
+        var activeDurationSecs = 0;
+        var lastActiveTime = Date.now();
+        var isHidden = document.visibilityState === 'hidden';
         var currentViewId = 0;
+
+        function updateActiveDuration() {
+            if (!isHidden) {
+                var now = Date.now();
+                activeDurationSecs += Math.floor((now - lastActiveTime) / 1000);
+                lastActiveTime = now;
+            }
+        }
 
         function sendTrack(country, city) {
             var payload = JSON.stringify({ 
@@ -127,6 +137,7 @@
                 referrer: document.referrer || '',
                 country: country || '', 
                 city: city || '',
+                screen_data: (window.screen ? window.screen.width + 'x' + window.screen.height : ''),
                 visitor_id: visitorId,
                 session_id: sessionId
             });
@@ -146,19 +157,21 @@
         // Setup duration ping on page leave
         function sendDurationPing() {
             if (!currentViewId) return;
-            var durationSecs = Math.floor((Date.now() - viewStartTime) / 1000);
-            if (durationSecs <= 0) return;
+            updateActiveDuration();
+            if (activeDurationSecs <= 0) return;
             var pingPayload = JSON.stringify({
                 action: 'duration_ping',
                 view_id: currentViewId,
-                duration: durationSecs,
+                duration: activeDurationSecs,
                 music_played: window.zkMusicPlayed ? 1 : 0,
                 music_duration: window.zkMusicDurationTotal ? Math.floor(window.zkMusicDurationTotal) : 0,
                 visitor_id: visitorId,
                 session_id: sessionId
             });
+            
+            var blob = new Blob([pingPayload], { type: 'application/json' });
             if (navigator.sendBeacon) {
-                navigator.sendBeacon(apiRoute, pingPayload);
+                navigator.sendBeacon(apiRoute, blob);
             } else {
                 fetch(apiRoute, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: pingPayload, keepalive: true }).catch(e => {});
             }
@@ -175,14 +188,22 @@
         }
 
         window.zkLeaveListener = function(e) {
-            if (e.type === 'visibilitychange' && document.visibilityState !== 'hidden') return;
+            if (e.type === 'visibilitychange') {
+                updateActiveDuration();
+                isHidden = document.visibilityState === 'hidden';
+                if (!isHidden) {
+                    lastActiveTime = Date.now();
+                }
+            }
             sendDurationPing();
         };
         window.addEventListener('visibilitychange', window.zkLeaveListener);
         window.addEventListener('pagehide', window.zkLeaveListener);
 
         window.zkDurationInterval = setInterval(function() {
-            sendDurationPing();
+            if (!isHidden) {
+                sendDurationPing();
+            }
         }, 10000);
 
         var geoResolved = false;
@@ -191,7 +212,7 @@
                 geoResolved = true;
                 sendTrack('', '');
             }
-        }, 1500);
+        }, 2000);
 
         try {
             var cachedGeo = sessionStorage.getItem('zk_geo');
@@ -199,40 +220,49 @@
                 var geo = JSON.parse(cachedGeo);
                 geoResolved = true;
                 clearTimeout(geoTimeout);
-                sendTrack(geo.country, geo.city);
-                return;
+                sendTrack(geo.country || '', geo.city || '');
+            } else {
+                fetch('https://get.geojs.io/v1/ip/geo.json').then(r => r.json()).then(data => {
+                    if (!geoResolved) {
+                        geoResolved = true;
+                        clearTimeout(geoTimeout);
+                        if (data && data.country) {
+                            var geoObj = { country: data.country, city: data.city || '' };
+                            sessionStorage.setItem('zk_geo', JSON.stringify(geoObj));
+                            sendTrack(geoObj.country, geoObj.city);
+                        } else {
+                            sendTrack('', '');
+                        }
+                    }
+                }).catch(e => {
+                    fetch('https://ipapi.co/json/').then(r => r.json()).then(data => {
+                        if (!geoResolved) {
+                            geoResolved = true;
+                            clearTimeout(geoTimeout);
+                            if (data && data.country_name) {
+                                var geoObj = { country: data.country_name, city: data.city || '' };
+                                sessionStorage.setItem('zk_geo', JSON.stringify(geoObj));
+                                sendTrack(geoObj.country, geoObj.city);
+                            } else {
+                                sendTrack('', '');
+                            }
+                        }
+                    }).catch(err => {
+                        if (!geoResolved) {
+                            geoResolved = true;
+                            clearTimeout(geoTimeout);
+                            sendTrack('', '');
+                        }
+                    });
+                });
             }
-        } catch (e) {}
-
-        fetch('https://ipapi.co/json/')
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (geoResolved) return;
+        } catch (e) {
+            if (!geoResolved) {
                 geoResolved = true;
                 clearTimeout(geoTimeout);
-                var cty = data.country_name || data.country;
-                var ctyName = data.city || '';
-                try { sessionStorage.setItem('zk_geo', JSON.stringify({ country: cty, city: ctyName })); } catch (e) {}
-                sendTrack(cty, ctyName);
-            })
-            .catch(function() {
-                if (geoResolved) return;
-                fetch('https://get.geojs.io/v1/ip/geo.json')
-                    .then(function(r) { return r.json(); })
-                    .then(function(data) {
-                        if (geoResolved) return;
-                        geoResolved = true;
-                        clearTimeout(geoTimeout);
-                        try { sessionStorage.setItem('zk_geo', JSON.stringify({ country: data.country, city: data.city || '' })); } catch (e) {}
-                        sendTrack(data.country, data.city || '');
-                    })
-                    .catch(function() {
-                        if (geoResolved) return;
-                        geoResolved = true;
-                        clearTimeout(geoTimeout);
-                        sendTrack('', '');
-                    });
-            });
+                sendTrack('', '');
+            }
+        }
     }
     function keyOf(u) { return u.pathname + u.search; }
     function delay(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
