@@ -3391,6 +3391,8 @@ body.is-cinematic-mode .zk-welcome-tooltip {
 }
 
 .zk-cinematic-phrase-text {
+    position: absolute;
+    width: 100%;
     font-size: 1.35rem;
     font-family: 'Outfit', 'Inter', sans-serif;
     font-weight: 200;

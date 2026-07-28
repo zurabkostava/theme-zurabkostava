@@ -1814,6 +1814,7 @@
         var phraseContainer = document.getElementById('zk-cinematic-phrase-container');
         var activePhraseIndex = -1;
         var voiceoverAudio = null;
+        var backgroundVoiceovers = [];
         var isVoiceoverEnabled = true;
         var audioFadeInterval = null;
 
@@ -1840,6 +1841,19 @@
             }, stepTime);
         }
 
+        function updateDucking() {
+            var isAnyPlaying = false;
+            if (voiceoverAudio && !voiceoverAudio.paused && !voiceoverAudio.ended) isAnyPlaying = true;
+            for (var i = 0; i < backgroundVoiceovers.length; i++) {
+                if (!backgroundVoiceovers[i].paused && !backgroundVoiceovers[i].ended) isAnyPlaying = true;
+            }
+            if (isAnyPlaying && isVoiceoverEnabled) {
+                setAudioVolume(0.5, 500);
+            } else {
+                setAudioVolume(1.0, 1000);
+            }
+        }
+
         var voiceoverBtn = document.getElementById('zk-voiceover-btn');
         if (voiceoverBtn) {
             voiceoverBtn.addEventListener('click', function(e) {
@@ -1852,8 +1866,8 @@
                     voiceoverBtn.querySelector('.icon-voice-off').style.display = 'none';
                     if (voiceoverAudio && isPlaying) {
                         voiceoverAudio.play().catch(function(e) {});
-                        setAudioVolume(0.5, 500);
                     }
+                    updateDucking();
                 } else {
                     voiceoverBtn.classList.add('is-muted');
                     voiceoverBtn.querySelector('.icon-voice-on').style.display = 'none';
@@ -1861,7 +1875,11 @@
                     if (voiceoverAudio) {
                         voiceoverAudio.pause();
                     }
-                    setAudioVolume(1.0, 800);
+                    for (var i = 0; i < backgroundVoiceovers.length; i++) {
+                        backgroundVoiceovers[i].pause();
+                    }
+                    backgroundVoiceovers = [];
+                    updateDucking();
                 }
             });
         }
@@ -1875,14 +1893,18 @@
                 lastAudioTimeAnalytics = audio.currentTime;
                 if (voiceoverAudio && isVoiceoverEnabled && activePhraseIndex !== -1) {
                     voiceoverAudio.play().catch(function(e) {});
-                    setAudioVolume(0.5, 500);
                 }
+                updateDucking();
             });
 
             audio.addEventListener('pause', function() {
                 if (voiceoverAudio) {
                     voiceoverAudio.pause();
                 }
+                for (var i = 0; i < backgroundVoiceovers.length; i++) {
+                    backgroundVoiceovers[i].pause();
+                }
+                updateDucking();
             });
 
             audio.addEventListener('seeked', function() {
@@ -1910,16 +1932,24 @@
                     }
                     
                     if (foundIndex !== activePhraseIndex) {
-                        // Pause previous voiceover if exists
+                        // Do not pause the previous voiceover immediately, let it finish to allow natural overlap
                         if (voiceoverAudio) {
-                            voiceoverAudio.pause();
+                            backgroundVoiceovers.push(voiceoverAudio);
+                            voiceoverAudio.addEventListener('ended', function() {
+                                updateDucking();
+                            });
                             voiceoverAudio = null;
-                            setAudioVolume(1.0, 1000);
                         }
 
-                        // Hide previous phrase
-                        if (phraseContainer.firstChild) {
-                            phraseContainer.firstChild.classList.remove('is-visible');
+                        // Fade out old phrases visually
+                        var oldPhrases = phraseContainer.querySelectorAll('.zk-cinematic-phrase-text');
+                        for (var p = 0; p < oldPhrases.length; p++) {
+                            oldPhrases[p].classList.remove('is-visible');
+                            (function(el) {
+                                setTimeout(function() {
+                                    if (el && el.parentNode) el.parentNode.removeChild(el);
+                                }, 4000); // Wait for CSS transition
+                            })(oldPhrases[p]);
                         }
                         
                         activePhraseIndex = foundIndex;
@@ -1930,7 +1960,6 @@
                             var el = document.createElement('div');
                             el.className = 'zk-cinematic-phrase-text';
                             el.innerHTML = text;
-                            phraseContainer.innerHTML = '';
                             phraseContainer.appendChild(el);
                             
                             // trigger reflow for transition
@@ -1950,11 +1979,13 @@
                             }
                             if (isVoiceoverEnabled && isPlaying) {
                                 voiceoverAudio.play().catch(function(e) {});
-                                setAudioVolume(0.5, 500);
                                 voiceoverAudio.addEventListener('ended', function() {
-                                    setAudioVolume(1.0, 1000);
+                                    updateDucking();
                                 });
+                                updateDucking();
                             }
+                        } else {
+                            updateDucking();
                         }
                     }
                 });
@@ -1995,13 +2026,22 @@
         }
 
         function stopPhrases() {
-            var pContainer = document.getElementById('zk-cinematic-phrase-container');
-            if (pContainer && pContainer.firstChild) {
-                pContainer.firstChild.classList.remove('is-visible');
+            var oldPhrases = document.querySelectorAll('#zk-cinematic-phrase-container .zk-cinematic-phrase-text');
+            for (var p = 0; p < oldPhrases.length; p++) {
+                oldPhrases[p].classList.remove('is-visible');
+                (function(el) {
+                    setTimeout(function() {
+                        if (el && el.parentNode) el.parentNode.removeChild(el);
+                    }, 4000);
+                })(oldPhrases[p]);
             }
             if (voiceoverAudio) {
                 voiceoverAudio.pause();
             }
+            for (var i = 0; i < backgroundVoiceovers.length; i++) {
+                backgroundVoiceovers[i].pause();
+            }
+            updateDucking();
         }
 
 
