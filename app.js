@@ -1769,15 +1769,17 @@
                         if (hasPlayedOnce) {
                             // Soft fade in (~150ms)
                             fadeInterval = setInterval(function() {
-                                if (audio.volume < 0.9) {
+                                var targetVol = isVoiceoverEnabled ? 0.9 : 1.0;
+                                if (audio.volume < (targetVol - 0.1)) {
                                     audio.volume += 0.1;
                                 } else {
                                     clearInterval(fadeInterval);
-                                    audio.volume = 1;
+                                    audio.volume = targetVol;
                                 }
                             }, 15);
                         } else {
                             hasPlayedOnce = true;
+                            audio.volume = isVoiceoverEnabled ? 0.9 : 1.0;
                         }
 
                         playIcon.style.display = 'none';
@@ -1805,6 +1807,10 @@
             stopIcon.style.display = 'none';
             btn.classList.remove('is-playing');
             document.body.classList.remove('is-cinematic-mode');
+            var vBtn = document.getElementById('zk-voiceover-btn');
+            if (vBtn) vBtn.style.display = 'none';
+            var sBtn = document.getElementById('zk-subtitle-btn');
+            if (sBtn) sBtn.style.display = 'none';
             stopPhrases();
         });
 
@@ -1862,8 +1868,17 @@
                     voiceoverBtn.querySelector('.icon-voice-on').style.display = 'block';
                     voiceoverBtn.querySelector('.icon-voice-off').style.display = 'none';
                     if (voiceoverAudio && isPlaying) {
+                        // calculate offset to avoid losing sync if it progressed while OFF
+                        if (activePhraseIndex !== -1 && phrases[activePhraseIndex]) {
+                            var offset = audio.currentTime - phrases[activePhraseIndex].start;
+                            if (offset >= 0 && offset <= voiceoverAudio.duration) {
+                                voiceoverAudio.currentTime = offset;
+                            }
+                        }
                         voiceoverAudio.play().catch(function(e) {});
                         setAudioVolume(0.5, 500);
+                    } else {
+                        setAudioVolume(0.9, 800);
                     }
                 } else {
                     voiceoverBtn.classList.add('is-muted');
@@ -1947,8 +1962,9 @@
                         // Pause previous voiceover if exists
                         if (voiceoverAudio) {
                             voiceoverAudio.pause();
+                            voiceoverAudio.pause();
                             voiceoverAudio = null;
-                            setAudioVolume(1.0, 1000);
+                            setAudioVolume(isVoiceoverEnabled ? 0.9 : 1.0, 1000);
                         }
 
                         // Hide previous phrase
@@ -1986,7 +2002,7 @@
                                 voiceoverAudio.play().catch(function(e) {});
                                 setAudioVolume(0.5, 500);
                                 voiceoverAudio.addEventListener('ended', function() {
-                                    setAudioVolume(1.0, 1000);
+                                    setAudioVolume(isVoiceoverEnabled ? 0.9 : 1.0, 1000);
                                 });
                             }
                         }
