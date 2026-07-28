@@ -1852,7 +1852,7 @@
                     voiceoverBtn.querySelector('.icon-voice-off').style.display = 'none';
                     if (voiceoverAudio && isPlaying) {
                         voiceoverAudio.play().catch(function(e) {});
-                        setAudioVolume(0.25, 500);
+                        setAudioVolume(0.5, 500);
                     }
                 } else {
                     voiceoverBtn.classList.add('is-muted');
@@ -1875,7 +1875,7 @@
                 lastAudioTimeAnalytics = audio.currentTime;
                 if (voiceoverAudio && isVoiceoverEnabled && activePhraseIndex !== -1) {
                     voiceoverAudio.play().catch(function(e) {});
-                    setAudioVolume(0.25, 500);
+                    setAudioVolume(0.5, 500);
                 }
             });
 
@@ -1950,7 +1950,7 @@
                             }
                             if (isVoiceoverEnabled && isPlaying) {
                                 voiceoverAudio.play().catch(function(e) {});
-                                setAudioVolume(0.25, 500);
+                                setAudioVolume(0.5, 500);
                                 voiceoverAudio.addEventListener('ended', function() {
                                     setAudioVolume(1.0, 1000);
                                 });
