@@ -1914,7 +1914,10 @@
                             var voiceUrl = '/wp-content/uploads/2026/07/pale-blue-dot-' + idxStr + '.wav';
                             voiceoverAudio = new Audio(voiceUrl);
                             var offset = audio.currentTime - phrases[foundIndex].start;
-                            if (offset > 0) {
+                            // Normal timeupdate fires with a slight delay (e.g. 0.1s - 0.3s). 
+                            // If we seek forward by this small offset, it swallows the first word.
+                            // Only seek if the offset is large (meaning the user manually seeked the music).
+                            if (offset > 0.5) {
                                 voiceoverAudio.currentTime = offset;
                             }
                             if (isVoiceoverEnabled && isPlaying) {
