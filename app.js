@@ -1697,6 +1697,14 @@
         var stopIcon = btn.querySelector('.icon-stop');
         var isPlaying = !audio.paused && !audio.ended && audio.currentTime > 0;
 
+        // Initialize state variables for cinematic phrases early
+        var phraseContainer = document.getElementById('zk-cinematic-phrase-container');
+        var activePhraseIndex = -1;
+        var voiceoverAudio = null;
+        var backgroundVoiceovers = [];
+        var isVoiceoverEnabled = true;
+        var audioFadeInterval = null;
+
         // Sync UI with actual audio state in case of SPA navigation keeping audio alive
         if (isPlaying) {
             playIcon.style.display = 'none';
@@ -1811,12 +1819,6 @@
                 console.error("Failed to parse phrases", e);
             }
         }
-        var phraseContainer = document.getElementById('zk-cinematic-phrase-container');
-        var activePhraseIndex = -1;
-        var voiceoverAudio = null;
-        var backgroundVoiceovers = [];
-        var isVoiceoverEnabled = true;
-        var audioFadeInterval = null;
 
         function setAudioVolume(target, duration) {
             if (!audio) return;
