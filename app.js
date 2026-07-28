@@ -1815,21 +1815,29 @@
         var activePhraseIndex = -1;
         var voiceoverAudio = null;
         var isVoiceoverEnabled = true;
+        var audioFadeInterval = null;
 
-        var duckingInterval = null;
-        function fadeToVolume(targetVol) {
+        function setAudioVolume(target, duration) {
             if (!audio) return;
-            clearInterval(duckingInterval);
-            duckingInterval = setInterval(function() {
-                if (Math.abs(audio.volume - targetVol) < 0.05) {
-                    audio.volume = targetVol;
-                    clearInterval(duckingInterval);
-                } else if (audio.volume < targetVol) {
-                    audio.volume = Math.min(1.0, audio.volume + 0.05);
-                } else {
-                    audio.volume = Math.max(0.0, audio.volume - 0.05);
+            if (audioFadeInterval) clearInterval(audioFadeInterval);
+            var startVol = audio.volume;
+            var steps = 20;
+            var stepTime = duration / steps;
+            var diff = target - startVol;
+            var currentStep = 0;
+            
+            audioFadeInterval = setInterval(function() {
+                currentStep++;
+                var newVol = startVol + (diff * (currentStep / steps));
+                if (newVol < 0) newVol = 0;
+                if (newVol > 1) newVol = 1;
+                audio.volume = newVol;
+                
+                if (currentStep >= steps) {
+                    clearInterval(audioFadeInterval);
+                    audio.volume = target;
                 }
-            }, 50);
+            }, stepTime);
         }
 
         var voiceoverBtn = document.getElementById('zk-voiceover-btn');
@@ -1844,7 +1852,7 @@
                     voiceoverBtn.querySelector('.icon-voice-off').style.display = 'none';
                     if (voiceoverAudio && isPlaying) {
                         voiceoverAudio.play().catch(function(e) {});
-                        fadeToVolume(0.3);
+                        setAudioVolume(0.25, 500);
                     }
                 } else {
                     voiceoverBtn.classList.add('is-muted');
@@ -1853,7 +1861,7 @@
                     if (voiceoverAudio) {
                         voiceoverAudio.pause();
                     }
-                    fadeToVolume(1.0);
+                    setAudioVolume(1.0, 800);
                 }
             });
         }
@@ -1867,7 +1875,7 @@
                 lastAudioTimeAnalytics = audio.currentTime;
                 if (voiceoverAudio && isVoiceoverEnabled && activePhraseIndex !== -1) {
                     voiceoverAudio.play().catch(function(e) {});
-                    fadeToVolume(0.3);
+                    setAudioVolume(0.25, 500);
                 }
             });
 
@@ -1906,6 +1914,7 @@
                         if (voiceoverAudio) {
                             voiceoverAudio.pause();
                             voiceoverAudio = null;
+                            setAudioVolume(1.0, 1000);
                         }
 
                         // Hide previous phrase
@@ -1932,11 +1941,6 @@
                             var idxStr = foundIndex < 10 ? '0' + foundIndex : foundIndex;
                             var voiceUrl = '/wp-content/uploads/2026/07/pale-blue-dot-' + idxStr + '.wav';
                             voiceoverAudio = new Audio(voiceUrl);
-                            
-                            voiceoverAudio.addEventListener('ended', function() {
-                                fadeToVolume(1.0);
-                            });
-
                             var offset = audio.currentTime - phrases[foundIndex].start;
                             // Normal timeupdate fires with a slight delay (e.g. 0.1s - 0.3s). 
                             // If we seek forward by this small offset, it swallows the first word.
@@ -1946,11 +1950,11 @@
                             }
                             if (isVoiceoverEnabled && isPlaying) {
                                 voiceoverAudio.play().catch(function(e) {});
-                                fadeToVolume(0.3);
+                                setAudioVolume(0.25, 500);
+                                voiceoverAudio.addEventListener('ended', function() {
+                                    setAudioVolume(1.0, 1000);
+                                });
                             }
-                        } else {
-                            // No active phrase, restore full volume
-                            fadeToVolume(1.0);
                         }
                     }
                 });
@@ -1998,7 +2002,6 @@
             if (voiceoverAudio) {
                 voiceoverAudio.pause();
             }
-            fadeToVolume(1.0);
         }
 
 
