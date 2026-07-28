@@ -611,6 +611,29 @@ body.is-navigating #zk-global-loader {
     text-transform: uppercase;
 }
 
+.zk-voiceover-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    padding: 4px;
+    margin-left: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease, transform 0.3s ease;
+    z-index: 1;
+}
+
+.zk-voiceover-btn:hover {
+    color: rgba(255, 255, 255, 0.9);
+    transform: scale(1.1);
+}
+
+.zk-voiceover-btn.is-muted {
+    color: rgba(255, 255, 255, 0.2);
+}
+
 /* Staggered Reveal Wrappers */
 .hero-eyebrow-wrap,
 .hero-title-wrap,

@@ -1813,6 +1813,32 @@
         }
         var phraseContainer = document.getElementById('zk-cinematic-phrase-container');
         var activePhraseIndex = -1;
+        var voiceoverAudio = null;
+        var isVoiceoverEnabled = true;
+
+        var voiceoverBtn = document.getElementById('zk-voiceover-btn');
+        if (voiceoverBtn) {
+            voiceoverBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                isVoiceoverEnabled = !isVoiceoverEnabled;
+                if (isVoiceoverEnabled) {
+                    voiceoverBtn.classList.remove('is-muted');
+                    voiceoverBtn.querySelector('.icon-voice-on').style.display = 'block';
+                    voiceoverBtn.querySelector('.icon-voice-off').style.display = 'none';
+                    if (voiceoverAudio && isPlaying) {
+                        voiceoverAudio.play().catch(function(e) {});
+                    }
+                } else {
+                    voiceoverBtn.classList.add('is-muted');
+                    voiceoverBtn.querySelector('.icon-voice-on').style.display = 'none';
+                    voiceoverBtn.querySelector('.icon-voice-off').style.display = 'block';
+                    if (voiceoverAudio) {
+                        voiceoverAudio.pause();
+                    }
+                }
+            });
+        }
 
         window.zkMusicPlayed = window.zkMusicPlayed || false;
         window.zkMusicDurationTotal = window.zkMusicDurationTotal || 0;
@@ -1821,6 +1847,24 @@
             audio.addEventListener('play', function() {
                 window.zkMusicPlayed = true;
                 lastAudioTimeAnalytics = audio.currentTime;
+                if (voiceoverAudio && isVoiceoverEnabled && activePhraseIndex !== -1) {
+                    voiceoverAudio.play().catch(function(e) {});
+                }
+            });
+
+            audio.addEventListener('pause', function() {
+                if (voiceoverAudio) {
+                    voiceoverAudio.pause();
+                }
+            });
+
+            audio.addEventListener('seeked', function() {
+                if (voiceoverAudio && activePhraseIndex !== -1 && phrases[activePhraseIndex]) {
+                    var offset = audio.currentTime - phrases[activePhraseIndex].start;
+                    if (offset >= 0 && offset <= voiceoverAudio.duration) {
+                        voiceoverAudio.currentTime = offset;
+                    }
+                }
             });
 
             if (audio && phrases && phrases.length > 0) {
@@ -1839,6 +1883,12 @@
                     }
                     
                     if (foundIndex !== activePhraseIndex) {
+                        // Pause previous voiceover if exists
+                        if (voiceoverAudio) {
+                            voiceoverAudio.pause();
+                            voiceoverAudio = null;
+                        }
+
                         // Hide previous phrase
                         if (phraseContainer.firstChild) {
                             phraseContainer.firstChild.classList.remove('is-visible');
@@ -1858,6 +1908,18 @@
                             // trigger reflow for transition
                             void el.offsetWidth;
                             el.classList.add('is-visible');
+
+                            // Load and play new voiceover
+                            var idxStr = foundIndex < 10 ? '0' + foundIndex : foundIndex;
+                            var voiceUrl = '/wp-content/uploads/2026/07/pale-blue-dot-' + idxStr + '.wav';
+                            voiceoverAudio = new Audio(voiceUrl);
+                            var offset = audio.currentTime - phrases[foundIndex].start;
+                            if (offset > 0) {
+                                voiceoverAudio.currentTime = offset;
+                            }
+                            if (isVoiceoverEnabled && isPlaying) {
+                                voiceoverAudio.play().catch(function(e) {});
+                            }
                         }
                     }
                 });
@@ -1901,6 +1963,9 @@
             var pContainer = document.getElementById('zk-cinematic-phrase-container');
             if (pContainer && pContainer.firstChild) {
                 pContainer.firstChild.classList.remove('is-visible');
+            }
+            if (voiceoverAudio) {
+                voiceoverAudio.pause();
             }
         }
 
