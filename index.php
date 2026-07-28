@@ -99,12 +99,15 @@ ob_start(); ?>
             </button>
             <span class="zk-welcome-music-title"><?php the_title(); ?></span>
             
-            <?php if ( !empty($phrases_array) ) : ?>
             <button id="zk-voiceover-btn" class="zk-voiceover-btn" title="Toggle Voiceover" aria-label="Toggle Voiceover" style="display:none;">
                 <svg class="icon-voice-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
                 <svg class="icon-voice-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
             </button>
-            <?php endif; ?>
+            
+            <button id="zk-subtitle-btn" class="zk-voiceover-btn" title="Toggle Subtitles" aria-label="Toggle Subtitles" style="display:none;">
+                <svg class="icon-cc-on" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="9" y1="10" x2="15" y2="10"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+                <svg class="icon-cc-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
 
             <audio id="zk-welcome-audio" src="<?php echo esc_url( $audio_url ); ?>" preload="metadata"></audio>
             </div>

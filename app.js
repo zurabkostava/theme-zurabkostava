@@ -1692,6 +1692,7 @@
         var audio = document.getElementById('zk-welcome-audio');
         var container = document.querySelector('.zk-welcome-music-container');
         var voiceoverBtn = document.getElementById('zk-voiceover-btn');
+        var subtitleBtn = document.getElementById('zk-subtitle-btn');
         if (!btn || !audio || !container) return;
 
         var playIcon = btn.querySelector('.icon-play');
@@ -1705,6 +1706,7 @@
             btn.classList.add('is-playing');
             document.body.classList.add('is-cinematic-mode');
             if (voiceoverBtn) voiceoverBtn.style.display = 'flex';
+            if (subtitleBtn) subtitleBtn.style.display = 'flex';
             startPhrases();
         } else {
             playIcon.style.display = 'block';
@@ -1712,6 +1714,7 @@
             btn.classList.remove('is-playing');
             document.body.classList.remove('is-cinematic-mode');
             if (voiceoverBtn) voiceoverBtn.style.display = 'none';
+            if (subtitleBtn) subtitleBtn.style.display = 'none';
             stopPhrases();
         }
 
@@ -1751,6 +1754,7 @@
                 btn.classList.remove('is-playing');
                 document.body.classList.remove('is-cinematic-mode');
                 if (voiceoverBtn) voiceoverBtn.style.display = 'none';
+                if (subtitleBtn) subtitleBtn.style.display = 'none';
                 stopPhrases();
             } else {
                 if (hasPlayedOnce) {
@@ -1781,6 +1785,7 @@
                         btn.classList.add('is-playing');
                         document.body.classList.add('is-cinematic-mode');
                         if (voiceoverBtn) voiceoverBtn.style.display = 'flex';
+                        if (subtitleBtn) subtitleBtn.style.display = 'flex';
                         startPhrases();
                     }).catch(error => {
                         console.error('Audio play failed', error);
@@ -1820,6 +1825,7 @@
         var activePhraseIndex = -1;
         var voiceoverAudio = null;
         var isVoiceoverEnabled = true;
+        var isSubtitlesEnabled = true;
         var audioFadeInterval = null;
 
         function setAudioVolume(target, duration) {
@@ -1867,6 +1873,29 @@
                         voiceoverAudio.pause();
                     }
                     setAudioVolume(1.0, 800);
+                }
+            });
+        }
+
+        if (subtitleBtn) {
+            subtitleBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                isSubtitlesEnabled = !isSubtitlesEnabled;
+                if (isSubtitlesEnabled) {
+                    subtitleBtn.classList.remove('is-muted');
+                    subtitleBtn.querySelector('.icon-cc-on').style.display = 'block';
+                    subtitleBtn.querySelector('.icon-cc-off').style.display = 'none';
+                    if (phraseContainer) {
+                        phraseContainer.style.display = 'flex';
+                    }
+                } else {
+                    subtitleBtn.classList.add('is-muted');
+                    subtitleBtn.querySelector('.icon-cc-on').style.display = 'none';
+                    subtitleBtn.querySelector('.icon-cc-off').style.display = 'block';
+                    if (phraseContainer) {
+                        phraseContainer.style.display = 'none';
+                    }
                 }
             });
         }
