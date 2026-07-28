@@ -3725,6 +3725,8 @@ function zk_create_analytics_table() {
         url varchar(255) NOT NULL,
         referrer varchar(255) DEFAULT '' NOT NULL,
         duration int(11) DEFAULT 0 NOT NULL,
+        music_played tinyint(1) DEFAULT 0 NOT NULL,
+        music_duration int(11) DEFAULT 0 NOT NULL,
         country varchar(100) DEFAULT '' NOT NULL,
         city varchar(100) DEFAULT '' NOT NULL,
         user_agent text NOT NULL,
@@ -3772,6 +3774,21 @@ function zk_upgrade_analytics_table_v6() {
     update_option( 'zk_analytics_db_v6', true );
 }
 add_action( 'after_setup_theme', 'zk_upgrade_analytics_table_v6' );
+
+function zk_upgrade_analytics_table_v7() {
+    if ( get_option( 'zk_analytics_db_v7' ) ) {
+        return;
+    }
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'zk_analytics';
+    // Use suppress_errors to avoid crashing if columns already exist
+    $wpdb->suppress_errors = true;
+    $wpdb->query("ALTER TABLE $table_name ADD COLUMN music_played tinyint(1) DEFAULT 0 NOT NULL");
+    $wpdb->query("ALTER TABLE $table_name ADD COLUMN music_duration int(11) DEFAULT 0 NOT NULL");
+    $wpdb->suppress_errors = false;
+    update_option( 'zk_analytics_db_v7', true );
+}
+add_action( 'after_setup_theme', 'zk_upgrade_analytics_table_v7' );
 
 // 2. REST API Tracking Endpoint
 add_action( 'rest_api_init', function () {
