@@ -1691,19 +1691,12 @@
         var btn = document.getElementById('zk-welcome-music-btn');
         var audio = document.getElementById('zk-welcome-audio');
         var container = document.querySelector('.zk-welcome-music-container');
+        var voiceoverBtn = document.getElementById('zk-voiceover-btn');
         if (!btn || !audio || !container) return;
 
         var playIcon = btn.querySelector('.icon-play');
         var stopIcon = btn.querySelector('.icon-stop');
         var isPlaying = !audio.paused && !audio.ended && audio.currentTime > 0;
-
-        // Initialize state variables for cinematic phrases early
-        var phraseContainer = document.getElementById('zk-cinematic-phrase-container');
-        var activePhraseIndex = -1;
-        var voiceoverAudio = null;
-        var backgroundVoiceovers = [];
-        var isVoiceoverEnabled = true;
-        var audioFadeInterval = null;
 
         // Sync UI with actual audio state in case of SPA navigation keeping audio alive
         if (isPlaying) {
@@ -1711,12 +1704,14 @@
             stopIcon.style.display = 'block';
             btn.classList.add('is-playing');
             document.body.classList.add('is-cinematic-mode');
+            if (voiceoverBtn) voiceoverBtn.style.display = 'flex';
             startPhrases();
         } else {
             playIcon.style.display = 'block';
             stopIcon.style.display = 'none';
             btn.classList.remove('is-playing');
             document.body.classList.remove('is-cinematic-mode');
+            if (voiceoverBtn) voiceoverBtn.style.display = 'none';
             stopPhrases();
         }
 
@@ -1755,6 +1750,7 @@
                 stopIcon.style.display = 'none';
                 btn.classList.remove('is-playing');
                 document.body.classList.remove('is-cinematic-mode');
+                if (voiceoverBtn) voiceoverBtn.style.display = 'none';
                 stopPhrases();
             } else {
                 if (hasPlayedOnce) {
@@ -1784,6 +1780,7 @@
                         stopIcon.style.display = 'block';
                         btn.classList.add('is-playing');
                         document.body.classList.add('is-cinematic-mode');
+                        if (voiceoverBtn) voiceoverBtn.style.display = 'flex';
                         startPhrases();
                     }).catch(error => {
                         console.error('Audio play failed', error);
@@ -1819,6 +1816,11 @@
                 console.error("Failed to parse phrases", e);
             }
         }
+        var phraseContainer = document.getElementById('zk-cinematic-phrase-container');
+        var activePhraseIndex = -1;
+        var voiceoverAudio = null;
+        var isVoiceoverEnabled = true;
+        var audioFadeInterval = null;
 
         function setAudioVolume(target, duration) {
             if (!audio) return;
@@ -1843,20 +1845,7 @@
             }, stepTime);
         }
 
-        function updateDucking() {
-            var isAnyPlaying = false;
-            if (voiceoverAudio && !voiceoverAudio.paused && !voiceoverAudio.ended) isAnyPlaying = true;
-            for (var i = 0; i < backgroundVoiceovers.length; i++) {
-                if (!backgroundVoiceovers[i].paused && !backgroundVoiceovers[i].ended) isAnyPlaying = true;
-            }
-            if (isAnyPlaying && isVoiceoverEnabled) {
-                setAudioVolume(0.5, 500);
-            } else {
-                setAudioVolume(1.0, 1000);
-            }
-        }
-
-        var voiceoverBtn = document.getElementById('zk-voiceover-btn');
+        // voiceoverBtn already declared above
         if (voiceoverBtn) {
             voiceoverBtn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -1868,8 +1857,8 @@
                     voiceoverBtn.querySelector('.icon-voice-off').style.display = 'none';
                     if (voiceoverAudio && isPlaying) {
                         voiceoverAudio.play().catch(function(e) {});
+                        setAudioVolume(0.5, 500);
                     }
-                    updateDucking();
                 } else {
                     voiceoverBtn.classList.add('is-muted');
                     voiceoverBtn.querySelector('.icon-voice-on').style.display = 'none';
@@ -1877,11 +1866,7 @@
                     if (voiceoverAudio) {
                         voiceoverAudio.pause();
                     }
-                    for (var i = 0; i < backgroundVoiceovers.length; i++) {
-                        backgroundVoiceovers[i].pause();
-                    }
-                    backgroundVoiceovers = [];
-                    updateDucking();
+                    setAudioVolume(1.0, 800);
                 }
             });
         }
@@ -1895,18 +1880,14 @@
                 lastAudioTimeAnalytics = audio.currentTime;
                 if (voiceoverAudio && isVoiceoverEnabled && activePhraseIndex !== -1) {
                     voiceoverAudio.play().catch(function(e) {});
+                    setAudioVolume(0.5, 500);
                 }
-                updateDucking();
             });
 
             audio.addEventListener('pause', function() {
                 if (voiceoverAudio) {
                     voiceoverAudio.pause();
                 }
-                for (var i = 0; i < backgroundVoiceovers.length; i++) {
-                    backgroundVoiceovers[i].pause();
-                }
-                updateDucking();
             });
 
             audio.addEventListener('seeked', function() {
@@ -1934,24 +1915,16 @@
                     }
                     
                     if (foundIndex !== activePhraseIndex) {
-                        // Do not pause the previous voiceover immediately, let it finish to allow natural overlap
+                        // Pause previous voiceover if exists
                         if (voiceoverAudio) {
-                            backgroundVoiceovers.push(voiceoverAudio);
-                            voiceoverAudio.addEventListener('ended', function() {
-                                updateDucking();
-                            });
+                            voiceoverAudio.pause();
                             voiceoverAudio = null;
+                            setAudioVolume(1.0, 1000);
                         }
 
-                        // Fade out old phrases visually
-                        var oldPhrases = phraseContainer.querySelectorAll('.zk-cinematic-phrase-text');
-                        for (var p = 0; p < oldPhrases.length; p++) {
-                            oldPhrases[p].classList.remove('is-visible');
-                            (function(el) {
-                                setTimeout(function() {
-                                    if (el && el.parentNode) el.parentNode.removeChild(el);
-                                }, 4000); // Wait for CSS transition
-                            })(oldPhrases[p]);
+                        // Hide previous phrase
+                        if (phraseContainer.firstChild) {
+                            phraseContainer.firstChild.classList.remove('is-visible');
                         }
                         
                         activePhraseIndex = foundIndex;
@@ -1962,6 +1935,7 @@
                             var el = document.createElement('div');
                             el.className = 'zk-cinematic-phrase-text';
                             el.innerHTML = text;
+                            phraseContainer.innerHTML = '';
                             phraseContainer.appendChild(el);
                             
                             // trigger reflow for transition
@@ -1981,13 +1955,11 @@
                             }
                             if (isVoiceoverEnabled && isPlaying) {
                                 voiceoverAudio.play().catch(function(e) {});
+                                setAudioVolume(0.5, 500);
                                 voiceoverAudio.addEventListener('ended', function() {
-                                    updateDucking();
+                                    setAudioVolume(1.0, 1000);
                                 });
-                                updateDucking();
                             }
-                        } else {
-                            updateDucking();
                         }
                     }
                 });
@@ -2028,22 +2000,13 @@
         }
 
         function stopPhrases() {
-            var oldPhrases = document.querySelectorAll('#zk-cinematic-phrase-container .zk-cinematic-phrase-text');
-            for (var p = 0; p < oldPhrases.length; p++) {
-                oldPhrases[p].classList.remove('is-visible');
-                (function(el) {
-                    setTimeout(function() {
-                        if (el && el.parentNode) el.parentNode.removeChild(el);
-                    }, 4000);
-                })(oldPhrases[p]);
+            var pContainer = document.getElementById('zk-cinematic-phrase-container');
+            if (pContainer && pContainer.firstChild) {
+                pContainer.firstChild.classList.remove('is-visible');
             }
             if (voiceoverAudio) {
                 voiceoverAudio.pause();
             }
-            for (var i = 0; i < backgroundVoiceovers.length; i++) {
-                backgroundVoiceovers[i].pause();
-            }
-            updateDucking();
         }
 
 
