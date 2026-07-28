@@ -1816,6 +1816,22 @@
         var voiceoverAudio = null;
         var isVoiceoverEnabled = true;
 
+        var duckingInterval = null;
+        function fadeToVolume(targetVol) {
+            if (!audio) return;
+            clearInterval(duckingInterval);
+            duckingInterval = setInterval(function() {
+                if (Math.abs(audio.volume - targetVol) < 0.05) {
+                    audio.volume = targetVol;
+                    clearInterval(duckingInterval);
+                } else if (audio.volume < targetVol) {
+                    audio.volume = Math.min(1.0, audio.volume + 0.05);
+                } else {
+                    audio.volume = Math.max(0.0, audio.volume - 0.05);
+                }
+            }, 50);
+        }
+
         var voiceoverBtn = document.getElementById('zk-voiceover-btn');
         if (voiceoverBtn) {
             voiceoverBtn.addEventListener('click', function(e) {
@@ -1828,6 +1844,7 @@
                     voiceoverBtn.querySelector('.icon-voice-off').style.display = 'none';
                     if (voiceoverAudio && isPlaying) {
                         voiceoverAudio.play().catch(function(e) {});
+                        fadeToVolume(0.3);
                     }
                 } else {
                     voiceoverBtn.classList.add('is-muted');
@@ -1836,6 +1853,7 @@
                     if (voiceoverAudio) {
                         voiceoverAudio.pause();
                     }
+                    fadeToVolume(1.0);
                 }
             });
         }
@@ -1849,6 +1867,7 @@
                 lastAudioTimeAnalytics = audio.currentTime;
                 if (voiceoverAudio && isVoiceoverEnabled && activePhraseIndex !== -1) {
                     voiceoverAudio.play().catch(function(e) {});
+                    fadeToVolume(0.3);
                 }
             });
 
@@ -1913,6 +1932,11 @@
                             var idxStr = foundIndex < 10 ? '0' + foundIndex : foundIndex;
                             var voiceUrl = '/wp-content/uploads/2026/07/pale-blue-dot-' + idxStr + '.wav';
                             voiceoverAudio = new Audio(voiceUrl);
+                            
+                            voiceoverAudio.addEventListener('ended', function() {
+                                fadeToVolume(1.0);
+                            });
+
                             var offset = audio.currentTime - phrases[foundIndex].start;
                             // Normal timeupdate fires with a slight delay (e.g. 0.1s - 0.3s). 
                             // If we seek forward by this small offset, it swallows the first word.
@@ -1922,7 +1946,11 @@
                             }
                             if (isVoiceoverEnabled && isPlaying) {
                                 voiceoverAudio.play().catch(function(e) {});
+                                fadeToVolume(0.3);
                             }
+                        } else {
+                            // No active phrase, restore full volume
+                            fadeToVolume(1.0);
                         }
                     }
                 });
@@ -1970,6 +1998,7 @@
             if (voiceoverAudio) {
                 voiceoverAudio.pause();
             }
+            fadeToVolume(1.0);
         }
 
 
