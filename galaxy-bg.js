@@ -801,27 +801,20 @@
             speedHud.style.position = 'fixed';
             speedHud.style.bottom = '30px';
             speedHud.style.right = '30px';
-            speedHud.style.color = '#00ffff';
+            speedHud.style.color = 'rgba(255, 255, 255, 0.7)';
             speedHud.style.fontFamily = '"Courier New", Courier, monospace';
-            speedHud.style.textShadow = '0 0 10px rgba(0, 255, 255, 0.8)';
+            speedHud.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.9)';
             speedHud.style.pointerEvents = 'none';
             speedHud.style.zIndex = '9999';
             speedHud.style.opacity = '0'; // Hidden initially
             speedHud.style.transition = 'opacity 1s ease-in-out';
-            speedHud.style.background = 'rgba(0, 5, 20, 0.6)';
-            speedHud.style.backdropFilter = 'blur(10px)';
-            speedHud.style.WebkitBackdropFilter = 'blur(10px)';
-            speedHud.style.border = '1px solid rgba(0, 255, 255, 0.2)';
-            speedHud.style.padding = '15px 25px';
-            speedHud.style.borderRadius = '12px';
             speedHud.style.display = 'flex';
             speedHud.style.flexDirection = 'column';
             speedHud.style.alignItems = 'flex-end';
-            speedHud.style.boxShadow = '0 0 20px rgba(0,255,255,0.1)';
             
             speedHud.innerHTML = `
-                <div style="font-size: 11px; color: #88bbff; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 5px;">Orbital Velocity</div>
-                <div style="font-size: 28px; font-weight: bold; line-height: 1;"><span id="zk-warp-speed-val">756,000,000</span> <span style="font-size:14px; color:#aaa;">c</span></div>
+                <div style="font-size: 10px; color: rgba(255, 255, 255, 0.4); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 3px;">Orbital Velocity</div>
+                <div style="font-size: 20px; font-weight: normal; line-height: 1;"><span id="zk-warp-speed-val">756,000,000</span> <span style="font-size:12px; color:rgba(255,255,255,0.3);">c</span></div>
             `;
             document.body.appendChild(speedHud);
         }
