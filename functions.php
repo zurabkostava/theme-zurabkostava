@@ -61,19 +61,27 @@ function zk_assets() {
 
     // ახალი app.js ფაილის მიბმა სუფთად
     wp_enqueue_script( 'zk-galaxy-bg', get_stylesheet_directory_uri() . '/galaxy-bg.js', array('three-js'), filemtime( get_stylesheet_directory() . '/galaxy-bg.js' ), true );
-    wp_enqueue_script( 'zk-app', get_stylesheet_directory_uri() . '/app.js', array('zk-galaxy-bg'), filemtime( get_stylesheet_directory() . '/app.js' ), true );
+    wp_enqueue_script( 'zk-analytics', get_stylesheet_directory_uri() . '/analytics.js', array(), filemtime( get_stylesheet_directory() . '/analytics.js' ), true );
+    wp_enqueue_script( 'zk-app', get_stylesheet_directory_uri() . '/app.js', array('zk-galaxy-bg', 'zk-analytics'), filemtime( get_stylesheet_directory() . '/app.js' ), true );
 
-    // აქ ვაწვდით app.js-ს ვორდპრესის დინამიურ ლინკებს (ამის წყალობით index.php-დან window.ZK სკრიპტის წაშლაც შეგვიძლია)
-    wp_localize_script( 'zk-app', 'ZK', array(
+    // აქ ვაწვდით დინამიურ ლინკებს
+    wp_localize_script( 'zk-analytics', 'ZK', array(
             'home' => home_url( '/' ),
             'site' => get_bloginfo( 'name' ),
     ) );
 }
 add_action( 'wp_enqueue_scripts', 'zk_assets' );
 
+// 🔴 Bypass WP Rocket Delay JS for app.js and analytics.js so tracking fires immediately
+add_filter( 'rocket_delay_js_exclusions', function( $exclusions ) {
+    $exclusions[] = 'app.js';
+    $exclusions[] = 'analytics.js';
+    return $exclusions;
+} );
+
 // 🔴 Bypass WP Rocket Delay JS for app.js so tracking fires immediately
 add_filter( 'script_loader_tag', function( $tag, $handle ) {
-    if ( in_array( $handle, array( 'zk-app', 'three-js', 'zk-galaxy-bg' ), true ) ) {
+    if ( in_array( $handle, array( 'zk-app', 'zk-analytics', 'three-js', 'zk-galaxy-bg' ), true ) ) {
         return str_replace( '<script ', '<script data-no-optimize="1" ', $tag );
     }
     return $tag;
