@@ -8,6 +8,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // 🔴 Load Nuvio Addons
+// EncroLib Application Backend (Handles AI, Generation, DB)
+require get_template_directory() . '/encrolib/encrolib-backend.php';
+
+// VibeSeeker Application Backend (Handles Spotify API)
+require get_template_directory() . '/VibeSeeker/ajax-spotify.php';
 require_once get_template_directory() . '/nuvio-addon.php';
 require_once get_template_directory() . '/nuvio-movies-addon.php';
 
