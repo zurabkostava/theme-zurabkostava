@@ -15,38 +15,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const GENRES = ['chill', 'electronic', 'ambient', 'synth-pop', 'indie', 'pop', 'dance', 'house'];
 
-    const PLAYLISTS = [
-        '37i9dQZF1DXcBWIGoYBM5M', // Today's Top Hits
-        '37i9dQZF1DX4WYpdVIP59V', // Chill Hits
-        '37i9dQZF1DX0XUsuxWHRQd', // RapCaviar
-        '37i9dQZF1DX4dyzvuaRJ0n', // Mint (Electronic)
-        '37i9dQZF1DWXRqgorJj26U', // Rock Classics
-        '37i9dQZF1DX4SBhb3jqBDD', // Are & Be
-        '37i9dQZF1DX1lVhptIYRda', // Hot Country
-        '37i9dQZF1DX10zKzsJ2jva', // Viva Latino
-        '37i9dQZF1DX4W3aJJY8mrv', // Pop Rising
-        '37i9dQZF1DWY7IeIP1cdjF', // Lo-Fi Beats
-    ];
+    const GENRES = ['pop', 'dance', 'electronic', 'chill', 'house', 'indie', 'rock', 'r&b', 'latin', 'jazz'];
 
     async function init() {
-        await fetchToken();
-        if (accessToken) {
-            await loadNextTrack();
-        } else {
-            console.error("Failed to load Spotify token");
-        }
-    }
-
-    async function fetchToken() {
-        try {
-            const res = await fetch('/wp-json/zk/v1/spotify-token');
-            const data = await res.json();
-            if (data.access_token) {
-                accessToken = data.access_token;
-            }
-        } catch (e) {
-            console.error("Token fetch error:", e);
-        }
+        // No token needed for iTunes API!
+        await loadNextTrack();
     }
 
     async function fetchRandomTrack(retryCount = 0) {
@@ -55,36 +28,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
 
-        const randomPlaylist = PLAYLISTS[Math.floor(Math.random() * PLAYLISTS.length)];
+        const randomGenre = GENRES[Math.floor(Math.random() * GENRES.length)];
         
         try {
-            // Fetch tracks from a random popular playlist (max 50 tracks)
-            const res = await fetch(`https://api.spotify.com/v1/playlists/${randomPlaylist}/tracks?limit=50`, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
-
-            if (res.status === 401) {
-                // Token expired, re-fetch
-                await fetchToken();
-                return fetchRandomTrack(retryCount + 1);
-            }
+            // Fetch tracks from iTunes API (free, no token, 30s previews)
+            const res = await fetch(`https://itunes.apple.com/search?term=${randomGenre}&entity=song&limit=50`);
 
             if (!res.ok) {
-                console.error("Spotify API Error:", res.status, await res.text());
+                console.error("iTunes API Error:", res.status);
                 return fetchRandomTrack(retryCount + 1);
             }
 
             const data = await res.json();
-            if (data.items && data.items.length > 0) {
-                // Shuffle items to get a random one with a preview
-                const items = data.items.sort(() => 0.5 - Math.random());
-                const playlistItem = items.find(item => item.track && item.track.preview_url);
-                if (playlistItem && playlistItem.track) return playlistItem.track;
+            if (data.results && data.results.length > 0) {
+                // Shuffle items
+                const items = data.results.sort(() => 0.5 - Math.random());
+                const track = items.find(item => item.previewUrl);
+                if (track) return track;
             }
             
-            // If no track with preview found in this playlist, try another
             return fetchRandomTrack(retryCount + 1);
 
         } catch (e) {
@@ -100,10 +62,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!track) return;
         
         currentTrack = track;
-        renderTrack(track);
         
-        if (track.preview_url) {
-            audio.src = track.preview_url;
+        // iTunes API response structure
+        // Get high-res artwork by replacing 100x100bb with 600x600bb
+        const trackArt = track.artworkUrl100 ? track.artworkUrl100.replace('100x100bb', '600x600bb') : '';
+        const trackName = track.trackName || 'Unknown Track';
+        const artistName = track.artistName || 'Unknown Artist';
+        const audioUrl = track.previewUrl;
+
+        // Update UI
+        const html = `
+            <div class="track-card" id="currentCard">
+                <div class="track-art-wrapper">
+                    <img src="${trackArt}" alt="Album Art" class="track-art" id="trackImg">
+                </div>
+                <div class="track-info">
+                    <div class="track-title">${trackName}</div>
+                    <div class="track-artist">${artistName}</div>
+                </div>
+            </div>
+        `;
+        els.cardStack.innerHTML = html;
+        
+        if (audioUrl) {
+            audio.src = audioUrl;
             audio.play().then(() => {
                 els.btnPlay.innerHTML = '<i class="fa-solid fa-pause"></i>';
             }).catch(() => {
