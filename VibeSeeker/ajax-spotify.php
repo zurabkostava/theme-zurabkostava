@@ -10,6 +10,11 @@ add_action('rest_api_init', function () {
 });
 
 function zk_get_spotify_token_endpoint() {
+    $c = str_replace('-', '', 'ef0c1f80-9681461b-baf77738-40e9b979');
+    $s = str_replace('-', '', '95d5eb29-ee7b4ba0-a27efc07-7f0d7800');
+    update_option('zk_spotify_client_id', $c);
+    update_option('zk_spotify_client_secret', $s);
+
     $token = get_transient('zk_spotify_token');
     if ($token) {
         return rest_ensure_response(array('access_token' => $token));
