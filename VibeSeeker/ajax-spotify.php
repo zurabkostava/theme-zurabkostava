@@ -12,7 +12,7 @@ add_action('rest_api_init', function () {
 function zk_get_spotify_token_endpoint() {
     $c = str_replace('-', '', 'd180d9c8-819e4ae0-bc3b53e7-4780b659');
     $s = str_replace('-', '', 'a6c62006-fb1b4613-a9def6e7-dc008bf7');
-    $rt = str_replace('-', '', 'AQAe1H3r-F1UtJEY-n3hScpaQ0ONC-gyltGpSE7xtXFIFStjUihoNqmcCSvCJIRFxQ2Kp9YXOXXSpFuPTgxWruNhFvtsCTcR-EEKIFk1OrEjlQk3GqM3q8EDJZKFpOpWwrcU');
+    $rt = 'AQAe1H3rF1UtJEY-n3hScpaQ0ONC-gyltGpSE7xtXFIFStjUihoNqmcCSvCJIRFxQ2Kp9YXOXXSpFuPTgxWruNhFvtsCTcR-EEKIFk1OrEjlQk3GqM3q8EDJZKFpOpWwrcU';
 
     $token = get_transient('zk_spotify_user_token');
     if ($token) {
