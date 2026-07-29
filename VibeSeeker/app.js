@@ -52,6 +52,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         if (yearSelect) {
+            // Populate years dynamically
+            yearSelect.innerHTML = '<option value="all">All Time</option>';
+            const currentYear = new Date().getFullYear();
+            for (let y = currentYear; y >= 1950; y--) {
+                const option = document.createElement('option');
+                option.value = y.toString();
+                option.textContent = y.toString();
+                yearSelect.appendChild(option);
+            }
             yearSelect.addEventListener('change', (e) => {
                 activeYear = e.target.value;
                 loadNextTrack();
