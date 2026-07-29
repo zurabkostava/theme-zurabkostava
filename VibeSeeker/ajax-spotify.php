@@ -10,10 +10,6 @@ add_action('rest_api_init', function () {
 });
 
 function zk_get_spotify_token_endpoint() {
-    // Temporary hardcoded options setter
-    update_option('zk_spotify_client_id', 'ef0c1f809681461bbaf7773840e9b979');
-    update_option('zk_spotify_client_secret', '95d5eb29ee7b4ba0a27efc077f0d7800');
-
     $token = get_transient('zk_spotify_token');
     if ($token) {
         return rest_ensure_response(array('access_token' => $token));
