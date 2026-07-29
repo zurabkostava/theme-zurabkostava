@@ -198,38 +198,35 @@ body {
 .app-controls {
     display: flex;
     justify-content: center;
-    gap: 20px;
-    padding-bottom: 20px;
+    gap: 30px;
+    align-items: center;
+    margin-top: 20px;
 }
-
 .control-btn {
     width: 60px;
     height: 60px;
     border-radius: 50%;
     border: none;
-    background: rgba(255,255,255,0.1);
-    color: white;
+    cursor: pointer;
     font-size: 24px;
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
+    transition: 0.3s;
+    background: rgba(255,255,255,0.1);
     backdrop-filter: blur(10px);
-    transition: all 0.2s ease;
 }
-
 .control-btn:hover {
     transform: scale(1.1);
-    background: rgba(255,255,255,0.2);
 }
-
-.control-btn.btn-like {
+.btn-dislike {
+    color: #ff4b4b;
+}
+.btn-like {
     color: var(--spotify-green);
 }
 .control-btn.btn-like:hover {
     background: rgba(29,185,84,0.2);
-}
-
 .control-btn.btn-dislike {
     color: #ff4b4b;
 }

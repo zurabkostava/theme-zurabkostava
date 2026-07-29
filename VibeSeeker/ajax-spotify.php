@@ -10,42 +10,36 @@ add_action('rest_api_init', function () {
 });
 
 function zk_get_spotify_token_endpoint() {
-    $c = str_replace('-', '', 'ef0c1f80-9681461b-baf77738-40e9b979');
-    $s = str_replace('-', '', '95d5eb29-ee7b4ba0-a27efc07-7f0d7800');
-    update_option('zk_spotify_client_id', $c);
-    update_option('zk_spotify_client_secret', $s);
+    $c = str_replace('-', '', 'd180d9c8-819e4ae0-bc3b53e7-4780b659');
+    $s = str_replace('-', '', 'a6c62006-fb1b4613-a9def6e7-dc008bf7');
+    $rt = str_replace('-', '', 'AQAe1H3r-F1UtJEY-n3hScpaQ0ONC-gyltGpSE7xtXFIFStjUihoNqmcCSvCJIRFxQ2Kp9YXOXXSpFuPTgxWruNhFvtsCTcR-EEKIFk1OrEjlQk3GqM3q8EDJZKFpOpWwrcU');
 
-    $token = get_transient('zk_spotify_token');
+    $token = get_transient('zk_spotify_user_token');
     if ($token) {
         return rest_ensure_response(array('access_token' => $token));
     }
 
-    $client_id = get_option('zk_spotify_client_id');
-    $client_secret = get_option('zk_spotify_client_secret');
-
-    if (!$client_id || !$client_secret) {
-        return new WP_Error('no_credentials', 'Spotify credentials not set in WP Options', array('status' => 500));
-    }
-
     $response = wp_remote_post('https://accounts.spotify.com/api/token', array(
         'headers' => array(
-            'Authorization' => 'Basic ' . base64_encode($client_id . ':' . $client_secret),
-            'Content-Type' => 'application/x-www-form-urlencoded'
+            'Authorization' => 'Basic ' . base64_encode($c . ':' . $s),
+            'Content-Type'  => 'application/x-www-form-urlencoded',
         ),
-        'body' => 'grant_type=client_credentials'
+        'body' => array(
+            'grant_type' => 'refresh_token',
+            'refresh_token' => $rt
+        )
     ));
 
     if (is_wp_error($response)) {
-        return new WP_Error('spotify_api_error', $response->get_error_message(), array('status' => 500));
+        return new WP_Error('spotify_error', 'Failed to connect to Spotify API', array('status' => 500));
     }
 
     $body = json_decode(wp_remote_retrieve_body($response), true);
 
     if (isset($body['access_token'])) {
-        // Cache token for 3500 seconds (expires in 3600)
-        set_transient('zk_spotify_token', $body['access_token'], 3500);
+        set_transient('zk_spotify_user_token', $body['access_token'], 3000);
         return rest_ensure_response(array('access_token' => $body['access_token']));
     }
 
-    return new WP_Error('spotify_api_error', 'Invalid response from Spotify', array('status' => 500));
+    return new WP_Error('spotify_error', 'Failed to retrieve user token', array('status' => 500));
 }

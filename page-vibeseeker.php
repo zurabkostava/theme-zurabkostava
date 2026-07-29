@@ -68,15 +68,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         </div>
 
         <div class="app-controls">
-            <button class="control-btn btn-dislike" id="btnDislike">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <button class="control-btn btn-play" id="btnPlay">
-                <i class="fa-solid fa-play"></i>
-            </button>
-            <button class="control-btn btn-like" id="btnLike">
-                <i class="fa-solid fa-heart"></i>
-            </button>
+            <button class="control-btn btn-dislike" id="btnDislike"><i class="fa-solid fa-xmark"></i></button>
+            <button class="control-btn btn-like" id="btnLike"><i class="fa-solid fa-heart"></i></button>
         </div>
     </div>
 

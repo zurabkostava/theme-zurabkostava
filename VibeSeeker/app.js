@@ -3,12 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let accessToken = null;
     let currentTrack = null;
-    let audio = new Audio();
-    audio.volume = 0.5;
 
     const els = {
         cardStack: document.getElementById('cardStack'),
-        btnPlay: document.getElementById('btnPlay'),
         btnLike: document.getElementById('btnLike'),
         btnDislike: document.getElementById('btnDislike')
     };
@@ -36,12 +33,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const yearSelect = document.getElementById('yearFilter');
         
         if (genreSelect) {
-            // Populate genres dynamically
             genreSelect.innerHTML = '<option value="all">All Genres</option>';
             GENRES.forEach(genre => {
                 const option = document.createElement('option');
                 option.value = genre;
-                // Capitalize first letter and replace hyphens with spaces
                 option.textContent = genre.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                 genreSelect.appendChild(option);
             });
@@ -52,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         if (yearSelect) {
-            // Populate years dynamically
             yearSelect.innerHTML = '<option value="all">All Time</option>';
             const currentYear = new Date().getFullYear();
             for (let y = currentYear; y >= 1950; y--) {
@@ -67,8 +61,25 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // No token needed for iTunes API!
-        await loadNextTrack();
+        await fetchToken();
+        if (accessToken) {
+            await loadNextTrack();
+        } else {
+            console.error("Failed to load Spotify token");
+            els.cardStack.innerHTML = `<div style="color:white; text-align:center;">Failed to authenticate with Spotify.</div>`;
+        }
+    }
+
+    async function fetchToken() {
+        try {
+            const res = await fetch('/wp-json/zk/v1/spotify-token');
+            const data = await res.json();
+            if (data.access_token) {
+                accessToken = data.access_token;
+            }
+        } catch (e) {
+            console.error("Token fetch error:", e);
+        }
     }
 
     async function fetchRandomTrack(retryCount = 0) {
@@ -77,147 +88,171 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
 
-        let queryParts = [];
-        
+        let query = '';
         if (activeGenre === 'all') {
-            queryParts.push(GENRES[Math.floor(Math.random() * GENRES.length)]);
+            query += `genre:${GENRES[Math.floor(Math.random() * GENRES.length)]}`;
         } else {
-            queryParts.push(activeGenre);
+            query += `genre:${activeGenre}`;
         }
 
         if (activeYear !== 'all') {
-            queryParts.push(activeYear);
+            query += ` year:${activeYear}`;
         }
 
-        const searchTerm = queryParts.join('+');
+        const randomOffset = Math.floor(Math.random() * 100);
         
         try {
-            // Fetch tracks from iTunes API (free, no token, 30s previews)
-            const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&entity=song&limit=50`);
+            const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=20&offset=${randomOffset}`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+
+            if (res.status === 401) {
+                await fetchToken();
+                return fetchRandomTrack(retryCount + 1);
+            }
 
             if (!res.ok) {
-                console.error("iTunes API Error:", res.status);
+                console.error("Spotify API Error:", res.status);
                 return fetchRandomTrack(retryCount + 1);
             }
 
             const data = await res.json();
-            if (data.results && data.results.length > 0) {
-                // Shuffle items
-                const items = data.results.sort(() => 0.5 - Math.random());
-                const track = items.find(item => item.previewUrl);
+            if (data.tracks && data.tracks.items && data.tracks.items.length > 0) {
+                const items = data.tracks.items.sort(() => 0.5 - Math.random());
+                const track = items[0];
                 if (track) return track;
             }
             
             return fetchRandomTrack(retryCount + 1);
 
         } catch (e) {
-            console.error("Failed to fetch track:", e);
+            console.error("Fetch failed:", e);
             return null;
         }
     }
 
+    function showLoader() {
+        els.cardStack.innerHTML = `
+            <div class="loader">
+                <i class="fa-solid fa-compact-disc fa-spin"></i>
+            </div>
+        `;
+    }
+
     async function loadNextTrack() {
-        els.cardStack.innerHTML = '<div style="color: white; text-align: center; margin-top: 50%;">Searching the cosmos...</div>';
-        
+        showLoader();
+
         const track = await fetchRandomTrack();
-        if (!track) return;
+        if (!track) {
+            els.cardStack.innerHTML = `<div style="color:white; text-align:center;">No tracks found for this criteria.</div>`;
+            return;
+        }
         
         currentTrack = track;
         
-        // iTunes API response structure
-        // Get high-res artwork by replacing 100x100bb with 600x600bb
-        const trackArt = track.artworkUrl100 ? track.artworkUrl100.replace('100x100bb', '600x600bb') : '';
-        const trackName = track.trackName || 'Unknown Track';
-        const artistName = track.artistName || 'Unknown Artist';
-        const audioUrl = track.previewUrl;
+        // Spotify API response structure
+        const trackArt = track.album && track.album.images && track.album.images[0] ? track.album.images[0].url : '';
+        const trackId = track.id;
 
-        // Update UI
+        // Update UI using Spotify Embed Widget
         const html = `
-            <div class="track-card" id="currentCard">
-                <div class="track-art-wrapper">
-                    <img src="${trackArt}" alt="Album Art" class="track-art" id="trackImg">
+            <div class="track-card" id="currentCard" style="display:flex; flex-direction:column; padding:0; background:transparent;">
+                <div class="track-art-wrapper" style="height: 60%;">
+                    <img src="${trackArt}" alt="Album Art" class="track-art" id="trackImg" style="border-radius: 20px 20px 0 0;">
                 </div>
-                <div class="track-info">
-                    <div class="track-title">${trackName}</div>
-                    <div class="track-artist">${artistName}</div>
-                    <div class="track-links">
-                        <a href="https://open.spotify.com/search/${encodeURIComponent(trackName + ' ' + artistName)}" target="_blank" class="link-spotify"><i class="fa-brands fa-spotify"></i> Full Song</a>
-                        <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(trackName + ' ' + artistName)}" target="_blank" class="link-youtube"><i class="fa-brands fa-youtube"></i></a>
-                    </div>
+                <div class="track-info" style="padding: 10px; display: flex; flex-direction: column; justify-content: center; height: 40%; background: #121212; border-radius: 0 0 20px 20px;">
+                    <iframe src="https://open.spotify.com/embed/track/${trackId}?utm_source=generator" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
                 </div>
             </div>
         `;
         els.cardStack.innerHTML = html;
-        
-        if (audioUrl) {
-            audio.src = audioUrl;
-            audio.play().then(() => {
-                els.btnPlay.innerHTML = '<i class="fa-solid fa-pause"></i>';
-            }).catch(() => {
-                // Autoplay blocked
-                els.btnPlay.innerHTML = '<i class="fa-solid fa-play"></i>';
-            });
-        }
+
+        setupCardInteraction();
     }
 
-    function renderTrack(track) {
-        const imgUrl = track.album.images[0] ? track.album.images[0].url : '';
-        const artists = track.artists.map(a => a.name).join(', ');
-
-        const html = `
-            <div class="track-card" id="currentCard">
-                <div class="track-art-wrapper">
-                    <img src="${imgUrl}" alt="Album Art" class="track-art" id="trackImg">
-                </div>
-                <div class="track-info">
-                    <div class="track-title">${track.name}</div>
-                    <div class="track-artist">${artists}</div>
-                </div>
-            </div>
-        `;
-        els.cardStack.innerHTML = html;
-    }
-
-    // Play/Pause
-    els.btnPlay.addEventListener('click', () => {
-        if (audio.paused) {
-            audio.play();
-            els.btnPlay.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        } else {
-            audio.pause();
-            els.btnPlay.innerHTML = '<i class="fa-solid fa-play"></i>';
-        }
-    });
-
-    // Skip / Dislike
-    els.btnDislike.addEventListener('click', () => {
-        animateOut(-1);
-    });
-
-    // Like
-    els.btnLike.addEventListener('click', () => {
-        // Open in Spotify
-        if (currentTrack && currentTrack.external_urls && currentTrack.external_urls.spotify) {
-            window.open(currentTrack.external_urls.spotify, '_blank');
-        }
-        animateOut(1);
-    });
-
-    function animateOut(direction) {
+    function setupCardInteraction() {
         const card = document.getElementById('currentCard');
         if (!card) return;
-        
-        audio.pause();
-        els.btnPlay.innerHTML = '<i class="fa-solid fa-play"></i>';
-        
-        const xMove = direction * window.innerWidth;
-        card.style.transform = `translateX(${xMove}px) rotate(${direction * 30}deg)`;
-        card.style.opacity = '0';
-        
-        setTimeout(() => {
-            loadNextTrack();
-        }, 300);
+
+        let startX = 0;
+        let isDragging = false;
+
+        card.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+            card.style.transition = 'none';
+        });
+
+        card.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const currentX = e.touches[0].clientX;
+            const diffX = currentX - startX;
+            const rotate = diffX * 0.05;
+            
+            card.style.transform = `translateX(${diffX}px) rotate(${rotate}deg)`;
+        });
+
+        card.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            const endX = e.changedTouches[0].clientX;
+            const diffX = endX - startX;
+            
+            if (Math.abs(diffX) > 100) {
+                // Swipe resolved
+                const direction = diffX > 0 ? 1 : -1;
+                card.style.transition = 'transform 0.3s ease';
+                card.style.transform = `translateX(${direction * window.innerWidth}px) rotate(${direction * 20}deg)`;
+                
+                setTimeout(() => {
+                    if (direction > 0) {
+                        saveLikedTrack(currentTrack);
+                    }
+                    loadNextTrack();
+                }, 300);
+            } else {
+                // Return to center
+                card.style.transition = 'transform 0.3s ease';
+                card.style.transform = 'translateX(0) rotate(0)';
+            }
+        });
     }
+
+    function saveLikedTrack(track) {
+        if (!track) return;
+        let saved = JSON.parse(localStorage.getItem('zk_liked_tracks') || '[]');
+        if (!saved.some(t => t.id === track.id)) {
+            saved.push({
+                id: track.id,
+                name: track.name,
+                artist: track.artists[0].name,
+                url: track.external_urls.spotify
+            });
+            localStorage.setItem('zk_liked_tracks', JSON.stringify(saved));
+        }
+    }
+
+    els.btnLike.addEventListener('click', () => {
+        saveLikedTrack(currentTrack);
+        const card = document.getElementById('currentCard');
+        if (card) {
+            card.style.transition = 'transform 0.3s ease';
+            card.style.transform = `translateX(${window.innerWidth}px) rotate(20deg)`;
+            setTimeout(loadNextTrack, 300);
+        }
+    });
+
+    els.btnDislike.addEventListener('click', () => {
+        const card = document.getElementById('currentCard');
+        if (card) {
+            card.style.transition = 'transform 0.3s ease';
+            card.style.transform = `translateX(-${window.innerWidth}px) rotate(-20deg)`;
+            setTimeout(loadNextTrack, 300);
+        }
+    });
 
     init();
 });
