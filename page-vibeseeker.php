@@ -41,9 +41,31 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 
     <div class="app-container">
         <header class="app-header">
-            <div class="app-logo">Vibe<span>Seeker</span></div>
+            <div class="app-logo">Randi<span>Fly</span></div>
             <div class="settings-btn"><i class="fa-solid fa-sliders"></i></div>
         </header>
+
+        <div class="filters-container">
+            <select id="genreFilter" class="vibe-select">
+                <option value="all">All Genres</option>
+                <option value="pop">Pop</option>
+                <option value="hip-hop">Hip-Hop</option>
+                <option value="electronic">Electronic</option>
+                <option value="rock">Rock</option>
+                <option value="jazz">Jazz</option>
+                <option value="latin">Latin</option>
+                <option value="indie">Indie</option>
+            </select>
+            <select id="yearFilter" class="vibe-select">
+                <option value="all">All Time</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2020">2020s</option>
+                <option value="2010">2010s</option>
+                <option value="2000">2000s</option>
+                <option value="1990">90s Classics</option>
+            </select>
+        </div>
 
         <div class="card-stack" id="cardStack">
             <!-- Example Card -->

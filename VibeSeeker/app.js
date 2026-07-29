@@ -13,11 +13,28 @@ document.addEventListener('DOMContentLoaded', () => {
         btnDislike: document.getElementById('btnDislike')
     };
 
-    const GENRES = ['chill', 'electronic', 'ambient', 'synth-pop', 'indie', 'pop', 'dance', 'house'];
-
     const GENRES = ['pop', 'dance', 'electronic', 'chill', 'house', 'indie', 'rock', 'r&b', 'latin', 'jazz'];
+    let activeGenre = 'all';
+    let activeYear = 'all';
 
     async function init() {
+        const genreSelect = document.getElementById('genreFilter');
+        const yearSelect = document.getElementById('yearFilter');
+        
+        if (genreSelect) {
+            genreSelect.addEventListener('change', (e) => {
+                activeGenre = e.target.value;
+                loadNextTrack();
+            });
+        }
+        
+        if (yearSelect) {
+            yearSelect.addEventListener('change', (e) => {
+                activeYear = e.target.value;
+                loadNextTrack();
+            });
+        }
+
         // No token needed for iTunes API!
         await loadNextTrack();
     }
@@ -28,11 +45,23 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
 
-        const randomGenre = GENRES[Math.floor(Math.random() * GENRES.length)];
+        let queryParts = [];
+        
+        if (activeGenre === 'all') {
+            queryParts.push(GENRES[Math.floor(Math.random() * GENRES.length)]);
+        } else {
+            queryParts.push(activeGenre);
+        }
+
+        if (activeYear !== 'all') {
+            queryParts.push(activeYear);
+        }
+
+        const searchTerm = queryParts.join('+');
         
         try {
             // Fetch tracks from iTunes API (free, no token, 30s previews)
-            const res = await fetch(`https://itunes.apple.com/search?term=${randomGenre}&entity=song&limit=50`);
+            const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&entity=song&limit=50`);
 
             if (!res.ok) {
                 console.error("iTunes API Error:", res.status);

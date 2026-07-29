@@ -64,6 +64,46 @@ body {
     color: var(--spotify-green);
 }
 
+.settings-btn {
+    color: rgba(255,255,255,0.7);
+    font-size: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.settings-btn:hover {
+    color: var(--accent);
+}
+
+/* Filters */
+.filters-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.vibe-select {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 10px;
+    border-radius: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+    transition: 0.3s;
+    appearance: none;
+    text-align: center;
+}
+.vibe-select:hover, .vibe-select:focus {
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.1);
+}
+.vibe-select option {
+    background: var(--bg-dark);
+    color: #fff;
+}
+
 /* Discovery Card (Tinder style) */
 .card-stack {
     position: relative;
