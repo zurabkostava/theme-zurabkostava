@@ -15,6 +15,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const GENRES = ['chill', 'electronic', 'ambient', 'synth-pop', 'indie', 'pop', 'dance', 'house'];
 
+    const PLAYLISTS = [
+        '37i9dQZF1DXcBWIGoYBM5M', // Today's Top Hits
+        '37i9dQZF1DX4WYpdVIP59V', // Chill Hits
+        '37i9dQZF1DX0XUsuxWHRQd', // RapCaviar
+        '37i9dQZF1DX4dyzvuaRJ0n', // Mint (Electronic)
+        '37i9dQZF1DWXRqgorJj26U', // Rock Classics
+        '37i9dQZF1DX4SBhb3jqBDD', // Are & Be
+        '37i9dQZF1DX1lVhptIYRda', // Hot Country
+        '37i9dQZF1DX10zKzsJ2jva', // Viva Latino
+        '37i9dQZF1DX4W3aJJY8mrv', // Pop Rising
+        '37i9dQZF1DWY7IeIP1cdjF', // Lo-Fi Beats
+    ];
+
     async function init() {
         await fetchToken();
         if (accessToken) {
@@ -42,13 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
 
-        const randomGenre = GENRES[Math.floor(Math.random() * GENRES.length)];
-        const randomOffset = Math.floor(Math.random() * 100);
+        const randomPlaylist = PLAYLISTS[Math.floor(Math.random() * PLAYLISTS.length)];
         
         try {
-            // Encode the query properly
-            const query = encodeURIComponent(`genre:${randomGenre}`);
-            const res = await fetch(`https://api.spotify.com/v1/search?q=${query}&type=track&limit=20&offset=${randomOffset}`, {
+            // Fetch tracks from a random popular playlist (max 50 tracks)
+            const res = await fetch(`https://api.spotify.com/v1/playlists/${randomPlaylist}/tracks?limit=50`, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
                 }
@@ -66,14 +77,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await res.json();
-            if (data.tracks && data.tracks.items && data.tracks.items.length > 0) {
+            if (data.items && data.items.length > 0) {
                 // Shuffle items to get a random one with a preview
-                const items = data.tracks.items.sort(() => 0.5 - Math.random());
-                const track = items.find(t => t.preview_url);
-                if (track) return track;
+                const items = data.items.sort(() => 0.5 - Math.random());
+                const playlistItem = items.find(item => item.track && item.track.preview_url);
+                if (playlistItem && playlistItem.track) return playlistItem.track;
             }
             
-            // If no track with preview found, try again
+            // If no track with preview found in this playlist, try another
             return fetchRandomTrack(retryCount + 1);
 
         } catch (e) {
