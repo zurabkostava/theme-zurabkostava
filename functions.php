@@ -8,8 +8,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // 🔴 Load Nuvio Addons
-// VibeSeeker Application Backend (Handles Spotify API)
-require get_template_directory() . '/VibeSeeker/ajax-spotify.php';
 require_once get_template_directory() . '/nuvio-addon.php';
 require_once get_template_directory() . '/nuvio-movies-addon.php';
 
