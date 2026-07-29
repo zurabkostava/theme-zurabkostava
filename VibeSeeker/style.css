@@ -157,7 +157,41 @@ body {
 
 .track-artist {
     font-size: 16px;
-    color: var(--text-dim);
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 12px;
+}
+
+.track-links {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+.track-links a {
+    text-decoration: none;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    transition: 0.3s;
+}
+.link-spotify {
+    background: #1DB954;
+    color: #000 !important;
+}
+.link-spotify:hover {
+    background: #1ed760;
+    transform: scale(1.05);
+}
+.link-youtube {
+    background: rgba(255,255,255,0.1);
+    color: #fff !important;
+}
+.link-youtube:hover {
+    background: #ff0000;
+    transform: scale(1.05);
 }
 
 /* Controls */

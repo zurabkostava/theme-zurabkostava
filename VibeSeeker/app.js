@@ -140,6 +140,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="track-info">
                     <div class="track-title">${trackName}</div>
                     <div class="track-artist">${artistName}</div>
+                    <div class="track-links">
+                        <a href="https://open.spotify.com/search/${encodeURIComponent(trackName + ' ' + artistName)}" target="_blank" class="link-spotify"><i class="fa-brands fa-spotify"></i> Full Song</a>
+                        <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(trackName + ' ' + artistName)}" target="_blank" class="link-youtube"><i class="fa-brands fa-youtube"></i></a>
+                    </div>
                 </div>
             </div>
         `;
