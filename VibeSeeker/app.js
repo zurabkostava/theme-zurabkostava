@@ -38,10 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchRandomTrack() {
         const randomGenre = GENRES[Math.floor(Math.random() * GENRES.length)];
+        const randomOffset = Math.floor(Math.random() * 100);
         
         try {
-            // Fetch 10 tracks to increase chance of finding one with a preview_url
-            const res = await fetch(`https://api.spotify.com/v1/recommendations?limit=10&market=US&seed_genres=${randomGenre}`, {
+            // Use Search API instead of deprecated Recommendations API
+            const res = await fetch(`https://api.spotify.com/v1/search?q=genre:${randomGenre}&type=track&limit=50&offset=${randomOffset}`, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
                 }
@@ -54,9 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await res.json();
-            if (data.tracks && data.tracks.length > 0) {
-                // Find a track with a preview
-                const track = data.tracks.find(t => t.preview_url);
+            if (data.tracks && data.tracks.items && data.tracks.items.length > 0) {
+                // Shuffle items to get a random one with a preview
+                const items = data.tracks.items.sort(() => 0.5 - Math.random());
+                const track = items.find(t => t.preview_url);
                 if (track) return track;
             }
             
