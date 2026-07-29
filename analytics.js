@@ -1,5 +1,8 @@
 (function() {
-window.zkTrackView =     function zkTrackView(route) {
+window.zkTrackView = function zkTrackView(route) {
+        if (typeof route === 'string' && route.length > 1) {
+            route = route.replace(/\/+$/, '');
+        }
         if (!window.fetch || !window.ZK) return;
         if (window.zkIsAdmin) return;
         try { 

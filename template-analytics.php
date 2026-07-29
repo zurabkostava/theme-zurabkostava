@@ -116,9 +116,9 @@ $music_time_fmt = $music_time_sec ? (intval($music_time_sec) >= 86400 ? floor(in
 
 // 3. Top Pages (All Time)
 $top_pages = $wpdb->get_results("
-    SELECT url, COUNT(*) as views, AVG(duration) as avg_duration
+    SELECT IF(url = '/', '/', TRIM(TRAILING '/' FROM url)) as url, COUNT(*) as views, AVG(duration) as avg_duration
     FROM $table_name 
-    GROUP BY url 
+    GROUP BY IF(url = '/', '/', TRIM(TRAILING '/' FROM url)) 
     ORDER BY views DESC 
 ");
 
