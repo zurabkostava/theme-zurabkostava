@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Encode the query properly
             const query = encodeURIComponent(`genre:${randomGenre}`);
-            const res = await fetch(`https://api.spotify.com/v1/search?q=${query}&type=track&limit=50&offset=${randomOffset}`, {
+            const res = await fetch(`https://api.spotify.com/v1/search?q=${query}&type=track&limit=20&offset=${randomOffset}`, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
                 }
