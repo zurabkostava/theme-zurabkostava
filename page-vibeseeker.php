@@ -48,13 +48,6 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         <div class="filters-container">
             <select id="genreFilter" class="vibe-select">
                 <option value="all">All Genres</option>
-                <option value="pop">Pop</option>
-                <option value="hip-hop">Hip-Hop</option>
-                <option value="electronic">Electronic</option>
-                <option value="rock">Rock</option>
-                <option value="jazz">Jazz</option>
-                <option value="latin">Latin</option>
-                <option value="indie">Indie</option>
             </select>
             <select id="yearFilter" class="vibe-select">
                 <option value="all">All Time</option>
