@@ -36,13 +36,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function fetchRandomTrack() {
+    async function fetchRandomTrack(retryCount = 0) {
+        if (retryCount > 5) {
+            console.error("Too many retries, stopping search.");
+            return null;
+        }
+
         const randomGenre = GENRES[Math.floor(Math.random() * GENRES.length)];
         const randomOffset = Math.floor(Math.random() * 100);
         
         try {
-            // Use Search API instead of deprecated Recommendations API
-            const res = await fetch(`https://api.spotify.com/v1/search?q=genre:${randomGenre}&type=track&limit=50&offset=${randomOffset}`, {
+            // Encode the query properly
+            const query = encodeURIComponent(`genre:${randomGenre}`);
+            const res = await fetch(`https://api.spotify.com/v1/search?q=${query}&type=track&limit=50&offset=${randomOffset}`, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
                 }
@@ -51,7 +57,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.status === 401) {
                 // Token expired, re-fetch
                 await fetchToken();
-                return fetchRandomTrack();
+                return fetchRandomTrack(retryCount + 1);
+            }
+
+            if (!res.ok) {
+                console.error("Spotify API Error:", res.status, await res.text());
+                return fetchRandomTrack(retryCount + 1);
             }
 
             const data = await res.json();
@@ -63,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // If no track with preview found, try again
-            return fetchRandomTrack();
+            return fetchRandomTrack(retryCount + 1);
 
         } catch (e) {
             console.error("Failed to fetch track:", e);
