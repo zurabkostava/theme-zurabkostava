@@ -1944,7 +1944,7 @@ function zk_identity_page_html() {
 
     if (isset($_POST['zk_identity_nonce']) && wp_verify_nonce($_POST['zk_identity_nonce'], 'zk_save_identity')) {
         foreach ($_POST as $key => $value) {
-            if (strpos($key, 'zk_vital_') === 0 || strpos($key, 'zk_social_') === 0 || strpos($key, 'zk_fav_') === 0 || strpos($key, 'zk_desc_') === 0 || $key === 'zk_skills' || $key === 'zk_profile_img' || $key === 'zk_monologue_content') {
+            if (strpos($key, 'zk_vital_') === 0 || strpos($key, 'zk_social_') === 0 || strpos($key, 'zk_fav_') === 0 || strpos($key, 'zk_desc_') === 0 || strpos($key, 'zk_schema_') === 0 || $key === 'zk_skills' || $key === 'zk_profile_img' || $key === 'zk_monologue_content') {
                 update_option($key, wp_unslash($value));
             }
         }
@@ -1976,6 +1976,19 @@ function zk_identity_page_html() {
                 <tr><th>Studio (HTML)</th><td><input type="text" name="zk_vital_studio" value="<?php echo esc_attr(get_option('zk_vital_studio', 'Creative Lead @ <a href="https://zurabkostava.com" target="_blank">Kostava Creative</a>')); ?>" class="large-text" /></td></tr>
                 <tr><th>Position (HTML)</th><td><input type="text" name="zk_vital_position" value="<?php echo esc_attr(get_option('zk_vital_position', 'Web Designer @ <a href="https://emis.ge" target="_blank">EMIS Georgia</a>')); ?>" class="large-text" /></td></tr>
                 <tr><th>Archetype</th><td><input type="text" name="zk_vital_archetype" value="<?php echo esc_attr(get_option('zk_vital_archetype', 'Composer, Visual Artist, Tech Geek')); ?>" class="large-text" /></td></tr>
+            </table>
+
+            <h2 class="title" style="margin-top:30px; border-bottom:1px solid #ccc; padding-bottom:10px;">3. ZK JSON-LD Schema Engine (Google Knowledge Panel)</h2>
+            <p><strong>Note:</strong> Multiple values should be comma-separated.</p>
+            <table class="form-table">
+                <tr><th>Full Name</th><td><input type="text" name="zk_schema_name" value="<?php echo esc_attr(get_option('zk_schema_name', 'Zurab Kostava')); ?>" class="regular-text" /></td></tr>
+                <tr><th>Alternate Names</th><td><input type="text" name="zk_schema_alternate_names" value="<?php echo esc_attr(get_option('zk_schema_alternate_names', 'ზურაბ კოსტავა, Zurab Kostava, Zurab, Kostava, Zura Kostava')); ?>" class="large-text" /></td></tr>
+                <tr><th>Job Titles</th><td><input type="text" name="zk_schema_job_titles" value="<?php echo esc_attr(get_option('zk_schema_job_titles', 'Artist, Composer, Visual Artist, Designer')); ?>" class="large-text" /></td></tr>
+                <tr><th>Bio / Description</th><td><textarea name="zk_schema_description" class="large-text" rows="3"><?php echo esc_textarea(get_option('zk_schema_description', 'Georgian multidisciplinary artist, composer, and designer. Founder of Nuvio.')); ?></textarea></td></tr>
+                <tr><th>Birth Date (YYYY-MM-DD)</th><td><input type="text" name="zk_schema_birth_date" value="<?php echo esc_attr(get_option('zk_schema_birth_date', '1995-02-19')); ?>" class="regular-text" /></td></tr>
+                <tr><th>Gender</th><td><input type="text" name="zk_schema_gender" value="<?php echo esc_attr(get_option('zk_schema_gender', 'Male')); ?>" class="regular-text" /></td></tr>
+                <tr><th>Wikidata URL</th><td><input type="text" name="zk_schema_wikidata" value="<?php echo esc_attr(get_option('zk_schema_wikidata', 'https://www.wikidata.org/wiki/Q138009804')); ?>" class="regular-text" /></td></tr>
+                <tr><th>Knows About</th><td><input type="text" name="zk_schema_knows_about" value="<?php echo esc_attr(get_option('zk_schema_knows_about', 'Web Design, UI/UX, Science Fiction, Music Production, Literature, Art Direction, Cinematic Soundscapes, Digital Art')); ?>" class="large-text" /></td></tr>
             </table>
 
             <h2 class="title" style="margin-top:30px; border-bottom:1px solid #ccc; padding-bottom:10px;">3. Social Links (თუ ლინკი ცარიელია, იმუშავებს როგორც #)</h2>
@@ -2894,24 +2907,37 @@ function zk_render_json_ld_schema() {
 
     $schema = [];
 
+    $schema_name = get_option('zk_schema_name', 'Zurab Kostava');
+    $schema_alternate = array_map('trim', explode(',', get_option('zk_schema_alternate_names', 'ზურაბ კოსტავა, Zurab Kostava, Zurab, Kostava, Zura Kostava')));
+    $schema_job_titles = array_map('trim', explode(',', get_option('zk_schema_job_titles', 'Artist, Composer, Visual Artist, Designer')));
+    $schema_desc = get_option('zk_schema_description', 'Georgian multidisciplinary artist, composer, and designer. Founder of Nuvio.');
+    $schema_birth = get_option('zk_schema_birth_date', '1995-02-19');
+    $schema_gender = get_option('zk_schema_gender', 'Male');
+    $schema_wikidata = get_option('zk_schema_wikidata', 'https://www.wikidata.org/wiki/Q138009804');
+    $schema_knows_about = array_map('trim', explode(',', get_option('zk_schema_knows_about', 'Web Design, UI/UX, Science Fiction, Music Production, Literature, Art Direction, Cinematic Soundscapes, Digital Art')));
+
+    if (!empty($schema_wikidata)) {
+        $same_as[] = trim($schema_wikidata);
+    }
+
     // Base Person Schema (always outputting the author entity)
     $person_schema = [
         '@context' => 'https://schema.org',
         '@type' => 'Person',
-        'name' => 'Zurab Kostava',
-        'alternateName' => ['ზურაბ კოსტავა', 'Zurab Kostava', 'Zurab', 'Kostava', 'Zura Kostava'],
+        'name' => $schema_name,
+        'alternateName' => $schema_alternate,
         'url' => $site_url,
-        'jobTitle' => ['Artist', 'Composer', 'Visual Artist', 'Designer'],
-        'description' => 'Georgian multidisciplinary artist, composer, and designer. Founder of Nuvio.',
-        'birthDate' => '1995-02-19',
-        'gender' => 'Male',
-        'knowsAbout' => ['Web Design', 'UI/UX', 'Science Fiction', 'Music Production', 'Literature', 'Art Direction', 'Cinematic Soundscapes', 'Digital Art'],
+        'jobTitle' => $schema_job_titles,
+        'description' => $schema_desc,
+        'birthDate' => $schema_birth,
+        'gender' => $schema_gender,
+        'knowsAbout' => $schema_knows_about,
         'nationality' => [
             '@type' => 'Country',
             'name' => 'Georgia'
         ],
         'image' => $logo_url,
-        'sameAs' => array_merge($same_as, ['https://www.wikidata.org/wiki/Q138009804'])
+        'sameAs' => array_values(array_unique($same_as))
     ];
 
     if ( is_front_page() || is_home() ) {
