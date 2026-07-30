@@ -2823,74 +2823,6 @@ add_action( 'wp_head', 'zk_render_seo_meta', 1 );
 
 // 4. JSON-LD Schema Generator (AI & Google SEO)
 function zk_render_json_ld_schema() {
-    if ( is_page('about') ) {
-        $schema = [
-            "@context" => "https://schema.org",
-            "@graph" => [
-                [
-                    "@type" => "AboutPage",
-                    "@id" => "https://zurabkostava.com/about/",
-                    "url" => "https://zurabkostava.com/about/",
-                    "name" => "About Zurab Kostava | Identity, Monologue, Gallery",
-                    "description" => "Discover the unfiltered identity of Zurab Kostava. Read the personal monologue, explore his digital ID, multidisciplinary skills, cultural influences, and gallery.",
-                    "mainEntity" => [
-                        "@id" => "https://zurabkostava.com/#person"
-                    ]
-                ],
-                [
-                    "@type" => "Person",
-                    "@id" => "https://zurabkostava.com/#person",
-                    "name" => "Zurab Kostava",
-                    "alternateName" => "Zu",
-                    "jobTitle" => ["Multidisciplinary Artist", "Web Designer", "Creative Lead"],
-                    "nationality" => "Georgian",
-                    "birthDate" => "1995-02-19",
-                    "birthPlace" => [
-                        "@type" => "Place",
-                        "name" => "Ozurgeti, Guria, Georgia"
-                    ],
-                    "url" => "https://zurabkostava.com/",
-                    "image" => "https://zurabkostava.com/wp-content/uploads/2026/06/zurab-kostava-modern.webp",
-                    "sameAs" => [
-                        "https://www.instagram.com/zurabkostava/",
-                        "https://x.com/zurabkostava_",
-                        "https://www.facebook.com/zurabkostava19/",
-                        "https://www.linkedin.com/in/zurab-kostava-6aa873aa/",
-                        "https://www.youtube.com/@ZurabKostava",
-                        "https://zurabkostava.bandcamp.com/"
-                    ],
-                    "knowsAbout" => [
-                        "Music Production",
-                        "Film Composing",
-                        "Sound Design",
-                        "UI/UX Design",
-                        "Graphic Design",
-                        "Fine Arts",
-                        "Videography",
-                        "Creative Direction"
-                    ],
-                    "worksFor" => [
-                        [
-                            "@type" => "Organization",
-                            "name" => "EMIS Georgia"
-                        ],
-                        [
-                            "@type" => "Organization",
-                            "name" => "Kostava Creative"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        echo "\n<!-- ZK JSON-LD Schema Engine -->\n";
-        echo "<script type=\"application/ld+json\">\n";
-        echo json_encode( $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
-        echo "\n</script>\n";
-        echo "<!-- /ZK JSON-LD Schema Engine -->\n";
-        return;
-    }
-
     $site_name = get_bloginfo( 'name' );
     $site_url = home_url( '/' );
     $logo_url = get_option( 'zk_profile_img', '' );
@@ -2904,8 +2836,6 @@ function zk_render_json_ld_schema() {
             $same_as[] = $url;
         }
     }
-
-    $schema = [];
 
     $schema_name = get_option('zk_schema_name', 'Zurab Kostava');
     $schema_alternate = array_map('trim', explode(',', get_option('zk_schema_alternate_names', 'ზურაბ კოსტავა, Zurab Kostava, Zurab, Kostava, Zura Kostava')));
@@ -2937,8 +2867,40 @@ function zk_render_json_ld_schema() {
             'name' => 'Georgia'
         ],
         'image' => $logo_url,
-        'sameAs' => array_values(array_unique($same_as))
+        'sameAs' => array_values(array_unique($same_as)),
+        '@id' => $site_url . '#person'
     ];
+
+    if ( is_page('about') ) {
+        $schema = [
+            "@context" => "https://schema.org",
+            "@graph" => [
+                [
+                    "@type" => "AboutPage",
+                    "@id" => $site_url . "about/",
+                    "url" => $site_url . "about/",
+                    "name" => "About Zurab Kostava | Identity, Monologue, Gallery",
+                    "description" => "Discover the unfiltered identity of Zurab Kostava. Read the personal monologue, explore his digital ID, multidisciplinary skills, cultural influences, and gallery.",
+                    "mainEntity" => [
+                        "@id" => $site_url . "#person"
+                    ]
+                ],
+                $person_schema
+            ]
+        ];
+
+        echo "\n<!-- ZK JSON-LD Schema Engine -->\n";
+        echo "<script type=\"application/ld+json\">\n";
+        echo json_encode( $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
+        echo "\n</script>\n";
+        echo "<!-- /ZK JSON-LD Schema Engine -->\n";
+        return;
+    }
+
+    $schema = [];
+    
+    // Add Person ID linking for the rest of the pages
+    $person_schema['@id'] = $site_url . '#person';
 
     if ( is_front_page() || is_home() ) {
         // Output Person + WebSite on home page
