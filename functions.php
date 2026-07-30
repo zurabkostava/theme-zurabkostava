@@ -2976,7 +2976,7 @@ function zk_render_json_ld_schema() {
             '@context' => 'https://schema.org',
             '@type' => 'Book',
             'name' => get_the_title( $target_id ),
-            'author' => [
+            'author' => ( $author === 'Zurab Kostava' ) ? [ '@id' => $site_url . '#person' ] : [
                 '@type' => 'Person',
                 'name' => $author
             ],
