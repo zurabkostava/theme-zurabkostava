@@ -2902,21 +2902,18 @@ function zk_render_json_ld_schema() {
     // Add Person ID linking for the rest of the pages
     $person_schema['@id'] = $site_url . '#person';
 
-    if ( is_front_page() || is_home() ) {
-        // Output Person + WebSite on home page
-        $schema[] = $person_schema;
-        $schema[] = [
-            '@context' => 'https://schema.org',
-            '@type' => 'WebSite',
-            'name' => 'Zurab Kostava',
-            'alternateName' => $site_name,
-            'url' => $site_url,
-            'publisher' => [
-                '@id' => $site_url . '#person'
-            ]
-        ];
-        $person_schema['@id'] = $site_url . '#person'; // link them
-        $schema[0] = $person_schema;    }
+    // Output Person + WebSite on ALL pages to establish the central entity graph
+    $schema[] = $person_schema;
+    $schema[] = [
+        '@context' => 'https://schema.org',
+        '@type' => 'WebSite',
+        'name' => 'Zurab Kostava',
+        'alternateName' => $site_name,
+        'url' => $site_url,
+        'publisher' => [
+            '@id' => $site_url . '#person'
+        ]
+    ];
     
     $is_book_page = is_page() && get_page_template_slug( get_queried_object_id() ) === 'book-engine/template-book-reader.php';
 
@@ -2932,17 +2929,10 @@ function zk_render_json_ld_schema() {
             'datePublished' => get_the_date( 'c' ),
             'dateModified' => get_the_modified_date( 'c' ),
             'author' => [
-                '@type' => 'Person',
-                'name' => 'Zurab Kostava',
-                'url' => $site_url
+                '@id' => $site_url . '#person'
             ],
             'publisher' => [
-                '@type' => 'Person',
-                'name' => 'Zurab Kostava',
-                'logo' => [
-                    '@type' => 'ImageObject',
-                    'url' => $logo_url
-                ]
+                '@id' => $site_url . '#person'
             ],
             'mainEntityOfPage' => [
                 '@type' => 'WebPage',
