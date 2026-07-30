@@ -2901,14 +2901,17 @@ function zk_render_json_ld_schema() {
         'name' => 'Zurab Kostava',
         'alternateName' => ['ზურაბ კოსტავა', 'Zurab Kostava', 'Zurab', 'Kostava', 'Zura Kostava'],
         'url' => $site_url,
-        'jobTitle' => wp_strip_all_tags(get_option('zk_vital_position', 'Creative Lead')),
-        'knowsAbout' => ['Web Design', 'UI/UX', 'Science Fiction', 'Music Production', 'Literature', 'Art Direction'],
+        'jobTitle' => ['Artist', 'Composer', 'Visual Artist', 'Designer'],
+        'description' => 'Georgian multidisciplinary artist, composer, and designer. Founder of Nuvio.',
+        'birthDate' => '1995-02-19',
+        'gender' => 'Male',
+        'knowsAbout' => ['Web Design', 'UI/UX', 'Science Fiction', 'Music Production', 'Literature', 'Art Direction', 'Cinematic Soundscapes', 'Digital Art'],
         'nationality' => [
             '@type' => 'Country',
             'name' => 'Georgia'
         ],
         'image' => $logo_url,
-        'sameAs' => $same_as
+        'sameAs' => array_merge($same_as, ['https://www.wikidata.org/wiki/Q138009804'])
     ];
 
     if ( is_front_page() || is_home() ) {
