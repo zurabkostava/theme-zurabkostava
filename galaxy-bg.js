@@ -854,8 +854,9 @@
     }
 
     let smoothMusicMultiplier = 0;
+    let lastTime = 0;
 
-    function animate() {
+    function animate(time) {
         if (!isRunning) return;
         
         if (!document.getElementById('zk-galaxy-canvas')) {
@@ -866,6 +867,13 @@
         }
 
         animationFrameId = requestAnimationFrame(animate);
+
+        // Frame-rate independence
+        if (!time) time = performance.now();
+        if (!lastTime) lastTime = time;
+        let delta = (time - lastTime) / (1000 / 60); // Normalizes to 60 FPS
+        lastTime = time;
+        if (delta > 5) delta = 5; // Prevent huge jumps if tab was inactive
 
         // 🎵 Sync Galaxy Speed with Music Progress 🎵
         const audio = document.getElementById('zk-welcome-audio');
@@ -878,11 +886,11 @@
         }
         
         // Smoothly interpolate the music speed bonus so it doesn't snap if paused
-        smoothMusicMultiplier += (targetMusicMultiplier - smoothMusicMultiplier) * 0.015;
+        smoothMusicMultiplier += (targetMusicMultiplier - smoothMusicMultiplier) * 0.015 * delta;
 
         // Base speed (timeMultiplier from slider, default 1) + Music bonus
         const currentSpeedMultiplier = timeMultiplier + smoothMusicMultiplier;
-        const speed = 0.4 * currentSpeedMultiplier;
+        const speed = 0.4 * currentSpeedMultiplier * delta;
         
         // 🚀 Update Speedometer UI
         const hud = document.getElementById('zk-warp-speedometer');
@@ -971,9 +979,9 @@
         // Cinematic Entrance Animation
         if (isEntering) {
             // Glide forward and smoothly barrel-roll into position
-            camera.position.z += (1000 - camera.position.z) * 0.03;
+            camera.position.z += (1000 - camera.position.z) * 0.03 * delta;
             // Make rotation faster so it settles naturally before position finishes
-            camera.rotation.z += (0 - camera.rotation.z) * 0.04;
+            camera.rotation.z += (0 - camera.rotation.z) * 0.04 * delta;
             
             // Wait until both are virtually perfect before turning off the animation
             if (Math.abs(camera.position.z - 1000) < 1 && Math.abs(camera.rotation.z) < 0.005) {
@@ -987,7 +995,7 @@
         if (galaxyMesh) {
             // Speed = 0.05 units per frame. 
             // At 60fps = 3 units/sec. To travel 14000 units takes ~77 minutes.
-            const moveZ = 0.05 * currentSpeedMultiplier;
+            const moveZ = 0.05 * currentSpeedMultiplier * delta;
             galaxyMesh.position.z += moveZ;
             if (galaxyGlowMesh) galaxyGlowMesh.position.z += moveZ;
             if (galaxyCoreMesh) galaxyCoreMesh.position.z += moveZ;
@@ -1018,8 +1026,8 @@
                 camera.position.x = (Math.random() - 0.5) * shake;
                 camera.position.y = (Math.random() - 0.5) * shake;
             } else {
-                camera.position.x += (0 - camera.position.x) * 0.1;
-                camera.position.y += (0 - camera.position.y) * 0.1;
+                camera.position.x += (0 - camera.position.x) * 0.1 * delta;
+                camera.position.y += (0 - camera.position.y) * 0.1 * delta;
             }
         }
 
