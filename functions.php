@@ -4282,3 +4282,5 @@ function zk_welcome_music_save_meta( $post_id ) {
     }
 }
 add_action( 'save_post', 'zk_welcome_music_save_meta' );
+
+require_once get_template_directory() . '/inc/zk-indexing-api.php';
