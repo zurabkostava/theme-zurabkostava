@@ -1,0 +1,86 @@
+11: function isKaUrl() {
+19: function markNoTranslate(el) {
+30: function protectCriticalUI() {
+57: function fastPaintTitleFromCache() {
+76: function run() {
+100: function getCachedSession() {
+110: async function syncProgressToDB(percent) {
+118: async function flushProgress() {
+143: async function checkAdminSession() {
+199: (function brutalFix() {
+303: function debounce(func, timeout = 300) {
+316: function addLibHomeButton() {
+454: function updateFontSize(newSize) {
+473: function toggleSidebar() {
+529: async function setupAdminAuth() {
+569: async function setupUserAuth() {
+711: function showError(msg) { errorMsg.innerText = msg; errorMsg.style.display = 'block'; }
+712: function updateModalTexts() {
+745: async function initLibraryMode() {
+819: async function initReaderMode() {
+1011: function applyBookData(data) {
+1035: async function loadBookData(slug, hasCacheRendered) {
+1075: async function uploadCoverToStorage(file) {
+1095: function updateStaticUI() {
+1133: function resetFootnoteCounters() {
+1141: function highlightDifferences(publicHTML, draftHTML) {
+1180: function removeHighlightClasses(htmlContent) {
+1195: function getChapterContent(chapter, lang, useDraft = false) {
+1213: function getChapterTitle(chapter, lang) {
+1219: async function generateBookStructure() {
+1331: async function renderBook() {
+1391: function buildDynamicSidebar(totalPapers) {
+1589: function applyCustomGeorgianHyphenation(html) {
+1593: function traverse(node) {
+1606: function hyphenateWord(word) {
+1640: function paginateContent(htmlContent, maxContentHeight, startPageIndex = 0) {
+1697: function splitNodeByWords(originalNode, containerState, limit) {
+1768: function navigateToHashOnLoad() {
+1801: function createChapterSlug(text) {
+1824: function closeSidebarMobile() {
+1831: function initPhysics(totalPapers) {
+1861: function renderVisiblePapers(loc) {
+1906: function syncVisuals(instant = false, targetSide = 'front') {
+1980: function nextMob() {
+1993: function prevMob() {
+2003: function nextDesk() {
+2023: function prevDesk() {
+2045: function updateState(forceMobileBack = false) {
+2074: function lockInput(time) {
+2101: function highlightActiveSidebarItem(currentLocation, isMobileBack) {
+2207: function updateBookState(loc) {
+2222: function initQuill() {
+2294: function footnoteHandler(qInstance) {
+2312: function openFootnoteEditor(wordInText, currentData, onSave) {
+2392: function imageHandler() {
+2425: function setupEditorEvents() {
+2628: function extractTitleFromHTML(html) {
+2646: function saveCurrentStateToMemory() {
+2663: function loadContentIntoQuill(qInstance, lang) {
+2678: function fillSettingsInputs() {
+2699: function setupSettingsLogic() {
+2952: function renderChaptersList() {
+3073: function loadChapter(i) {
+3116: function formatDuration(seconds) {
+3132: function getOrCreateReaderProfile() {
+3152: async function initAnalytics() {
+3282: function setupAnalyticsUI() {
+3574: function updateProgressBar(currentLoc, totalPaps) {
+3611: function setupAllButtons() {
+3868: function setupReaderInteractions() {
+3885: function handleMouseOver(e) {
+3897: function handleMouseOut(e) {
+3917: function showTooltip(target, globalTooltip) {
+3952: function attachMobileTriggers() {
+4024: function enableSmartSync() {
+4117: function initShareButton() {
+4277: function initAudioPrototype() {
+4290: function parseTimeToSeconds(timeVal) {
+4366: function loadChapterAudio(chapterNum, timeToStart = 0, autoPlay = false) {
+4399: function showAudioWIPMessage() {
+4443: function getChapterAndTimeForCurrentPage(chapters) {
+4623: function updateTeleprompter(time) {
+4670: function smoothScrollLoop() {
+4705: function showAudioAuthModal() {
+4768: function autoFlipToElement(el) {
+4815: function updateAmbientBackground() {

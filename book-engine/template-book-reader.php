@@ -36,6 +36,7 @@ Template Name: Book Reader
             outline: none !important;
         }
     </style>
+    <link rel="manifest" href="/wp-content/themes/zurabkostava/book-engine/manifest.json">
 <?php wp_head(); ?>
 </head>
 

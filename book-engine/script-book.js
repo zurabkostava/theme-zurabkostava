@@ -4883,3 +4883,15 @@ function updateAmbientBackground() {
         }
     }, 800); // 👈 800 მილიწამი აცდის ფურცელს გადაშლას!
 }
+
+
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw-book.js').then(reg => {
+            console.log('Book Engine PWA: Service Worker registered.', reg.scope);
+        }).catch(err => {
+            console.error('Book Engine PWA: Registration failed.', err);
+        });
+    });
+}
