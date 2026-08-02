@@ -2131,10 +2131,13 @@ add_action( 'add_meta_boxes', 'zk_book_add_meta_box' );
 
 function zk_book_meta_callback( $post ) {
     wp_nonce_field( 'zk_book_save_meta', 'zk_book_meta_nonce' );
-    $year   = get_post_meta( $post->ID, '_zk_book_year', true );
-    $genre  = get_post_meta( $post->ID, '_zk_book_genre', true );
-    $author = get_post_meta( $post->ID, '_zk_book_author', true );
-    $link   = get_post_meta( $post->ID, '_zk_book_link', true );
+    $year       = get_post_meta( $post->ID, '_zk_book_year', true );
+    $genre      = get_post_meta( $post->ID, '_zk_book_genre', true );
+    $author     = get_post_meta( $post->ID, '_zk_book_author', true );
+    $link       = get_post_meta( $post->ID, '_zk_book_link', true );
+    $characters = get_post_meta( $post->ID, '_zk_book_characters', true );
+    $themes     = get_post_meta( $post->ID, '_zk_book_themes', true );
+    $language   = get_post_meta( $post->ID, '_zk_book_language', true ) ?: 'ka';
     ?>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
         <div>
@@ -2153,6 +2156,21 @@ function zk_book_meta_callback( $post ) {
             <label><strong>Read Link</strong></label><br>
             <input type="url" name="zk_book_link" value="<?php echo esc_url( $link ); ?>" style="width:100%; margin-top:5px;" />
         </div>
+        <div style="grid-column: 1 / -1;">
+            <label><strong>Characters (for AI Schema)</strong> (Comma separated. e.g. <em>Noe Vance, SLiATLAS</em>)</label><br>
+            <input type="text" name="zk_book_characters" value="<?php echo esc_attr( $characters ); ?>" style="width:100%; margin-top:5px;" />
+        </div>
+        <div style="grid-column: 1 / -1;">
+            <label><strong>Themes / About (for AI Schema)</strong> (Comma separated. e.g. <em>Simulation, Meta-fiction</em>)</label><br>
+            <input type="text" name="zk_book_themes" value="<?php echo esc_attr( $themes ); ?>" style="width:100%; margin-top:5px;" />
+        </div>
+        <div>
+            <label><strong>Book Language</strong></label><br>
+            <select name="zk_book_language" style="width:100%; margin-top:5px;">
+                <option value="ka" <?php selected( $language, 'ka' ); ?>>Georgian (ka)</option>
+                <option value="en" <?php selected( $language, 'en' ); ?>>English (en)</option>
+            </select>
+        </div>
     </div>
     <p style="color: #666; margin-top: 15px;"><em>* Set the Book Cover using the "Featured Image" panel on the right. If Author is left empty, it will default to Zurab Kostava.</em></p>
     <?php
@@ -2166,6 +2184,9 @@ function zk_book_save_meta( $post_id ) {
     if ( isset( $_POST['zk_book_genre'] ) ) update_post_meta( $post_id, '_zk_book_genre', sanitize_text_field( $_POST['zk_book_genre'] ) );
     if ( isset( $_POST['zk_book_author'] ) ) update_post_meta( $post_id, '_zk_book_author', sanitize_text_field( $_POST['zk_book_author'] ) );
     if ( isset( $_POST['zk_book_link'] ) ) update_post_meta( $post_id, '_zk_book_link', sanitize_text_field( $_POST['zk_book_link'] ) );
+    if ( isset( $_POST['zk_book_characters'] ) ) update_post_meta( $post_id, '_zk_book_characters', sanitize_text_field( $_POST['zk_book_characters'] ) );
+    if ( isset( $_POST['zk_book_themes'] ) ) update_post_meta( $post_id, '_zk_book_themes', sanitize_text_field( $_POST['zk_book_themes'] ) );
+    if ( isset( $_POST['zk_book_language'] ) ) update_post_meta( $post_id, '_zk_book_language', sanitize_text_field( $_POST['zk_book_language'] ) );
 }
 add_action( 'save_post', 'zk_book_save_meta' );
 
@@ -2965,10 +2986,13 @@ function zk_render_json_ld_schema() {
 
     } elseif ( is_singular( 'zk_book' ) || $is_book_page ) {
         $target_id = function_exists('zk_get_seo_target_id') ? zk_get_seo_target_id( get_queried_object_id() ) : get_queried_object_id();
-        $year   = get_post_meta( $target_id, '_zk_book_year', true );
-        $genre  = get_post_meta( $target_id, '_zk_book_genre', true );
-        $author = get_post_meta( $target_id, '_zk_book_author', true ) ?: 'Zurab Kostava';
+        $year       = get_post_meta( $target_id, '_zk_book_year', true );
+        $genre      = get_post_meta( $target_id, '_zk_book_genre', true );
+        $author     = get_post_meta( $target_id, '_zk_book_author', true ) ?: 'Zurab Kostava';
         $seo_desc   = get_post_meta( $target_id, '_zk_seo_description', true );
+        $characters = get_post_meta( $target_id, '_zk_book_characters', true );
+        $themes     = get_post_meta( $target_id, '_zk_book_themes', true );
+        $language   = get_post_meta( $target_id, '_zk_book_language', true ) ?: 'ka';
         
         $desc = !empty($seo_desc) ? $seo_desc : wp_strip_all_tags( get_post($target_id)->post_content );
         
@@ -2982,9 +3006,24 @@ function zk_render_json_ld_schema() {
             ],
             'datePublished' => $year,
             'bookFormat' => 'https://schema.org/EBook',
+            'inLanguage' => $language,
             'description' => esc_attr( $desc ),
             'url' => get_permalink()
         ];
+        
+        if ( ! empty( $characters ) ) {
+            $char_list = array_map('trim', explode(',', $characters));
+            $book_schema['character'] = array_map(function($c) {
+                return [ '@type' => 'Person', 'name' => $c ];
+            }, $char_list);
+        }
+        
+        if ( ! empty( $themes ) ) {
+            $theme_list = array_map('trim', explode(',', $themes));
+            $book_schema['about'] = array_map(function($t) {
+                return [ '@type' => 'Thing', 'name' => $t ];
+            }, $theme_list);
+        }
         
         if ( ! empty( $genre ) ) {
             $book_schema['genre'] = esc_attr( $genre );
@@ -2994,6 +3033,7 @@ function zk_render_json_ld_schema() {
             $book_schema['image'] = get_the_post_thumbnail_url( $target_id, 'full' );
         }
         $schema[] = $book_schema;
+
 
     } elseif ( is_front_page() || is_home() ) {
         // Do nothing here, Person and WebSite schemas were already added above
