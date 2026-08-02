@@ -2137,6 +2137,9 @@ function zk_book_meta_callback( $post ) {
     $characters = get_post_meta( $post->ID, '_zk_book_characters', true );
     $themes     = get_post_meta( $post->ID, '_zk_book_themes', true );
     $language   = get_post_meta( $post->ID, '_zk_book_language', true ) ?: 'ka';
+    $pages      = get_post_meta( $post->ID, '_zk_book_pages', true );
+    $audience   = get_post_meta( $post->ID, '_zk_book_audience', true );
+    $isbn       = get_post_meta( $post->ID, '_zk_book_isbn', true );
     ?>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
         <div>
@@ -2151,6 +2154,22 @@ function zk_book_meta_callback( $post ) {
             <label><strong>Read Link</strong></label><br>
             <input type="url" name="zk_book_link" value="<?php echo esc_url( $link ); ?>" style="width:100%; margin-top:5px;" />
         </div>
+        <div>
+            <label><strong>Book Language(s)</strong> (Comma separated. e.g. <em>ka, en</em>)</label><br>
+            <input type="text" name="zk_book_language" value="<?php echo esc_attr( $language ); ?>" placeholder="ka" style="width:100%; margin-top:5px;" />
+        </div>
+        <div>
+            <label><strong>Target Audience</strong> (e.g. Young Adult, Sci-Fi Readers)</label><br>
+            <input type="text" name="zk_book_audience" value="<?php echo esc_attr( $audience ); ?>" style="width:100%; margin-top:5px;" />
+        </div>
+        <div>
+            <label><strong>Estimated Pages / Word Count</strong></label><br>
+            <input type="number" name="zk_book_pages" value="<?php echo esc_attr( $pages ); ?>" style="width:100%; margin-top:5px;" />
+        </div>
+        <div>
+            <label><strong>ISBN</strong> (If applicable)</label><br>
+            <input type="text" name="zk_book_isbn" value="<?php echo esc_attr( $isbn ); ?>" style="width:100%; margin-top:5px;" />
+        </div>
         <div style="grid-column: 1 / -1;">
             <label><strong>Characters (for AI Schema)</strong> (Comma separated. e.g. <em>Noe Vance, SLiATLAS</em>)</label><br>
             <input type="text" name="zk_book_characters" value="<?php echo esc_attr( $characters ); ?>" style="width:100%; margin-top:5px;" />
@@ -2158,10 +2177,6 @@ function zk_book_meta_callback( $post ) {
         <div style="grid-column: 1 / -1;">
             <label><strong>Themes / About (for AI Schema)</strong> (Comma separated. e.g. <em>Simulation, Meta-fiction</em>)</label><br>
             <input type="text" name="zk_book_themes" value="<?php echo esc_attr( $themes ); ?>" style="width:100%; margin-top:5px;" />
-        </div>
-        <div>
-            <label><strong>Book Language(s)</strong> (Comma separated. e.g. <em>ka, en</em>)</label><br>
-            <input type="text" name="zk_book_language" value="<?php echo esc_attr( $language ); ?>" placeholder="ka" style="width:100%; margin-top:5px;" />
         </div>
     </div>
     <p style="color: #666; margin-top: 15px;"><em>* Set the Book Cover using the "Featured Image" panel on the right. All books are automatically authored by Zurab Kostava in the SEO schema.</em></p>
@@ -2178,6 +2193,9 @@ function zk_book_save_meta( $post_id ) {
     if ( isset( $_POST['zk_book_characters'] ) ) update_post_meta( $post_id, '_zk_book_characters', sanitize_text_field( $_POST['zk_book_characters'] ) );
     if ( isset( $_POST['zk_book_themes'] ) ) update_post_meta( $post_id, '_zk_book_themes', sanitize_text_field( $_POST['zk_book_themes'] ) );
     if ( isset( $_POST['zk_book_language'] ) ) update_post_meta( $post_id, '_zk_book_language', sanitize_text_field( $_POST['zk_book_language'] ) );
+    if ( isset( $_POST['zk_book_pages'] ) ) update_post_meta( $post_id, '_zk_book_pages', sanitize_text_field( $_POST['zk_book_pages'] ) );
+    if ( isset( $_POST['zk_book_audience'] ) ) update_post_meta( $post_id, '_zk_book_audience', sanitize_text_field( $_POST['zk_book_audience'] ) );
+    if ( isset( $_POST['zk_book_isbn'] ) ) update_post_meta( $post_id, '_zk_book_isbn', sanitize_text_field( $_POST['zk_book_isbn'] ) );
 }
 add_action( 'save_post', 'zk_book_save_meta' );
 
@@ -2976,13 +2994,16 @@ function zk_render_json_ld_schema() {
         $schema[] = $article_schema;
 
     } elseif ( is_singular( 'zk_book' ) || $is_book_page ) {
-        $target_id = function_exists('zk_get_seo_target_id') ? zk_get_seo_target_id( get_queried_object_id() ) : get_queried_object_id();
+        $target_id  = function_exists('zk_get_seo_target_id') ? zk_get_seo_target_id( get_queried_object_id() ) : get_queried_object_id();
         $year       = get_post_meta( $target_id, '_zk_book_year', true );
         $genre      = get_post_meta( $target_id, '_zk_book_genre', true );
         $seo_desc   = get_post_meta( $target_id, '_zk_seo_description', true );
         $characters = get_post_meta( $target_id, '_zk_book_characters', true );
         $themes     = get_post_meta( $target_id, '_zk_book_themes', true );
         $language   = get_post_meta( $target_id, '_zk_book_language', true ) ?: 'ka';
+        $pages      = get_post_meta( $target_id, '_zk_book_pages', true );
+        $audience   = get_post_meta( $target_id, '_zk_book_audience', true );
+        $isbn       = get_post_meta( $target_id, '_zk_book_isbn', true );
         
         $desc = !empty($seo_desc) ? $seo_desc : wp_strip_all_tags( get_post($target_id)->post_content );
         
@@ -2993,9 +3014,20 @@ function zk_render_json_ld_schema() {
             'author' => [ '@id' => $site_url . '#person' ],
             'datePublished' => $year,
             'bookFormat' => 'https://schema.org/EBook',
+            'isAccessibleForFree' => true,
             'description' => esc_attr( $desc ),
             'url' => get_permalink()
         ];
+        
+        if ( ! empty( $pages ) ) {
+            $book_schema['numberOfPages'] = (int) $pages;
+        }
+        if ( ! empty( $audience ) ) {
+            $book_schema['audience'] = esc_attr( $audience );
+        }
+        if ( ! empty( $isbn ) ) {
+            $book_schema['isbn'] = esc_attr( $isbn );
+        }
         
         if ( ! empty( $language ) ) {
             $lang_list = array_map('trim', explode(',', $language));
