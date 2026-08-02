@@ -161,3 +161,65 @@ function zk_indexing_options_page() {
     </div>
     <?php
 }
+
+// 6. Post Row Actions
+add_filter('post_row_actions', 'zk_add_instant_index_action', 10, 2);
+add_filter('page_row_actions', 'zk_add_instant_index_action', 10, 2);
+
+function zk_add_instant_index_action($actions, $post) {
+    if (!current_user_can('edit_post', $post->ID)) return $actions;
+    
+    // Only show on published posts
+    if ($post->post_status !== 'publish') return $actions;
+
+    $url = wp_nonce_url(admin_url('admin.php?action=zk_instant_index_post&post_id=' . $post->ID), 'zk_instant_index_' . $post->ID);
+    
+    $actions['instant_index'] = '<a href="' . esc_url($url) . '" style="color:#2271b1;" title="Send to Google Indexing API">Instant Index</a>';
+    return $actions;
+}
+
+add_action('admin_action_zk_instant_index_post', 'zk_handle_instant_index_action');
+function zk_handle_instant_index_action() {
+    $post_id = isset($_GET['post_id']) ? intval($_GET['post_id']) : 0;
+    
+    if (!$post_id || !current_user_can('edit_post', $post_id)) {
+        wp_die('Permission denied.');
+    }
+    
+    check_admin_referer('zk_instant_index_' . $post_id);
+    
+    $resp = zk_notify_google_indexing(get_permalink($post_id), 'URL_UPDATED');
+    
+    $redirect_url = wp_get_referer() ? wp_get_referer() : admin_url('edit.php');
+    
+    if (is_wp_error($resp)) {
+        $redirect_url = add_query_arg('zk_index_msg', 'error', $redirect_url);
+        $redirect_url = add_query_arg('zk_index_err', urlencode($resp->get_error_message()), $redirect_url);
+    } else {
+        $code = wp_remote_retrieve_response_code($resp);
+        if ($code == 200) {
+            $redirect_url = add_query_arg('zk_index_msg', 'success', $redirect_url);
+        } else {
+            $redirect_url = add_query_arg('zk_index_msg', 'error', $redirect_url);
+            $body = json_decode(wp_remote_retrieve_body($resp), true);
+            $err_msg = isset($body['error']['message']) ? $body['error']['message'] : 'API Error ' . $code;
+            $redirect_url = add_query_arg('zk_index_err', urlencode($err_msg), $redirect_url);
+        }
+    }
+    
+    wp_redirect($redirect_url);
+    exit;
+}
+
+add_action('admin_notices', 'zk_instant_index_admin_notice');
+function zk_instant_index_admin_notice() {
+    if (isset($_GET['zk_index_msg'])) {
+        $msg = $_GET['zk_index_msg'];
+        if ($msg === 'success') {
+            echo '<div class="notice notice-success is-dismissible"><p><strong>Instant Index:</strong> URL successfully submitted to Google API.</p></div>';
+        } elseif ($msg === 'error') {
+            $err = isset($_GET['zk_index_err']) ? urldecode($_GET['zk_index_err']) : 'Unknown error';
+            echo '<div class="notice notice-error is-dismissible"><p><strong>Instant Index Error:</strong> ' . esc_html($err) . '</p></div>';
+        }
+    }
+}
