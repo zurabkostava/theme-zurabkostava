@@ -1309,7 +1309,7 @@ async function generateBookStructure() {
 
         // 🚀 NETWORK OPTIMIZATION: აქ ამოღებულია waitForImages! ბრაუზერი აღარ ელოდება ფოტოების გადმოწერას.
 
-        const pgs = paginateContent(hyph, h, pages.length);
+        const pgs = await paginateContent(hyph, h, pages.length);
 
         const startPage = pages.length;
         if (pgs.length > 0) {
@@ -1637,7 +1637,7 @@ function hyphenateWord(word) {
     return result;
 }
 
-function paginateContent(htmlContent, maxContentHeight, startPageIndex = 0) {
+async function paginateContent(htmlContent, maxContentHeight, startPageIndex = 0) {
     const measureContainer = document.getElementById('measure-container');
     measureContainer.innerHTML = '';
     const innerMeasurer = document.createElement('div');
@@ -1651,8 +1651,15 @@ function paginateContent(htmlContent, maxContentHeight, startPageIndex = 0) {
     let nodesQueue = Array.from(tempDiv.children);
     let pages = [];
     let currentPageContent = document.createElement('div');
+    
+    let yieldCounter = 0;
 
     while (nodesQueue.length > 0) {
+        // 🚀 CPU OPTIMIZATION: ვუთმობთ ძაფს (thread-ს) მთავარ პროცესს ყოველ 15 ბლოკზე, რათა UI არ გაიყინოს
+        if (++yieldCounter % 15 === 0) {
+            await new Promise(resolve => setTimeout(resolve, 0));
+        }
+
         let node = nodesQueue.shift();
         const imgElement = node.querySelector('img') || (node.tagName === 'IMG' ? node : null);
         if (imgElement) {
