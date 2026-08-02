@@ -2165,11 +2165,8 @@ function zk_book_meta_callback( $post ) {
             <input type="text" name="zk_book_themes" value="<?php echo esc_attr( $themes ); ?>" style="width:100%; margin-top:5px;" />
         </div>
         <div>
-            <label><strong>Book Language</strong></label><br>
-            <select name="zk_book_language" style="width:100%; margin-top:5px;">
-                <option value="ka" <?php selected( $language, 'ka' ); ?>>Georgian (ka)</option>
-                <option value="en" <?php selected( $language, 'en' ); ?>>English (en)</option>
-            </select>
+            <label><strong>Book Language(s)</strong> (Comma separated. e.g. <em>ka, en</em>)</label><br>
+            <input type="text" name="zk_book_language" value="<?php echo esc_attr( $language ); ?>" placeholder="ka" style="width:100%; margin-top:5px;" />
         </div>
     </div>
     <p style="color: #666; margin-top: 15px;"><em>* Set the Book Cover using the "Featured Image" panel on the right. If Author is left empty, it will default to Zurab Kostava.</em></p>
@@ -3006,10 +3003,14 @@ function zk_render_json_ld_schema() {
             ],
             'datePublished' => $year,
             'bookFormat' => 'https://schema.org/EBook',
-            'inLanguage' => $language,
             'description' => esc_attr( $desc ),
             'url' => get_permalink()
         ];
+        
+        if ( ! empty( $language ) ) {
+            $lang_list = array_map('trim', explode(',', $language));
+            $book_schema['inLanguage'] = count($lang_list) > 1 ? $lang_list : $lang_list[0];
+        }
         
         if ( ! empty( $characters ) ) {
             $char_list = array_map('trim', explode(',', $characters));
