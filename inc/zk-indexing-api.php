@@ -120,17 +120,35 @@ function zk_indexing_options_page() {
     
     if (isset($_POST['zk_manual_url'])) {
         $type = sanitize_text_field($_POST['zk_manual_type']);
-        $resp = zk_notify_google_indexing(esc_url_raw($_POST['zk_manual_url']), $type);
-        if (is_wp_error($resp)) {
-             echo '<div class="notice notice-error is-dismissible"><p>Error: '.esc_html($resp->get_error_message()).'</p></div>';
-        } else {
-             $code = wp_remote_retrieve_response_code($resp);
-             $body = wp_remote_retrieve_body($resp);
-             if ($code == 200) {
-                 echo '<div class="notice notice-success is-dismissible"><p>Success! URL submitted to Google.</p></div>';
-             } else {
-                 echo '<div class="notice notice-error is-dismissible"><p>Google API Error ('.$code.'): '.esc_html($body).'</p></div>';
-             }
+        $urls_raw = stripslashes($_POST['zk_manual_url']);
+        $urls = array_filter(array_map('trim', explode("\n", $urls_raw)));
+        $success_count = 0;
+        $errors = [];
+        
+        foreach ($urls as $u) {
+            $u = esc_url_raw($u);
+            if (empty($u)) continue;
+            
+            $resp = zk_notify_google_indexing($u, $type);
+            if (is_wp_error($resp)) {
+                 $errors[] = $u . ': ' . esc_html($resp->get_error_message());
+            } else {
+                 $code = wp_remote_retrieve_response_code($resp);
+                 if ($code == 200) {
+                     $success_count++;
+                 } else {
+                     $body = json_decode(wp_remote_retrieve_body($resp), true);
+                     $msg = isset($body['error']['message']) ? $body['error']['message'] : 'API Error ' . $code;
+                     $errors[] = $u . ': ' . esc_html($msg);
+                 }
+            }
+        }
+        
+        if ($success_count > 0) {
+            echo '<div class="notice notice-success is-dismissible"><p>Successfully submitted ' . $success_count . ' URLs to Google.</p></div>';
+        }
+        if (!empty($errors)) {
+            echo '<div class="notice notice-error is-dismissible"><p>Errors:<br>' . implode('<br>', $errors) . '</p></div>';
         }
     }
     
@@ -147,15 +165,17 @@ function zk_indexing_options_page() {
         </form>
 
         <form method="post" style="background:#fff; padding:20px; border:1px solid #ccd0d4; margin-top:20px;">
-            <h2>2. Manual URL Submission</h2>
-            <p>Manually submit a URL to Google. Note: Posts and Pages will be submitted automatically when you publish or update them.</p>
-            <div style="display:flex; gap:10px; align-items:center;">
-                <input type="url" name="zk_manual_url" style="width:400px;" placeholder="https://zurabkostava.com/..." required>
-                <select name="zk_manual_type">
-                    <option value="URL_UPDATED">Publish / Update</option>
-                    <option value="URL_DELETED">Remove / Delete</option>
-                </select>
-                <input type="submit" class="button button-primary" value="Send to Google">
+            <h2>2. Manual URL Submission (Bulk)</h2>
+            <p>Paste one or more URLs below (one per line) to submit to Google. Max 100 per batch recommended.</p>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <textarea name="zk_manual_url" rows="5" style="width:100%; max-width:800px;" placeholder="https://zurabkostava.com/nocturne-1&#10;https://zurabkostava.com/nocturne-2" required></textarea>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <select name="zk_manual_type">
+                        <option value="URL_UPDATED">Publish / Update</option>
+                        <option value="URL_DELETED">Remove / Delete</option>
+                    </select>
+                    <input type="submit" class="button button-primary" value="Send to Google">
+                </div>
             </div>
         </form>
     </div>
