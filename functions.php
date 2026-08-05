@@ -3248,7 +3248,8 @@ function zk_generate_aitxt_string() {
 function zk_serve_dynamic_seo_files() {
     $uri = $_SERVER['REQUEST_URI'] ?? '';
     
-    if ( preg_match( '/\/wp-sitemap\.xml$/i', $uri ) ) {
+    // Serve our custom sitemap for wp-sitemap.xml, sitemap.xml, and sitemap_index.xml (RankMath/Yoast fallbacks)
+    if ( preg_match( '/\/?(wp-sitemap|sitemap_index|sitemap)\.xml$/i', $uri ) ) {
         header('Content-Type: text/xml; charset=utf-8');
         echo zk_generate_sitemap_string();
         exit;
@@ -3294,8 +3295,8 @@ function zk_render_geo_meta_tags() {
         return;
     }
     
-    // Explicit permission for SGE & AI Bots to use max snippets
-    echo "<meta name=\"robots\" content=\"max-snippet:-1, max-image-preview:large, max-video-preview:-1\" />\n";
+    // Explicitly add index, follow for better crawlability
+    echo "<meta name=\"robots\" content=\"index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1\" />\n";
 
     // AI Summary (abstract)
     $ai_summary = '';
