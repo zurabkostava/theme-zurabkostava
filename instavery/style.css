@@ -2736,3 +2736,9 @@ body, html {
     -webkit-appearance: none;
     margin: 0;
 }
+
+@media (max-width: 550px) {
+    #recentWrapperLoc {
+        display: none !important;
+    }
+}
