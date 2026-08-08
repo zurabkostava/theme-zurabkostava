@@ -2784,22 +2784,40 @@ body, html {
 .custom-select-option {
     display: flex;
     align-items: center;
-    padding: 10px 15px;
+    padding: 12px 18px;
     cursor: pointer;
-    transition: 0.2s;
-    font-size: 0.85rem;
-    color: #fff;
-    margin: 0;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #f1f1f1;
+    margin: 4px 8px;
+    border-radius: 8px;
 }
 .custom-select-option:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
+    padding-left: 22px;
 }
 .custom-checkbox {
-    margin-right: 12px;
-    width: 16px;
-    height: 16px;
+    margin-right: 14px;
+    width: 18px;
+    height: 18px;
     accent-color: #dc2743;
     cursor: pointer;
+}
+
+/* Custom Scrollbar for Dropdown */
+.custom-select-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-select-dropdown::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-select-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+.custom-select-dropdown::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
 }
 
 /* FIX: Z-index stacking context for cards so dropdowns don't go behind the next card */
