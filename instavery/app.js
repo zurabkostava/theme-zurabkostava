@@ -542,9 +542,46 @@ function switchTab(table) {
 
 // 🟢 DATA LOADING & ACTIONS
 function populateSelect(id, data, label) {
-    const sel = document.getElementById(id);
-    if(!sel) return;
-    sel.innerHTML = `<option value="all">${label}</option>`;
+    const originalSelect = document.getElementById(id);
+    if(!originalSelect) return;
+    
+    // Hide the original select (keep it in DOM for listeners but invisible)
+    originalSelect.style.display = 'none';
+    
+    let wrapper = document.getElementById('custom-wrapper-' + id);
+    if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.className = 'custom-select-wrapper';
+        wrapper.id = 'custom-wrapper-' + id;
+        originalSelect.parentNode.insertBefore(wrapper, originalSelect);
+    }
+    
+    let html = `
+        <div class="glass-select custom-select-header" onclick="toggleCustomSelect('${id}')">
+            <span class="custom-select-label" id="custom-label-${id}">${label}</span>
+            <i class="fa-solid fa-chevron-down select-arrow"></i>
+        </div>
+        <div class="custom-select-dropdown hidden" id="custom-dropdown-${id}" data-label="${label}">
+            <label class="custom-select-option">
+                <input type="checkbox" value="all" class="custom-checkbox custom-cb-all" checked onchange="handleCustomSelectChange('${id}')">
+                <span>All</span>
+            </label>
+    `;
+    
+    if(data) {
+        Object.entries(data).sort((a,b)=>a[1].localeCompare(b[1])).forEach(([k,v]) => {
+            html += `
+                <label class="custom-select-option">
+                    <input type="checkbox" value="${k}" class="custom-checkbox custom-cb-item" onchange="handleCustomSelectChange('${id}')">
+                    <span>${v}</span>
+                </label>
+            `;
+        });
+    }
+    html += `</div>`;
+    
+    wrapper.innerHTML = html;
+}</option>`;
     if(data) Object.entries(data).sort((a,b)=>a[1].localeCompare(b[1])).forEach(([k,v]) => sel.innerHTML += `<option value="${k}">${v}</option>`);
 }
 
