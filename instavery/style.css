@@ -1,0 +1,2738 @@
+/* SCOPED VARIABLES & RESET */
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #050505; /* ძირითადი ფონი */
+}
+
+#botKeywords{
+    width: 100% !important;
+}
+
+#insta-discovery-app {
+    --bg-dark: #050505;
+    --text-main: #ffffff;
+    --text-muted: #a0a0a0;
+
+    /* Gradients */
+    --insta-grad: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    --blue-grad: linear-gradient(45deg, #2193b0, #6dd5ed);
+    --purple-grad: linear-gradient(45deg, #833ab4, #fd1d1d, #fcb045);
+
+    /* Glass Effect */
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-hover: rgba(255, 255, 255, 0.1);
+
+    /* Container Layout */
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Montserrat', sans-serif;
+    width: 99%!important;
+    min-width: 500px;
+    min-height: 100vh; /* მინიმუმ ეკრანის სიმაღლე, მაგრამ იზრდება */
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* 🛑 FIX: ვიწყებთ ზემოდან, არ ვაცენტრირებთ! */
+    align-items: center;
+    padding-bottom: 100px; /* ადგილი ბულკ ბარისთვის */
+    box-sizing: border-box;
+
+    overflow-x: hidden!important;
+    overflow-y: auto; /* 🛑 FIX: სქროლის ნება */
+}
+
+
+.header-btn-left{
+    margin-top: 20px!important;
+    margin-left: 10px!important;
+}
+
+@media (max-width: 550px) {
+    #insta-discovery-app {
+        min-width: 100% !important; /* მობილურზე მოერგოს ეკრანს */
+        transform: translateX(8px);
+    }
+}
+
+/* Wrapper specifically for the background to clip the blobs */
+#insta-discovery-app .background-wrapper {
+    position: fixed; /* 🛑 FIX: Fixed რომ სქროლს არ გაყვეს და სულ დარჩეს */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Hard Reset for app children */
+#insta-discovery-app * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+}
+
+/* --- BACKGROUND ANIMATION (Bubbles) --- */
+#insta-discovery-app .bg-blobs {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+#insta-discovery-app .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    animation: instaFloat 20s infinite ease-in-out;
+}
+
+#insta-discovery-app .blob-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #7a00ff; }
+#insta-discovery-app .blob-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: #ff0055; animation-delay: -5s; }
+#insta-discovery-app .blob-3 { top: 40%; left: 40%; width: 300px; height: 300px; background: #00e5ff; animation-delay: -10s; }
+
+@keyframes instaFloat {
+    0%, 100% { transform: translate(0, 0); }
+    33% { transform: translate(30px, -50px); }
+    66% { transform: translate(-20px, 20px); }
+}
+
+#insta-discovery-app .bg-blur {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    backdrop-filter: blur(50px);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* --- LAYOUT --- */
+#insta-discovery-app .main-container {
+    width: 100%;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* 🛑 FIX: აქაც ზემოდან ვიწყებთ */
+    position: relative;
+    pointer-events: auto;
+    margin-top: 20px; /* ჰედერის ადგილი */
+}
+
+/* --- LAYOUT --- */
+#insta-discovery-app .main-container {
+    width: 100%;
+    z-index: 2; /* Content above background */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    /* Ensure pointer events work */
+    pointer-events: auto;
+}
+
+#insta-discovery-app header {
+    text-align: center;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    background: transparent;
+}
+
+#insta-discovery-app .logo-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+#insta-discovery-app .logo-icon {
+    font-size: 2.5rem;
+    background: var(--insta-grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* Reset for icons */
+    -webkit-text-fill-color: initial;
+    background: none;
+    color: transparent;
+    background: var(--insta-grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* FontAwesome fix */
+#insta-discovery-app .fa,
+#insta-discovery-app .fa-brands,
+#insta-discovery-app .fa-solid,
+#insta-discovery-app .fa-regular {
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", sans-serif;
+}
+
+#insta-discovery-app header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--text-main);
+    line-height: 1.2;
+}
+
+#insta-discovery-app .gradient-text {
+    background: var(--insta-grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+#insta-discovery-app header p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    font-weight: 300;
+    margin-top: 10px;
+}
+
+/* --- CARDS GRID --- */
+#insta-discovery-app .cards-grid {
+    display: flex;
+    gap: 25px;
+    justify-content: center;
+    width: 100%;
+    flex-wrap: wrap;
+    align-items: stretch; /* Equal height */
+}
+
+/* --- GLASS CARD --- */
+#insta-discovery-app .glass-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(24px); /* Increased blur for premium feel */
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); /* Deep premium shadow */
+    border-radius: 24px;
+    padding: 30px;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+    height: auto;
+
+}
+/* 3. The Breathing Animation */
+@keyframes cardPulse {
+    0%, 100% {
+        box-shadow:
+                0 10px 30px rgba(0,0,0,0.3), /* ჩრდილი */
+                inset 0 0 0 rgba(255,255,255,0); /* შიდა ნათება ქრება */
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+    50% {
+        box-shadow:
+                0 15px 50px rgba(240, 148, 51, 0.3), /* ნარინჯისფერი აურა */
+                inset 0 0 20px rgba(255,255,255,0.05); /* შიდა ნათება ინთება */
+        border-color: rgba(176, 176, 176, 0.9);
+    }
+}
+
+/* --- PREMIUM BLACK MOMENTUM LOADER --- */
+.spinner-ring {
+    display: inline-block;
+    width: 24px;  /* ოდნავ დიდი და მკაფიო */
+    height: 24px;
+
+    /* 1. სოლიდური შავი რკალი */
+    border: 3px solid rgba(0, 0, 0, 0.1); /* მკრთალი ნაცრისფერი გზა */
+    border-top-color: #000000; /* კუპრივით შავი აქტიური მხარე */
+
+    border-radius: 50%;
+
+    /* 2. ინერციული ანიმაცია (ყველაზე მთავარი დეტალი) */
+    /* Cubic-bezier აძლევს "აჩქარება-შენელების" ეფექტს */
+    animation: spinMomentum 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) infinite;
+
+    vertical-align: middle;
+}
+
+@keyframes spinMomentum {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+/* 2. The Active Glowing State */
+#insta-discovery-app .glass-card.active-glow {
+    border-color: rgba(255, 255, 255, 0.6) !important; /* თეთრი ჩარჩო */
+    background: rgba(255, 255, 255, 0.08) !important; /* ოდნავ ნათელი ფონი */
+    animation: cardPulse 4s infinite ease-in-out !important; /* მბჟუტავი ანიმაცია */
+    transform: translateY(-5px) !important; /* ოდნავ აწეული დარჩეს */
+}
+
+#insta-discovery-app .glass-card:has(.primary-btn:active) {
+    border-color: rgba(255, 255, 255, 0.8) !important; /* Border turns white */
+    background: rgba(255, 255, 255, 0.15) !important; /* Glass gets brighter */
+    box-shadow:
+            inset 0 0 50px rgba(255, 255, 255, 0.2), /* Inner Glow */
+            0 0 60px rgba(240, 148, 51, 0.4) !important; /* Outer Gradient Glow */
+    transform: scale(0.98) !important; /* Slight compression of the whole card */
+}
+
+#insta-discovery-app .glass-card:hover {
+    transform: translateY(-8px);
+    background: var(--glass-hover);
+    border-color: rgba(255,255,255,0.3);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05);
+}
+
+#insta-discovery-app .card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    flex-grow: 1;
+}
+
+#insta-discovery-app .icon-wrapper {
+    font-size: 2.5rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Gradient Icons */
+#insta-discovery-app .tag-gradient i { background: var(--purple-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+#insta-discovery-app .loc-gradient i { background: var(--blue-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+#insta-discovery-app .chaos-gradient i { background: var(--insta-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+#insta-discovery-app .glass-card h2 { font-size: 1.5rem; margin-bottom: 10px; font-weight: 700; color: #fff; }
+#insta-discovery-app .glass-card p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+    line-height: 1.5;
+    flex-grow: 1;
+}
+
+/* Person Gradient (Gold/Orange) */
+#insta-discovery-app .person-gradient i {
+    background: linear-gradient(45deg, #FFD700, #FF8C00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Google / White Button Style */
+.btn-white {
+    background: #ffffff;
+    color: #000000;
+    border: none;
+}
+
+.btn-white:hover {
+    background: #e0e0e0;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* --- MAIN BUTTONS --- */
+#insta-discovery-app .primary-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    background: #fff;
+    color: #000;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 5px 15px rgba(255,255,255,0.1);
+    font-family: 'Montserrat', sans-serif;
+    margin-top: auto;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    z-index: 1;
+}
+
+#insta-discovery-app .primary-btn:hover {
+    background: #f0f0f0;
+    transform: translateY(-4px) scale(1.02) !important;
+    box-shadow: 0 10px 25px rgba(240, 148, 51, 0.5), 0 0 15px rgba(255, 255, 255, 0.4) !important; /* Premium Glow */
+    letter-spacing: 1px !important; /* Text expands slightly */
+}
+
+/* Focus State (Keyboard Navigation) */
+#insta-discovery-app .primary-btn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 3px #000, 0 0 0 6px #fff !important; /* Double ring */
+}
+
+/* Active State (The Click - Press Down) */
+#insta-discovery-app .primary-btn:active {
+    transform: scale(0.92) !important; /* Satisfying shrink */
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(0,0,0,0.2) !important;
+    background: #fff !important;
+    color: #000 !important;
+}
+
+#insta-discovery-app .primary-btn:active { transform: scale(0.98); }
+
+/* RESULT AREA FIX FOR IN-CARD DISPLAY */
+#insta-discovery-app .result-container {
+    margin-top: 15px;
+    width: 100%;
+    /* Remove max-width constraints so it fits the card */
+    max-width: 100% !important;
+    background: rgba(0, 0, 0, 0.4); /* Darker contrast */
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    animation: instaFadeIn 0.3s ease-out;
+    box-sizing: border-box;
+}
+@keyframes instaFadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes instaSlideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+#insta-discovery-app .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+#insta-discovery-app .result-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+#insta-discovery-app .mini-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 5px;
+    transition: 0.2s;
+}
+#insta-discovery-app .mini-close:hover { color: #fff; transform: rotate(90deg); }
+
+#insta-discovery-app #resultText {
+    font-size: 0.95rem; /* Slightly smaller for sidebar */
+    font-weight: 600;
+    margin-bottom: 15px;
+    text-align: left;
+    word-break: break-word;
+    color: #fff;
+    line-height: 1.4;
+}
+
+#insta-discovery-app .actions-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#insta-discovery-app .action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: 0.2s;
+
+    font-family: 'Montserrat', sans-serif;
+}
+
+#insta-discovery-app .btn-main {
+    background: var(--insta-grad);
+    color: white;
+    border: none;
+}
+#insta-discovery-app .btn-main:hover { opacity: 0.9; transform: translateY(-2px); }
+
+#insta-discovery-app .btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+}
+#insta-discovery-app .btn-outline:hover { border-color: white; background: rgba(255,255,255,0.05); }
+
+#insta-discovery-app .btn-lite {
+    background: transparent;
+    border: 1px dashed rgba(255,255,255,0.3);
+    color: #ddd;
+    font-size: 0.8rem;
+}
+#insta-discovery-app .btn-lite:hover { border-color: #fff; color: #fff; }
+
+#insta-discovery-app .hidden { display: none !important; }
+
+
+/* Custom Select Styling */
+.select-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+    padding-bottom: 15px!important;
+}
+
+/* ✅ FORCE ADMIN BUTTON VISIBILITY */
+#insta-discovery-app #adminBtn {
+    /* პოზიციონირება */
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    /* ზომა და ფორმა */
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+
+    /* ვიზუალი (შუშის ეფექტი) */
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+
+    /* სხვა */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+
+
+#insta-discovery-app #adminBtn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+#insta-discovery-app #adminBtn:active{
+    transform: scale(0.95);
+}
+
+.glass-select {
+    width: 100%;;
+    height: 50px!important;
+    appearance: none; /* დეფოლტ ისრის მოშორება */
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    transition: 0.3s;
+    padding-left: 10px!important;
+}
+
+.glass-select:hover, .glass-select:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Dropdown Options (ბრაუზერის დეფოლტი შავი რომ არ იყოს) */
+.glass-select option {
+    background: #1a1a1a; /* მუქი ფონი */
+    color: #fff;
+}
+/* --- INPUT FIELDS & CLEAR BUTTON (POLISHED V2) --- */
+#insta-discovery-app .input-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 12px; /* ცოტა დავაპატარავეთ რომ არ გაიწელოს */
+}
+
+#insta-discovery-app .glass-input {
+    width: 100%;
+    padding: 14px 40px 14px 15px; /* მარჯვნივ ადგილი X-ისთვის */
+    background: rgba(0, 0, 0, 0.25); /* ოდნავ მუქი, რომ ტექსტი კარგად ჩანდეს */
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    color: #ffffff !important; /* აუცილებლად თეთრი! */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.3s ease;
+
+    /* ბრაუზერის დეფოლტ სტილების მოცილება */
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* 3. INPUT FIELDS FOCUS MAGIC */
+#insta-discovery-app .glass-input:focus,
+#insta-discovery-app .glass-select:focus {
+    border-color: #fff !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.15) !important;
+    transform: scale(1.02) !important;
+}
+
+/* Placeholder-ის ფერი */
+#insta-discovery-app .glass-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 300;
+}
+
+/* --- KILL THE UGLY BROWSER DEFAULTS --- */
+/* ეს აუცილებელია, რომ ის ლურჯი X გაქრეს */
+#insta-discovery-app .glass-input::-webkit-search-decoration,
+#insta-discovery-app .glass-input::-webkit-search-cancel-button,
+#insta-discovery-app .glass-input::-webkit-search-results-button,
+#insta-discovery-app .glass-input::-webkit-search-results-decoration {
+    display: none;
+    -webkit-appearance: none;
+}
+
+/* Custom Clear (X) Button styling */
+#insta-discovery-app .clear-input {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.1); /* პატარა ფონი ღილაკსაც */
+    border: none;
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+#insta-discovery-app .clear-input:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    transform: translateY(-50%) rotate(90deg); /* პატარა ეფექტი დაჰოვერებისას */
+}
+
+#insta-discovery-app .clear-input.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-50%) scale(0.5); /* გაქრობის ანიმაცია */
+}
+/* --- FIX FOR DROPDOWN EMOJI RENDERING (Flags as Initials) --- */
+#insta-discovery-app .glass-select {
+    /* 1. Ensure wide Unicode support */
+    font-family:
+            'Montserrat',
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            Roboto,
+            "Helvetica Neue",
+            Arial,
+            sans-serif,
+                /* Emoji Fallbacks */
+            "Apple Color Emoji",
+            "Segoe UI Emoji",
+            "Segoe UI Symbol";
+
+    /* 2. Set Minimum Width to prevent truncation on desktop */
+    min-width: 200px; /* თუ ამაზე ნაკლებს ხედავს ბრაუზერი, ჭრის ინიციალებზე */
+    width: 100%; /* დარჩეს 100% მშობელთან მიმართებაში */
+    padding-left: 10px!important;
+}
+
+/* 3. Ensure Options inherit full font support */
+#insta-discovery-app .glass-select option {
+    font-family: inherit; /* მემკვიდრეობით იღებს ზედა ფონტს */
+    white-space: nowrap; /* ტექსტი არ გადატყდეს */
+}
+
+/* Custom Arrow Icon */
+.select-arrow {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.5);
+    pointer-events: none;
+    font-size: 0.8rem;
+}
+
+.tag-desc {
+    margin-top: 5px !important;
+    font-size: 0.8rem !important;
+    opacity: 0.7;
+}
+
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px!important;
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+}
+
+.glass-checkbox {
+    accent-color: var(--insta-grad); /* ან #f09433 თუ ცვლადი არ მუშაობს */
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+}
+
+.checkbox-wrapper label {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 900px) {
+    #insta-discovery-app header h1 { font-size: 2.2rem; }
+    #insta-discovery-app .glass-card { width: 100%; max-width: 380px; }
+    #insta-discovery-app .result-container { padding: 15px; }
+
+    /* Additional Mobile Scrolling Safeguard */
+    #insta-discovery-app {
+        height: auto; /* Allow auto height on mobile to override any vh constraints */
+        min-height: 100vh;
+    }
+}
+
+.trp-floating-switcher{
+    display: none!important;
+}
+
+/* SCOPED VARIABLES & RESET */
+#insta-discovery-app {
+    --bg-dark: #050505;
+    --text-main: #ffffff;
+    --text-muted: #a0a0a0;
+
+    /* Gradients */
+    --insta-grad: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    --blue-grad: linear-gradient(45deg, #2193b0, #6dd5ed);
+    --purple-grad: linear-gradient(45deg, #833ab4, #fd1d1d, #fcb045);
+
+    /* Glass Effect */
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-hover: rgba(255, 255, 255, 0.07);
+
+    /* Container Layout */
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Montserrat', sans-serif;
+    width: 105%;
+    /* Changed to min-height to allow growth, and NO overflow:hidden on the root to fix mobile scroll */
+    min-height: 100vh;
+    display: flex;
+
+    /* FIX FOR ANDROID: Explicitly set direction to column so vertical overflow works naturally */
+    flex-direction: column;
+    justify-content: center;
+
+    padding: 20px;
+    /* Extra padding at bottom for mobile safety */
+    padding-bottom: 80px;
+    position: relative;
+    box-sizing: border-box;
+    margin: -10px!important;
+    /* FIX FOR TOUCH SCROLLING */
+    touch-action: pan-y; /* Explicitly allow vertical scroll gestures */
+    overflow-x: hidden; /* Kill horizontal scroll to prevent scroll-locking */
+    overflow-y: visible; /* Ensure vertical overflow is visible to the page scroll */
+}
+
+/* Wrapper specifically for the background to clip the blobs, but NOT the content */
+#insta-discovery-app .background-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Only clip the background blobs */
+    border-radius: 8px; /* Optional rounded corners */
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Hard Reset */
+#insta-discovery-app * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* --- BACKGROUND ANIMATION (Bubbles) --- */
+#insta-discovery-app .bg-blobs {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    /* Overflow hidden is now handled by .background-wrapper parent */
+}
+
+#insta-discovery-app .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    animation: instaFloat 20s infinite ease-in-out;
+}
+
+#insta-discovery-app .blob-1 {
+    top: -10%; left: -10%; width: 500px; height: 500px;
+    background: #7a00ff;
+}
+#insta-discovery-app .blob-2 {
+    bottom: -10%; right: -10%; width: 400px; height: 400px;
+    background: #ff0055;
+    animation-delay: -5s;
+}
+#insta-discovery-app .blob-3 {
+    top: 40%; left: 40%; width: 300px; height: 300px;
+    background: #00e5ff;
+    animation-delay: -10s;
+}
+
+@keyframes instaFloat {
+    0%, 100% { transform: translate(0, 0); }
+    33% { transform: translate(30px, -50px); }
+    66% { transform: translate(-20px, 20px); }
+}
+
+#insta-discovery-app .bg-blur {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    backdrop-filter: blur(50px);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* --- LAYOUT --- */
+#insta-discovery-app .main-container {
+    width: 100%;
+    z-index: 2; /* Content above background */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    /* Ensure pointer events work */
+    pointer-events: auto;
+}
+
+#insta-discovery-app header {
+    text-align: center;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    background: transparent;
+}
+
+#insta-discovery-app .logo-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+#insta-discovery-app .logo-icon {
+    font-size: 2.5rem;
+    background: var(--insta-grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* Reset for icons */
+    -webkit-text-fill-color: initial;
+    background: none;
+    color: transparent;
+    background: var(--insta-grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* FontAwesome fix */
+#insta-discovery-app .fa,
+#insta-discovery-app .fa-brands,
+#insta-discovery-app .fa-solid,
+#insta-discovery-app .fa-regular {
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", sans-serif;
+}
+
+#insta-discovery-app header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--text-main);
+    line-height: 1.2;
+}
+
+#insta-discovery-app .gradient-text {
+    background: var(--insta-grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+#insta-discovery-app header p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    font-weight: 300;
+    margin-top: 10px;
+}
+
+/* --- CARDS GRID --- */
+#insta-discovery-app .cards-grid {
+    display: flex;
+    gap: 25px;
+    justify-content: center;
+    width: 100%;
+    flex-wrap: wrap;
+    align-items: stretch; /* Equal height */
+}
+
+/* --- GLASS CARD --- */
+#insta-discovery-app .glass-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(16px);
+    border-radius: 24px;
+    padding: 30px;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+    height: auto;
+
+}
+/* 3. The Breathing Animation */
+@keyframes cardPulse {
+    0%, 100% {
+        box-shadow:
+                0 10px 30px rgba(0,0,0,0.3), /* ჩრდილი */
+                inset 0 0 0 rgba(255,255,255,0); /* შიდა ნათება ქრება */
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+    50% {
+        box-shadow:
+                0 15px 50px rgba(240, 148, 51, 0.3), /* ნარინჯისფერი აურა */
+                inset 0 0 20px rgba(255,255,255,0.05); /* შიდა ნათება ინთება */
+        border-color: rgba(176, 176, 176, 0.9);
+    }
+}
+
+/* --- PREMIUM BLACK MOMENTUM LOADER --- */
+.spinner-ring {
+    display: inline-block;
+    width: 24px;  /* ოდნავ დიდი და მკაფიო */
+    height: 24px;
+
+    /* 1. სოლიდური შავი რკალი */
+    border: 3px solid rgba(0, 0, 0, 0.1); /* მკრთალი ნაცრისფერი გზა */
+    border-top-color: #000000; /* კუპრივით შავი აქტიური მხარე */
+
+    border-radius: 50%;
+
+    /* 2. ინერციული ანიმაცია (ყველაზე მთავარი დეტალი) */
+    /* Cubic-bezier აძლევს "აჩქარება-შენელების" ეფექტს */
+    animation: spinMomentum 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) infinite;
+
+    vertical-align: middle;
+}
+
+@keyframes spinMomentum {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+/* 2. The Active Glowing State */
+#insta-discovery-app .glass-card.active-glow {
+    border-color: rgba(255, 255, 255, 0.6) !important; /* თეთრი ჩარჩო */
+    background: rgba(255, 255, 255, 0.08) !important; /* ოდნავ ნათელი ფონი */
+    animation: cardPulse 4s infinite ease-in-out !important; /* მბჟუტავი ანიმაცია */
+    transform: translateY(-5px) !important; /* ოდნავ აწეული დარჩეს */
+}
+
+#insta-discovery-app .glass-card:has(.primary-btn:active) {
+    border-color: rgba(255, 255, 255, 0.8) !important; /* Border turns white */
+    background: rgba(255, 255, 255, 0.15) !important; /* Glass gets brighter */
+    box-shadow:
+            inset 0 0 50px rgba(255, 255, 255, 0.2), /* Inner Glow */
+            0 0 60px rgba(240, 148, 51, 0.4) !important; /* Outer Gradient Glow */
+    transform: scale(0.98) !important; /* Slight compression of the whole card */
+}
+
+#insta-discovery-app .glass-card:hover {
+    transform: translateY(-8px);
+    background: var(--glass-hover);
+    border-color: rgba(255,255,255,0.2);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+}
+
+#insta-discovery-app .card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    flex-grow: 1;
+}
+
+#insta-discovery-app .icon-wrapper {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Gradient Icons */
+#insta-discovery-app .tag-gradient i { background: var(--purple-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+#insta-discovery-app .loc-gradient i { background: var(--blue-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+#insta-discovery-app .chaos-gradient i { background: var(--insta-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+#insta-discovery-app .glass-card h2 { font-size: 1.5rem; margin-bottom: 10px; font-weight: 700; color: #fff; }
+#insta-discovery-app .glass-card p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+    line-height: 1.5;
+    flex-grow: 1;
+}
+
+/* Person Gradient (Gold/Orange) */
+#insta-discovery-app .person-gradient i {
+    background: linear-gradient(45deg, #FFD700, #FF8C00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Google / White Button Style */
+.btn-white {
+    background: #ffffff;
+    color: #000000;
+    border: none;
+}
+
+.btn-white:hover {
+    background: #e0e0e0;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* --- MAIN BUTTONS --- */
+#insta-discovery-app .primary-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    background: #fff;
+    color: #000;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 5px 15px rgba(255,255,255,0.1);
+    font-family: 'Montserrat', sans-serif;
+    margin-top: auto;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    z-index: 1;
+}
+
+#insta-discovery-app .primary-btn:hover {
+    background: #f0f0f0;
+    transform: translateY(-4px) scale(1.02) !important;
+    box-shadow: 0 10px 25px rgba(220, 39, 67, 0.4) !important; /* Insta Pink Glow */
+    letter-spacing: 1px !important; /* Text expands slightly */
+}
+
+/* Focus State (Keyboard Navigation) */
+#insta-discovery-app .primary-btn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 3px #000, 0 0 0 6px #fff !important; /* Double ring */
+}
+
+/* Active State (The Click - Press Down) */
+#insta-discovery-app .primary-btn:active {
+    transform: scale(0.92) !important; /* Satisfying shrink */
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(0,0,0,0.2) !important;
+    background: #fff !important;
+    color: #000 !important;
+}
+
+#insta-discovery-app .primary-btn:active { transform: scale(0.98); }
+
+/* RESULT AREA FIX FOR IN-CARD DISPLAY */
+#insta-discovery-app .result-container {
+    margin-top: 15px;
+    width: 100%;
+    /* Remove max-width constraints so it fits the card */
+    max-width: 100% !important;
+    background: rgba(0, 0, 0, 0.4); /* Darker contrast */
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    animation: instaFadeIn 0.3s ease-out;
+    box-sizing: border-box;
+}
+@keyframes instaFadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes instaSlideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+#insta-discovery-app .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+#insta-discovery-app .result-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+#insta-discovery-app .mini-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 5px;
+    transition: 0.2s;
+}
+#insta-discovery-app .mini-close:hover { color: #fff; transform: rotate(90deg); }
+
+#insta-discovery-app #resultText {
+    font-size: 0.95rem; /* Slightly smaller for sidebar */
+    font-weight: 600;
+    margin-bottom: 15px;
+    text-align: left;
+    word-break: break-word;
+    color: #fff;
+    line-height: 1.4;
+}
+
+#insta-discovery-app .actions-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#insta-discovery-app .action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: 0.2s;
+
+    font-family: 'Montserrat', sans-serif;
+}
+
+#insta-discovery-app .btn-main {
+    background: var(--insta-grad);
+    color: white;
+    border: none;
+}
+#insta-discovery-app .btn-main:hover { opacity: 0.9; transform: translateY(-2px); }
+
+#insta-discovery-app .btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+}
+#insta-discovery-app .btn-outline:hover { border-color: white; background: rgba(255,255,255,0.05); }
+
+#insta-discovery-app .btn-lite {
+    background: transparent;
+    border: 1px dashed rgba(255,255,255,0.3);
+    color: #ddd;
+    font-size: 0.8rem;
+}
+#insta-discovery-app .btn-lite:hover { border-color: #fff; color: #fff; }
+
+#insta-discovery-app .hidden { display: none !important; }
+
+
+/* Custom Select Styling */
+.select-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+    padding-bottom: 15px!important;
+}
+
+#adminBtn{
+    display: none;
+}
+
+.glass-select {
+    width: 100%;;
+    height: 50px!important;
+    appearance: none; /* დეფოლტ ისრის მოშორება */
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    transition: 0.3s;
+    padding-left: 10px!important;
+}
+
+.glass-select:hover, .glass-select:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Dropdown Options (ბრაუზერის დეფოლტი შავი რომ არ იყოს) */
+.glass-select option {
+    background: #1a1a1a; /* მუქი ფონი */
+    color: #fff;
+}
+/* --- INPUT FIELDS & CLEAR BUTTON (POLISHED V2) --- */
+#insta-discovery-app .input-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 12px; /* ცოტა დავაპატარავეთ რომ არ გაიწელოს */
+}
+
+#insta-discovery-app .glass-input {
+    width: 100%;
+    padding: 14px 40px 14px 15px; /* მარჯვნივ ადგილი X-ისთვის */
+    background: rgba(0, 0, 0, 0.25); /* ოდნავ მუქი, რომ ტექსტი კარგად ჩანდეს */
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    color: #ffffff !important; /* აუცილებლად თეთრი! */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.3s ease;
+
+    /* ბრაუზერის დეფოლტ სტილების მოცილება */
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* 3. INPUT FIELDS FOCUS MAGIC */
+#insta-discovery-app .glass-input:focus,
+#insta-discovery-app .glass-select:focus {
+    border-color: #fff !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.15) !important;
+    transform: scale(1.02) !important;
+}
+
+/* Placeholder-ის ფერი */
+#insta-discovery-app .glass-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 300;
+}
+
+/* --- KILL THE UGLY BROWSER DEFAULTS --- */
+/* ეს აუცილებელია, რომ ის ლურჯი X გაქრეს */
+#insta-discovery-app .glass-input::-webkit-search-decoration,
+#insta-discovery-app .glass-input::-webkit-search-cancel-button,
+#insta-discovery-app .glass-input::-webkit-search-results-button,
+#insta-discovery-app .glass-input::-webkit-search-results-decoration {
+    display: none;
+    -webkit-appearance: none;
+}
+
+/* Custom Clear (X) Button styling */
+#insta-discovery-app .clear-input {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.1); /* პატარა ფონი ღილაკსაც */
+    border: none;
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+#insta-discovery-app .clear-input:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    transform: translateY(-50%) rotate(90deg); /* პატარა ეფექტი დაჰოვერებისას */
+}
+
+#insta-discovery-app .clear-input.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-50%) scale(0.5); /* გაქრობის ანიმაცია */
+}
+/* --- FIX FOR DROPDOWN EMOJI RENDERING (Flags as Initials) --- */
+#insta-discovery-app .glass-select {
+    /* 1. Ensure wide Unicode support */
+    font-family:
+            'Montserrat',
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            Roboto,
+            "Helvetica Neue",
+            Arial,
+            sans-serif,
+                /* Emoji Fallbacks */
+            "Apple Color Emoji",
+            "Segoe UI Emoji",
+            "Segoe UI Symbol";
+
+    /* 2. Set Minimum Width to prevent truncation on desktop */
+    min-width: 200px; /* თუ ამაზე ნაკლებს ხედავს ბრაუზერი, ჭრის ინიციალებზე */
+    width: 100%; /* დარჩეს 100% მშობელთან მიმართებაში */
+    padding-left: 10px!important;
+}
+
+/* 3. Ensure Options inherit full font support */
+#insta-discovery-app .glass-select option {
+    font-family: inherit; /* მემკვიდრეობით იღებს ზედა ფონტს */
+    white-space: nowrap; /* ტექსტი არ გადატყდეს */
+}
+
+/* Custom Arrow Icon */
+.select-arrow {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.5);
+    pointer-events: none;
+    font-size: 0.8rem;
+}
+
+.tag-desc {
+    margin-top: 5px !important;
+    font-size: 0.8rem !important;
+    opacity: 0.7;
+}
+
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px!important;
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+}
+
+.glass-checkbox {
+    accent-color: var(--insta-grad); /* ან #f09433 თუ ცვლადი არ მუშაობს */
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+}
+
+.checkbox-wrapper label {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 900px) {
+    #insta-discovery-app header h1 { font-size: 2.2rem; }
+    #insta-discovery-app .glass-card { width: 100%; max-width: 380px; }
+    #insta-discovery-app .result-container { padding: 15px; }
+
+    /* Additional Mobile Scrolling Safeguard */
+    #insta-discovery-app {
+        height: auto; /* Allow auto height on mobile to override any vh constraints */
+        min-height: 100vh;
+    }
+}
+
+.trp-floating-switcher{
+    display: none!important;
+}
+
+/* --- 🆕 EXTENSION ADD-ONS (ADMIN, BULK, WIDGET) --- */
+
+/* 1. AUTH WIDGET (Top Right) */
+#insta-discovery-app .auth-widget {
+    position: absolute!important;
+    top: 25px;
+    right: 10px;
+    z-index: 9000;
+}
+#insta-discovery-app .user-badge {
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+    padding: 5px 10px; border-radius: 20px; display: flex; align-items: center; gap: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+#insta-discovery-app .user-name {
+    font-size: 0.8rem; font-weight: 600; max-width: 80px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#insta-discovery-app .widget-logout-btn, .widget-login-btn {
+    background: transparent; border: none; color: white; cursor: pointer; font-size: 0.9rem;
+}
+.widget-logout-btn:hover { color: #ff4d4d; }
+
+/* =========================================
+   🎛️ ADMIN PANEL — MODERN REDESIGN
+   ========================================= */
+
+/* 1. MODAL WRAPPER */
+#insta-discovery-app .admin-modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100vh;
+    background: linear-gradient(180deg, #0a0a0f 0%, #0d0d14 100%);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+#insta-discovery-app .admin-modal.hidden { display: none; }
+
+/* 2. CONTAINER */
+#insta-discovery-app .admin-container {
+    position: relative;
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 3. HEADER */
+#insta-discovery-app .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+#insta-discovery-app .admin-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+/* 4. TABS */
+#insta-discovery-app .admin-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.04);
+    padding: 4px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.06);
+}
+#insta-discovery-app .tab-btn {
+    flex: 1;
+    padding: 9px 6px;
+    background: transparent;
+    border: none;
+    border-radius: 11px;
+    color: #666;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#insta-discovery-app .tab-btn:hover { color: #aaa; }
+#insta-discovery-app .tab-btn.active {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+#insta-discovery-app .tab-badge {
+    background: linear-gradient(135deg, #ff4757, #ff6b81);
+    color: white;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    margin-left: 4px;
+}
+
+/* 5. PANEL */
+#insta-discovery-app .admin-panel {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+#insta-discovery-app .admin-panel.active { display: flex; }
+
+/* 6. TOOLBAR */
+#insta-discovery-app .admin-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+    align-items: center;
+}
+
+#insta-discovery-app .admin-select,
+#insta-discovery-app .admin-search {
+    height: 36px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #ddd;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.82rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+#insta-discovery-app .admin-select:hover,
+#insta-discovery-app .admin-search:hover {
+    border-color: rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06);
+}
+#insta-discovery-app .admin-select:focus,
+#insta-discovery-app .admin-search:focus {
+    border-color: rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.06);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.03);
+}
+#insta-discovery-app .admin-select {
+    flex: 1;
+    min-width: 80px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 13px;
+    padding-right: 28px;
+}
+#insta-discovery-app .admin-select option { background: #151520; color: #fff; }
+#insta-discovery-app .admin-search { flex: 2; min-width: 100px; }
+#insta-discovery-app .admin-search::placeholder { color: #444; }
+
+/* Toolbar Buttons */
+.csv-actions { display: flex; gap: 4px; }
+.btn-csv {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: #555;
+    transition: all 0.2s ease;
+}
+.btn-csv:hover { background: rgba(255,255,255,0.08); color: #ccc; border-color: rgba(255,255,255,0.15); }
+
+.admin-btn-add {
+    height: 36px;
+    padding: 0 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 10px rgba(118,75,162,0.25);
+}
+.admin-btn-add:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(118,75,162,0.4);
+    filter: brightness(1.1);
+}
+.admin-btn-add:active { transform: scale(0.97); }
+
+/* 7. META INFO & SORT */
+.list-meta {
+    font-size: 0.72rem;
+    color: #555;
+    margin-bottom: 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2px;
+}
+.highlight-num { color: #fff; font-weight: bold; }
+.sort-controls { display: flex; gap: 3px; }
+
+.btn-sort, .btn-sort-people {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    color: #555;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.2px;
+}
+.btn-sort:hover, .btn-sort-people:hover {
+    color: #aaa;
+    border-color: rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+}
+.btn-sort.active {
+    color: #f09433;
+    border-color: rgba(240,148,51,0.3);
+    background: rgba(240,148,51,0.08);
+}
+.btn-sort-people.active {
+    color: #58a6ff;
+    border-color: rgba(88,166,255,0.3);
+    background: rgba(88,166,255,0.08);
+}
+.btn-sort.active::after, .btn-sort-people.active::after { content: ' \2193'; }
+.btn-sort.active.asc::after, .btn-sort-people.active.asc::after { content: ' \2191'; }
+
+/* 8. LIST */
+#insta-discovery-app .admin-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    padding-bottom: 100px;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+#insta-discovery-app .admin-list::-webkit-scrollbar { width: 4px; }
+#insta-discovery-app .admin-list::-webkit-scrollbar-track { background: transparent; }
+#insta-discovery-app .admin-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+#insta-discovery-app .admin-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+/* 9. LIST ITEM (.db-row) */
+#insta-discovery-app .db-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.04);
+    padding: 10px 12px;
+    border-radius: 12px;
+    margin-bottom: 6px;
+    flex-shrink: 0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
+}
+#insta-discovery-app .db-row:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.1);
+    transform: translateX(3px);
+}
+#insta-discovery-app .db-row:active {
+    transform: scale(0.98) !important;
+    background: rgba(255,255,255,0.04) !important;
+}
+#insta-discovery-app .db-row.selected-row {
+    background: linear-gradient(90deg, rgba(240,148,51,0.1) 0%, transparent 100%) !important;
+    border-left: 3px solid #f09433 !important;
+}
+#insta-discovery-app .db-row.selected-row b {
+    color: #f09433 !important;
+}
+#insta-discovery-app .db-row:has(.item-checkbox:checked) {
+    background: rgba(255,255,255,0.04) !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+
+#insta-discovery-app .item-checkbox {
+    width: 16px; height: 16px;
+    accent-color: #f09433;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+#insta-discovery-app .db-info {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+#insta-discovery-app .db-info b {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #e8e8e8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#insta-discovery-app .db-info span {
+    font-size: 0.68rem;
+    color: #4a4a5a;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 500;
+}
+
+#insta-discovery-app .db-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+}
+#insta-discovery-app .db-row:hover .db-actions { opacity: 1; }
+
+#insta-discovery-app .db-actions button {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.15s ease;
+}
+.btn-edit { background: rgba(255,255,255,0.06); color: #888; }
+.btn-edit:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.btn-del { background: rgba(255,71,87,0.08); color: #ff4757; }
+.btn-del:hover { background: rgba(255,71,87,0.2); }
+
+/* 10. MODALS */
+#insta-discovery-app .input-box {
+    margin: auto;
+    width: 100%;
+    max-width: 340px;
+    background: rgba(16,16,22,0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 28px;
+    text-align: center;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03) inset;
+}
+#insta-discovery-app .input-box h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    letter-spacing: -0.3px;
+}
+
+#insta-discovery-app .admin-input-field {
+    width: 100%;
+    padding: 11px 14px;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    color: #ddd;
+    font-family: inherit;
+    font-size: 0.88rem;
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+#insta-discovery-app .admin-input-field:focus {
+    border-color: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.06);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.03);
+}
+#insta-discovery-app .admin-input-field::placeholder { color: #3a3a4a; }
+
+#insta-discovery-app .input-actions { display: flex; gap: 8px; margin-top: 16px; }
+.input-btn {
+    flex: 1;
+    padding: 11px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-save {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(118,75,162,0.3);
+}
+.btn-save:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-cancel {
+    background: rgba(255,255,255,0.06);
+    color: #aaa;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.btn-cancel:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* =========================================
+   🚀 MODERN BULK ACTION BAR (FULL OVERRIDE)
+   ========================================= */
+
+.bulk-bar {
+    /* პოზიციონირება */
+    position: absolute !important;
+    bottom: 30px !important;
+    left: 50% !important;
+    transform: translateX(-50%) translateY(200%) !important; /* თავიდან დამალულია */
+
+    /* ვიზუალი (Glassmorphism) */
+    background: rgba(18, 18, 18, 0.85) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+
+    /* ფორმა და ზომები */
+    border-radius: 100px !important;
+    padding: 6px 10px 6px 16px !important;
+    width: max-content !important;
+    max-width: 90vw !important;
+    z-index: 2147483647 !important; /* ყველაზე ზემოთ */
+    box-sizing: border-box !important; /* უსაფრთხოების ზომა */
+
+    /* განლაგება */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    margin: 0 !important;
+
+    /* ანიმაცია */
+    transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.3s ease !important;
+    opacity: 0 !important;
+}
+
+/* აქტიური მდგომარეობა */
+.bulk-bar:not(.hidden) {
+    transform: translateX(-50%) translateY(0) !important;
+    opacity: 1 !important;
+}
+
+/* 1. რაოდენობის ტექსტი */
+#bulkCount {
+    font-family: -apple-system, system-ui, sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #e0e0e0 !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: normal !important;
+}
+
+/* 2. Dropdown (Select) */
+.bulk-select {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    color: #fff !important;
+    padding: 6px 24px 6px 10px !important;
+    margin: 0 !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    cursor: pointer !important;
+    outline: none !important;
+    height: 32px !important;
+    box-sizing: border-box !important;
+
+    /* SVG ისარი */
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 8px center !important;
+    background-size: 8px auto !important;
+}
+
+.bulk-select:hover, .bulk-select:focus {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.bulk-select option {
+    background: #222 !important;
+    color: white !important;
+}
+
+/* 3. ღილაკების საერთო სტილი */
+.bulk-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    height: 32px !important;
+    padding: 0 14px !important;
+    border-radius: 50px !important;
+    border: none !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    font-family: -apple-system, system-ui, sans-serif !important;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+    line-height: normal !important;
+    box-sizing: border-box !important;
+}
+
+.bulk-btn:active {
+    transform: scale(0.95) !important;
+}
+
+/* Move Button */
+.btn-move {
+    background: linear-gradient(135deg, #3a86ff, #0055ff) !important;
+    color: white !important;
+    box-shadow: 0 2px 10px rgba(58, 134, 255, 0.3) !important;
+}
+.btn-move:hover {
+    background: linear-gradient(135deg, #4d91ff, #1a66ff) !important;
+    box-shadow: 0 4px 15px rgba(58, 134, 255, 0.5) !important;
+}
+
+/* Delete Button */
+.btn-delete {
+    background: transparent !important;
+    color: #ff4757 !important;
+    border: 1px solid rgba(255, 71, 87, 0.3) !important;
+}
+.btn-delete:hover {
+    background: rgba(255, 71, 87, 0.1) !important;
+    border-color: #ff4757 !important;
+    color: #ff6b81 !important;
+}
+
+/* გამყოფი ხაზი */
+.bulk-bar > div {
+    opacity: 0.5 !important;
+    width: 1px !important;
+    height: 20px !important;
+    background: rgba(255,255,255,0.3) !important;
+    margin: 0 5px !important;
+}
+
+/* =========================================
+   📱 RESPONSIVE DESIGN
+   ========================================= */
+
+@media (max-width: 500px) {
+    .bulk-bar {
+        padding: 6px 10px !important;
+        gap: 8px !important;
+        bottom: 20px !important;
+        width: 92% !important;
+        justify-content: space-between !important;
+    }
+
+    #bulkCount {
+        font-size: 12px !important;
+    }
+
+    .bulk-select {
+        width: 90px !important;
+        padding-right: 20px !important;
+    }
+
+    .bulk-btn {
+        padding: 0 !important;
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 50% !important;
+        font-size: 0 !important; /* ტექსტის დამალვა */
+    }
+
+    .bulk-btn i {
+        font-size: 14px !important; /* აიქონის ზომა */
+        margin: 0 !important;
+    }
+}
+
+
+
+/* Dropdown option colors */
+#insta-discovery-app select option {
+    background-color: #151520 !important;
+    color: #ffffff !important;
+    padding: 10px;
+}
+#insta-discovery-app select option:checked {
+    background-color: rgba(240, 148, 51, 0.3) !important;
+    color: #fff !important;
+}
+
+/* --- 🧪 FLUID GLASS RESULT MODAL (NEW) --- */
+/* 🚀 ულტრა-ფიქსირებული მოდალი */
+
+.modal-content, .modal-loader{
+    padding: 18px!important;
+}
+
+.modal-overlay {
+    position: fixed !important; /* აიძულებს ეკრანზე გაჩერებას */
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 2147483647 !important; /* ყველაფერზე ზემოთ */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ქარდის ამოხტომის ეფექტი */
+.result-card {
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 35px;
+    border-radius: 32px;
+    width: 85%;
+    max-width: 360px;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+    transform: translateY(20px) scale(0.9);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-overlay.active .result-card {
+    transform: translateY(0) scale(1);
+}
+
+/* 🛑 სქროლის გათიშვა როცა მოდალი ღიაა */
+.no-scroll {
+    overflow: hidden !important;
+    height: 100vh !important;
+}
+
+#insta-discovery-app .res-icon { font-size: 3rem; margin-bottom: 15px; }
+#insta-discovery-app .res-type { font-size: 0.7rem; letter-spacing: 2px; color: #888; margin-bottom: 10px; }
+#insta-discovery-app .res-value { font-size: 1.4rem; font-weight: 800; margin-bottom: 25px; color: #fff; }
+
+#insta-discovery-app .modal-actions { display: flex; flex-direction: column; gap: 10px; }
+#insta-discovery-app .btn-modal-action {
+    padding: 12px; border-radius: 12px; font-weight: 600; text-decoration: none;
+    display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s;
+}
+#insta-discovery-app .btn-go { background: var(--insta-grad); color: #fff; }
+#insta-discovery-app .btn-refresh { background: rgba(255,255,255,0.1); color: #fff; border: none; cursor: pointer; }
+#insta-discovery-app .btn-close-modal { background: rgba(255,77,77,0.1); color: #ff4d4d; border: none; width: 50px; cursor: pointer; }
+#insta-discovery-app .modal-row { display: flex; gap: 10px; }
+
+
+
+/* --- 🔄 LOADER EFFECT --- */
+.modal-loader {
+    display: none; width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1);
+    border-top-color: #f09433; border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 20px auto;
+}
+.loading .modal-loader { display: block; }
+.loading .modal-content { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
+
+/* 1. ქარდის შიდა კონტენტის მარცხნივ გასწორება */
+#insta-discovery-app .card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* 👈 ცენტრიდან გადავიდა მარცხნივ */
+    text-align: left;        /* 👈 ტექსტიც მარცხნივ */
+    width: 100%;
+    flex-grow: 1;
+}
+
+/* 2. ჰედერის რიგის გასწორება */
+#insta-discovery-app .card-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* 👈 მარცხნივ */
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 18px;
+}
+
+/* 3. ჩექბოქსების მარცხნივ გასწორება */
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* 👈 მარცხნივ */
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 10px !important;
+    margin-top: 5px;
+}
+
+/* 4. ინპუტების და სელექტების ტექსტის გასწორება (დაზღვევისთვის) */
+#insta-discovery-app .glass-input,
+#insta-discovery-app .glass-select {
+    text-align: left;
+}
+
+/* 5. ქარდის ზომის მცირე კორექცია */
+#insta-discovery-app .glass-card {
+    padding: 22px;
+    width: 320px; /* ცოტა დავაპატარავოთ რომ საიდბარს კარგად მოერგოს */
+}
+
+/* 6. ატრიბუტების/აღწერების გასწორება (თუ გაქვს) */
+#insta-discovery-app .glass-card p {
+    text-align: left;
+    margin-left: 0;
+}
+
+/* 1. იკონის ზომის მინიმალიზაცია */
+#insta-discovery-app .card-header-row .icon-wrapper {
+    font-size: 1.1rem;  /* იკონის შიდა ზომა */
+    width: 36px;       /* წრის სიგანე */
+    height: 36px;      /* წრის სიმაღლე */
+    border-radius: 10px; /* ნაკლებად მომრგვალებული, უფრო "App" სტილი */
+    background: rgba(255, 255, 255, 0.03); /* უფრო ნაზი ფონი */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* 2. სათაურის ზომის მცირე კორექცია ბალანსისთვის */
+#insta-discovery-app .card-header-row h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #efefef;
+}
+
+/* 3. დაშორება იკონსა და ტექსტს შორის */
+#insta-discovery-app .card-header-row {
+    gap: 10px;
+    margin-bottom: 8px; /* უფრო მჭიდრო განლაგება */
+}
+
+/* --- PLATFORM SWITCHER BAR --- */
+/* --- PLATFORM SWITCHER BAR --- */
+.platform-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px; /* ოდნავ შევამცირეთ */
+    margin: 15px auto 15px auto!important; /* ზემოთ და ქვემოთ დაშორება, ცენტრირება */
+    background: rgba(255, 255, 255, 0.03);
+    padding: 8px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    width: fit-content; /* ზუსტად ღილაკების ზომაზე იყოს */
+    min-width: 200px;
+}
+
+.plat-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.4rem; /* ოდნავ დავაპატარავეთ რომ ჰედერი არ გადაიტვირთოს */
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* დანარჩენი ფერები (.plat-btn.active და ა.შ.) იგივე რჩება რაც წინა პასუხში მოგეცი */
+
+.plat-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+/* აქტიური მდგომარეობები (ფერები) */
+.plat-btn.active {
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+}
+
+/* Instagram Active Color */
+.plat-btn[data-platform="instagram"].active {
+    color: #e1306c; /* Insta Pink */
+    background: linear-gradient(45deg, rgba(240, 148, 51, 0.1), rgba(188, 24, 136, 0.1));
+    border: 1px solid rgba(188, 24, 136, 0.3);
+}
+
+/* Facebook Active Color */
+.plat-btn[data-platform="facebook"].active {
+    color: #1877F2; /* FB Blue */
+    background: rgba(24, 119, 242, 0.1);
+    border: 1px solid rgba(24, 119, 242, 0.3);
+}
+
+/* YouTube Active Color */
+.plat-btn[data-platform="youtube"].active {
+    color: #FF0000; /* YT Red */
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+
+
+/* ჩეკბოქსის Press ეფექტი */
+.item-checkbox {
+    cursor: pointer!important;
+    accent-color: #f09433!important; /* ნარინჯისფერი ჩეკბოქსი */
+}
+
+/* Action button press effect */
+.btn-edit:active, .btn-del:active, .btn-fav-item:active {
+    transform: scale(0.85) !important;
+}
+
+/* ⭐ Playlist System */
+.playlist-select {
+    height: 36px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #c8a84e;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    outline: none;
+    max-width: 100px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8a84e' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    background-size: 11px;
+    padding-right: 22px;
+}
+.playlist-select:hover {
+    border-color: rgba(200, 168, 78, 0.3);
+    background-color: rgba(200, 168, 78, 0.06);
+}
+.playlist-select:focus {
+    border-color: rgba(200, 168, 78, 0.4);
+    box-shadow: 0 0 0 3px rgba(200, 168, 78, 0.06);
+}
+.playlist-select option { background: #151520; color: #fff; }
+
+.btn-fav-item {
+    color: #c8a84e;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    opacity: 0.3;
+    transition: all 0.2s ease;
+}
+.btn-fav-item:hover { opacity: 1; color: #ffd700; }
+
+/* --- 🤖 BOT PANEL --- */
+.bot-panel {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    transition: border-color 0.3s ease;
+}
+.bot-panel:hover {
+    border-color: rgba(76, 175, 80, 0.2);
+}
+.bot-icon-main {
+    width: 32px; height: 32px;
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    color: #4CAF50;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.bot-input {
+    width: 52px;
+    height: 32px;
+    text-align: center;
+    background: rgba(255,255,255,0.04);
+    color: #ddd;
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 0 6px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.2s ease;
+}
+.bot-input:focus {
+    border-color: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.06);
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.03);
+}
+.bot-input::placeholder { color: #444; }
+.bot-input-sm { width: 48px; }
+.bot-input-wide { width: 68px; }
+.bot-divider {
+    width: 1px; height: 20px;
+    background: rgba(255,255,255,0.08);
+    flex-shrink: 0;
+}
+.bot-icon {
+    color: #555;
+    font-size: 11px;
+    flex-shrink: 0;
+    transition: color 0.2s;
+}
+.bot-recent-label {
+    color: #aaa;
+    font-size: 0.72rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.bot-recent-label:hover { color: #fff; }
+.bot-recent-label input { accent-color: #4CAF50; }
+.bot-btn {
+    height: 32px;
+    padding: 0 14px;
+    border: none;
+    border-radius: 9px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.3px;
+}
+.bot-btn-start {
+    background: linear-gradient(135deg, #43A047, #2E7D32);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.25);
+}
+.bot-btn-start:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(76, 175, 80, 0.35);
+}
+.bot-btn-start:active { transform: scale(0.96); }
+.bot-btn-stop {
+    background: linear-gradient(135deg, #ef5350, #c62828);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.25);
+}
+.bot-btn-stop:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+}
+.bot-btn-stop:active { transform: scale(0.96); }
+
+/* Bot status line (elapsed time in sidepanel) */
+.bot-status-line {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.68rem;
+    color: #555;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    margin-top: 2px;
+    letter-spacing: 0.2px;
+}
+.bot-status-line i { color: #4ade80; font-size: 10px; }
+.bot-status-sep { opacity: 0.2; margin: 0 2px; }
+.bot-status-elapsed {
+    color: #4ade80;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* --- 📖 STORY BOT PANEL --- */
+.story-bot-panel {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    background: rgba(139, 92, 246, 0.03);
+    border: 1px solid rgba(139, 92, 246, 0.1);
+    border-radius: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    transition: border-color 0.3s ease;
+}
+.story-bot-panel:hover {
+    border-color: rgba(139, 92, 246, 0.25);
+}
+.story-bot-icon-main {
+    width: 32px; height: 32px;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    color: #8b5cf6;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.story-bot-input:focus {
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.05);
+}
+.story-bot-label {
+    color: #7c6da5;
+}
+.story-bot-btn-start {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.25);
+}
+.story-bot-btn-start:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+}
+.story-bot-btn-start:active { transform: scale(0.96); }
+.story-bot-btn-continue {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+    margin-left: 0;
+}
+.story-bot-btn-continue:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+}
+.story-bot-btn-continue:active { transform: scale(0.96); }
+.story-bot-btn-stop {
+    background: linear-gradient(135deg, #ef5350, #c62828);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.25);
+}
+.story-bot-btn-stop:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+}
+.story-bot-btn-stop:active { transform: scale(0.96); }
+
+/* Story bot status line */
+.story-bot-status-line {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.68rem;
+    color: #555;
+    padding-top: 6px;
+    border-top: 1px solid rgba(139, 92, 246, 0.06);
+    margin-top: 2px;
+    letter-spacing: 0.2px;
+}
+.story-bot-status-line i { color: #c084fc; font-size: 10px; }
+.story-bot-status-elapsed {
+    color: #c084fc;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* --- Select-All box fix --- */
+.select-all-box {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.select-all-box:hover {
+    border-color: rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06);
+}
+.select-all-box .master-checkbox {
+    accent-color: #f09433;
+    cursor: pointer;
+}
+
+.playlist-list {
+    max-height: 250px;
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+.playlist-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 0.9rem;
+    color: #aaa;
+}
+.playlist-row:hover { background: rgba(255, 255, 255, 0.05); }
+.playlist-row.in-playlist { color: #ffc832; }
+.playlist-star { font-size: 16px; flex-shrink: 0; }
+.playlist-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.playlist-manage-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #ccc;
+}
+.playlist-manage-row button {
+    background: rgba(255,255,255,0.08);
+    border: none;
+    color: #aaa;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.playlist-manage-row button:hover { background: rgba(255,255,255,0.15); color: #fff; }
+.btn-delete-pl:hover { color: #ff4757 !important; }
+
+/* --- ADMIN HEADER MODERN --- */
+.admin-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.admin-header-right {
+    display: flex;
+    gap: 6px;
+}
+.header-stats-badge {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #777;
+    background: rgba(255,255,255,0.04);
+    padding: 4px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.06);
+    letter-spacing: 0.2px;
+}
+.header-stats-badge b {
+    color: #e0e0e0;
+    font-weight: 700;
+}
+.header-stats-badge .stat-sep {
+    opacity: 0.2;
+    margin: 0 2px;
+}
+.header-icon-btn {
+    width: 34px; height: 34px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    color: #666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+.header-icon-btn:hover {
+    background: rgba(255,255,255,0.08);
+    color: #ccc;
+    border-color: rgba(255,255,255,0.12);
+}
+.header-icon-close:hover {
+    color: #ff4757;
+    background: rgba(255,71,87,0.08);
+    border-color: rgba(255,71,87,0.15);
+}
+
+/* --- FOUND META POLISH --- */
+.list-meta .highlight-num {
+    color: #e0e0e0;
+    font-weight: 700;
+    font-size: 0.78rem;
+}
+
+/* --- BADGES POLISH --- */
+.posts-badge {
+    background: rgba(240, 148, 51, 0.08);
+    color: #d4944a;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 6px;
+    border: 1px solid rgba(240, 148, 51, 0.15);
+    white-space: nowrap;
+    flex-shrink: 0;
+    letter-spacing: 0.2px;
+}
+
+.follow-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+    min-width: 44px;
+    align-items: center;
+}
+
+.followers-badge {
+    background: rgba(88, 166, 255, 0.08);
+    color: #5a9fd4;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 5px;
+    border: 1px solid rgba(88, 166, 255, 0.15);
+    white-space: nowrap;
+    width: 100%;
+    text-align: center;
+    letter-spacing: 0.2px;
+}
+
+.following-badge {
+    background: rgba(139, 92, 246, 0.08);
+    color: #9a7bd4;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 5px;
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    white-space: nowrap;
+    width: 100%;
+    text-align: center;
+    letter-spacing: 0.2px;
+}
+
+/* --- Number input spinners hide --- */
+.bot-input[type="number"]::-webkit-inner-spin-button,
+.bot-input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
