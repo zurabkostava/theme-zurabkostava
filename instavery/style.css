@@ -950,7 +950,6 @@ body, html {
     justify-content: space-between;
     transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
     position: relative;
-    overflow: hidden;
     margin-bottom: 20px;
     height: auto;
 
@@ -2802,3 +2801,8 @@ body, html {
     accent-color: #dc2743;
     cursor: pointer;
 }
+
+/* FIX: Z-index stacking context for cards so dropdowns don't go behind the next card */
+#insta-discovery-app #cardTag { z-index: 30; }
+#insta-discovery-app #cardLoc { z-index: 20; }
+#insta-discovery-app #cardPeople { z-index: 10; }
