@@ -2782,42 +2782,42 @@ body, html {
     padding: 8px 0;
 }
 .custom-select-option {
-    display: flex;
-    align-items: center;
-    padding: 12px 18px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: #f1f1f1;
-    margin: 4px 8px;
-    border-radius: 8px;
+    display: flex !important;
+    align-items: center !important;
+    padding: 12px 18px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    color: #f1f1f1 !important;
+    margin: 4px 8px !important;
+    border-radius: 8px !important;
 }
 .custom-select-option:hover {
-    background: rgba(255, 255, 255, 0.15);
-    padding-left: 22px;
+    background: rgba(255, 255, 255, 0.15) !important;
+    padding-left: 22px !important;
 }
 .custom-checkbox {
-    margin-right: 14px;
-    width: 18px;
-    height: 18px;
-    accent-color: #dc2743;
-    cursor: pointer;
+    margin-right: 14px !important;
+    width: 18px !important;
+    height: 18px !important;
+    accent-color: #dc2743 !important;
+    cursor: pointer !important;
 }
 
 /* Custom Scrollbar for Dropdown */
 .custom-select-dropdown::-webkit-scrollbar {
-    width: 6px;
+    width: 6px !important;
 }
 .custom-select-dropdown::-webkit-scrollbar-track {
-    background: transparent;
+    background: transparent !important;
 }
 .custom-select-dropdown::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-radius: 10px !important;
 }
 .custom-select-dropdown::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.4) !important;
 }
 
 /* FIX: Z-index stacking context for cards so dropdowns don't go behind the next card */
