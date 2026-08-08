@@ -581,8 +581,6 @@ function populateSelect(id, data, label) {
     html += `</div>`;
     
     wrapper.innerHTML = html;
-}</option>`;
-    if(data) Object.entries(data).sort((a,b)=>a[1].localeCompare(b[1])).forEach(([k,v]) => sel.innerHTML += `<option value="${k}">${v}</option>`);
 }
 
 async function loadAdminData(table) {
