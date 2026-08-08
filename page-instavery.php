@@ -36,6 +36,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>InstaDiscovery</title>
+    <!-- Choices.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <?php wp_head(); ?>
 </head>
 <body>
@@ -102,7 +104,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <button id="clearTag" class="clear-input hidden"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                     <div class="select-wrapper">
-                        <select id="tagCategory" class="glass-select"></select>
+                        <select id="tagCategory" class="glass-select" multiple></select>
                         <i class="fa-solid fa-chevron-down select-arrow"></i>
                     </div>
                     <div class="checkbox-wrapper">
@@ -140,7 +142,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <button id="clearLoc" class="clear-input hidden"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                     <div class="select-wrapper">
-                        <select id="locCategory" class="glass-select"></select>
+                        <select id="locCategory" class="glass-select" multiple></select>
                         <i class="fa-solid fa-chevron-down select-arrow"></i>
                     </div>
                     <div id="recentWrapperLoc" class="checkbox-wrapper">
@@ -174,7 +176,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <button id="clearPerson" class="clear-input hidden"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                     <div class="select-wrapper">
-                        <select id="personCategory" class="glass-select"></select>
+                        <select id="personCategory" class="glass-select" multiple></select>
                         <i class="fa-solid fa-chevron-down select-arrow"></i>
                     </div>
                     <div id="ytSortWrapperPerson" class="select-wrapper hidden" style="margin-bottom: 15px;">
@@ -248,7 +250,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 
             <div id="panelTags" class="admin-panel active">
                 <div class="admin-toolbar">
-                    <select id="adminTagFilter" class="admin-select"><option value="all">All</option></select>
+                    <select id="adminTagFilter" class="admin-select" multiple><option value="all">All</option></select>
                     <select id="playlistTagFilter" class="playlist-select"><option value="">☆ All</option></select>
                     <input type="text" id="searchTags" class="admin-search" placeholder="Search...">
 
@@ -268,7 +270,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 
             <div id="panelLocs" class="admin-panel">
                 <div class="admin-toolbar">
-                    <select id="adminLocFilter" class="admin-select"><option value="all">All</option></select>
+                    <select id="adminLocFilter" class="admin-select" multiple><option value="all">All</option></select>
                     <select id="playlistLocFilter" class="playlist-select"><option value="">☆ All</option></select>
                     <input type="text" id="searchLocs" class="admin-search" placeholder="Search...">
                     <div class="csv-actions">
@@ -293,7 +295,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 
             <div id="panelPeople" class="admin-panel">
                 <div class="admin-toolbar">
-                    <select id="adminPersonFilter" class="admin-select"><option value="all">All</option></select>
+                    <select id="adminPersonFilter" class="admin-select" multiple><option value="all">All</option></select>
                     <select id="playlistPersonFilter" class="playlist-select"><option value="">☆ All</option></select>
                     <input type="text" id="searchPeople" class="admin-search" placeholder="Search...">
                     <div class="csv-actions">
@@ -452,6 +454,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <div id="toast-container"></div>
 
 </div>
+
+<!-- Choices.js JS -->
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
 <?php wp_footer(); ?>
 </body>
