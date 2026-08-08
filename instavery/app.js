@@ -30,6 +30,16 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
 });
 let currentMode = '';
 let currentId = null;
+window.choicesInstances = {};
+function getMultiSelectValues(id) {
+    const el = document.getElementById(id);
+    if (!el) return [];
+    if (window.choicesInstances[id]) {
+        const val = window.choicesInstances[id].getValue(true);
+        return Array.isArray(val) ? val : [val];
+    }
+    return Array.from(el.selectedOptions).map(o => o.value);
+}
 let currentSettingsTab = 'tags';
 let APP_CONFIG = { tags: {}, locations: {}, people: {} };
 let editingCategory = null;
@@ -509,7 +519,7 @@ async function loadAdminData(table) {
 
     let selectId = (table === 'tags') ? 'adminTagFilter' : (table === 'locations') ? 'adminLocFilter' : 'adminPersonFilter';
     let searchId = (table === 'tags') ? 'searchTags' : (table === 'locations') ? 'searchLocs' : 'searchPeople';
-    const filterVal = document.getElementById(selectId).value;
+    const filterVals = getMultiSelectValues(selectId);
     const searchVal = document.getElementById(searchId).value.trim();
 
     const playlistFilterId = table === 'tags' ? 'playlistTagFilter' : table === 'locations' ? 'playlistLocFilter' : 'playlistPersonFilter';
@@ -523,7 +533,7 @@ async function loadAdminData(table) {
 
     let countQuery = supabaseClient.from(table).select('id', { count: 'exact', head: true }).eq('user_id', session.user.id);
     if (table === 'people') countQuery = countQuery.eq('platform', currentPlatform);
-    if (filterVal !== 'all') countQuery = countQuery.eq(table === 'locations' ? 'country_code' : 'category', filterVal);
+    if (!filterVals.includes('all') && filterVals.length > 0) countQuery = countQuery.in(table === 'locations' ? 'country_code' : 'category', filterVals);
     if (searchVal) countQuery = countQuery.ilike(table === 'people' ? 'username' : 'name', `%${searchVal}%`);
     if (allowedIds !== null) countQuery = countQuery.in('id', allowedIds);
 
@@ -536,7 +546,7 @@ async function loadAdminData(table) {
     let baseQuery = () => {
         let q = supabaseClient.from(table).select('*').eq('user_id', session.user.id);
         if (table === 'people') q = q.eq('platform', currentPlatform);
-        if (filterVal !== 'all') q = q.eq(table === 'locations' ? 'country_code' : 'category', filterVal);
+        if (!filterVals.includes('all') && filterVals.length > 0) q = q.in(table === 'locations' ? 'country_code' : 'category', filterVals);
         if (searchVal) q = q.ilike(table === 'people' ? 'username' : 'name', `%${searchVal}%`);
         if (allowedIds !== null) q = q.in('id', allowedIds);
         return q;
@@ -1464,28 +1474,35 @@ async function handleSearch(type) {
             const val = document.getElementById('tagInput').value.trim();
             if(val) dataVal = val;
             else {
-                const {data} = await supabaseClient.rpc('get_random_tag', {selected_category: document.getElementById('tagCategory').value});
-                if(data?.length) dataVal = data[0].name;
+                const selVals = getMultiSelectValues('tagCategory');
+                let q = supabaseClient.from('tags').select('name');
+                if(!selVals.includes('all') && selVals.length > 0) q = q.in('category', selVals);
+                const {data} = await q;
+                if(data?.length) dataVal = data[Math.floor(Math.random() * data.length)].name;
             }
         } else if (type === 'loc') {
             const val = document.getElementById('locInput').value.trim();
             if(val) dataVal = val;
             else {
-                const {data} = await supabaseClient.rpc('get_random_location', {selected_country: document.getElementById('locCategory').value});
-                if(data?.length) { dataVal = data[0].name; extra = data[0]; }
+                const selVals = getMultiSelectValues('locCategory');
+                let q = supabaseClient.from('locations').select('*');
+                if(!selVals.includes('all') && selVals.length > 0) q = q.in('country_code', selVals);
+                const {data} = await q;
+                if(data?.length) { 
+                    const randLoc = data[Math.floor(Math.random() * data.length)];
+                    dataVal = randLoc.name; extra = randLoc; 
+                }
             }
         } else {
             const val = document.getElementById('personInput').value.trim();
             if(val) dataVal = val;
             else {
                 // 🛑 ვიღებთ მხოლოდ იმ პლატფორმის იუზერებს, რომელზეც ახლა ვართ!
-                const cat = document.getElementById('personCategory').value;
+                const catVals = getMultiSelectValues('personCategory');
                 let query = supabaseClient.from('people').select('username').eq('platform', currentPlatform);
 
                 // თუ კონკრეტული კატეგორიაა არჩეული (და არა All)
-                if (cat && cat !== 'all') {
-                    query = query.eq('category', cat);
-                }
+                if (catVals.length > 0 && !catVals.includes('all')) { query = query.in('category', catVals); }
 
                 const { data } = await query;
                 if (data && data.length > 0) {
@@ -2046,10 +2063,10 @@ window.exportExcel = async () => {
     let data = [];
     // Fetch fresh data based on current filter
     let selectId = currentTable === 'tags' ? 'adminTagFilter' : currentTable === 'locations' ? 'adminLocFilter' : 'adminPersonFilter';
-    let cat = document.getElementById(selectId).value;
+    let catVals = getMultiSelectValues(selectId);
 
     let query = supabaseClient.from(currentTable).select('*').eq('user_id', session.user.id);
-    if(cat !== 'all') query = query.eq(currentTable==='locations'?'country_code':'category', cat);
+    if (!catVals.includes('all') && catVals.length > 0) query = query.in(currentTable==='locations'?'country_code':'category', catVals);
 
     const { data: dbData } = await query;
     const ws = XLSX.utils.json_to_sheet(dbData);
