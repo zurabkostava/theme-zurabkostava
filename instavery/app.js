@@ -84,8 +84,6 @@ window.handleCustomSelectChange = function(id) {
     }
 };
 
-    return Array.from(el.selectedOptions).map(o => o.value);
-}
 let currentSettingsTab = 'tags';
 let APP_CONFIG = { tags: {}, locations: {}, people: {} };
 let editingCategory = null;
