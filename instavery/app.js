@@ -32,12 +32,58 @@ let currentMode = '';
 let currentId = null;
 window.choicesInstances = {};
 function getMultiSelectValues(id) {
-    const el = document.getElementById(id);
-    if (!el) return [];
-    if (window.choicesInstances[id]) {
-        const val = window.choicesInstances[id].getValue(true);
-        return Array.isArray(val) ? val : [val];
+    const dropdown = document.getElementById('custom-dropdown-' + id);
+    if (!dropdown) return [];
+    
+    const checkboxes = Array.from(dropdown.querySelectorAll('input[type="checkbox"]:checked'));
+    const vals = checkboxes.map(cb => cb.value);
+    
+    // If empty, default to 'all'
+    if (vals.length === 0) return ['all'];
+    return vals;
+}
+
+window.toggleCustomSelect = function(id) {
+    const dropdown = document.getElementById('custom-dropdown-' + id);
+    if (dropdown) {
+        dropdown.classList.toggle('hidden');
     }
+};
+
+window.handleCustomSelectChange = function(id) {
+    const dropdown = document.getElementById('custom-dropdown-' + id);
+    const labelEl = document.getElementById('custom-label-' + id);
+    const allCb = dropdown.querySelector('.custom-cb-all');
+    const itemCbs = Array.from(dropdown.querySelectorAll('.custom-cb-item'));
+    
+    // Check if 'all' is currently checked
+    if (event.target.classList.contains('custom-cb-all')) {
+        if (allCb.checked) {
+            itemCbs.forEach(cb => cb.checked = false);
+        }
+    } else {
+        if (event.target.checked) {
+            allCb.checked = false;
+        }
+    }
+    
+    const checkedItems = itemCbs.filter(cb => cb.checked);
+    if (checkedItems.length === 0) {
+        allCb.checked = true;
+        labelEl.innerText = dropdown.dataset.label; // Default label
+    } else if (checkedItems.length === 1) {
+        labelEl.innerText = checkedItems[0].nextElementSibling.innerText;
+    } else {
+        labelEl.innerText = checkedItems.length + ' selected';
+    }
+    
+    // Trigger any change listeners on the original select if they exist
+    const originalSelect = document.getElementById(id);
+    if (originalSelect) {
+        originalSelect.dispatchEvent(new Event('change'));
+    }
+};
+
     return Array.from(el.selectedOptions).map(o => o.value);
 }
 let currentSettingsTab = 'tags';
@@ -2445,3 +2491,10 @@ async function openPlaylistManager(section) {
     modal.classList.remove('hidden');
 }
 
+
+// Close custom dropdowns when clicking outside
+window.addEventListener("click", function(e) {
+    if (!e.target.closest('.custom-select-wrapper')) {
+        document.querySelectorAll('.custom-select-dropdown:not(.hidden)').forEach(d => d.classList.add('hidden'));
+    }
+});
