@@ -28,13 +28,9 @@ add_action('init', function () {
     header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Range');
     // TV players read these from cross-origin responses only if exposed
     header('Access-Control-Expose-Headers: Content-Length, Content-Range, Accept-Ranges, Content-Type');
-    header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0'); // Prevent TV caching during tests
-    if (function_exists('batcache_cancel')) {
-        batcache_cancel();
-    }
-    if (function_exists('nocache_headers')) {
-        nocache_headers();
-    }
+    header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
+    header('Expires: 0');
 
     // Log every request (full URI incl. extra args) to see exactly what each client asks for
     $upload_dir = wp_upload_dir();
@@ -46,7 +42,7 @@ add_action('init', function () {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw',
-            'version' => '2.6.0', // bumped to force client re-sync
+            'version' => '3.0.0', // Major bump for single ka subtitle
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -118,31 +114,13 @@ add_action('init', function () {
         $subtitles = array();
 
         foreach ($results as $file) {
-            $base_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID));
+            $stream_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/v3/' . $file->ID . '.srt'));
 
-            // ExoPlayer on Android TV ONLY downloads external subtitles if format/URL is .vtt!
-            // When it is .srt, ExoPlayer rejects it and never initiates the HTTP download.
-            // We serve .vtt with ISO 639-2 language codes ('geo', 'kat', and 'ka') for 100% compatibility.
+            // Exactly ONE single entry for Georgian: 'ka'
             $subtitles[] = array(
-                'id'               => $file->ID . '_geo',
-                'url'              => $base_url . '.vtt',
-                'lang'             => 'geo',
-                'format'           => 'vtt',
-                'subtitleFileName' => 'Georgian.vtt'
-            );
-            $subtitles[] = array(
-                'id'               => $file->ID . '_kat',
-                'url'              => $base_url . '.vtt',
-                'lang'             => 'kat',
-                'format'           => 'vtt',
-                'subtitleFileName' => 'Georgian.vtt'
-            );
-            $subtitles[] = array(
-                'id'               => $file->ID . '_ka',
-                'url'              => $base_url . '.vtt',
-                'lang'             => 'ka',
-                'format'           => 'vtt',
-                'subtitleFileName' => 'Georgian.vtt'
+                'id'   => $id . '_ka',
+                'url'  => $stream_url,
+                'lang' => 'ka'
             );
         }
 
@@ -151,7 +129,7 @@ add_action('init', function () {
     }
 
     // 4. Stream Endpoint — serves .srt raw, or converts to .vtt on the fly
-    if (preg_match('#/nuvio-addon/stream/(\d+)\.(srt|vtt)$#', $path, $matches)) {
+    if (preg_match('#/nuvio-addon/stream/(?:v\d+/)?(\d+)\.(srt|vtt)$#', $path, $matches)) {
         $attachment_id = intval($matches[1]);
         $format = $matches[2];
         $file_path = get_attached_file($attachment_id);
