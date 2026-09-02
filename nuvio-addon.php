@@ -38,7 +38,7 @@ add_action('init', function () {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw',
-            'version' => '2.1.8', // bumped so clients refetch after the routing fix
+            'version' => '2.1.9', // bumped so clients refetch after the routing fix
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -182,7 +182,7 @@ add_action('init', function () {
                     }
                 }
             }
-            $data = "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:0,LOCAL:00:00:00.000\n\n" . implode("\n\n", $out) . "\n";
+            $data = "WEBVTT\n\n" . implode("\n\n", $out) . "\n";
             header('Content-Type: text/vtt; charset=utf-8');
         } else {
             header('Content-Type: application/x-subrip; charset=utf-8');
