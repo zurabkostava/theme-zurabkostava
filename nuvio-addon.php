@@ -31,14 +31,16 @@ add_action('init', function () {
     header('Cache-Control: no-cache, must-revalidate, max-age=0'); // Prevent TV caching during tests
 
     // Log every request (full URI incl. extra args) to see exactly what each client asks for
-    file_put_contents(get_template_directory() . '/nuvio-log.txt', date('Y-m-d H:i:s') . " - REQ - " . $uri . " - UA: " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown') . "\n", FILE_APPEND);
+    $upload_dir = wp_upload_dir();
+    $log_file = $upload_dir['basedir'] . '/nuvio-log.txt';
+    file_put_contents($log_file, date('Y-m-d H:i:s') . " - REQ - " . $uri . " - UA: " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown') . "\n", FILE_APPEND);
 
     // 2. Manifest Endpoint
     if (strpos($path, '/nuvio-addon/manifest.json') !== false) {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw',
-            'version' => '2.1.9', // bumped so clients refetch after the routing fix
+            'version' => '2.2.0', // bumped so clients refetch after the routing fix
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -52,7 +54,6 @@ add_action('init', function () {
     // 2.5 Debug Endpoint
     if (strpos($path, '/nuvio-addon/debug') !== false) {
         header('Content-Type: text/plain; charset=utf-8');
-        $log_file = get_template_directory() . '/nuvio-log.txt';
         if (file_exists($log_file)) {
             echo "=== LAST 50 LINES OF LOG ===\n";
             $lines = file($log_file);
