@@ -46,7 +46,7 @@ add_action('init', function () {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw',
-            'version' => '2.3.0', // bumped to force client re-sync
+            'version' => '2.4.0', // bumped to force client re-sync
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -120,10 +120,10 @@ add_action('init', function () {
         foreach ($results as $file) {
             $base_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID));
 
-            // მხოლოდ ერთი სუფთა ჩანაწერი: 'ka' WebVTT ფორმატში (ტელევიზორისა და ყველა პლატფორმისთვის)
+            // მხოლოდ ერთი სუფთა ჩანაწერი: 'ka' SRT ფორმატში (რომელიც Nuvio-ზე მუშაობს)
             $subtitles[] = array(
                 'id'   => $id . '_ka',
-                'url'  => $base_url . '.vtt',
+                'url'  => $base_url . '.srt',
                 'lang' => 'ka'
             );
         }
