@@ -38,7 +38,7 @@ add_action('init', function () {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw',
-            'version' => '2.1.7', // bumped so clients refetch after the routing fix
+            'version' => '2.1.8', // bumped so clients refetch after the routing fix
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -111,8 +111,13 @@ add_action('init', function () {
             $base_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID));
             $cache_buster = '?v=' . time(); // Force CDN and TV cache bypass
 
-            // ვაბრუნებთ მხოლოდ SRT-ს (Cache Buster-ით), რადგან 1 კვირის წინ მუშაობდა უპრობლემოდ!
-            $subtitles[] = array('id' => $id . '_ka',  'url' => $base_url . '.srt' . $cache_buster, 'lang' => 'ka');
+            $base_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID));
+            $cache_buster = '?v=' . time(); // Force CDN and TV cache bypass
+
+            // ტელევიზორებს (ExoPlayer) HLS სთრიმების დროს აუცილებლად სჭირდებათ VTT ფორმატი.
+            $subtitles[] = array('id' => $id . '_ka',  'url' => $base_url . '.vtt' . $cache_buster, 'lang' => 'ka');
+            
+            // მობილურისთვის და Desktop-ისთვის ვტოვებთ SRT-ს.
             $subtitles[] = array('id' => $id . '_geo', 'url' => $base_url . '.srt' . $cache_buster, 'lang' => 'geo');
         }
 
@@ -120,20 +125,72 @@ add_action('init', function () {
         exit;
     }
 
-    // 4. Stream Endpoint
-    if (preg_match('/\/nuvio-addon\/stream\/(\d+)\.srt/', $path, $matches)) {
+    // 4. Stream Endpoint — serves .srt raw, or converts to .vtt on the fly
+    if (preg_match('#/nuvio-addon/stream/(\d+)\.(srt|vtt)$#', $path, $matches)) {
         $attachment_id = intval($matches[1]);
+        $format = $matches[2];
         $file_path = get_attached_file($attachment_id);
         
-        if ($file_path && file_exists($file_path)) {
-            header('Content-Type: application/x-subrip; charset=utf-8');
-            header('Accept-Ranges: bytes'); // აუცილებელია ზოგიერთი Smart TV პლეერისთვის (მაგ. ExoPlayer)
-            header('Content-Length: ' . filesize($file_path)); // Crucial for ExoPlayer TV!
-            readfile($file_path);
-        } else {
+        if (!$file_path || !file_exists($file_path)) {
             header('HTTP/1.1 404 Not Found');
             echo "Subtitle file not found.";
+            exit;
         }
+
+        $data = file_get_contents($file_path);
+
+        // Normalize encoding (Strip BOM, fix Windows-1251)
+        if (substr($data, 0, 3) === "\xEF\xBB\xBF") {
+            $data = substr($data, 3);
+        } elseif (substr($data, 0, 2) === "\xFF\xFE") {
+            $data = mb_convert_encoding(substr($data, 2), 'UTF-8', 'UTF-16LE');
+        } elseif (substr($data, 0, 2) === "\xFE\xFF") {
+            $data = mb_convert_encoding(substr($data, 2), 'UTF-8', 'UTF-16BE');
+        } elseif (!mb_detect_encoding($data, 'UTF-8', true)) {
+            $data = mb_convert_encoding($data, 'UTF-8', 'Windows-1251');
+        }
+
+        if ($format === 'vtt') {
+            $data = str_replace(array("\r\n", "\r"), "\n", $data);
+            $blocks = preg_split('/\n{2,}/', trim($data));
+            $out = array();
+            foreach ($blocks as $block) {
+                $lines = explode("\n", $block);
+                if (isset($lines[0]) && preg_match('/^\d+$/', trim($lines[0]))) {
+                    array_shift($lines);
+                }
+                if (empty($lines)) { continue; }
+                $timing = trim($lines[0]);
+                if (preg_match('/^(?:(\d{1,2}):)?(\d{2}:\d{2})[,.](\d{2,3})\s*-->\s*(?:(\d{1,2}):)?(\d{2}:\d{2})[,.](\d{2,3})/', $timing, $t)) {
+                    array_shift($lines);
+                    $text = trim(implode("\n", $lines));
+                    if ($text !== '') {
+                        $startH = !empty($t[1]) ? str_pad($t[1], 2, '0', STR_PAD_LEFT) : '00';
+                        $startRest = $t[2];
+                        $startMs = str_pad($t[3], 3, '0', STR_PAD_RIGHT);
+                        $endH = !empty($t[4]) ? str_pad($t[4], 2, '0', STR_PAD_LEFT) : '00';
+                        $endRest = $t[5];
+                        $endMs = str_pad($t[6], 3, '0', STR_PAD_RIGHT);
+                        $out[] = "{$startH}:{$startRest}.{$startMs} --> {$endH}:{$endRest}.{$endMs}\n" . $text;
+                    }
+                } elseif (strpos($block, '-->') !== false) {
+                    continue;
+                } else {
+                    $text = trim($block);
+                    if ($text !== '' && !empty($out)) {
+                        $out[count($out) - 1] .= "\n" . $text;
+                    }
+                }
+            }
+            $data = "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:0,LOCAL:00:00:00.000\n\n" . implode("\n\n", $out) . "\n";
+            header('Content-Type: text/vtt; charset=utf-8');
+        } else {
+            header('Content-Type: application/x-subrip; charset=utf-8');
+        }
+
+        header('Content-Disposition: inline');
+        header('Content-Length: ' . strlen($data));
+        echo $data;
         exit;
     }
 });
