@@ -116,6 +116,9 @@ add_action('init', function () {
             $data = mb_convert_encoding(substr($data, 2), 'UTF-8', 'UTF-16LE');
         } elseif (substr($data, 0, 2) === "\xFE\xFF") {
             $data = mb_convert_encoding(substr($data, 2), 'UTF-8', 'UTF-16BE');
+        } elseif (!mb_detect_encoding($data, 'UTF-8', true)) {
+            // If it's not valid UTF-8, it's likely Georgian ANSI (Windows-1251)
+            $data = mb_convert_encoding($data, 'UTF-8', 'Windows-1251');
         }
 
         if ($format === 'vtt') {
@@ -135,11 +138,20 @@ add_action('init', function () {
                     continue;
                 }
                 $timing = trim($lines[0]);
-                if (preg_match('/^(\d{2}:\d{2}:\d{2}),(\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}),(\d{3})/', $timing, $t)) {
+                // Extremely permissive regex: allows optional hours, comma/period ms, and captures hours, minutes, seconds separately
+                if (preg_match('/^(?:(\d{1,2}):)?(\d{2}:\d{2})[,.](\d{2,3})\s*-->\s*(?:(\d{1,2}):)?(\d{2}:\d{2})[,.](\d{2,3})/', $timing, $t)) {
                     array_shift($lines);
                     $text = trim(implode("\n", $lines));
                     if ($text !== '') {
-                        $out[] = "{$t[1]}.{$t[2]} --> {$t[3]}.{$t[4]}\n" . $text;
+                        $startH = !empty($t[1]) ? str_pad($t[1], 2, '0', STR_PAD_LEFT) : '00';
+                        $startRest = $t[2];
+                        $startMs = str_pad($t[3], 3, '0', STR_PAD_RIGHT);
+                        
+                        $endH = !empty($t[4]) ? str_pad($t[4], 2, '0', STR_PAD_LEFT) : '00';
+                        $endRest = $t[5];
+                        $endMs = str_pad($t[6], 3, '0', STR_PAD_RIGHT);
+                        
+                        $out[] = "{$startH}:{$startRest}.{$startMs} --> {$endH}:{$endRest}.{$endMs}\n" . $text;
                     }
                 } elseif (strpos($block, '-->') !== false) {
                     continue; // corrupted timing line — skip the whole cue
