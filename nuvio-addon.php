@@ -46,7 +46,7 @@ add_action('init', function () {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw',
-            'version' => '2.4.0', // bumped to force client re-sync
+            'version' => '2.5.0', // bumped to force client re-sync
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -120,11 +120,29 @@ add_action('init', function () {
         foreach ($results as $file) {
             $base_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID));
 
-            // მხოლოდ ერთი სუფთა ჩანაწერი: 'ka' SRT ფორმატში (რომელიც Nuvio-ზე მუშაობს)
+            // ExoPlayer on Android TV normalizes all track languages to ISO 639-2 (3-letter: 'geo' or 'kat').
+            // If the addon only sends 'ka', ExoPlayer's TrackSelector compares 'geo' == 'ka' (false) and refuses to switch tracks!
+            // We provide 'geo', 'kat', and 'ka' with OpenSubtitles-compliant metadata so Nuvio matches the track instantly.
             $subtitles[] = array(
-                'id'   => $id . '_ka',
-                'url'  => $base_url . '.srt',
-                'lang' => 'ka'
+                'id'               => $file->ID . '_geo',
+                'url'              => $base_url . '.srt',
+                'lang'             => 'geo',
+                'format'           => 'srt',
+                'subtitleFileName' => 'Georgian.srt'
+            );
+            $subtitles[] = array(
+                'id'               => $file->ID . '_kat',
+                'url'              => $base_url . '.srt',
+                'lang'             => 'kat',
+                'format'           => 'srt',
+                'subtitleFileName' => 'Georgian.srt'
+            );
+            $subtitles[] = array(
+                'id'               => $file->ID . '_ka',
+                'url'              => $base_url . '.srt',
+                'lang'             => 'ka',
+                'format'           => 'srt',
+                'subtitleFileName' => 'Georgian.srt'
             );
         }
 
@@ -191,11 +209,12 @@ add_action('init', function () {
             }
             $data = "WEBVTT\n\n" . implode("\n\n", $out) . "\n";
             header('Content-Type: text/vtt; charset=utf-8');
+            header('Content-Disposition: attachment; filename="Georgian.vtt"');
         } else {
             header('Content-Type: application/x-subrip; charset=utf-8');
+            header('Content-Disposition: attachment; filename="Georgian.srt"');
         }
 
-        header('Content-Disposition: inline');
         header('Accept-Ranges: bytes');
         header('Content-Length: ' . strlen($data));
         echo $data;
