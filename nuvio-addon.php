@@ -195,7 +195,9 @@ add_action('init', function () {
                     }
                 }
             }
-            $data = "WEBVTT\n\n" . implode("\n\n", $out) . "\n";
+            // Add X-TIMESTAMP-MAP to force ExoPlayer to sync VTT to the beginning of the HLS stream (MPEGTS:0).
+            // Without this, HLS streams with a non-zero PTS will cause subtitles to disappear.
+            $data = "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:0,LOCAL:00:00:00.000\n\n" . implode("\n\n", $out) . "\n";
             header('Content-Type: text/vtt; charset=utf-8');
         } else {
             header('Content-Type: application/x-subrip; charset=utf-8');
@@ -207,15 +209,32 @@ add_action('init', function () {
         $total = strlen($data);
 
         // Honor Range requests at origin (ExoPlayer probes tracks with ranged GETs)
-        if (isset($_SERVER['HTTP_RANGE']) && preg_match('/bytes=(\d*)-(\d*)/', $_SERVER['HTTP_RANGE'], $range)) {
-            $start = ($range[1] !== '') ? intval($range[1]) : 0;
-            $end   = ($range[2] !== '') ? intval($range[2]) : $total - 1;
+        if (isset($_SERVER['HTTP_RANGE']) && preg_match('/bytes=\s*(\d*)\s*-\s*(\d*)/i', $_SERVER['HTTP_RANGE'], $range)) {
+            $start = $range[1] === '' ? '' : intval($range[1]);
+            $end   = $range[2] === '' ? '' : intval($range[2]);
+
+            if ($start === '' && $end === '') {
+                header('HTTP/1.1 416 Range Not Satisfiable');
+                header("Content-Range: bytes */$total");
+                exit;
+            }
+
+            if ($start === '') {
+                // Suffix byte range: e.g. 'bytes=-500' means the last 500 bytes
+                $start = max(0, $total - $end);
+                $end = $total - 1;
+            } else {
+                if ($end === '' || $end >= $total) {
+                    $end = $total - 1;
+                }
+            }
+
             if ($start > $end || $start >= $total) {
                 header('HTTP/1.1 416 Range Not Satisfiable');
                 header("Content-Range: bytes */$total");
                 exit;
             }
-            $end = min($end, $total - 1);
+
             header('HTTP/1.1 206 Partial Content');
             header("Content-Range: bytes $start-$end/$total");
             header('Content-Length: ' . ($end - $start + 1));
