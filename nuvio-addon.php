@@ -38,7 +38,7 @@ add_action('init', function () {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw',
-            'version' => '2.1.1', // bumped so clients refetch after the routing fix
+            'version' => '2.1.2', // bumped so clients refetch after the routing fix
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -46,6 +46,30 @@ add_action('init', function () {
             'idPrefixes' => array('tt', 'tmdb'),
             'catalogs' => array()
         ));
+        exit;
+    }
+
+    // 2.5 Debug Endpoint
+    if (strpos($path, '/nuvio-addon/debug') !== false) {
+        header('Content-Type: text/plain; charset=utf-8');
+        global $wpdb;
+        $res = $wpdb->get_results("SELECT ID, guid, post_title FROM {$wpdb->posts} WHERE post_type='attachment' AND guid LIKE '%.srt' LIMIT 5");
+        echo "Found " . count($res) . " SRT files.\n\n";
+        foreach ($res as $file) {
+            $file_path = get_attached_file($file->ID);
+            echo "ID: {$file->ID}\n";
+            echo "Title: {$file->post_title}\n";
+            echo "GUID: {$file->guid}\n";
+            echo "Path: {$file_path}\n";
+            echo "File Exists: " . (file_exists($file_path) ? "YES" : "NO") . "\n";
+            
+            if (file_exists($file_path)) {
+                $data = file_get_contents($file_path);
+                echo "File Size: " . strlen($data) . " bytes\n";
+                echo "First 100 chars: \n" . substr($data, 0, 100) . "\n";
+            }
+            echo "------------------------\n\n";
+        }
         exit;
     }
 
