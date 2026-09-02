@@ -35,14 +35,15 @@ add_action('init', function () {
     // Log every request (full URI incl. extra args) to see exactly what each client asks for
     $upload_dir = wp_upload_dir();
     $log_file = $upload_dir['basedir'] . '/nuvio-log.txt';
-    file_put_contents($log_file, date('Y-m-d H:i:s') . " - REQ - " . $uri . " - UA: " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown') . "\n", FILE_APPEND);
+    $ua = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'Unknown';
+    file_put_contents($log_file, date('Y-m-d H:i:s') . " - REQ - " . $uri . " - UA: " . $ua . "\n", FILE_APPEND);
 
     // 2. Manifest Endpoint
     if (strpos($path, '/nuvio-addon/manifest.json') !== false) {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw',
-            'version' => '3.0.0', // Major bump for single ka subtitle
+            'version' => '3.1.0', // Bump to force client to get vtt URLs
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -114,13 +115,16 @@ add_action('init', function () {
         $subtitles = array();
 
         foreach ($results as $file) {
-            $stream_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/v3/' . $file->ID . '.srt'));
+            $stream_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/v4/' . $file->ID . '.vtt'));
 
             // Exactly ONE single entry for Georgian: 'ka'
+            // TV ExoPlayer REQUIRES .vtt URL and 'format' field to initiate the HTTP request
             $subtitles[] = array(
-                'id'   => $id . '_ka',
-                'url'  => $stream_url,
-                'lang' => 'ka'
+                'id'               => $id . '_ka',
+                'url'              => $stream_url,
+                'lang'             => 'ka',
+                'format'           => 'vtt',
+                'subtitleFileName' => 'Georgian.vtt'
             );
         }
 
