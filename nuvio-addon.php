@@ -38,7 +38,7 @@ add_action('init', function () {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw',
-            'version' => '2.1.4', // bumped so clients refetch after the routing fix
+            'version' => '2.1.5', // bumped so clients refetch after the routing fix
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -111,10 +111,15 @@ add_action('init', function () {
             $base_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID));
 
             // Primary: WebVTT — universally supported by TV players (ExoPlayer, Tizen, WebOS web engines)
-            // ვტოვებთ მხოლოდ ერთ ჩანაწერს, რომ დუბლიკატები არ გამოჩნდეს.
-            // ვაბრუნებთ .vtt ფორმატს, რადგან ახლა VTT კონვერტორი შეკეთებულია და ყველა პლატფორმაზე (Web/TV) იმუშავებს.
-            // აუცილებელია ენის კოდი იყოს 'ka' (ISO სტანდარტი), რათა პლეერმა (ExoPlayer / HTML5) სუბტიტრი არ დაბლოკოს!
+            // ტელევიზორების უმეტესობას (და Web ვერსიას) სჭირდება VTT და კონკრეტული ენის კოდი. ვაგზავნით რამდენიმე ვარიანტს!
             $subtitles[] = array('id' => $id . '_ka',  'url' => $base_url . '.vtt', 'lang' => 'ka');
+            $subtitles[] = array('id' => $id . '_kat', 'url' => $base_url . '.vtt', 'lang' => 'kat');
+            
+            // ზოგ პლეერს (მაგ. Desktop MPV) ურჩევნია SRT
+            $subtitles[] = array('id' => $id . '_geo', 'url' => $base_url . '.srt', 'lang' => 'geo');
+            
+            // დამატებითი ვარიანტები ყოველი შემთხვევისთვის
+            $subtitles[] = array('id' => $id . '_ge',  'url' => $base_url . '.vtt', 'lang' => 'ge');
         }
 
         echo json_encode(array('subtitles' => $subtitles));
