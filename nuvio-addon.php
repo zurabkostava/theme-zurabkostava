@@ -208,41 +208,11 @@ add_action('init', function () {
 
         $total = strlen($data);
 
-        // Honor Range requests at origin (ExoPlayer probes tracks with ranged GETs)
-        if (isset($_SERVER['HTTP_RANGE']) && preg_match('/bytes=\s*(\d*)\s*-\s*(\d*)/i', $_SERVER['HTTP_RANGE'], $range)) {
-            $start = $range[1] === '' ? '' : intval($range[1]);
-            $end   = $range[2] === '' ? '' : intval($range[2]);
-
-            if ($start === '' && $end === '') {
-                header('HTTP/1.1 416 Range Not Satisfiable');
-                header("Content-Range: bytes */$total");
-                exit;
-            }
-
-            if ($start === '') {
-                // Suffix byte range: e.g. 'bytes=-500' means the last 500 bytes
-                $start = max(0, $total - $end);
-                $end = $total - 1;
-            } else {
-                if ($end === '' || $end >= $total) {
-                    $end = $total - 1;
-                }
-            }
-
-            if ($start > $end || $start >= $total) {
-                header('HTTP/1.1 416 Range Not Satisfiable');
-                header("Content-Range: bytes */$total");
-                exit;
-            }
-
-            header('HTTP/1.1 206 Partial Content');
-            header("Content-Range: bytes $start-$end/$total");
-            header('Content-Length: ' . ($end - $start + 1));
-            echo substr($data, $start, $end - $start + 1);
-        } else {
-            header('Content-Length: ' . $total);
-            echo $data;
-        }
+        // Subtitles are tiny (50KB). Processing Range requests with substr() on multibyte
+        // UTF-8 strings can slice characters in half, causing ExoPlayer to crash with InvalidUTF8Exception.
+        // The original code just output the full file, and ExoPlayer handles that perfectly.
+        header('Content-Length: ' . $total);
+        echo $data;
         exit;
     }
 });
