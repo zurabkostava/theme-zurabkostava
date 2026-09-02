@@ -52,6 +52,15 @@ add_action('init', function () {
     // 2.5 Debug Endpoint
     if (strpos($path, '/nuvio-addon/debug') !== false) {
         header('Content-Type: text/plain; charset=utf-8');
+        $log_file = get_template_directory() . '/nuvio-log.txt';
+        if (file_exists($log_file)) {
+            echo "=== LAST 50 LINES OF LOG ===\n";
+            $lines = file($log_file);
+            echo implode('', array_slice($lines, -50));
+            echo "\n============================\n\n";
+        } else {
+            echo "Log file not found at: $log_file\n\n";
+        }
         global $wpdb;
         $res = $wpdb->get_results("SELECT ID, guid, post_title FROM {$wpdb->posts} WHERE post_type='attachment' AND guid LIKE '%.srt' LIMIT 5");
         echo "Found " . count($res) . " SRT files.\n\n";
@@ -62,12 +71,6 @@ add_action('init', function () {
             echo "GUID: {$file->guid}\n";
             echo "Path: {$file_path}\n";
             echo "File Exists: " . (file_exists($file_path) ? "YES" : "NO") . "\n";
-            
-            if (file_exists($file_path)) {
-                $data = file_get_contents($file_path);
-                echo "File Size: " . strlen($data) . " bytes\n";
-                echo "First 100 chars: \n" . substr($data, 0, 100) . "\n";
-            }
             echo "------------------------\n\n";
         }
         exit;
