@@ -28,7 +28,13 @@ add_action('init', function () {
     header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Range');
     // TV players read these from cross-origin responses only if exposed
     header('Access-Control-Expose-Headers: Content-Length, Content-Range, Accept-Ranges, Content-Type');
-    header('Cache-Control: no-cache, must-revalidate, max-age=0'); // Prevent TV caching during tests
+    header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0'); // Prevent TV caching during tests
+    if (function_exists('batcache_cancel')) {
+        batcache_cancel();
+    }
+    if (function_exists('nocache_headers')) {
+        nocache_headers();
+    }
 
     // Log every request (full URI incl. extra args) to see exactly what each client asks for
     $upload_dir = wp_upload_dir();
@@ -40,7 +46,7 @@ add_action('init', function () {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw',
-            'version' => '2.2.0', // bumped so clients refetch after the routing fix
+            'version' => '2.3.0', // bumped to force client re-sync
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -113,16 +119,13 @@ add_action('init', function () {
 
         foreach ($results as $file) {
             $base_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID));
-            $cache_buster = '?v=' . time(); // Force CDN and TV cache bypass
 
-            $base_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID));
-            $cache_buster = '?v=' . time(); // Force CDN and TV cache bypass
-
-            // ტელევიზორებს (ExoPlayer) HLS სთრიმების დროს აუცილებლად სჭირდებათ VTT ფორმატი.
-            $subtitles[] = array('id' => $id . '_ka',  'url' => $base_url . '.vtt' . $cache_buster, 'lang' => 'ka');
-            
-            // მობილურისთვის და Desktop-ისთვის ვტოვებთ SRT-ს.
-            $subtitles[] = array('id' => $id . '_geo', 'url' => $base_url . '.srt' . $cache_buster, 'lang' => 'geo');
+            // მხოლოდ ერთი სუფთა ჩანაწერი: 'ka' WebVTT ფორმატში (ტელევიზორისა და ყველა პლატფორმისთვის)
+            $subtitles[] = array(
+                'id'   => $id . '_ka',
+                'url'  => $base_url . '.vtt',
+                'lang' => 'ka'
+            );
         }
 
         echo json_encode(array('subtitles' => $subtitles));
@@ -193,6 +196,7 @@ add_action('init', function () {
         }
 
         header('Content-Disposition: inline');
+        header('Accept-Ranges: bytes');
         header('Content-Length: ' . strlen($data));
         echo $data;
         exit;
