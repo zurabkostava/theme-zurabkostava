@@ -251,9 +251,11 @@ final class Nuvio_GE_Sub {
 		$subtitles = array();
 		foreach ( self::find_attachments( $term ) as $i => $row ) {
 			$subtitles[] = array(
-				'id'   => $id . '_v4_' . self::LANG . ( $i > 0 ? '_' . ( $i + 1 ) : '' ),
-				'url'  => self::stream_url( (int) $row->ID ),
-				'lang' => self::LANG,
+				'id'               => $id . '_v4_' . self::LANG . ( $i > 0 ? '_' . ( $i + 1 ) : '' ),
+				'url'              => self::stream_url( (int) $row->ID ),
+				'lang'             => self::LANG,
+				'subtitleFileName' => pathinfo( (string) $row->file, PATHINFO_BASENAME ),
+				'SubEncoding'      => 'UTF-8',
 			);
 		}
 
