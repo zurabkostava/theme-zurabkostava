@@ -112,17 +112,18 @@ final class Nuvio_GE_Sub {
 		$path = (string) parse_url( $uri, PHP_URL_PATH );
 
 		// Cheap pre-check before the regex.
-		if ( false === strpos( $path, self::PREFIX ) ) {
+		if ( false === strpos( $path, '/nuvio-ge-sub' ) && false === strpos( $path, '/nuvio-addon' ) ) {
 			return;
 		}
 
 		// Match "/nuvio-ge-sub" anywhere in the path (sub-directory installs are
 		// fine) as long as it is followed by "/" or the end of the path.
-		if ( ! preg_match( '#' . preg_quote( self::PREFIX, '#' ) . '(/.*)?$#', $path, $m ) ) {
+		// Match "/nuvio-ge-sub" or "/nuvio-addon" anywhere in the path
+		if ( ! preg_match( '#(/nuvio-ge-sub|/nuvio-addon)(/.*)?$#', $path, $m ) ) {
 			return;
 		}
 
-		$route  = isset( $m[1] ) ? rtrim( $m[1], '/' ) : '';
+		$route  = isset( $m[2] ) ? rtrim( $m[2], '/' ) : '';
 		$method = strtoupper( self::server( 'REQUEST_METHOD' ) );
 		if ( '' === $method ) {
 			$method = 'GET';
