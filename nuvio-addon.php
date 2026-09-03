@@ -43,7 +43,7 @@ add_action('init', function () {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw',
-            'version' => '3.2.0', // Bump to force client to get v5 URLs
+            'version' => '3.3.0', // Bump to force client to get v6 URLs
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -115,7 +115,8 @@ add_action('init', function () {
         $subtitles = array();
 
         foreach ($results as $file) {
-            $stream_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/v5/' . $file->ID . '.srt'));
+            // Remove the .srt extension from the URL. Nuvio blocks URLs ending in .srt!
+            $stream_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/v6/' . $file->ID));
 
             // Exactly ONE single entry for Georgian: 'ka'
             // Mimicking OpenSubtitles payload format exactly
@@ -132,9 +133,10 @@ add_action('init', function () {
     }
 
     // 4. Stream Endpoint — serves .srt raw, or converts to .vtt on the fly
-    if (preg_match('#/nuvio-addon/stream/(?:v\d+/)?(\d+)\.(srt|vtt)$#', $path, $matches)) {
+    // Regex now matches extensionless URLs for v6
+    if (preg_match('#/nuvio-addon/stream/(?:v\d+/)?(\d+)(?:\.(srt|vtt))?$#', $path, $matches)) {
         $attachment_id = intval($matches[1]);
-        $format = $matches[2];
+        $format = isset($matches[2]) ? $matches[2] : 'srt'; // Default to srt if no extension
         $file_path = get_attached_file($attachment_id);
         
         if (!$file_path || !file_exists($file_path)) {
