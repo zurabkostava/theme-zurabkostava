@@ -65,9 +65,9 @@ final class Nuvio_GE_Sub {
 	const PREFIX = '/nuvio-ge-sub';
 
 	/** Stremio manifest values. */
-	const ADDON_ID      = 'org.zurabkostava.geosubtitles.v2';
+	const ADDON_ID      = 'org.zurabkostava.geosubtitles.v3';
 	const ADDON_VERSION = '1.1.0';
-	const ADDON_NAME    = 'Nuvio Geo Subs Pro';
+	const ADDON_NAME    = 'Nuvio Geo Subs Pro v3';
 
 	/** Language code returned to the client. Must be exactly "ka" for Nuvio. */
 	const LANG = 'ka';
@@ -252,7 +252,7 @@ final class Nuvio_GE_Sub {
 		$subtitles = array();
 		foreach ( self::find_attachments( $term ) as $i => $row ) {
 			$subtitles[] = array(
-				'id'   => $id . '_' . self::LANG . ( $i > 0 ? '_' . ( $i + 1 ) : '' ),
+				'id'   => $id . '_v3_' . self::LANG . ( $i > 0 ? '_' . ( $i + 1 ) : '' ),
 				'url'  => self::stream_url( (int) $row->ID ),
 				'lang' => self::LANG,
 			);
