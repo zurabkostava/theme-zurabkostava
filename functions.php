@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // 🔴 Load Nuvio Addons
-require_once get_template_directory() . '/nuvio-addon.php';
+require_once get_template_directory() . '/nuvio-ge-sub.php';
 require_once get_template_directory() . '/nuvio-movies-addon.php';
 
 function zk_setup() {
