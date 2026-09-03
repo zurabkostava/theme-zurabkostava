@@ -53,7 +53,7 @@ add_action('init', function () {
     // Endpoint 2: Subtitles List
     if (preg_match('#/nuvio-addon/subtitles/(movie|series)/([^/]+)(?:/([^/]+))?\.json$#', $path, $matches)) {
         header('Content-Type: application/json; charset=utf-8');
-        $id = $matches[2]; // e.g. tt1375666
+        $id = urldecode($matches[2]); // e.g. tt1375666 or tt10394800:1:2
         
         global $wpdb;
         $search_id = str_replace(':', '%', $id);
