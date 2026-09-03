@@ -39,7 +39,7 @@ add_action('init', function () {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw',
-            'version' => '4.0.0', // Major rewrite
+            'version' => '4.1.0', // Bump to force client to get v8 URLs
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -63,23 +63,13 @@ add_action('init', function () {
 
         foreach ($results as $file) {
             // Georgian Stream (VTT)
-            $geo_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/v7/' . $file->ID . '.vtt'));
+            $geo_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/v8/' . $file->ID . '.vtt'));
             $subtitles[] = array(
                 'id'               => $id . '_ka',
                 'url'              => $geo_url,
                 'lang'             => 'ka',
                 'format'           => 'vtt',
                 'subtitleFileName' => 'Georgian.vtt'
-            );
-
-            // English Test Stream (VTT)
-            $en_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/v7/' . $file->ID . '-test.vtt'));
-            $subtitles[] = array(
-                'id'               => $id . '_en',
-                'url'              => $en_url,
-                'lang'             => 'en',
-                'format'           => 'vtt',
-                'subtitleFileName' => 'EnglishTest.vtt'
             );
         }
 
@@ -88,10 +78,9 @@ add_action('init', function () {
     }
 
     // Endpoint 3: Stream
-    // Matches /nuvio-addon/stream/v7/11134.vtt OR /nuvio-addon/stream/v7/11134-test.vtt
-    if (preg_match('#/nuvio-addon/stream/(?:v\d+/)?(\d+)(?:-(test))?\.vtt$#', $path, $matches)) {
+    // Matches /nuvio-addon/stream/v8/11134.vtt
+    if (preg_match('#/nuvio-addon/stream/(?:v\d+/)?(\d+)\.vtt$#', $path, $matches)) {
         $attachment_id = intval($matches[1]);
-        $is_test = isset($matches[2]) && $matches[2] === 'test';
         
         $file_path = get_attached_file($attachment_id);
         if (!$file_path || !file_exists($file_path)) {
@@ -102,20 +91,6 @@ add_action('init', function () {
 
         header('Content-Type: text/vtt; charset=utf-8');
         header('Content-Disposition: inline; filename="Subtitle.vtt"');
-        
-        if ($is_test) {
-            // Serve a hardcoded English test subtitle
-            $vtt = "WEBVTT\n\n";
-            $vtt .= "00:00:00.000 --> 00:00:30.000\n";
-            $vtt .= "TEST: THIS IS AN ENGLISH SUBTITLE.\n";
-            $vtt .= "If you can read this, ExoPlayer works!\n\n";
-            $vtt .= "00:01:00.000 --> 00:02:00.000\n";
-            $vtt .= "TEST: SECOND CUE. FONT IS FINE.\n\n";
-            
-            header('Content-Length: ' . strlen($vtt));
-            echo $vtt;
-            exit;
-        }
 
         // Serve real Georgian VTT
         $data = file_get_contents($file_path);
