@@ -76,12 +76,11 @@ final class Nuvio_GE_Sub {
 	const FILE_EXT = 'srt';
 
 	/**
-	 * Extension appended to generated stream URLs. ".vtt" makes ExoPlayer's HLS
-	 * pipeline accept the track. The stream route also accepts the extensionless
-	 * form (still served as WebVTT), so set this to '' if an NGINX static-file
-	 * rule swallows "*.vtt" requests before they reach PHP.
+	 * Extension appended to generated stream URLs. Must be ".srt" to bypass
+	 * Stremio's internal proxy filter, but the stream route will ALWAYS return WebVTT
+	 * to satisfy ExoPlayer's HLS parser.
 	 */
-	const STREAM_EXT = '.vtt';
+	const STREAM_EXT = '.srt';
 
 	/** WebVTT preamble. X-TIMESTAMP-MAP syncs cue times with the HLS MPEG-TS clock. */
 	const VTT_HEADER = "WEBVTT\nX-TIMESTAMP-MAP=LOCAL:00:00:00.000,MPEGTS:0\n\n";
@@ -279,36 +278,25 @@ final class Nuvio_GE_Sub {
 		}
 
 		$file = get_attached_file( $attachment_id );
-		if (
-			! $file
-			|| strtolower( pathinfo( $file, PATHINFO_EXTENSION ) ) !== self::FILE_EXT
-			|| ! is_file( $file )
-			|| ! is_readable( $file )
-		) {
-			self::log( "stream: attachment {$attachment_id} has no readable ." . self::FILE_EXT . ' file' );
-			self::json( array( 'error' => 'Subtitle file not found' ), 404 );
+		if ( ! $file || ! file_exists( $file ) ) {
+			self::json( array( 'error' => 'Not found' ), 404 );
 		}
 
-		$data = @file_get_contents( $file );
+		$data = file_get_contents( $file );
 		if ( false === $data ) {
-			self::log( "stream: attachment {$attachment_id} could not be read" );
-			self::json( array( 'error' => 'Subtitle file could not be read' ), 500 );
+			self::json( array( 'error' => 'Read error' ), 500 );
 		}
 
-		// 1. Encoding cleanup (UTF-16 -> UTF-8, strip every BOM).
+		// 1. Unify encoding to UTF-8 and strip any BOM.
 		$data = self::normalize_text( $data );
 
-		// 2. Build the exact byte string that will be served; Content-Length,
-		//    ETag and Range all refer to this string from here on.
+		// 2. ALWAYS convert to WebVTT, even if Stremio requested .srt
+		// Stremio's HLS pipeline strictly requires WebVTT internally.
+		$data = self::srt_to_vtt( $data );
+		$type = 'text/vtt; charset=utf-8';
+		
 		$basename = pathinfo( $file, PATHINFO_FILENAME );
-		if ( 'srt' === $format ) {
-			$type = 'application/x-subrip; charset=utf-8';
-			$name = $basename . '.srt';
-		} else {
-			$data = self::srt_to_vtt( $data );
-			$type = 'text/vtt; charset=utf-8';
-			$name = $basename . '.vtt';
-		}
+		$name = $basename . '.vtt';
 
 		self::send_bytes( $data, $file, $type, $name, $is_head );
 	}
@@ -708,7 +696,7 @@ final class Nuvio_GE_Sub {
 	}
 
 	private static function stream_url( $attachment_id ) {
-		$url = self::url( '/stream/' . $attachment_id );
+		$url = self::url( '/stream/' . $attachment_id . self::STREAM_EXT );
 
 		/**
 		 * Filters the public stream URL for a subtitle attachment.
