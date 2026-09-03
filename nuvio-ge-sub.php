@@ -70,7 +70,7 @@ final class Nuvio_GE_Sub {
 	const ADDON_NAME    = 'Nuvio Geo Subs Pro';
 
 	/** Language code returned to the client. Must be exactly "ka" for Nuvio. */
-	const LANG = 'eng';
+	const LANG = 'ka';
 
 	/** Extension of the source files in the media library. */
 	const FILE_EXT = 'srt';
@@ -708,7 +708,7 @@ final class Nuvio_GE_Sub {
 	}
 
 	private static function stream_url( $attachment_id ) {
-		$url = self::url( '/stream/' . $attachment_id . self::STREAM_EXT );
+		$url = self::url( '/stream/' . $attachment_id );
 
 		/**
 		 * Filters the public stream URL for a subtitle attachment.
