@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Nuvio Geo Subs Pro
- * Description: Stremio / Nuvio subtitles addon that serves Georgian (ka) .srt files straight from the WordPress Media Library.
- * Version:     1.0.0
+ * Description: Stremio / Nuvio subtitles addon that serves Georgian (ka) subtitles from the WordPress Media Library, converting uploaded .srt files to WebVTT on the fly.
+ * Version:     1.1.0
  * Author:      Zurab Kostava
  *
  * ---------------------------------------------------------------------------
@@ -15,9 +15,20 @@
  *   OPTIONS  *                                        -> 204 + CORS preflight
  *   GET      /nuvio-ge-sub/                           -> small JSON index
  *   GET      /nuvio-ge-sub/manifest.json              -> Stremio manifest
- *   GET      /nuvio-ge-sub/subtitles/{type}/{id}.json -> subtitle list
+ *   GET      /nuvio-ge-sub/subtitles/{type}/{id}.json -> subtitle list (.vtt URLs)
  *   GET      /nuvio-ge-sub/subtitles/{type}/{id}/{extra}.json (TV clients)
- *   GET      /nuvio-ge-sub/stream/{attachment_id}.srt -> BOM-free, range-capable SRT
+ *   GET      /nuvio-ge-sub/stream/{attachment_id}.vtt -> SRT converted to WebVTT, range-capable
+ *   GET      /nuvio-ge-sub/stream/{attachment_id}.srt -> the cleaned original SRT (debug / non-HLS)
+ *
+ * ---------------------------------------------------------------------------
+ * WHY WEBVTT
+ * ---------------------------------------------------------------------------
+ * Android TV clients play HLS streams through ExoPlayer, whose HLS pipeline
+ * only accepts WebVTT sidecar subtitles and expects an X-TIMESTAMP-MAP header
+ * to align cue times with the MPEG-TS clock. Every .srt is therefore converted
+ * in memory ("00:00:01,000" -> "00:00:01.000", header prepended) and
+ * Content-Length, ETag and every Range calculation are performed on the
+ * converted text, never on the file on disk.
  *
  * ---------------------------------------------------------------------------
  * FILE NAMING CONVENTION (Media Library)
@@ -55,21 +66,28 @@ final class Nuvio_GE_Sub {
 
 	/** Stremio manifest values. */
 	const ADDON_ID      = 'org.zurabkostava.geosubtitles.v2';
-	const ADDON_VERSION = '1.0.0';
+	const ADDON_VERSION = '1.1.0';
 	const ADDON_NAME    = 'Nuvio Geo Subs Pro';
 
 	/** Language code returned to the client. Must be exactly "ka" for Nuvio. */
 	const LANG = 'ka';
 
-	/** Attachment file extension that is considered a subtitle. */
+	/** Extension of the source files in the media library. */
 	const FILE_EXT = 'srt';
 
 	/**
-	 * Extension appended to generated stream URLs. The stream route also accepts
-	 * the extensionless form, so set this to '' if an NGINX static-file rule
-	 * swallows "*.srt" requests before they reach PHP.
+	 * Extension appended to generated stream URLs. ".vtt" makes ExoPlayer's HLS
+	 * pipeline accept the track. The stream route also accepts the extensionless
+	 * form (still served as WebVTT), so set this to '' if an NGINX static-file
+	 * rule swallows "*.vtt" requests before they reach PHP.
 	 */
-	const STREAM_EXT = '.srt';
+	const STREAM_EXT = '.vtt';
+
+	/** WebVTT preamble. X-TIMESTAMP-MAP syncs cue times with the HLS MPEG-TS clock. */
+	const VTT_HEADER = "WEBVTT\nX-TIMESTAMP-MAP=LOCAL:00:00:00.000,MPEGTS:0\n\n";
+
+	/** SRT / VTT timing line: "00:00:01,000 --> 00:00:03,000" (hours optional, "," or "."). */
+	const TIMING_RX = '/^(?:(\d+):)?(\d{1,2}):(\d{1,2})[,.](\d+)\s*-->\s*(?:(\d+):)?(\d{1,2}):(\d{1,2})[,.](\d+)/';
 
 	/** Maximum number of subtitle entries returned for one id. */
 	const MAX_RESULTS = 10;
@@ -155,9 +173,10 @@ final class Nuvio_GE_Sub {
 			self::subtitles( $m[1], rawurldecode( $m[2] ) );
 		}
 
-		// 4. Stream proxy (with or without the .srt extension).
-		if ( preg_match( '#^/stream/(\d+)(?:\.' . preg_quote( self::FILE_EXT, '#' ) . ')?$#i', $route, $m ) ) {
-			self::stream( (int) $m[1], 'HEAD' === $method );
+		// 4. Stream proxy. ".vtt" or no extension -> WebVTT, ".srt" -> cleaned SRT.
+		if ( preg_match( '#^/stream/(\d+)(?:\.(vtt|srt))?$#i', $route, $m ) ) {
+			$format = isset( $m[2] ) ? strtolower( $m[2] ) : 'vtt';
+			self::stream( (int) $m[1], $format, 'HEAD' === $method );
 		}
 
 		self::json( array( 'error' => 'Not found' ), 404 );
@@ -175,8 +194,9 @@ final class Nuvio_GE_Sub {
 				'version'  => self::ADDON_VERSION,
 				'manifest' => self::url( '/manifest.json' ),
 				'routes'   => array(
-					'subtitles' => self::url( '/subtitles/{movie|series}/{id}.json' ),
-					'stream'    => self::url( '/stream/{attachment_id}' . self::STREAM_EXT ),
+					'subtitles'  => self::url( '/subtitles/{movie|series}/{id}.json' ),
+					'stream'     => self::url( '/stream/{attachment_id}' . self::STREAM_EXT ),
+					'stream_srt' => self::url( '/stream/{attachment_id}.srt' ),
 				),
 			)
 		);
@@ -188,7 +208,7 @@ final class Nuvio_GE_Sub {
 				'id'            => self::ADDON_ID,
 				'version'       => self::ADDON_VERSION,
 				'name'          => self::ADDON_NAME,
-				'description'   => 'Georgian (ka) subtitles served from the WordPress Media Library.',
+				'description'   => 'Georgian (ka) subtitles served from the WordPress Media Library as WebVTT.',
 				'resources'     => array( 'subtitles' ),
 				'types'         => array( 'movie', 'series' ),
 				'idPrefixes'    => array( 'tt', 'tmdb' ),
@@ -231,12 +251,14 @@ final class Nuvio_GE_Sub {
 	}
 
 	/**
-	 * Serves the attachment as a clean, BOM-free SRT with full HTTP Range support.
+	 * Serves the attachment as WebVTT (default) or cleaned SRT, with full HTTP
+	 * Range support computed on the in-memory text that is actually sent.
 	 *
-	 * @param int  $attachment_id
-	 * @param bool $is_head
+	 * @param int    $attachment_id
+	 * @param string $format  "vtt" or "srt".
+	 * @param bool   $is_head
 	 */
-	private static function stream( $attachment_id, $is_head ) {
+	private static function stream( $attachment_id, $format, $is_head ) {
 		$post = get_post( $attachment_id );
 		if ( ! $post || 'attachment' !== $post->post_type || 'inherit' !== $post->post_status ) {
 			self::log( "stream: attachment {$attachment_id} not found" );
@@ -260,8 +282,22 @@ final class Nuvio_GE_Sub {
 			self::json( array( 'error' => 'Subtitle file could not be read' ), 500 );
 		}
 
+		// 1. Encoding cleanup (UTF-16 -> UTF-8, strip every BOM).
 		$data = self::normalize_text( $data );
-		self::send_bytes( $data, $file, $is_head );
+
+		// 2. Build the exact byte string that will be served; Content-Length,
+		//    ETag and Range all refer to this string from here on.
+		$basename = pathinfo( $file, PATHINFO_FILENAME );
+		if ( 'srt' === $format ) {
+			$type = 'application/x-subrip; charset=utf-8';
+			$name = $basename . '.srt';
+		} else {
+			$data = self::srt_to_vtt( $data );
+			$type = 'text/vtt; charset=utf-8';
+			$name = $basename . '.vtt';
+		}
+
+		self::send_bytes( $data, $file, $type, $name, $is_head );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -337,7 +373,7 @@ final class Nuvio_GE_Sub {
 	}
 
 	/* ------------------------------------------------------------------ */
-	/*  Streaming helpers                                                  */
+	/*  Subtitle text processing                                           */
 	/* ------------------------------------------------------------------ */
 
 	/**
@@ -370,6 +406,106 @@ final class Nuvio_GE_Sub {
 
 		return $data;
 	}
+
+	/**
+	 * Converts SubRip text to WebVTT entirely in memory.
+	 *
+	 * - Walks the file line by line, so cues survive missing blank lines,
+	 *   missing index numbers, CR/LF/CRLF mixes and "." or "," in timings.
+	 * - Normalises every timestamp to "HH:MM:SS.mmm".
+	 * - Drops ASS-style override tags such as {\an8}; inline <i>/<b> tags are
+	 *   valid WebVTT and are kept.
+	 * - Prepends the WEBVTT + X-TIMESTAMP-MAP header required for HLS playback.
+	 */
+	private static function srt_to_vtt( $srt ) {
+		$lines = explode( "\n", str_replace( array( "\r\n", "\r" ), "\n", $srt ) );
+		$out   = self::VTT_HEADER;
+		$count = 0;
+		$cue   = null;
+
+		foreach ( $lines as $line ) {
+			$line = trim( $line );
+
+			if ( preg_match( self::TIMING_RX, $line, $m ) ) {
+				if ( null !== $cue ) {
+					// No blank line separated the cues, so the last line we
+					// collected is really the next cue's index number.
+					$last = end( $cue['text'] );
+					if ( false !== $last && preg_match( '/^\d+$/', $last ) ) {
+						array_pop( $cue['text'] );
+					}
+					$out .= self::vtt_cue( $cue, $count );
+				}
+
+				$cue = array(
+					'start' => self::vtt_time( $m[1], $m[2], $m[3], $m[4] ),
+					'end'   => self::vtt_time( $m[5], $m[6], $m[7], $m[8] ),
+					'text'  => array(),
+				);
+				continue;
+			}
+
+			if ( null === $cue ) {
+				continue; // Index numbers or stray lines before the first timing line.
+			}
+
+			if ( '' === $line ) {
+				$out .= self::vtt_cue( $cue, $count );
+				$cue  = null;
+				continue;
+			}
+
+			$line = trim( preg_replace( '/\{\\\\[^}]*\}/', '', $line ) );
+			if ( '' !== $line ) {
+				$cue['text'][] = $line;
+			}
+		}
+
+		if ( null !== $cue ) {
+			$out .= self::vtt_cue( $cue, $count );
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Renders one cue block. Cues without text are dropped.
+	 *
+	 * @param array $cue   ['start' => string, 'end' => string, 'text' => string[]]
+	 * @param int   $count Running cue counter (incremented when a cue is emitted).
+	 */
+	private static function vtt_cue( array $cue, &$count ) {
+		if ( empty( $cue['text'] ) ) {
+			return '';
+		}
+
+		$count++;
+
+		return $count . "\n"
+			. $cue['start'] . ' --> ' . $cue['end'] . "\n"
+			. implode( "\n", $cue['text'] ) . "\n\n";
+	}
+
+	/**
+	 * Builds a WebVTT timestamp "HH:MM:SS.mmm" from SRT components, normalising
+	 * out-of-range minutes/seconds and 1-2 digit millisecond fields.
+	 */
+	private static function vtt_time( $h, $m, $s, $ms ) {
+		$ms    = (int) substr( str_pad( (string) $ms, 3, '0' ), 0, 3 );
+		$total = ( (int) $h * 3600 + (int) $m * 60 + (int) $s ) * 1000 + $ms;
+
+		return sprintf(
+			'%02d:%02d:%02d.%03d',
+			intdiv( $total, 3600000 ),
+			intdiv( $total, 60000 ) % 60,
+			intdiv( $total, 1000 ) % 60,
+			$total % 1000
+		);
+	}
+
+	/* ------------------------------------------------------------------ */
+	/*  Streaming helpers                                                  */
+	/* ------------------------------------------------------------------ */
 
 	/**
 	 * Parses a single-range "Range" header against an entity of $total bytes.
@@ -424,16 +560,23 @@ final class Nuvio_GE_Sub {
 	}
 
 	/**
-	 * Writes the SRT payload with correct 200 / 206 / 304 / 416 semantics.
+	 * Writes an in-memory payload with correct 200 / 206 / 304 / 416 semantics.
+	 * Every byte count refers to $data, not to the file on disk.
+	 *
+	 * @param string $data    Exact bytes to serve.
+	 * @param string $file    Source path (used for Last-Modified only).
+	 * @param string $type    Content-Type header value.
+	 * @param string $name    Download name for Content-Disposition.
+	 * @param bool   $is_head
 	 */
-	private static function send_bytes( $data, $file, $is_head ) {
+	private static function send_bytes( $data, $file, $type, $name, $is_head ) {
 		$total         = strlen( $data );
 		$etag          = '"' . md5( $data ) . '"';
 		$mtime         = (int) @filemtime( $file );
 		$last_modified = gmdate( 'D, d M Y H:i:s', $mtime > 0 ? $mtime : time() ) . ' GMT';
-		$filename      = preg_replace( '/[^A-Za-z0-9._-]+/', '_', basename( $file ) );
+		$filename      = preg_replace( '/[^A-Za-z0-9._-]+/', '_', $name );
 
-		header( 'Content-Type: application/x-subrip; charset=utf-8' );
+		header( 'Content-Type: ' . $type );
 		header( 'Content-Disposition: inline; filename="' . $filename . '"' );
 		header( 'Accept-Ranges: bytes' );
 		header( 'ETag: ' . $etag );
@@ -523,7 +666,7 @@ final class Nuvio_GE_Sub {
 	private static function json( $data, $status = 200 ) {
 		$body = wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 		if ( false === $body ) {
-			$body = '{"error":"Encoding failure"}';
+			$body   = '{"error":"Encoding failure"}';
 			$status = 500;
 		}
 
