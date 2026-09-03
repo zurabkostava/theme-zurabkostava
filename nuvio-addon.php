@@ -43,7 +43,7 @@ add_action('init', function () {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw',
-            'version' => '3.1.0', // Bump to force client to get vtt URLs
+            'version' => '3.2.0', // Bump to force client to get v5 URLs
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -115,16 +115,15 @@ add_action('init', function () {
         $subtitles = array();
 
         foreach ($results as $file) {
-            $stream_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/v4/' . $file->ID . '.vtt'));
+            $stream_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/v5/' . $file->ID . '.srt'));
 
             // Exactly ONE single entry for Georgian: 'ka'
-            // TV ExoPlayer REQUIRES .vtt URL and 'format' field to initiate the HTTP request
+            // Mimicking OpenSubtitles payload format exactly
             $subtitles[] = array(
                 'id'               => $id . '_ka',
                 'url'              => $stream_url,
                 'lang'             => 'ka',
-                'format'           => 'vtt',
-                'subtitleFileName' => 'Georgian.vtt'
+                'subtitleFileName' => 'Georgian.srt'
             );
         }
 
