@@ -718,9 +718,7 @@ final class Nuvio_GE_Sub {
 	}
 
 	private static function log( $message ) {
-		if ( defined( 'NUVIO_GE_SUB_DEBUG' ) && NUVIO_GE_SUB_DEBUG ) {
-			error_log( '[nuvio-ge-sub] ' . $message );
-		}
+		file_put_contents( ABSPATH . 'nuvio-log.txt', date('[Y-m-d H:i:s] ') . $message . "\n", FILE_APPEND );
 	}
 }
 
