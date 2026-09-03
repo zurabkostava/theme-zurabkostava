@@ -70,7 +70,7 @@ final class Nuvio_GE_Sub {
 	const ADDON_NAME    = 'Nuvio Geo Subs Pro';
 
 	/** Language code returned to the client. Must be exactly "ka" for Nuvio. */
-	const LANG = 'ka';
+	const LANG = 'eng';
 
 	/** Extension of the source files in the media library. */
 	const FILE_EXT = 'srt';
