@@ -181,7 +181,7 @@ final class Nuvio_GE_Sub {
 
 		// 5. Debug
 		if ( '/debug' === $route ) {
-			$log_file = ABSPATH . 'nuvio-log.txt';
+			$log_file = WP_CONTENT_DIR . '/nuvio-log.txt';
 			header( 'Content-Type: text/plain; charset=utf-8' );
 			if ( file_exists( $log_file ) ) {
 				echo file_get_contents( $log_file );
@@ -730,7 +730,7 @@ final class Nuvio_GE_Sub {
 	}
 
 	private static function log( $message ) {
-		file_put_contents( ABSPATH . 'nuvio-log.txt', date('[Y-m-d H:i:s] ') . $message . "\n", FILE_APPEND );
+		file_put_contents( WP_CONTENT_DIR . '/nuvio-log.txt', date('[Y-m-d H:i:s] ') . $message . "\n", FILE_APPEND );
 	}
 }
 
