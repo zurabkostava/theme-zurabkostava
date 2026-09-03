@@ -38,7 +38,7 @@ add_action('init', function () {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array(
             'id' => 'org.zurabkostava.geosubtitles.raw',
-            'version' => '4.5.0', // bumped to update language code
+            'version' => '4.6.0', // bumped to update language code
             'name' => 'Nuvio Geo Subs Pro',
             'description' => 'Ultra-fast raw bypass Georgian subtitles synced from media library.',
             'types' => array('movie', 'series'),
@@ -84,23 +84,20 @@ add_action('init', function () {
         $subtitles = array();
 
         foreach ($results as $file) {
+            // Extensionless URL, serving raw SRT directly
             $base_url = str_replace('http://', 'https://', home_url('/nuvio-addon/stream/' . $file->ID));
-
-            // Primary: WebVTT — universally supported by TV players (ExoPlayer, Tizen, WebOS web engines)
-            // ვტოვებთ მხოლოდ ერთ ჩანაწერს, რომ დუბლიკატები არ გამოჩნდეს.
-            $subtitles[] = array('id' => $id . '_ka',  'url' => $base_url . '.vtt', 'lang' => 'ka');
+            $subtitles[] = array('id' => $id . '_ka',  'url' => $base_url, 'lang' => 'ka');
         }
 
         echo json_encode(array('subtitles' => $subtitles));
         exit;
     }
 
-    // 4. Stream Endpoint — serves .srt raw, or converts to .vtt on the fly
-    if (preg_match('#/nuvio-addon/stream/(\d+)\.(srt|vtt)$#', $path, $matches)) {
+    // 4. Stream Endpoint — extensionless URL, serves pure SRT
+    if (preg_match('#/nuvio-addon/stream/(\d+)$#', $path, $matches)) {
         $attachment_id = intval($matches[1]);
-        $format = $matches[2];
+        
         $file_path = get_attached_file($attachment_id);
-
         if (!$file_path || !file_exists($file_path)) {
             header('HTTP/1.1 404 Not Found');
             echo "Subtitle file not found.";
@@ -118,46 +115,7 @@ add_action('init', function () {
             $data = mb_convert_encoding(substr($data, 2), 'UTF-8', 'UTF-16BE');
         }
 
-        if ($format === 'vtt') {
-            // SRT -> WebVTT, block by block. Some source files contain corrupted timing
-            // lines (e.g. "1632:29,369 --> ...") which make strict VTT parsers abort at
-            // that cue — so invalid blocks are dropped instead of passed through.
-            $data = str_replace(array("\r\n", "\r"), "\n", $data);
-            $blocks = preg_split('/\n{2,}/', trim($data));
-            $out = array();
-            foreach ($blocks as $block) {
-                $lines = explode("\n", $block);
-                // Optional numeric cue index on the first line
-                if (isset($lines[0]) && preg_match('/^\d+$/', trim($lines[0]))) {
-                    array_shift($lines);
-                }
-                if (empty($lines)) {
-                    continue;
-                }
-                $timing = trim($lines[0]);
-                if (preg_match('/^(\d{2}:\d{2}:\d{2}),(\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}),(\d{3})/', $timing, $t)) {
-                    array_shift($lines);
-                    $text = trim(implode("\n", $lines));
-                    if ($text !== '') {
-                        $out[] = "{$t[1]}.{$t[2]} --> {$t[3]}.{$t[4]}\n" . $text;
-                    }
-                } elseif (strpos($block, '-->') !== false) {
-                    continue; // corrupted timing line — skip the whole cue
-                } else {
-                    // Plain text block: a blank line inside the previous cue's text
-                    // (common in these files) — merge it back into that cue.
-                    $text = trim($block);
-                    if ($text !== '' && !empty($out)) {
-                        $out[count($out) - 1] .= "\n" . $text;
-                    }
-                }
-            }
-            $data = "WEBVTT\n\n" . implode("\n\n", $out) . "\n";
-            header('Content-Type: text/vtt; charset=utf-8');
-        } else {
-            header('Content-Type: application/x-subrip; charset=utf-8');
-        }
-
+        header('Content-Type: application/x-subrip; charset=utf-8');
         header('Content-Disposition: inline');
         header('Accept-Ranges: bytes');
 
