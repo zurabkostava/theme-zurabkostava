@@ -179,6 +179,18 @@ final class Nuvio_GE_Sub {
 			self::stream( (int) $m[1], $format, 'HEAD' === $method );
 		}
 
+		// 5. Debug
+		if ( '/debug' === $route ) {
+			$log_file = ABSPATH . 'nuvio-log.txt';
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			if ( file_exists( $log_file ) ) {
+				echo file_get_contents( $log_file );
+			} else {
+				echo 'No log file found at ' . $log_file;
+			}
+			exit;
+		}
+
 		self::json( array( 'error' => 'Not found' ), 404 );
 	}
 
