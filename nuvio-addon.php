@@ -56,7 +56,8 @@ add_action('init', function () {
         $id = $matches[2]; // e.g. tt1375666
         
         global $wpdb;
-        $sql = $wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_title LIKE %s AND guid LIKE '%.srt'", '%' . $wpdb->esc_like($id) . '%');
+        $search_id = str_replace(':', '%', $id);
+        $sql = $wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_title LIKE %s AND guid LIKE '%.srt'", '%' . $wpdb->esc_like($search_id) . '%');
         $results = $wpdb->get_results($sql);
         $subtitles = array();
 
