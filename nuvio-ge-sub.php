@@ -65,9 +65,9 @@ final class Nuvio_GE_Sub {
 	const PREFIX = '/nuvio-ge-sub';
 
 	/** Stremio manifest values. */
-	const ADDON_ID      = 'org.zurabkostava.geosubtitles.v4';
+	const ADDON_ID      = 'org.zurabkostava.geosubtitles.v5';
 	const ADDON_VERSION = '1.1.0';
-	const ADDON_NAME    = 'Nuvio Geo Subs Pro v4';
+	const ADDON_NAME    = 'Nuvio Geo Subs Pro v5';
 
 	/** Language code returned to the client. Must be exactly "ka" for Nuvio. */
 	const LANG = 'geo';
@@ -251,7 +251,7 @@ final class Nuvio_GE_Sub {
 		$subtitles = array();
 		foreach ( self::find_attachments( $term ) as $i => $row ) {
 			$subtitles[] = array(
-				'id'               => $id . '_v4_' . self::LANG . ( $i > 0 ? '_' . ( $i + 1 ) : '' ),
+				'id'               => $id . '_v5_' . self::LANG . ( $i > 0 ? '_' . ( $i + 1 ) : '' ),
 				'url'              => self::stream_url( (int) $row->ID ),
 				'lang'             => self::LANG,
 				'subtitleFileName' => pathinfo( (string) $row->file, PATHINFO_BASENAME ),
@@ -292,13 +292,13 @@ final class Nuvio_GE_Sub {
 		// 1. Unify encoding to UTF-8 and strip any BOM.
 		$data = self::normalize_text( $data );
 
-		// 2. ALWAYS convert to WebVTT, even if Stremio requested .srt
-		// Stremio's HLS pipeline strictly requires WebVTT internally.
-		$data = self::srt_to_vtt( $data );
-		$type = 'text/vtt; charset=utf-8';
+		// 2. Serve pure SRT. Stremio's internal proxy server will automatically
+		// intercept this .srt URL and convert it to WebVTT for ExoPlayer's HLS pipeline!
+		// Do NOT pre-convert to WebVTT here, or Stremio's SRT converter will fail to parse it.
+		$type = 'application/x-subrip; charset=utf-8';
 		
 		$basename = pathinfo( $file, PATHINFO_FILENAME );
-		$name = $basename . '.vtt';
+		$name = $basename . '.srt';
 
 		self::send_bytes( $data, $file, $type, $name, $is_head );
 	}
