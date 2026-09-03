@@ -182,4 +182,17 @@ add_action('init', function () {
         }
         exit;
     }
+    // 5. Debug Endpoint
+    if (strpos($path, '/nuvio-addon/debug') !== false) {
+        $log_file = get_template_directory() . '/nuvio-log.txt';
+        header('Content-Type: text/plain; charset=utf-8');
+        if (file_exists($log_file)) {
+            echo "=== LAST 50 LINES OF LOG ===\n";
+            $lines = file($log_file);
+            echo implode('', array_slice($lines, -50));
+        } else {
+            echo "No log file found.";
+        }
+        exit;
+    }
 });
