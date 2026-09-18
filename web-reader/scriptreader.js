@@ -2600,4 +2600,40 @@ const globalMetaBtn = document.getElementById('book-meta-container');
 if(globalMetaBtn) { const newBtn = globalMetaBtn.cloneNode(true); globalMetaBtn.parentNode.replaceChild(newBtn, globalMetaBtn); newBtn.onclick = (e) => { console.log("🔘 Meta Container Clicked - Opening Modal Forcefully"); e.preventDefault(); e.stopPropagation(); handleMetaClick(); }; window.activeMetaBtn = newBtn; }
 init();
 
+// --- PWA Installation Handling ---
+let pwaDeferredPrompt = null;
+const pwaHeaderBtn = document.getElementById('pwa-install-btn');
+const pwaSettingsBtn = document.getElementById('settings-pwa-install-btn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    pwaDeferredPrompt = e;
+    if (pwaHeaderBtn) pwaHeaderBtn.classList.remove('hidden');
+    if (pwaSettingsBtn) pwaSettingsBtn.classList.remove('hidden');
+});
+
+const triggerPwaInstallFlow = async () => {
+    if (!pwaDeferredPrompt) {
+        alert('აპლიკაციის სახით დასაყენებლად:\nბრაუზერის მენიუში (⋮) აირჩიეთ "Install app" ან "Add to Home screen".');
+        return;
+    }
+    pwaDeferredPrompt.prompt();
+    const { outcome } = await pwaDeferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+        if (pwaHeaderBtn) pwaHeaderBtn.classList.add('hidden');
+        if (pwaSettingsBtn) pwaSettingsBtn.classList.add('hidden');
+    }
+    pwaDeferredPrompt = null;
+};
+
+if (pwaHeaderBtn) pwaHeaderBtn.onclick = triggerPwaInstallFlow;
+if (pwaSettingsBtn) pwaSettingsBtn.onclick = triggerPwaInstallFlow;
+
+window.addEventListener('appinstalled', () => {
+    pwaDeferredPrompt = null;
+    if (pwaHeaderBtn) pwaHeaderBtn.classList.add('hidden');
+    if (pwaSettingsBtn) pwaSettingsBtn.classList.add('hidden');
+    console.log('✅ Neural Reader PWA successfully installed!');
+});
+
 

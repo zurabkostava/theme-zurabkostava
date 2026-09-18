@@ -1,11 +1,51 @@
 <?php
 /* Template Name: Web Reader */
+
+// Protect this custom app from global WordPress theme styles/scripts
+add_action('wp_enqueue_scripts', function() {
+    wp_dequeue_style('zk-style');
+    wp_dequeue_style('zk-fonts');
+    wp_dequeue_script('zk-app');
+    wp_dequeue_style('wp-block-library');
+    wp_dequeue_style('global-styles');
+}, 999);
+
+remove_action('wp_head', 'print_emoji_detection_script', 7);
+remove_action('wp_print_styles', 'print_emoji_styles');
+remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav from App
 ?>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
-<script src="https://js.puter.com/v2/"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Neural Reader PRO — Zurab Kostava</title>
+    <meta name="description" content="Neural EPUB & Voice Reader by Zurab Kostava">
+
+    <!-- PWA & Mobile Web App Manifest -->
+    <link rel="manifest" href="<?php echo get_template_directory_uri(); ?>/web-reader/manifest.json">
+    <meta name="theme-color" content="#090d16">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Voice Reader">
+    <meta name="application-name" content="Voice Reader">
+
+    <!-- App Icons -->
+    <link rel="icon" type="image/svg+xml" href="<?php echo get_template_directory_uri(); ?>/web-reader/icons/icon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="<?php echo get_template_directory_uri(); ?>/web-reader/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="<?php echo get_template_directory_uri(); ?>/web-reader/icons/icon-192.png">
+
+    <?php wp_head(); ?>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+    <script src="https://js.puter.com/v2/"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body style="margin: 0; padding: 0; background: #09090b; color: #f8fafc; overflow: hidden; height: 100vh;">
 
 <div id="neural-app-root">
 
@@ -48,6 +88,9 @@
             </div>
 
             <div class="header-actions">
+                <button id="pwa-install-btn" class="icon-btn hidden" title="Add to Phone (Install App)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                </button>
                 <button id="library-btn" class="icon-btn" title="Library">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
                 </button>
@@ -68,6 +111,7 @@
         <div id="settings-panel" class="settings-panel hidden">
             <div id="dynamic-voice-settings"></div>
             <button id="refresh-voices-btn" class="ctrl-btn sm" style="width:100%; margin-top:10px;">Refresh Voices ↻</button>
+            <button id="settings-pwa-install-btn" class="ctrl-btn sm hidden" style="width:100%; margin-top:10px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; font-weight: 600;">📱 Add to Home Screen (Install App)</button>
         </div>
 
         <div id="progress-container">
@@ -1209,5 +1253,17 @@
 
 </style>
 
-<script>window.THEME_URI = '<?php echo get_template_directory_uri(); ?>';</script>
+<script>
+window.THEME_URI = '<?php echo get_template_directory_uri(); ?>';
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('<?php echo get_template_directory_uri(); ?>/web-reader/sw.js')
+            .then(reg => console.log('Neural Reader PWA SW registered:', reg.scope))
+            .catch(err => console.log('Neural Reader PWA SW registration note:', err));
+    });
+}
+</script>
 <script src="<?php echo get_template_directory_uri(); ?>/web-reader/scriptreader.js?v=<?php echo time(); ?>"></script>
+<?php wp_footer(); ?>
+</body>
+</html>

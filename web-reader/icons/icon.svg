@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1120"/>
+      <stop offset="100%" stop-color="#060913"/>
+    </linearGradient>
+    <radialGradient id="glow-grad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cyan-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="url(#bg-grad)"/>
+  <rect width="510" height="510" x="1" y="1" rx="111" fill="none" stroke="#38bdf8" stroke-opacity="0.25" stroke-width="2"/>
+  
+  <!-- Ambient Center Glow -->
+  <circle cx="256" cy="256" r="180" fill="url(#glow-grad)"/>
+
+  <!-- Sound Waves (Voice) -->
+  <g transform="translate(0, -20)">
+    <rect x="186" y="165" width="8" height="30" rx="4" fill="#38bdf8"/>
+    <rect x="210" y="145" width="8" height="70" rx="4" fill="#7dd3fc"/>
+    <rect x="234" y="125" width="8" height="110" rx="4" fill="#bae6fd"/>
+    <rect x="252" y="105" width="8" height="150" rx="4" fill="#ffffff"/>
+    <rect x="270" y="125" width="8" height="110" rx="4" fill="#bae6fd"/>
+    <rect x="294" y="145" width="8" height="70" rx="4" fill="#7dd3fc"/>
+    <rect x="318" y="165" width="8" height="30" rx="4" fill="#38bdf8"/>
+  </g>
+
+  <!-- Open Book Wings -->
+  <g fill="none" stroke="#38bdf8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Left Page -->
+    <path d="M256 385 C210 370 160 380 140 395 L140 270 C160 255 210 245 256 260 Z" fill="#0284c7" fill-opacity="0.15"/>
+    <!-- Right Page -->
+    <path d="M256 385 C302 370 352 380 372 395 L372 270 C352 255 302 245 256 260 Z" fill="#0284c7" fill-opacity="0.15"/>
+    <!-- Center Spine -->
+    <line x1="256" y1="260" x2="256" y2="385" stroke="#7dd3fc" stroke-width="10"/>
+    <!-- Page text hint lines -->
+    <path d="M165 315 C190 305 220 305 240 312" stroke="#38bdf8" stroke-opacity="0.5" stroke-width="5"/>
+    <path d="M165 345 C190 335 220 335 240 342" stroke="#38bdf8" stroke-opacity="0.5" stroke-width="5"/>
+    <path d="M272 312 C292 305 322 305 347 315" stroke="#38bdf8" stroke-opacity="0.5" stroke-width="5"/>
+    <path d="M272 342 C292 335 322 335 347 345" stroke="#38bdf8" stroke-opacity="0.5" stroke-width="5"/>
+  </g>
+</svg>
