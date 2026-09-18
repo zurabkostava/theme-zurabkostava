@@ -4019,6 +4019,16 @@ add_action('wp_head', function() {
     }
 });
 
+// Permanent redirect from /reader or /reader/ to /projects/reader/
+add_action('init', function() {
+    if ( empty( $_SERVER['REQUEST_URI'] ) ) return;
+    $request_path = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH );
+    if ( $request_path === '/reader' || $request_path === '/reader/' ) {
+        wp_safe_redirect( home_url( '/projects/reader/' ), 301 );
+        exit;
+    }
+});
+
 /* ============================================================
    SEO & SEARCH CONSOLE CLEANUP ARCHITECTURE
    ============================================================ */
