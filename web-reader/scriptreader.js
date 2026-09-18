@@ -72,6 +72,70 @@ const PIPER_FALLBACK_VOICES = [
     { isPiper: true, key: 'en_US-lessac-medium', name: '☁️ Piper — English (Lessac, medium)', lang: 'en_US', path: 'en/en_US/lessac/medium/en_US-lessac-medium' }
 ];
 
+const KNOWN_MICROSOFT_VOICES = {
+    en: [
+        { name: "Microsoft Christopher Online (Natural) - English (United States)", lang: "en-US" },
+        { name: "Microsoft Jenny Online (Natural) - English (United States)", lang: "en-US" },
+        { name: "Microsoft Guy Online (Natural) - English (United States)", lang: "en-US" },
+        { name: "Microsoft Aria Online (Natural) - English (United States)", lang: "en-US" },
+        { name: "Microsoft Eric Online (Natural) - English (United States)", lang: "en-US" },
+        { name: "Microsoft Michelle Online (Natural) - English (United States)", lang: "en-US" },
+        { name: "Microsoft Roger Online (Natural) - English (United States)", lang: "en-US" },
+        { name: "Microsoft Steffan Online (Natural) - English (United States)", lang: "en-US" },
+        { name: "Microsoft Ana Online (Natural) - English (United States)", lang: "en-US" },
+        { name: "Microsoft Sonia Online (Natural) - English (United Kingdom)", lang: "en-GB" },
+        { name: "Microsoft Ryan Online (Natural) - English (United Kingdom)", lang: "en-GB" },
+        { name: "Microsoft Libby Online (Natural) - English (United Kingdom)", lang: "en-GB" },
+        { name: "Microsoft Natasha Online (Natural) - English (Australia)", lang: "en-AU" },
+        { name: "Microsoft William Online (Natural) - English (Australia)", lang: "en-AU" },
+        { name: "Microsoft Neerja Online (Natural) - English (India)", lang: "en-IN" },
+        { name: "Microsoft Prabhat Online (Natural) - English (India)", lang: "en-IN" },
+        { name: "Microsoft Clara Online (Natural) - English (Canada)", lang: "en-CA" },
+        { name: "Microsoft Liam Online (Natural) - English (Canada)", lang: "en-CA" }
+    ],
+    ru: [
+        { name: "Microsoft Svetlana Online (Natural) - Russian (Russia)", lang: "ru-RU" },
+        { name: "Microsoft Dmitry Online (Natural) - Russian (Russia)", lang: "ru-RU" }
+    ],
+    de: [
+        { name: "Microsoft Katja Online (Natural) - German (Germany)", lang: "de-DE" },
+        { name: "Microsoft Conrad Online (Natural) - German (Germany)", lang: "de-DE" },
+        { name: "Microsoft Killian Online (Natural) - German (Germany)", lang: "de-DE" }
+    ],
+    fr: [
+        { name: "Microsoft Denise Online (Natural) - French (France)", lang: "fr-FR" },
+        { name: "Microsoft Henri Online (Natural) - French (France)", lang: "fr-FR" },
+        { name: "Microsoft Eloise Online (Natural) - French (France)", lang: "fr-FR" }
+    ],
+    es: [
+        { name: "Microsoft Elvira Online (Natural) - Spanish (Spain)", lang: "es-ES" },
+        { name: "Microsoft Alvaro Online (Natural) - Spanish (Spain)", lang: "es-ES" },
+        { name: "Microsoft Dalia Online (Natural) - Spanish (Mexico)", lang: "es-MX" },
+        { name: "Microsoft Jorge Online (Natural) - Spanish (Mexico)", lang: "es-MX" }
+    ],
+    it: [
+        { name: "Microsoft Isabella Online (Natural) - Italian (Italy)", lang: "it-IT" },
+        { name: "Microsoft Diego Online (Natural) - Italian (Italy)", lang: "it-IT" }
+    ],
+    uk: [
+        { name: "Microsoft Polina Online (Natural) - Ukrainian (Ukraine)", lang: "uk-UA" },
+        { name: "Microsoft Ostap Online (Natural) - Ukrainian (Ukraine)", lang: "uk-UA" }
+    ],
+    tr: [
+        { name: "Microsoft Emel Online (Natural) - Turkish (Turkey)", lang: "tr-TR" },
+        { name: "Microsoft Ahmet Online (Natural) - Turkish (Turkey)", lang: "tr-TR" }
+    ],
+    pl: [
+        { name: "Microsoft Zofia Online (Natural) - Polish (Poland)", lang: "pl-PL" },
+        { name: "Microsoft Marek Online (Natural) - Polish (Poland)", lang: "pl-PL" }
+    ],
+    pt: [
+        { name: "Microsoft Francisca Online (Natural) - Portuguese (Brazil)", lang: "pt-BR" },
+        { name: "Microsoft Antonio Online (Natural) - Portuguese (Brazil)", lang: "pt-BR" },
+        { name: "Microsoft Raquel Online (Natural) - Portuguese (Portugal)", lang: "pt-PT" }
+    ]
+};
+
 function isValidPiperEntry(v) {
     return !!v && v.isPiper === true
         && typeof v.name === 'string' && v.name.length > 0
@@ -1193,6 +1257,7 @@ function rebuildDynamicSettings() {
     piperList.forEach(v => {
         if (v.lang) allLangs.add(getBaseLang(v.lang));
     });
+    Object.keys(KNOWN_MICROSOFT_VOICES).forEach(l => allLangs.add(l));
     
     const sortedLangs = Array.from(allLangs).sort((a, b) => {
         const aDet = detectedBookLanguages && detectedBookLanguages.has(a);
@@ -1259,34 +1324,61 @@ function rebuildDynamicSettings() {
         localStorage.setItem('unified-ui-lang', currentLang);
 
         voiceSelect.innerHTML = '';
-        const nativeVoices = nativeList.filter(v => langMatches(v.lang, currentLang) || (v.name && v.name.toLowerCase().includes('multilingual')));
-        if (nativeVoices.length > 0) {
-            nativeVoices.sort((a, b) => {
-                const isPremium = (v) => /natural|online|neural|premium|enhanced/i.test(v.name);
-                const aP = isPremium(a);
-                const bP = isPremium(b);
-                if (aP && !bP) return -1;
-                if (!aP && bP) return 1;
-                return a.name.localeCompare(b.name);
+        const baseLang = normalizeLang(currentLang).split('-')[0];
+
+        // 1. ✨ Microsoft Natural Models (Edge / Cloud)
+        const msVoicesMap = new Map();
+
+        // Check if browser native voices already include any live Microsoft / natural voices
+        nativeList.forEach(v => {
+            if (v && v.name && /natural|online|neural/i.test(v.name)) {
+                if (langMatches(v.lang, currentLang) || (v.name && v.name.toLowerCase().includes('multilingual'))) {
+                    msVoicesMap.set(v.name, { name: v.name, lang: v.lang });
+                }
+            }
+        });
+
+        // Pre-populate catalog of Microsoft Natural voices for this language
+        const knownForLang = KNOWN_MICROSOFT_VOICES[baseLang] || [];
+        knownForLang.forEach(kv => {
+            if (!msVoicesMap.has(kv.name)) {
+                msVoicesMap.set(kv.name, { name: kv.name, lang: kv.lang });
+            }
+        });
+
+        if (msVoicesMap.size > 0) {
+            const msGroup = document.createElement('optgroup');
+            msGroup.label = "✨ Microsoft Natural Models (Edge)";
+            msVoicesMap.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.name;
+                opt.textContent = `✨ ${v.name}`;
+                msGroup.appendChild(opt);
             });
-            
-            const optGroup = document.createElement('optgroup');
-            optGroup.label = "Native Browser Voices";
-            nativeVoices.forEach(v => {
+            voiceSelect.appendChild(msGroup);
+        }
+
+        // 2. 📱 Device Voices (System)
+        const deviceVoices = nativeList.filter(v => {
+            if (!langMatches(v.lang, currentLang) && !(v.name && v.name.toLowerCase().includes('multilingual'))) return false;
+            return !msVoicesMap.has(v.name);
+        });
+
+        if (deviceVoices.length > 0) {
+            const devGroup = document.createElement('optgroup');
+            devGroup.label = "📱 Device Voices (System)";
+            deviceVoices.forEach(v => {
                 const opt = document.createElement('option');
                 opt.value = v.name;
                 let textName = v.name;
-                if (/natural|online|neural|premium|enhanced/i.test(v.name)) {
-                    textName = `✨ ${textName}`;
-                } else if (v.name.toLowerCase().includes('multilingual')) {
-                    textName = `🌐 ${textName}`;
-                }
+                if (v.name.toLowerCase().includes('multilingual')) textName = `🌐 ${textName}`;
                 opt.textContent = textName;
-                optGroup.appendChild(opt);
+                devGroup.appendChild(opt);
             });
-            voiceSelect.appendChild(optGroup);
+            voiceSelect.appendChild(devGroup);
         }
 
+        // 3. Piper Offline Voices
         const piperForLang = piperList.filter(v => langMatches(v.lang, currentLang));
         if (piperForLang.length > 0) {
             const optGroup = document.createElement('optgroup');
@@ -1298,15 +1390,14 @@ function rebuildDynamicSettings() {
             });
             voiceSelect.appendChild(optGroup);
         }
-        
 
+        // 4. Free Cloud (Google)
         const googleOptGroup = document.createElement('optgroup');
         googleOptGroup.label = "☁️ Free Cloud (Google)";
         const gOpt = document.createElement('option');
         gOpt.value = 'google:standard';
         gOpt.textContent = "☁️ Google Translate TTS (Standard)";
         googleOptGroup.appendChild(gOpt);
-
         voiceSelect.appendChild(googleOptGroup);
 
         if (voiceSelect.options.length === 0) {
@@ -1318,11 +1409,21 @@ function rebuildDynamicSettings() {
             if (savedVoice && Array.from(voiceSelect.options).some(o => o.value === savedVoice)) {
                 voiceSelect.value = savedVoice;
             } else {
-                const piperOpt = Array.from(voiceSelect.options).find(o => Array.from(voiceSelect.options).some(x => x.parentElement.label === "Piper Offline Voices" && x === o));
-                if (piperOpt) {
+                const msOpt = voiceSelect.querySelector('optgroup[label*="Microsoft"] option');
+                const piperOpt = Array.from(voiceSelect.options).find(o => o.parentElement && o.parentElement.label === "Piper Offline Voices");
+
+                if (baseLang === 'ka' && piperOpt) {
+                    voiceSelect.value = piperOpt.value;
+                } else if (msOpt) {
+                    voiceSelect.value = msOpt.value;
+                } else if (piperOpt) {
                     voiceSelect.value = piperOpt.value;
                 } else {
                     voiceSelect.selectedIndex = 0;
+                }
+
+                if (voiceSelect.value) {
+                    try { localStorage.setItem(`voice-${currentLang}`, voiceSelect.value); } catch(e){}
                 }
             }
         }
@@ -1475,6 +1576,78 @@ window.addEventListener('touchstart', triggerUserGestureWarmup, { once: true, pa
 window.addEventListener('pointerdown', triggerUserGestureWarmup, { once: true, passive: true });
 window.addEventListener('click', triggerUserGestureWarmup, { once: true, passive: true });
 
+let pendingMsPlayback = false;
+
+function showEdgeReadAloudHint(voiceName, onFallback) {
+    let el = document.getElementById('edge-activation-hint');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'edge-activation-hint';
+        el.style.cssText = `
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 480px;
+            background: rgba(15, 23, 42, 0.96);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 14px;
+            padding: 16px;
+            z-index: 10000;
+            color: #f8fafc;
+            font-family: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        `;
+        document.body.appendChild(el);
+    }
+
+    const cleanVoiceName = String(voiceName || '').replace(/^✨\s*/, '').trim();
+
+    el.innerHTML = `
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
+            <div style="font-weight: 600; font-size: 0.95rem; color: #38bdf8; display: flex; align-items: center; gap: 6px;">
+                <span>✨</span> Microsoft Natural ხმის გააქტიურება
+            </div>
+            <button id="close-edge-hint-btn" style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer; padding: 0 4px; line-height: 1;">✕</button>
+        </div>
+        <p style="margin: 0; font-size: 0.85rem; color: #cbd5e1; line-height: 1.45;">
+            <strong>${cleanVoiceName || 'Microsoft ხმის'}</strong> ჩასართავად: Edge-ის მენიუში (<strong>⋯</strong>) ერთხელ დააჭირეთ <strong>Read aloud</strong>-ს. ხმა მაშინვე გააქტიურდება და კითხვა დაიწყება.
+        </p>
+        <div style="display: flex; gap: 8px; margin-top: 4px;">
+            <button id="hint-use-fallback-btn" style="flex: 1; padding: 8px 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #f8fafc; font-size: 0.8rem; cursor: pointer; transition: background 0.2s;">
+                📱 მოწყობილობის ხმით წაკითხვა
+            </button>
+        </div>
+    `;
+
+    el.classList.remove('hidden');
+    el.style.display = 'flex';
+
+    el.querySelector('#close-edge-hint-btn').onclick = () => {
+        hideEdgeReadAloudHint();
+        pendingMsPlayback = false;
+        stopReading();
+    };
+
+    el.querySelector('#hint-use-fallback-btn').onclick = () => {
+        hideEdgeReadAloudHint();
+        if (typeof onFallback === 'function') onFallback();
+    };
+}
+
+function hideEdgeReadAloudHint() {
+    const el = document.getElementById('edge-activation-hint');
+    if (el) {
+        el.classList.add('hidden');
+        el.style.display = 'none';
+    }
+}
+
 let voiceLoadAttempts = 0;
 function loadVoices() {
     const synth = window.speechSynthesis || synthesis;
@@ -1485,6 +1658,14 @@ function loadVoices() {
     if (filtered.length > 0) {
         voices = filtered;
         rebuildDynamicSettings();
+
+        if (voices.some(v => /natural|online|neural/i.test(v.name))) {
+            hideEdgeReadAloudHint();
+            if (pendingMsPlayback && isPlaying) {
+                pendingMsPlayback = false;
+                playMergedQueue();
+            }
+        }
     } else if (voiceLoadAttempts < 25) {
         voiceLoadAttempts++;
         // Proactively stimulate the TTS engine if voices haven't loaded yet
@@ -2351,7 +2532,27 @@ async function playMergedQueue() {
             const ok = await playPiperChunk(chunk, rate, token);
             if (!ok) return;
         } else {
-            const nativeVoice = voices.find(v => v && v.name === selectedVoiceName) || voices.find(v => v && langMatches(v.lang, chunk.lang)) || voices[0];
+            const isMsVoice = /microsoft.*natural|online.*natural/i.test(selectedVoiceName || '');
+            let nativeVoice = voices.find(v => v && v.name === selectedVoiceName);
+
+            if (isMsVoice && !nativeVoice) {
+                pendingMsPlayback = true;
+                showEdgeReadAloudHint(selectedVoiceName, () => {
+                    pendingMsPlayback = false;
+                    const fallback = voices.find(v => v && langMatches(v.lang, chunk.lang) && !/natural|online/i.test(v.name)) || voices.find(v => v && langMatches(v.lang, chunk.lang)) || voices[0];
+                    if (fallback) {
+                        try { localStorage.setItem(voiceSelectId, fallback.name); } catch(e){}
+                        rebuildDynamicSettings();
+                        playMergedQueue();
+                    }
+                });
+                return;
+            }
+
+            if (!nativeVoice) {
+                nativeVoice = voices.find(v => v && langMatches(v.lang, chunk.lang)) || voices[0];
+            }
+
             const ok = await playNativeChunk(chunk, nativeVoice, rate, token);
             if (!ok) return;
         }
@@ -2406,6 +2607,8 @@ function togglePlay() {
     }
 }
 function stopReading() {
+    pendingMsPlayback = false;
+    hideEdgeReadAloudHint();
     playbackToken++; // kill any in-flight playback loop
     synthesis.cancel(); stopPiperAudio();
     window.utterances = [];
