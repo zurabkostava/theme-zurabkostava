@@ -36,6 +36,16 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <link rel="icon" type="image/png" sizes="192x192" href="<?php echo get_template_directory_uri(); ?>/web-reader/icons/icon-192.png">
     <link rel="apple-touch-icon" href="<?php echo get_template_directory_uri(); ?>/web-reader/icons/icon-192.png">
 
+    <script>
+        // Proactive Speech Engine Wake-up for Mobile Browsers (Edge / Chrome on Android)
+        if ('speechSynthesis' in window) {
+            try {
+                window.speechSynthesis.getVoices();
+                if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+            } catch(e) {}
+        }
+    </script>
+
     <?php wp_head(); ?>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>

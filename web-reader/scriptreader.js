@@ -223,7 +223,11 @@ const fileInput = document.getElementById('file-input');
 const dropZone = document.getElementById('drop-zone');
 // --- 3. MEDIA SESSION ---
 const refreshVoicesBtn = document.getElementById('refresh-voices-btn');
-if (refreshVoicesBtn) refreshVoicesBtn.onclick = async () => { await fetchPiperVoices(true); loadVoices(); };
+if (refreshVoicesBtn) refreshVoicesBtn.onclick = async () => {
+    wakeUpSpeechEngine();
+    await fetchPiperVoices(true);
+    loadVoices();
+};
 
 function initMediaSession() {
     if ('mediaSession' in navigator) {
@@ -1429,17 +1433,69 @@ function rebuildDynamicSettings() {
     bindPauseInput('input-pause-paragraph', 'paragraph', 'val-pause-paragraph');
 }
 
+// --- TTS Engine Auto-Wakeup for Android, Microsoft Edge, and Chrome ---
+let speechEngineWarmedUp = false;
+
+function wakeUpSpeechEngine() {
+    const synth = window.speechSynthesis || synthesis;
+    if (!synth) return;
+
+    try {
+        if (synth.paused) {
+            synth.resume();
+        }
+
+        // Silent micro-utterance to force Edge & Android to spin up the speech synthesis service
+        const kick = new SpeechSynthesisUtterance(' ');
+        kick.volume = 0.001; // Tiny volume so it doesn't get stripped
+        kick.rate = 10;
+        kick.onend = () => { loadVoices(); };
+        kick.onerror = () => { loadVoices(); };
+        synth.speak(kick);
+
+        const liveList = synth.getVoices();
+        if (liveList && liveList.length > 0) {
+            const filtered = Array.from(liveList).filter(v => v && typeof v.name === 'string');
+            if (filtered.length > 0) {
+                voices = filtered;
+                rebuildDynamicSettings();
+            }
+        }
+    } catch (e) {
+        console.warn('Speech engine warmup note:', e);
+    }
+}
+
+// Global user-interaction listener: unlocks audio & TTS on the very first touch/click
+const triggerUserGestureWarmup = () => {
+    wakeUpSpeechEngine();
+    loadVoices();
+};
+window.addEventListener('touchstart', triggerUserGestureWarmup, { once: true, passive: true });
+window.addEventListener('pointerdown', triggerUserGestureWarmup, { once: true, passive: true });
+window.addEventListener('click', triggerUserGestureWarmup, { once: true, passive: true });
+
 let voiceLoadAttempts = 0;
 function loadVoices() {
+    const synth = window.speechSynthesis || synthesis;
     let list = [];
-    try { list = synthesis ? synthesis.getVoices() : []; } catch (e) { console.warn('getVoices failed', e); }
-    voices = Array.from(list || []).filter(v => v && typeof v.name === 'string');
-    rebuildDynamicSettings();
-    // Chrome loads native voices async; retry a few times, but never loop forever —
-    // Piper voices already populate the dropdowns even with zero native voices.
-    if (voices.length === 0 && voiceLoadAttempts < 10) {
+    try { list = synth ? synth.getVoices() : []; } catch (e) { console.warn('getVoices failed', e); }
+    const filtered = Array.from(list || []).filter(v => v && typeof v.name === 'string');
+
+    if (filtered.length > 0) {
+        voices = filtered;
+        rebuildDynamicSettings();
+    } else if (voiceLoadAttempts < 25) {
         voiceLoadAttempts++;
-        setTimeout(loadVoices, 500);
+        // Proactively stimulate the TTS engine if voices haven't loaded yet
+        try {
+            if (synth && synth.paused) synth.resume();
+            const kick = new SpeechSynthesisUtterance(' ');
+            kick.volume = 0.001;
+            kick.rate = 10;
+            synth.speak(kick);
+        } catch(e) {}
+        setTimeout(loadVoices, 250);
     }
 }
 
@@ -2082,7 +2138,19 @@ async function playNativeChunk(chunk, nativeVoice, rate, token) {
         updateMediaPosition();
 
         const ok = await new Promise((resolve) => {
+            let settled = false;
+            let watchdog = null;
+
             const utt = new SpeechSynthesisUtterance(currentBatchText);
+            
+            // Dynamic fallback: If nativeVoice was not ready at batch creation, re-query live voices now!
+            if (!nativeVoice && typeof speechSynthesis !== 'undefined') {
+                const liveVoices = speechSynthesis.getVoices();
+                if (liveVoices && liveVoices.length > 0) {
+                    voices = Array.from(liveVoices).filter(v => v && typeof v.name === 'string');
+                    nativeVoice = voices.find(v => v && v.name === selectedVoiceName) || voices.find(v => v && langMatches(v.lang, chunk.lang)) || voices[0];
+                }
+            }
             if (nativeVoice) utt.voice = nativeVoice;
             utt.rate = rate;
             utt.lang = chunk.lang;
@@ -2112,6 +2180,14 @@ async function playNativeChunk(chunk, nativeVoice, rate, token) {
                     }
                 }
             };
+
+            const finish = (e) => {
+                if (settled) return;
+                settled = true;
+                if (watchdog) clearInterval(watchdog);
+                settle(e);
+            };
+
             const settle = (e) => {
                 if (lastActiveWord) {
                     lastActiveWord.classList.remove('active');
@@ -2138,23 +2214,42 @@ async function playNativeChunk(chunk, nativeVoice, rate, token) {
                     }
                     
                     if (isUnexpectedDrop) {
-                        // Automatically restart from the currentIdx to retry the failed sentence!
                         resolve(false);
                         setTimeout(() => {
                             if (isPlaying) {
                                 playMergedQueue();
                             }
-                        }, 500); // small delay to let the engine breathe
+                        }, 500);
                         return;
                     }
                 }
                 
                 resolve(token === playbackToken && isPlaying);
             };
-            utt.onend = settle;
-            utt.onerror = settle;
+
+            // Watchdog: Unpause if Android/Edge paused synthesis unexpectedly
+            watchdog = setInterval(() => {
+                if (!isPlaying || token !== playbackToken) {
+                    finish({ type: 'end' });
+                    return;
+                }
+                const synth = window.speechSynthesis || synthesis;
+                if (synth && synth.paused) {
+                    synth.resume();
+                }
+            }, 1000);
+
+            utt.onend = finish;
+            utt.onerror = finish;
             window.utterances.push(utt);
-            synthesis.speak(utt);
+            try {
+                const synth = window.speechSynthesis || synthesis;
+                if (synth && synth.paused) synth.resume();
+                synth.speak(utt);
+            } catch (err) {
+                console.error("synthesis.speak error:", err);
+                finish({ type: 'error' });
+            }
         });
 
         currentBatch = [];
@@ -2287,6 +2382,9 @@ function togglePlay() {
         releaseWakeLock();
         if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
     } else {
+        // Proactively wake up speech engine on user play gesture
+        wakeUpSpeechEngine();
+
         ghostAudio.play().then(() => {
             updateMediaSessionMetadata();
             if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
@@ -2440,9 +2538,16 @@ setupModalClosing();
 function init() {
     // Build the panel immediately so selects are never blank while Piper voices download
     rebuildDynamicSettings();
+    
+    // Proactively warm up browser speech engine on Android / Edge
+    wakeUpSpeechEngine();
+
     fetchPiperVoices().then(() => loadVoices()).catch(e => { console.error('init voices failed', e); loadVoices(); });
-    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+    if (typeof speechSynthesis !== 'undefined') {
         speechSynthesis.onvoiceschanged = loadVoices;
+        try {
+            speechSynthesis.addEventListener('voiceschanged', loadVoices);
+        } catch(e) {}
     }
     initMediaSession();
 }
