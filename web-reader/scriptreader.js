@@ -1,5 +1,9 @@
 let synthesis = window.speechSynthesis;
-let piperVoicesList = [];
+const PIPER_FALLBACK_VOICES = [
+    { isPiper: true, key: 'ka_GE-natia-medium', name: '☁️ Piper — Georgian (Natia, medium)', lang: 'ka_GE', path: 'ka/ka_GE/natia/medium/ka_GE-natia-medium' },
+    { isPiper: true, key: 'en_US-lessac-medium', name: '☁️ Piper — English (Lessac, medium)', lang: 'en_US', path: 'en/en_US/lessac/medium/en_US-lessac-medium' }
+];
+let piperVoicesList = PIPER_FALLBACK_VOICES.slice();
 let detectedBookLanguages = new Set();
 let piperWorkers = {};
 let parsedContent = [];
@@ -67,11 +71,6 @@ ghostAudio.preload = 'auto';
 ghostAudio.volume = 0.1;
 let wakeLock = null;
 
-const PIPER_FALLBACK_VOICES = [
-    { isPiper: true, key: 'ka_GE-natia-medium', name: '☁️ Piper — Georgian (Natia, medium)', lang: 'ka_GE', path: 'ka/ka_GE/natia/medium/ka_GE-natia-medium' },
-    { isPiper: true, key: 'en_US-lessac-medium', name: '☁️ Piper — English (Lessac, medium)', lang: 'en_US', path: 'en/en_US/lessac/medium/en_US-lessac-medium' }
-];
-
 function isValidPiperEntry(v) {
     return !!v && v.isPiper === true
         && typeof v.name === 'string' && v.name.length > 0
@@ -89,8 +88,11 @@ async function fetchPiperVoices(forceRefresh = false) {
             try {
                 const parsed = JSON.parse(cached);
                 // Every entry must be well-formed, otherwise the cache is corrupt — drop it and refetch
-                if (Array.isArray(parsed) && parsed.length > 0 && parsed.every(isValidPiperEntry) && parsed[0].lang.includes('_')) {
+                if (Array.isArray(parsed) && parsed.length > 0 && parsed.every(isValidPiperEntry)) {
                     piperVoicesList = parsed;
+                    if (!piperVoicesList.some(v => v.key === 'ka_GE-natia-medium')) {
+                        piperVoicesList.unshift(PIPER_FALLBACK_VOICES[0]);
+                    }
                     return piperVoicesList;
                 }
                 localStorage.removeItem('piper_voices_cache');
@@ -109,7 +111,7 @@ async function fetchPiperVoices(forceRefresh = false) {
             return {
                 isPiper: true,
                 key: v.key || k,
-                name: `☁️ Piper — ${v.language.name_english || v.language.code} (${v.name || k}, ${v.quality || 'medium'})`,
+                name: (k === 'ka_GE-natia-medium') ? '☁️ Piper — Georgian (Natia, medium)' : `☁️ Piper — ${v.language.name_english || v.language.code} (${v.name || k}, ${v.quality || 'medium'})`,
                 lang: String(v.language.code),
                 path: onnxFile.replace('.onnx', '')
             };
@@ -120,7 +122,7 @@ async function fetchPiperVoices(forceRefresh = false) {
 
         const hasGeorgian = piperVoicesList.some(v => v.key === 'ka_GE-natia-medium');
         if (!hasGeorgian) {
-            piperVoicesList.push(PIPER_FALLBACK_VOICES[0]);
+            piperVoicesList.unshift(PIPER_FALLBACK_VOICES[0]);
         }
 
         try { localStorage.setItem('piper_voices_cache', JSON.stringify(piperVoicesList)); } catch (e) {}
@@ -1315,14 +1317,24 @@ function rebuildDynamicSettings() {
             voiceSelect.appendChild(opt);
         } else {
             const savedVoice = localStorage.getItem(`voice-${currentLang}`);
+            const piperOpt = Array.from(voiceSelect.options).find(o => Array.from(voiceSelect.options).some(x => x.parentElement.label === "Piper Offline Voices" && x === o));
+
             if (savedVoice && Array.from(voiceSelect.options).some(o => o.value === savedVoice)) {
-                voiceSelect.value = savedVoice;
+                // If Georgian ('ka') and saved voice was mistakenly set to google:standard, recover Piper Natia!
+                if (currentLang === 'ka' && savedVoice.startsWith('google:') && piperOpt) {
+                    voiceSelect.value = piperOpt.value;
+                    try { localStorage.setItem(`voice-${currentLang}`, piperOpt.value); } catch(e){}
+                } else {
+                    voiceSelect.value = savedVoice;
+                }
             } else {
-                const piperOpt = Array.from(voiceSelect.options).find(o => Array.from(voiceSelect.options).some(x => x.parentElement.label === "Piper Offline Voices" && x === o));
                 if (piperOpt) {
                     voiceSelect.value = piperOpt.value;
                 } else {
                     voiceSelect.selectedIndex = 0;
+                }
+                if (voiceSelect.value) {
+                    try { localStorage.setItem(`voice-${currentLang}`, voiceSelect.value); } catch(e){}
                 }
             }
         }
@@ -2542,7 +2554,14 @@ function init() {
     // Proactively warm up browser speech engine on Android / Edge
     wakeUpSpeechEngine();
 
-    fetchPiperVoices().then(() => loadVoices()).catch(e => { console.error('init voices failed', e); loadVoices(); });
+    fetchPiperVoices().then(() => {
+        rebuildDynamicSettings();
+        loadVoices();
+    }).catch(e => {
+        console.error('init voices failed', e);
+        rebuildDynamicSettings();
+        loadVoices();
+    });
     if (typeof speechSynthesis !== 'undefined') {
         speechSynthesis.onvoiceschanged = loadVoices;
         try {
