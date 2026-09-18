@@ -23,7 +23,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <meta name="description" content="Neural EPUB & Voice Reader by Zurab Kostava">
 
     <!-- PWA & Mobile Web App Manifest -->
-    <link rel="manifest" href="<?php echo get_template_directory_uri(); ?>/web-reader/manifest.json">
+    <link rel="manifest" href="<?php echo get_template_directory_uri(); ?>/web-reader/manifest.json?v=<?php echo time(); ?>">
     <meta name="theme-color" content="#090d16">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">

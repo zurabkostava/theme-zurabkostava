@@ -5,7 +5,7 @@
   "id": "/projects/reader/",
   "start_url": "/projects/reader/",
   "scope": "/projects/reader",
-  "display": "standalone",
+  "display": "minimal-ui",
   "orientation": "any",
   "background_color": "#090d16",
   "theme_color": "#090d16",
