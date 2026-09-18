@@ -440,6 +440,7 @@
         min-height: 0;
         overflow-y: auto;
         overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
         padding: 24px;
         position: relative; /* კრიტიკულია offsetTop-ის სწორად დასათვლელად */
 
@@ -477,20 +478,22 @@
         cursor: pointer;
         border-radius: 6px;
         padding: 2px 4px;
-        transition: background 0.2s, color 0.2s;
+        transition: opacity 0.25s ease, background-color 0.2s ease, color 0.2s ease;
     }
-    /* ეს არის მთავარი - მთლიან წინადადებას ამკრთალებს */
+    /* წაკითხული წინადადება - მსუბუქი, მკაფიო და GPU-სთვის 100% თავისუფალი (Blur-ის გარეშე) */
     .sentence.read {
-        opacity: 0.4; /* 40% გამჭვირვალობა */
-        color: #64748b; /* მონაცრისფრო ფერი */
-        transition: opacity 0.3s ease, color 0.3s ease;
+        opacity: 0.35 !important;
+        color: #64748b !important;
+        background: transparent !important;
+        box-shadow: none !important;
     }
 
-    /* აქტიურ წინადადებას მკვეთრად ვტოვებთ */
+    /* აქტიური წინადადება */
     .sentence.active {
-        opacity: 1;
-        color: inherit;
-        background-color: rgba(56, 189, 248, 0.1); /* ოდნავ ცისფერი ფონი */
+        opacity: 1 !important;
+        color: var(--text-main) !important;
+        background: rgba(56, 189, 248, 0.12) !important;
+        box-shadow: inset 3px 0 0 0 var(--primary) !important;
         border-radius: 4px;
     }
 
@@ -509,11 +512,6 @@
     .epub-header-h6 { font-size: 1.05em; color: #cbd5e1; text-transform: uppercase; }
 
     .sentence:hover { color: var(--text-main); }
-    .sentence.active {
-        background: rgba(56, 189, 248, 0.1);
-        color: var(--text-main);
-        box-shadow: inset 3px 0 0 0 var(--primary);
-    }
 
     .word.active {
         color: #fff;
@@ -525,26 +523,6 @@
         position: relative;
     }
 
-    /* 0.7 Opacity (უფრო მკაფიო) */
-    .sentence.read {
-        opacity: 0.3 !important; /* უფრო მეტად ჩავაქროთ */
-        filter: blur(0.2px); /* ოდნავ ბუნდოვანი, რომ თვალმა აქტიურზე მოახდინოს ფოკუსი */
-        transition: opacity 0.5s ease, filter 0.5s ease;
-    }
-
-    .word.read {
-        opacity: 0.7 !important;
-        transition: opacity 0.2s ease;
-        background: transparent !important;
-        box-shadow: none !important;
-        color: inherit !important; /* ფერიც ჩვეულებრივი გახდეს */
-    }
-
-    /* აქტიური წინადადება */
-    .sentence.active {
-        opacity: 1 !important;
-        background: rgba(56, 189, 248, 0.1); /* ოდნავ განათებული ფონი */
-    }
     .edit-mode-active {
         outline: 2px dashed var(--primary);
         outline-offset: -2px;

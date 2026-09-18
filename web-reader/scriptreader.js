@@ -557,13 +557,12 @@ function updateProgressPercentage() {
         
         if (activeIndex === currentSpineIndex && parsedContent.length > 0) {
             let charsUpToActive = 0;
-            let totalCharsInChapter = 0;
-            for (let i = 0; i < parsedContent.length; i++) {
-                const len = parsedContent[i].textForUI ? parsedContent[i].textForUI.length : 1;
-                if (i < activeSentenceIdx) charsUpToActive += len;
-                totalCharsInChapter += len;
+            const totalCharsInChapter = window.currentChapterTotalChars || 1;
+            const limit = Math.min(activeSentenceIdx, parsedContent.length);
+            for (let i = 0; i < limit; i++) {
+                charsUpToActive += (parsedContent[i].charLen || 1);
             }
-            progressInChapter = totalCharsInChapter > 0 ? (charsUpToActive / totalCharsInChapter) : 0;
+            progressInChapter = (charsUpToActive / totalCharsInChapter);
         }
         
         let currentProgressLength = currentChapterLength * progressInChapter;
@@ -579,13 +578,12 @@ function updateProgressPercentage() {
             let chapterInsideProgress = 0;
             if (activeIndex === currentSpineIndex && parsedContent.length > 0) {
                 let charsUpToActive = 0;
-                let totalCharsInChapter = 0;
-                for (let i = 0; i < parsedContent.length; i++) {
-                    const len = parsedContent[i].textForUI ? parsedContent[i].textForUI.length : 1;
-                    if (i < activeSentenceIdx) charsUpToActive += len;
-                    totalCharsInChapter += len;
+                const totalCharsInChapter = window.currentChapterTotalChars || 1;
+                const limit = Math.min(activeSentenceIdx, parsedContent.length);
+                for (let i = 0; i < limit; i++) {
+                    charsUpToActive += (parsedContent[i].charLen || 1);
                 }
-                const progressInChapter = totalCharsInChapter > 0 ? (charsUpToActive / totalCharsInChapter) : 0;
+                const progressInChapter = (charsUpToActive / totalCharsInChapter);
                 chapterInsideProgress = progressInChapter * currentChapterWeight;
             }
             finalFraction = baseProgress + chapterInsideProgress;
@@ -698,7 +696,6 @@ async function displayChapter(href, delay = 0) {
         document.querySelectorAll('.sentence').forEach(el => {
             el.classList.add('read');
             el.classList.remove('active');
-            el.querySelectorAll('.word').forEach(w => w.classList.add('read'));
         });
     }
     // თუ ზუსტად იმ თავში ვართ, სადაც გავჩერდით -> აღვადგინოთ წინადადება
@@ -1512,6 +1509,8 @@ function processText(rawHtml) {
     contentArea.innerHTML = '';
     contentArea.scrollTop = 0;
     parsedContent = [];
+    window.currentChapterTotalChars = 0;
+    lastHighlightedIdx = -1;
     let sCounter = 0;
     let lastDetectedLang = 'ka';
     
@@ -1616,7 +1615,9 @@ function processText(rawHtml) {
                 if (isPlaying) playMergedQueue();
             });
             pDiv.appendChild(sSpan);
-            parsedContent.push({ index: sCounter, pIndex: pIdx, textForUI: originalDisplay, lang: detectedLang, element: sSpan });
+            const charLen = originalDisplay ? originalDisplay.length : 1;
+            window.currentChapterTotalChars += charLen;
+            parsedContent.push({ index: sCounter, pIndex: pIdx, textForUI: originalDisplay, lang: detectedLang, element: sSpan, charLen });
             sCounter++;
         });
         contentArea.appendChild(pDiv);
@@ -2040,7 +2041,7 @@ function runWordHighlights(audio, spoken, token, sentenceRanges) {
     let lastSentIdx = currentIdx;
     const step = () => {
         if (token !== playbackToken || audio.ended) {
-            if (lastEl) { lastEl.classList.remove('active'); lastEl.classList.add('read'); }
+            if (lastEl) { lastEl.classList.remove('active'); }
             return;
         }
         const dur = audio.duration;
@@ -2049,7 +2050,7 @@ function runWordHighlights(audio, spoken, token, sentenceRanges) {
             let range = null;
             for (const r of spoken.wordRanges) { if (pos >= r.start && pos < r.end) { range = r; break; } }
             if (range && lastEl !== range.el) {
-                if (lastEl) { lastEl.classList.remove('active'); lastEl.classList.add('read'); }
+                if (lastEl) { lastEl.classList.remove('active'); }
                 range.el.classList.add('active');
                 lastEl = range.el;
                 
@@ -2332,55 +2333,101 @@ function navigateSentence(dir) {
     if (isPlaying) playMergedQueue();
 }
 
-// 🔥 განახლებული Highlight Sentence - შენახვის ცენტრი
+// 🔥 Ultra-Optimized Highlight Sentence (O(1) sequential reading, zero DOM thrashing)
+let lastHighlightedIdx = -1;
+
 function highlightSentence(idx, saveToStorage = false) {
     if (!parsedContent || parsedContent.length === 0) return;
+    if (idx < 0) idx = 0;
+    if (idx >= parsedContent.length) idx = parsedContent.length - 1;
+    currentIdx = idx;
 
-    // ვიზუალი
-    parsedContent.forEach((item, i) => {
-        const el = item.element;
-        const words = el.querySelectorAll('.word');
+    const currentItem = parsedContent[idx];
+    const currentEl = currentItem ? currentItem.element : null;
+    if (!currentEl) return;
 
-        if (i < idx) {
-            el.classList.add('read');
-            el.classList.remove('active');
-            words.forEach(w => { w.classList.add('read'); w.classList.remove('active'); });
+    // 1. FAST PATH: Sequential step forward (99.9% of normal continuous reading)
+    if (lastHighlightedIdx !== -1 && idx === lastHighlightedIdx + 1) {
+        const prevItem = parsedContent[lastHighlightedIdx];
+        if (prevItem && prevItem.element) {
+            prevItem.element.classList.remove('active');
+            prevItem.element.classList.add('read');
+            const prevWord = prevItem.element.querySelector('.word.active');
+            if (prevWord) prevWord.classList.remove('active');
         }
-        else if (i === idx) {
-            el.classList.remove('read');
-            el.classList.add('active');
-            words.forEach(w => { w.classList.remove('read', 'active'); });
-            scrollToCenter(contentArea, el);
+        currentEl.classList.remove('read');
+        currentEl.classList.add('active');
+    }
+    // 2. JUMP / SEEK / INITIAL LOAD PATH: Only runs when user seeks or jumps
+    else {
+        for (let i = 0; i < parsedContent.length; i++) {
+            const el = parsedContent[i].element;
+            if (!el) continue;
+            if (i < idx) {
+                if (!el.classList.contains('read')) el.classList.add('read');
+                if (el.classList.contains('active')) el.classList.remove('active');
+            } else if (i === idx) {
+                if (el.classList.contains('read')) el.classList.remove('read');
+                if (!el.classList.contains('active')) el.classList.add('active');
+            } else {
+                if (el.classList.contains('read')) el.classList.remove('read');
+                if (el.classList.contains('active')) el.classList.remove('active');
+            }
         }
-        else {
-            el.classList.remove('read', 'active');
-            words.forEach(w => { w.classList.remove('read', 'active'); });
-        }
-    });
-
-    // 📍 შენახვის ლოგიკა - მხოლოდ თუ saveToStorage არის True
-    if (saveToStorage && window.currentRawEpubFile && currentBook) {
-        // 1. ვინახავთ წინადადების ნომერს
-        localStorage.setItem('epub_idx_' + window.currentRawEpubFile.name, idx);
-
-        // 2. ვინახავთ თავის მისამართს (HREF) - ეს არის მთავარი!
-        // ეს ხდება "Max Chapter"-ის მსგავსად, ახლა ესაა აქტიური თავი.
-        const currentItem = currentBook.spine.get(currentSpineIndex);
-        if (currentItem) {
-            localStorage.setItem('epub_progress_' + window.currentRawEpubFile.name, currentItem.href);
-        }
-
-        // 3. ვაახლებთ პროცენტებს და საიდბარს (რადგან რეალური პოზიცია შეიცვალა)
-        updateProgressPercentage();
-        updateSidebarStyling();
-        syncProgressToCloud(true);
+        document.querySelectorAll('.word.active').forEach(w => w.classList.remove('active'));
     }
 
+    lastHighlightedIdx = idx;
+
+    // 3. Viewport-aware, steady scrolling (no continuous smooth-scroll interrupts)
+    scrollToCenter(contentArea, currentEl);
+
+    // 4. Progress bar (lightweight, single element width calculation)
     updateProgressBar();
+
+    // 5. Storage and Cloud Sync (debounced)
+    if (saveToStorage && window.currentRawEpubFile && currentBook) {
+        localStorage.setItem('epub_idx_' + window.currentRawEpubFile.name, idx);
+
+        const currentSpineItem = currentBook.spine.get(currentSpineIndex);
+        if (currentSpineItem) {
+            localStorage.setItem('epub_progress_' + window.currentRawEpubFile.name, currentSpineItem.href);
+        }
+
+        updateProgressPercentage();
+        // Debounced sync (2s) to prevent spamming HTTP POST on every sentence
+        syncProgressToCloud(false);
+    }
 }
 
-function scrollToCenter(container, element) { const elementTop = element.offsetTop; const elementHeight = element.offsetHeight; const containerHeight = container.clientHeight; let targetScroll = elementTop - (containerHeight / 2) + (elementHeight / 2); if (targetScroll < 0) { targetScroll = 0; } container.scrollTo({ top: targetScroll, behavior: 'smooth' }); }
-function clearHighlights() { document.querySelectorAll('.sentence.active').forEach(el => el.classList.remove('active')); document.querySelectorAll('.word.active').forEach(el => el.classList.remove('active')); document.querySelectorAll('.word.read').forEach(el => el.classList.remove('read')); }
+function scrollToCenter(container, element) {
+    if (!container || !element) return;
+    
+    // Check if element is already comfortably in the middle reading viewport
+    const containerRect = container.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+    
+    const relTop = elementRect.top - containerRect.top;
+    const relBottom = elementRect.bottom - containerRect.top;
+    const viewHeight = container.clientHeight;
+    
+    // Comfort zone: between 15% and 65% of viewport height
+    const isComfortable = (relTop >= viewHeight * 0.15) && (relBottom <= viewHeight * 0.65);
+    if (isComfortable) return; // Steady reading — no scroll needed!
+
+    const elementTop = element.offsetTop;
+    const elementHeight = element.offsetHeight;
+    let targetScroll = elementTop - (viewHeight / 2) + (elementHeight / 2);
+    if (targetScroll < 0) targetScroll = 0;
+    
+    container.scrollTo({ top: targetScroll, behavior: 'smooth' });
+}
+
+function clearHighlights() {
+    lastHighlightedIdx = -1;
+    document.querySelectorAll('.sentence.active').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.word.active').forEach(el => el.classList.remove('active'));
+}
 function setupModalClosing() {
     const modalOverlay = document.getElementById('book-info-modal');
     const closeBtn = document.getElementById('close-modal-btn');
