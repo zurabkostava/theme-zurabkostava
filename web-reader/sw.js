@@ -13,7 +13,7 @@ self.addEventListener('fetch', (event) => {
 
     // Do not cache or intercept dynamic TTS audio streams or external API calls
     const url = new URL(event.request.url);
-    if (url.pathname.includes('google-tts.php') || url.hostname.includes('puter.com') || url.pathname.includes('/neural/v1/')) {
+    if (url.pathname.includes('google-tts.php') || url.pathname.includes('edge-tts.php') || url.hostname.includes('puter.com') || url.pathname.includes('/neural/v1/')) {
         return;
     }
 

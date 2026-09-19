@@ -1301,6 +1301,46 @@ function rebuildDynamicSettings() {
             voiceSelect.appendChild(optGroup);
         }
         
+        // ✨ Microsoft Natural Neural Voices (Edge-TTS Proxy)
+        const edgeOptGroup = document.createElement('optgroup');
+        edgeOptGroup.label = "✨ Microsoft Natural AI (Free Cloud)";
+        if (currentLang === 'ka') {
+            const ekaOpt = document.createElement('option');
+            ekaOpt.value = 'edge:ka-GE-EkaNeural';
+            ekaOpt.textContent = "✨ Microsoft — ეკა (Natural, ქალი)";
+            edgeOptGroup.appendChild(ekaOpt);
+
+            const giorgiOpt = document.createElement('option');
+            giorgiOpt.value = 'edge:ka-GE-GiorgiNeural';
+            giorgiOpt.textContent = "✨ Microsoft — გიორგი (Natural, კაცი)";
+            edgeOptGroup.appendChild(giorgiOpt);
+
+            voiceSelect.appendChild(edgeOptGroup);
+        } else if (currentLang === 'en') {
+            const jennyOpt = document.createElement('option');
+            jennyOpt.value = 'edge:en-US-JennyNeural';
+            jennyOpt.textContent = "✨ Microsoft — Jenny (Natural, Female)";
+            edgeOptGroup.appendChild(jennyOpt);
+
+            const guyOpt = document.createElement('option');
+            guyOpt.value = 'edge:en-US-GuyNeural';
+            guyOpt.textContent = "✨ Microsoft — Guy (Natural, Male)";
+            edgeOptGroup.appendChild(guyOpt);
+
+            voiceSelect.appendChild(edgeOptGroup);
+        } else if (currentLang === 'ru') {
+            const svetlanaOpt = document.createElement('option');
+            svetlanaOpt.value = 'edge:ru-RU-SvetlanaNeural';
+            svetlanaOpt.textContent = "✨ Microsoft — Светлана (Natural)";
+            edgeOptGroup.appendChild(svetlanaOpt);
+
+            const dmitryOpt = document.createElement('option');
+            dmitryOpt.value = 'edge:ru-RU-DmitryNeural';
+            dmitryOpt.textContent = "✨ Microsoft — Дмитрий (Natural)";
+            edgeOptGroup.appendChild(dmitryOpt);
+
+            voiceSelect.appendChild(edgeOptGroup);
+        }
 
         const googleOptGroup = document.createElement('optgroup');
         googleOptGroup.label = "☁️ Free Cloud (Google)";
@@ -1317,18 +1357,21 @@ function rebuildDynamicSettings() {
             voiceSelect.appendChild(opt);
         } else {
             const savedVoice = localStorage.getItem(`voice-${currentLang}`);
+            const edgeOpt = Array.from(voiceSelect.options).find(o => o.value && o.value.startsWith('edge:'));
             const piperOpt = Array.from(voiceSelect.options).find(o => Array.from(voiceSelect.options).some(x => x.parentElement.label === "Piper Offline Voices" && x === o));
 
             if (savedVoice && Array.from(voiceSelect.options).some(o => o.value === savedVoice)) {
-                // If Georgian ('ka') and saved voice was mistakenly set to google:standard, recover Piper Natia!
-                if (currentLang === 'ka' && savedVoice.startsWith('google:') && piperOpt) {
-                    voiceSelect.value = piperOpt.value;
-                    try { localStorage.setItem(`voice-${currentLang}`, piperOpt.value); } catch(e){}
+                // If Georgian ('ka') and saved voice was mistakenly set to google:standard, recover Edge Eka or Piper Natia!
+                if (currentLang === 'ka' && savedVoice.startsWith('google:')) {
+                    voiceSelect.value = edgeOpt ? edgeOpt.value : (piperOpt ? piperOpt.value : voiceSelect.options[0].value);
+                    try { localStorage.setItem(`voice-${currentLang}`, voiceSelect.value); } catch(e){}
                 } else {
                     voiceSelect.value = savedVoice;
                 }
             } else {
-                if (piperOpt) {
+                if (edgeOpt && currentLang === 'ka') {
+                    voiceSelect.value = edgeOpt.value; // Default to Microsoft Eka on fresh load!
+                } else if (piperOpt) {
                     voiceSelect.value = piperOpt.value;
                 } else {
                     voiceSelect.selectedIndex = 0;
@@ -2083,6 +2126,132 @@ async function playGoogleChunk(chunk, rate, token) {
     return token === playbackToken && isPlaying;
 }
 
+// ============================================================================
+// ✨ Microsoft Edge Natural Neural Voice Engine (via edge-tts.php Proxy)
+// ============================================================================
+let currentEdgeAudio = null;
+
+function stopEdgeAudio() {
+    if (currentEdgeAudio) {
+        try {
+            currentEdgeAudio.pause();
+            currentEdgeAudio.currentTime = 0;
+        } catch(e) {}
+        currentEdgeAudio = null;
+    }
+}
+
+function playEdgeAudio(audioUrl, rate, spoken, token) {
+    return new Promise((resolve) => {
+        const audio = new Audio(audioUrl);
+        currentEdgeAudio = audio;
+        audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
+        let done = false;
+        const finish = () => {
+            if (done) return;
+            done = true;
+            clearInterval(guard);
+            if (currentEdgeAudio === audio) currentEdgeAudio = null;
+            URL.revokeObjectURL(audioUrl);
+            resolve();
+        };
+        const guard = setInterval(() => {
+            if (token !== playbackToken || !isPlaying) {
+                audio.pause();
+                finish();
+            }
+        }, 100);
+        audio.onended = finish;
+        audio.onerror = (e) => {
+            console.warn("Edge audio error:", e);
+            finish();
+        };
+        audio.addEventListener('loadedmetadata', () => {
+            if (spoken && spoken.totalChars) {
+                runWordHighlights(audio, spoken, token, null);
+            }
+        });
+        audio.play().catch(finish);
+    });
+}
+
+async function playEdgeChunk(chunk, voiceKey, rate, token) {
+    const edgeVoice = voiceKey.replace('edge:', '') || 'ka-GE-EkaNeural';
+    const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
+    const base = window.THEME_URI || '/wp-content/themes/zurabkostava';
+
+    async function fetchEdgeBlob(text) {
+        const hasSpeakable = (() => {
+            try { return new RegExp('\\p{L}|\\p{N}', 'u').test(text); }
+            catch(e) { return /[a-zA-Z0-9\u10D0-\u10FA\u10A0-\u10CF\u0400-\u04FF]/.test(text); }
+        })();
+        if (!text || !hasSpeakable) return null;
+
+        const rateParam = (rate !== 1) ? `${Math.round((rate - 1) * 100)}%` : '+0%';
+        const fetchUrl = `${base}/web-reader/edge-tts.php?voice=${encodeURIComponent(edgeVoice)}&rate=${encodeURIComponent(rateParam)}&text=${encodeURIComponent(text)}`;
+        try {
+            const res = await fetch(fetchUrl);
+            if (!res.ok) {
+                console.warn(`Edge-TTS server returned HTTP ${res.status}`);
+                return null;
+            }
+            const blob = await res.blob();
+            if (blob.size < 100) return null;
+            return URL.createObjectURL(blob);
+        } catch (e) {
+            console.error("Failed to fetch Edge TTS audio:", e);
+            return null;
+        }
+    }
+
+    let nextBlobPromise = (spokenList.length > 0) ? fetchEdgeBlob(spokenList[0].text) : null;
+
+    for (let i = 0; i < chunk.sentences.length; i++) {
+        if (token !== playbackToken || !isPlaying) return false;
+
+        const currentItem = chunk.sentences[i];
+        const globalIdx = currentItem.index;
+
+        if (globalIdx > 0) {
+            const prevItem = parsedContent[globalIdx - 1];
+            const currType = getHeaderType(currentItem.element);
+            const prevType = getHeaderType(prevItem ? prevItem.element : null);
+
+            const beforeMs = currType === 'main' ? pauseSettings.mainHeader : (currType === 'internal' ? pauseSettings.internalHeader : (currentItem.pIndex !== (prevItem ? prevItem.pIndex : currentItem.pIndex) ? pauseSettings.paragraph : 0));
+            const afterMs = prevType ? pauseSettings.postHeader : 0;
+            const delayMs = Math.max(beforeMs, afterMs);
+
+            if (delayMs > 0) {
+                await new Promise(r => setTimeout(r, delayMs));
+            }
+        }
+        if (token !== playbackToken || !isPlaying) return false;
+
+        currentIdx = chunk.sentences[i].index;
+        highlightSentence(currentIdx, true);
+        updateMediaPosition();
+
+        let currentBlobUrl = await nextBlobPromise;
+        if (i + 1 < chunk.sentences.length) {
+            nextBlobPromise = fetchEdgeBlob(spokenList[i + 1].text);
+        } else {
+            nextBlobPromise = null;
+        }
+
+        if (token !== playbackToken || !isPlaying) {
+            if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+            return false;
+        }
+
+        if (currentBlobUrl) {
+            await playEdgeAudio(currentBlobUrl, rate, spokenList[i], token);
+        } else {
+            await new Promise(r => setTimeout(r, 600 / rate));
+        }
+    }
+    return token === playbackToken && isPlaying;
+}
+
 function highlightChunk(chunk) {
     document.querySelectorAll('.active').forEach(el => {
         el.classList.remove('active');
@@ -2317,7 +2486,7 @@ async function playNativeChunk(chunk, nativeVoice, rate, token) {
 }
 
 async function playMergedQueue() {
-    synthesis.cancel(); stopPiperAudio();
+    synthesis.cancel(); stopPiperAudio(); stopEdgeAudio();
     window.utterances = [];
     isPlaying = true;
     updatePlayIcon(true);
@@ -2352,6 +2521,9 @@ async function playMergedQueue() {
 
         if (selectedVoiceName && selectedVoiceName.startsWith('google:')) {
             const ok = await playGoogleChunk(chunk, rate, token);
+            if (!ok) return;
+        } else if (selectedVoiceName && selectedVoiceName.startsWith('edge:')) {
+            const ok = await playEdgeChunk(chunk, selectedVoiceName, rate, token);
             if (!ok) return;
         } else if (piperVoice) {
             const state = piperWorkers[chunk.lang];
@@ -2389,6 +2561,7 @@ function togglePlay() {
     if (isPlaying) {
         synthesis.pause();
         ghostAudio.pause();
+        stopEdgeAudio();
         isPlaying = false;
         updatePlayIcon(false);
         releaseWakeLock();
@@ -2419,7 +2592,7 @@ function togglePlay() {
 }
 function stopReading() {
     playbackToken++; // kill any in-flight playback loop
-    synthesis.cancel(); stopPiperAudio();
+    synthesis.cancel(); stopPiperAudio(); stopEdgeAudio();
     window.utterances = [];
     ghostAudio.pause();
     ghostAudio.currentTime = 0;
@@ -2432,7 +2605,7 @@ function stopReading() {
     }
 }
 function navigateSentence(dir) {
-    synthesis.cancel(); stopPiperAudio();
+    synthesis.cancel(); stopPiperAudio(); stopEdgeAudio();
     let newIdx = currentIdx + dir;
     if (newIdx < 0) newIdx = 0;
     if (newIdx >= parsedContent.length) newIdx = parsedContent.length - 1;
