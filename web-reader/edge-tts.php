@@ -18,7 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 if (isset($_GET['diag'])) {
     header('Content-Type: text/plain; charset=utf-8');
     echo "PHP Version: " . PHP_VERSION . "\n";
-    echo "Commit: 377b105-check\n";
+    echo "strlen: " . strlen('გამარჯობა') . "\n";
+    echo "mb_strlen 8bit: " . (function_exists('mb_strlen') ? mb_strlen('გამარჯობა', '8bit') : 'no mb') . "\n";
     $errno = 0; $errstr = '';
     $t0 = microtime(true);
     $fp = @stream_socket_client('ssl://speech.platform.bing.com:443', $errno, $errstr, 5, STREAM_CLIENT_CONNECT);
@@ -81,7 +82,7 @@ function edge_tts_generate_token() {
     $trusted = "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
     $unixTime = time() + 11644473600;
     $unixTime -= ($unixTime % 300);
-    $ticks = sprintf('%.0f', (float)$unixTime * 10000000);
+    $ticks = $unixTime . "0000000";
     return strtoupper(hash('sha256', $ticks . $trusted));
 }
 
@@ -93,11 +94,13 @@ function edge_tts_ws_write_all($fp, $data) {
         if ($n === false || $n === 0) return false;
         $written += $n;
     }
+    fflush($fp);
     return true;
 }
 
 function edge_tts_ws_send_frame($fp, $payload, $opcode = 1) {
-    $len = strlen($payload);
+    $bytes = array_values(unpack('C*', $payload));
+    $len = count($bytes);
     $first = 0x80 | ($opcode & 0x0F);
     if ($len <= 125) {
         $header = pack('CC', $first, 0x80 | $len);
@@ -107,7 +110,11 @@ function edge_tts_ws_send_frame($fp, $payload, $opcode = 1) {
         $header = pack('CCNN', $first, 0x80 | 127, 0, $len);
     }
     $mask = random_bytes(4);
-    $masked = substr($payload ^ str_repeat($mask, (int)ceil($len / 4)), 0, $len);
+    $maskBytes = array_values(unpack('C*', $mask));
+    $masked = '';
+    for ($i = 0; $i < $len; $i++) {
+        $masked .= chr($bytes[$i] ^ $maskBytes[$i % 4]);
+    }
     return edge_tts_ws_write_all($fp, $header . $mask . $masked);
 }
 
@@ -167,6 +174,8 @@ $handshake = "GET {$path} HTTP/1.1\r\n" .
              "Pragma: no-cache\r\n" .
              "Cache-Control: no-cache\r\n" .
              "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0\r\n" .
+             "Accept-Encoding: gzip, deflate, br, zstd\r\n" .
+             "Accept-Language: en-US,en;q=0.9\r\n" .
              "Cookie: muid={$muid};\r\n\r\n";
 
 edge_tts_ws_write_all($fp, $handshake);
