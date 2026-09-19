@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 if (isset($_GET['diag'])) {
     header('Content-Type: text/plain; charset=utf-8');
     echo "PHP Version: " . PHP_VERSION . "\n";
+    echo "Commit: 377b105-check\n";
     $errno = 0; $errstr = '';
     $t0 = microtime(true);
     $fp = @stream_socket_client('ssl://speech.platform.bing.com:443', $errno, $errstr, 5, STREAM_CLIENT_CONNECT);
@@ -84,6 +85,17 @@ function edge_tts_generate_token() {
     return strtoupper(hash('sha256', $ticks . $trusted));
 }
 
+function edge_tts_ws_write_all($fp, $data) {
+    $total = strlen($data);
+    $written = 0;
+    while ($written < $total) {
+        $n = fwrite($fp, substr($data, $written));
+        if ($n === false || $n === 0) return false;
+        $written += $n;
+    }
+    return true;
+}
+
 function edge_tts_ws_send_frame($fp, $payload, $opcode = 1) {
     $len = strlen($payload);
     $first = 0x80 | ($opcode & 0x0F);
@@ -95,21 +107,21 @@ function edge_tts_ws_send_frame($fp, $payload, $opcode = 1) {
         $header = pack('CCNN', $first, 0x80 | 127, 0, $len);
     }
     $mask = random_bytes(4);
-    $masked = '';
-    for ($i = 0; $i < $len; $i++) {
-        $masked .= $payload[$i] ^ $mask[$i % 4];
-    }
-    return fwrite($fp, $header . $mask . $masked);
+    $masked = substr($payload ^ str_repeat($mask, (int)ceil($len / 4)), 0, $len);
+    return edge_tts_ws_write_all($fp, $header . $mask . $masked);
 }
 
 function edge_tts_ws_read_exact($fp, $n) {
     $data = '';
+    $retries = 0;
     while (strlen($data) < $n) {
         $chunk = fread($fp, $n - strlen($data));
         if ($chunk === false || strlen($chunk) === 0) {
             if (feof($fp)) return null;
             $meta = stream_get_meta_data($fp);
             if (!empty($meta['timed_out'])) return null;
+            $retries++;
+            if ($retries > 5000) return null; // 5s max wait
             usleep(1000);
             continue;
         }
@@ -157,7 +169,7 @@ $handshake = "GET {$path} HTTP/1.1\r\n" .
              "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0\r\n" .
              "Cookie: muid={$muid};\r\n\r\n";
 
-fwrite($fp, $handshake);
+edge_tts_ws_write_all($fp, $handshake);
 
 $handshakeResp = '';
 while (!feof($fp)) {
@@ -197,6 +209,7 @@ edge_tts_ws_send_frame($fp, $ssmlMsg, 1);
 // 7. Receive Audio Frames
 $audioData = '';
 $debugLog = [];
+$debugLog[] = "Sent SSML voice={$voice}, rate={$rate}";
 
 while (!feof($fp)) {
     $h = edge_tts_ws_read_exact($fp, 2);
@@ -262,7 +275,7 @@ while (!feof($fp)) {
             $debugLog[] = "Binary frame too short: " . strlen($payload);
         }
     } elseif ($opcode === 1) { // Text Frame
-        $debugLog[] = "Text frame: " . $payload;
+        $debugLog[] = "Text frame: " . trim($payload);
         if (strpos($payload, 'Path:turn.end') !== false) {
             break;
         }
