@@ -44,6 +44,8 @@ if (isset($_GET['diag'])) {
     
     $wsKey = base64_encode(random_bytes(16));
     $muid = strtoupper(bin2hex(random_bytes(16)));
+    $clientIp = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '178.134.16.1';
+    if (strpos($clientIp, ',') !== false) { $clientIp = trim(explode(',', $clientIp)[0]); }
     $handshake = "GET {$path} HTTP/1.1\r\n" .
                  "Host: speech.platform.bing.com\r\n" .
                  "Connection: Upgrade\r\n" .
@@ -56,6 +58,8 @@ if (isset($_GET['diag'])) {
                  "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0\r\n" .
                  "Accept-Encoding: gzip, deflate, br, zstd\r\n" .
                  "Accept-Language: en-US,en;q=0.9\r\n" .
+                 "X-Forwarded-For: {$clientIp}\r\n" .
+                 "X-Real-IP: {$clientIp}\r\n" .
                  "Cookie: muid={$muid};\r\n\r\n";
     edge_tts_ws_write_all($fp, $handshake);
     
@@ -250,6 +254,8 @@ stream_set_timeout($fp, 15);
 // Handshake
 $wsKey = base64_encode(random_bytes(16));
 $muid = strtoupper(bin2hex(random_bytes(16)));
+$clientIp = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '178.134.16.1';
+if (strpos($clientIp, ',') !== false) { $clientIp = trim(explode(',', $clientIp)[0]); }
 $handshake = "GET {$path} HTTP/1.1\r\n" .
              "Host: speech.platform.bing.com\r\n" .
              "Connection: Upgrade\r\n" .
@@ -262,6 +268,8 @@ $handshake = "GET {$path} HTTP/1.1\r\n" .
              "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0\r\n" .
              "Accept-Encoding: gzip, deflate, br, zstd\r\n" .
              "Accept-Language: en-US,en;q=0.9\r\n" .
+             "X-Forwarded-For: {$clientIp}\r\n" .
+             "X-Real-IP: {$clientIp}\r\n" .
              "Cookie: muid={$muid};\r\n\r\n";
 
 edge_tts_ws_write_all($fp, $handshake);
