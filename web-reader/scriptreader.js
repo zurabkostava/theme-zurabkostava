@@ -390,9 +390,13 @@ async function loadEpub(file) {
         currentBook = ePub(bookData);
         window.currentBook = currentBook;
 
-        // 🏗️ 1. Locations დაგენერირება - შეცვლილია ჩვენი ზუსტი მთვლელით
+        // 🏗️ 1. Locations დაგენერირება (Background / Non-blocking)
         currentBook.ready.then(() => {
-            return calculateGlobalChapterWeights();
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(() => calculateGlobalChapterWeights(), { timeout: 2000 });
+            } else {
+                setTimeout(() => calculateGlobalChapterWeights(), 60);
+            }
         });
 
         // 🏗️ 2. Metadata
@@ -509,12 +513,13 @@ async function calculateGlobalChapterWeights() {
         } catch(e) {}
     }
     
-    console.log("📍 Calculating true global chapter weights...");
     const weights = [];
     let totalLength = 0;
+    const spineLength = currentBook.spine ? currentBook.spine.length : 0;
     
-    // Process sequentially so we don't crash or block
-    for (let i = 0; i < currentBook.spine.length; i++) {
+    // Process in batches yielding to the event loop so the UI remains completely smooth
+    for (let i = 0; i < spineLength; i++) {
+        if (!currentBook) return;
         const item = currentBook.spine.get(i);
         if (!item) {
             weights.push(0);
@@ -522,19 +527,24 @@ async function calculateGlobalChapterWeights() {
         }
         try {
             const doc = await currentBook.load(item.href);
-            const text = await extractTextFromDoc(doc);
-            const len = text ? text.replace(/<[^>]+>/g, '').length : 0;
+            // Ultra-fast text length: direct textContent without expensive DOM cloning or image resolution
+            const root = doc ? (doc.body || doc.documentElement) : null;
+            const len = root ? (root.textContent || '').length : 0;
             weights.push(len);
             totalLength += len;
         } catch(e) {
             weights.push(100);
             totalLength += 100;
         }
+
+        // Yield execution to event loop every 4 chapters to keep 60 FPS UI
+        if (i % 4 === 0) {
+            await new Promise(r => setTimeout(r, 0));
+        }
     }
     
     window.chapterWeights = { weights, totalLength };
     try { localStorage.setItem(cacheKey, JSON.stringify(window.chapterWeights)); } catch(e) {}
-    console.log("✅ Global weights calculated!");
     updateProgressPercentage();
 }
 
@@ -1588,6 +1598,7 @@ function processText(rawHtml) {
         return `___HTML_${index}___`;
     });
     
+    const textFragment = document.createDocumentFragment();
     const paragraphs = textWithPlaceholders.split(/\n\s*\n+/).map(p => p.trim()).filter(p => p.length > 0);
     paragraphs.forEach((paraText, pIdx) => {
         const pDiv = document.createElement('div');
@@ -1687,7 +1698,7 @@ function processText(rawHtml) {
             parsedContent.push({ index: sCounter, pIndex: pIdx, textForUI: originalDisplay, lang: detectedLang, element: sSpan, charLen });
             sCounter++;
         });
-        contentArea.appendChild(pDiv);
+        textFragment.appendChild(pDiv);
     });
 
     const footerDiv = document.createElement('div');
@@ -1723,7 +1734,8 @@ function processText(rawHtml) {
 
     footerDiv.appendChild(prevBtnEl);
     footerDiv.appendChild(nextBtnEl);
-    contentArea.appendChild(footerDiv);
+    textFragment.appendChild(footerDiv);
+    contentArea.appendChild(textFragment);
 
     currentIdx = 0;
     updateProgressBar();
@@ -2569,10 +2581,92 @@ function init() {
     }
     initMediaSession();
 }
-// ... (LIBRARY LOGIC იგივე რჩება) ...
-// Library Logic-ის ქვემოთ კოდი იგივეა, არაფერი შეცვლილა.
-// უბრალოდ სრული კოდის გამო აქაც იყოს:
-// (LIBRARY LOGIC)
+// ============================================================================
+// 📚 Ultra-Fast Library Cache & Lazy Cover Engine
+// ============================================================================
+const IDB_NAME = 'neural_reader_db';
+const IDB_STORE = 'book_metadata';
+
+function getBookIdb() {
+    return new Promise((resolve) => {
+        if (!window.indexedDB) return resolve(null);
+        try {
+            const req = indexedDB.open(IDB_NAME, 1);
+            req.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(IDB_STORE)) {
+                    db.createObjectStore(IDB_STORE, { keyPath: 'url' });
+                }
+            };
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => resolve(null);
+        } catch (e) {
+            resolve(null);
+        }
+    });
+}
+
+async function getCachedBookMeta(url) {
+    try {
+        const db = await getBookIdb();
+        if (!db) return null;
+        return new Promise((resolve) => {
+            const tx = db.transaction(IDB_STORE, 'readonly');
+            const store = tx.objectStore(IDB_STORE);
+            const req = store.get(url);
+            req.onsuccess = () => resolve(req.result || null);
+            req.onerror = () => resolve(null);
+        });
+    } catch(e) { return null; }
+}
+
+async function saveCachedBookMeta(url, data) {
+    try {
+        const db = await getBookIdb();
+        if (!db) return;
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        const store = tx.objectStore(IDB_STORE);
+        store.put({ url, ...data, timestamp: Date.now() });
+    } catch(e) {}
+}
+
+let searchDebounceTimer = null;
+let coverObserver = null;
+const coverQueue = [];
+let activeCoverExtractions = 0;
+const MAX_CONCURRENT_COVERS = 2;
+
+function processCoverQueue() {
+    while (activeCoverExtractions < MAX_CONCURRENT_COVERS && coverQueue.length > 0) {
+        const task = coverQueue.shift();
+        activeCoverExtractions++;
+        task().finally(() => {
+            activeCoverExtractions--;
+            processCoverQueue();
+        });
+    }
+}
+
+function initCoverObserver() {
+    if (coverObserver) {
+        coverObserver.disconnect();
+    }
+    coverObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const el = entry.target;
+                coverObserver.unobserve(el);
+                const bookUrl = el.dataset.bookUrl;
+                const cardId = el.dataset.cardId;
+                if (bookUrl && cardId) {
+                    coverQueue.push(() => extractCoverForCard(bookUrl, cardId));
+                    processCoverQueue();
+                }
+            }
+        });
+    }, { rootMargin: '150px 0px' });
+}
+
 async function renderLibrary() {
     libraryGrid.innerHTML = '<div style="color:white; text-align:center; padding:20px;">Scanning bookshelf... 📚</div>';
     try {
@@ -2581,13 +2675,24 @@ async function renderLibrary() {
         allBooksCache = await response.json();
         updateCountBadge(allBooksCache.length);
         drawBooksToGrid(allBooksCache);
+
         const searchInput = document.getElementById('library-search-input');
         if (searchInput) {
             searchInput.value = "";
             searchInput.oninput = (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const filteredBooks = allBooksCache.filter(book => book.title.toLowerCase().includes(searchTerm) || book.author.toLowerCase().includes(searchTerm));
-                drawBooksToGrid(filteredBooks);
+                clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = setTimeout(() => {
+                    const searchTerm = e.target.value.toLowerCase().trim();
+                    if (!searchTerm) {
+                        drawBooksToGrid(allBooksCache);
+                        return;
+                    }
+                    const filteredBooks = allBooksCache.filter(book => 
+                        (book.title && book.title.toLowerCase().includes(searchTerm)) || 
+                        (book.author && book.author.toLowerCase().includes(searchTerm))
+                    );
+                    drawBooksToGrid(filteredBooks);
+                }, 150);
             };
         }
     } catch (error) {
@@ -2595,23 +2700,33 @@ async function renderLibrary() {
         libraryGrid.innerHTML = '<div style="color:red;">Error loading library.</div>';
     }
 }
+
 function drawBooksToGrid(booksList) {
     libraryGrid.innerHTML = '';
-    if (booksList.length === 0) { libraryGrid.innerHTML = '<div style="color:gray; text-align:center; width:100%;">No books found matching criteria.</div>'; return; }
-    booksList.forEach((book, index) => {
+    if (booksList.length === 0) {
+        libraryGrid.innerHTML = '<div style="color:gray; text-align:center; width:100%; padding:20px;">No books found matching criteria.</div>';
+        return;
+    }
+
+    initCoverObserver();
+    coverQueue.length = 0;
+
+    const fragment = document.createDocumentFragment();
+
+    booksList.forEach((book) => {
         const card = document.createElement('div');
         card.className = 'book-card';
         const uniqueId = `book-card-${Math.random().toString(36).substr(2, 9)}`;
         card.id = uniqueId;
         const randomHue = Math.floor(Math.random() * 360);
-        const fileName = book.url.split('/').pop();
-        
+        const fileName = book.url ? book.url.split('/').pop() : '';
+
         if (book.perc !== undefined && book.perc !== null) {
-            localStorage.setItem('epub_perc_' + fileName, book.perc);
+            try { localStorage.setItem('epub_perc_' + fileName, book.perc); } catch(e){}
         }
-        
+
         const savedPerc = localStorage.getItem('epub_perc_' + fileName);
-        
+
         let percHtml = '';
         if (savedPerc) {
             percHtml = `
@@ -2623,25 +2738,39 @@ function drawBooksToGrid(booksList) {
             </div>`;
         }
 
-        const placeholderHtml = `${percHtml}<div class="book-card-cover placeholder" style="background: hsl(${randomHue}, 30%, 20%); border: 1px solid hsl(${randomHue}, 40%, 30%); display:flex; align-items:center; justify-content:center;"><span style="font-size: 2rem; opacity:0.5;">📖</span></div>`;
-        card.innerHTML = `${placeholderHtml}<div class="book-card-title" title="${book.title}">${book.title}</div><div class="book-card-author" title="${book.author}">${book.author}</div>`;
-        
+        let coverHtml = '';
+        const hasServerCover = book.cover && typeof book.cover === 'string';
+
+        if (hasServerCover) {
+            coverHtml = `
+            <div class="book-card-cover" style="background:transparent; border:none;">
+                <img loading="lazy" src="${book.cover}" style="width:100%; height:100%; object-fit:cover; border-radius:4px;" alt="Cover" onerror="this.parentElement.innerHTML='<span style=\\'font-size:2rem;opacity:0.5;\\'>📖</span>'">
+            </div>`;
+        } else {
+            coverHtml = `
+            <div class="book-card-cover placeholder" style="background: hsl(${randomHue}, 30%, 20%); border: 1px solid hsl(${randomHue}, 40%, 30%); display:flex; align-items:center; justify-content:center;">
+                <span style="font-size: 2rem; opacity:0.5;">📖</span>
+            </div>`;
+        }
+
+        card.innerHTML = `${percHtml}${coverHtml}<div class="book-card-title" title="${book.title}">${book.title}</div><div class="book-card-author" title="${book.author}">${book.author}</div>`;
+
         card.onclick = (e) => {
             const btn = e.target.closest('.reset-book-btn');
             if (btn) {
                 e.stopPropagation();
                 if (!confirm("ნამდვილად გსურთ ამ წიგნის პროგრესის განულება?")) return;
-                
+
                 localStorage.removeItem('epub_progress_' + fileName);
                 localStorage.removeItem('epub_idx_' + fileName);
                 localStorage.removeItem('epub_perc_' + fileName);
-                
+
                 fetch(`/wp-json/neural/v1/progress?book=${encodeURIComponent(fileName)}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ href: '', idx: 0, perc: '0.00' })
                 }).catch(err => console.error(err));
-                
+
                 btn.closest('.card-progress-overlay').remove();
                 if (window.currentRawEpubFile && window.currentRawEpubFile.name === fileName) {
                     location.reload();
@@ -2650,53 +2779,127 @@ function drawBooksToGrid(booksList) {
             }
             loadBookFromUrl(book.url);
         };
-        
-        libraryGrid.appendChild(card);
-        extractCoverForCard(book.url, uniqueId);
+
+        fragment.appendChild(card);
+
+        if (!hasServerCover) {
+            card.dataset.bookUrl = book.url;
+            card.dataset.cardId = uniqueId;
+            getCachedBookMeta(book.url).then(cachedMeta => {
+                if (cachedMeta) {
+                    applyMetaToCard(card, cachedMeta);
+                } else if (coverObserver) {
+                    coverObserver.observe(card);
+                }
+            });
+        }
     });
+
+    libraryGrid.appendChild(fragment);
 }
-function updateCountBadge(count) {
-    const modalTitle = document.querySelector('#library-modal h2');
-    if (modalTitle) { modalTitle.innerHTML = `📚 Library <span style="display: inline-block; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 0.75rem; font-weight: 600; padding: 4px 12px; border-radius: 99px; border: 1px solid rgba(56, 189, 248, 0.3); margin-left: 12px; vertical-align: middle; letter-spacing: 0.5px;">${count}</span>`; }
-}
-async function extractCoverForCard(bookUrl, cardId) {
-    try {
-        const tempBook = ePub(bookUrl);
-        await tempBook.ready;
-        const meta = await tempBook.loaded.metadata;
-        const packageMeta = tempBook.package ? tempBook.package.metadata : {};
-        let finalAuthor = "";
-        if (meta.creator) finalAuthor = meta.creator;
-        else if (packageMeta.creator) finalAuthor = packageMeta.creator;
-        else if (packageMeta["dc:creator"]) finalAuthor = packageMeta["dc:creator"];
-        if (Array.isArray(finalAuthor)) { finalAuthor = finalAuthor.join(", "); }
-        console.log(`Book: ${meta.title} | Author Found: ${finalAuthor}`);
-        const card = document.getElementById(cardId);
-        if (!card) { tempBook.destroy(); return; }
-        if (finalAuthor && finalAuthor.trim() !== "") { const authorEl = card.querySelector('.book-card-author'); if (authorEl) { authorEl.textContent = finalAuthor; authorEl.title = finalAuthor; } } else { const authorEl = card.querySelector('.book-card-author'); if(authorEl) authorEl.textContent = "უცნობი ავტორი"; }
-        if (meta.title) { const titleEl = card.querySelector('.book-card-title'); if (titleEl) { titleEl.textContent = meta.title; titleEl.title = meta.title; } }
-        const coverUrl = await tempBook.coverUrl();
-        if (coverUrl) {
-            const coverContainer = card.querySelector('.book-card-cover');
-            coverContainer.innerHTML = `<img src="${coverUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:4px;" alt="Cover">`;
+
+function applyMetaToCard(card, meta) {
+    if (!card) return;
+    if (meta.author && meta.author.trim()) {
+        const authorEl = card.querySelector('.book-card-author');
+        if (authorEl) { authorEl.textContent = meta.author; authorEl.title = meta.author; }
+    }
+    if (meta.title && meta.title.trim()) {
+        const titleEl = card.querySelector('.book-card-title');
+        if (titleEl) { titleEl.textContent = meta.title; titleEl.title = meta.title; }
+    }
+    if (meta.coverUrl) {
+        const coverContainer = card.querySelector('.book-card-cover');
+        if (coverContainer) {
+            coverContainer.innerHTML = `<img loading="lazy" src="${meta.coverUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:4px;" alt="Cover">`;
             coverContainer.classList.remove('placeholder');
             coverContainer.style.background = 'transparent';
             coverContainer.style.border = 'none';
         }
-        tempBook.destroy();
-    } catch (err) { console.error("Metadata Error for:", bookUrl, err); }
+    }
 }
+
+function updateCountBadge(count) {
+    const modalTitle = document.querySelector('#library-modal h2');
+    if (modalTitle) {
+        modalTitle.innerHTML = `📚 Library <span style="display: inline-block; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 0.75rem; font-weight: 600; padding: 4px 12px; border-radius: 99px; border: 1px solid rgba(56, 189, 248, 0.3); margin-left: 12px; vertical-align: middle; letter-spacing: 0.5px;">${count}</span>`;
+    }
+}
+
+async function extractCoverForCard(bookUrl, cardId) {
+    try {
+        const card = document.getElementById(cardId);
+        if (!card) return;
+
+        const cached = await getCachedBookMeta(bookUrl);
+        if (cached) {
+            applyMetaToCard(card, cached);
+            return;
+        }
+
+        const tempBook = ePub(bookUrl);
+        await tempBook.ready;
+        const meta = await tempBook.loaded.metadata;
+        const packageMeta = tempBook.package ? tempBook.package.metadata : {};
+        let finalAuthor = meta.creator || packageMeta.creator || packageMeta["dc:creator"] || "";
+        if (Array.isArray(finalAuthor)) finalAuthor = finalAuthor.join(", ");
+
+        const title = meta.title || "";
+        const coverUrl = await tempBook.coverUrl();
+
+        const extractedData = {
+            author: finalAuthor || "უცნობი ავტორი",
+            title: title,
+            coverUrl: coverUrl || null
+        };
+
+        applyMetaToCard(card, extractedData);
+        saveCachedBookMeta(bookUrl, extractedData);
+        tempBook.destroy();
+    } catch (err) {
+        console.warn("Client cover extraction skipped for:", bookUrl);
+    }
+}
+
 async function loadBookFromUrl(url) {
     libraryModal.classList.add('hidden');
-    document.getElementById('book-title-text').textContent = "Downloading Book...";
+    document.getElementById('book-title-text').textContent = "Loading Book...";
+    const fileName = url.split('/').pop();
+
     try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Failed to download");
-        const blob = await response.blob();
-        const fileName = url.split('/').pop();
+        let blob = null;
+        // ⚡ Cache Storage API: instant offline/subsequent load in 0ms
+        if ('caches' in window) {
+            try {
+                const cache = await caches.open('neural-books-v1');
+                const cachedRes = await cache.match(url);
+                if (cachedRes) {
+                    blob = await cachedRes.blob();
+                    console.log("⚡ Loaded EPUB directly from Cache Storage:", fileName);
+                } else {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error("Failed to download book");
+                    cache.put(url, response.clone()).catch(() => {});
+                    blob = await response.blob();
+                }
+            } catch(e) {
+                console.warn("Cache API fallback to fetch", e);
+            }
+        }
+
+        if (!blob) {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("Failed to download book");
+            blob = await response.blob();
+        }
+
         const file = new File([blob], fileName, { type: "application/epub+zip" });
         loadEpub(file);
-    } catch (error) { console.error("Error loading book:", error); alert("Error loading book. Check console."); document.getElementById('book-title-text').textContent = "Error"; }
+    } catch (error) {
+        console.error("Error loading book:", error);
+        alert("Error loading book. Check console.");
+        document.getElementById('book-title-text').textContent = "Error";
+    }
 }
 async function sha256(message) { const msgBuffer = new TextEncoder().encode(message); const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer); const hashArray = Array.from(new Uint8Array(hashBuffer)); return hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); }
 libraryBtn.onclick = async () => {

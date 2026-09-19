@@ -4098,7 +4098,164 @@ add_action('rest_api_init', function () {
     ));
 });
 
+/**
+ * Fast EPUB Metadata & Cover Extractor
+ * Reads container.xml -> OPF -> title, creator, and cover thumbnail.
+ */
+function neural_parse_epub_metadata($filePath, $fileUrl, $coversDir, $coversUrl) {
+    $meta = array(
+        'title'  => '',
+        'author' => '',
+        'cover'  => null,
+    );
+
+    if (!class_exists('ZipArchive') || !file_exists($filePath)) {
+        return $meta;
+    }
+
+    $zip = new ZipArchive();
+    if ($zip->open($filePath, ZipArchive::RDONLY) !== true) {
+        return $meta;
+    }
+
+    // 1. Find OPF package file from META-INF/container.xml
+    $containerXml = $zip->getFromName('META-INF/container.xml');
+    $opfPath = '';
+    if ($containerXml && preg_match('/full-path=["\']([^"\']+\.opf)["\']/i', $containerXml, $matches)) {
+        $opfPath = $matches[1];
+    }
+
+    if (!$opfPath) {
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            if (substr(strtolower($name), -4) === '.opf') {
+                $opfPath = $name;
+                break;
+            }
+        }
+    }
+
+    if (!$opfPath) {
+        $zip->close();
+        return $meta;
+    }
+
+    $opfContent = $zip->getFromName($opfPath);
+    if (!$opfContent) {
+        $zip->close();
+        return $meta;
+    }
+
+    $opfDir = dirname($opfPath);
+    $opfDir = ($opfDir === '.' || $opfDir === '/' || $opfDir === '\\') ? '' : rtrim(str_replace('\\', '/', $opfDir), '/') . '/';
+
+    // Extract Title
+    if (preg_match('/<dc:title[^>]*>(.*?)<\/dc:title>/is', $opfContent, $m)) {
+        $meta['title'] = trim(html_entity_decode(strip_tags($m[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+    }
+
+    // Extract Creator / Author
+    if (preg_match('/<dc:creator[^>]*>(.*?)<\/dc:creator>/is', $opfContent, $m)) {
+        $meta['author'] = trim(html_entity_decode(strip_tags($m[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+    }
+
+    // Extract Cover Image
+    $coverRelPath = '';
+
+    // Approach A: <meta name="cover" content="cover-id" />
+    if (preg_match('/<meta[^>]+name=["\']cover["\'][^>]+content=["\']([^"\']+)["\']/i', $opfContent, $m) ||
+        preg_match('/<meta[^>]+content=["\']([^"\']+)["\'][^>]+name=["\']cover["\']/i', $opfContent, $m)) {
+        $coverId = preg_quote($m[1], '/');
+        if (preg_match('/<item[^>]+id=["\']' . $coverId . '["\'][^>]+href=["\']([^"\']+)["\']/i', $opfContent, $im) ||
+            preg_match('/<item[^>]+href=["\']([^"\']+)["\'][^>]+id=["\']' . $coverId . '["\']/i', $opfContent, $im)) {
+            $coverRelPath = $im[1];
+        }
+    }
+
+    // Approach B: <item properties="cover-image" href="..." />
+    if (!$coverRelPath && preg_match('/<item[^>]+properties=["\'][^"\']*cover-image[^"\']*["\'][^>]+href=["\']([^"\']+)["\']/i', $opfContent, $m)) {
+        $coverRelPath = $m[1];
+    }
+
+    // Approach C: manifest item with id containing "cover" and image media-type
+    if (!$coverRelPath && preg_match('/<item[^>]+id=["\'][^"\']*cover[^"\']*["\'][^>]+href=["\']([^"\']+\.(jpg|jpeg|png|webp))["\']/i', $opfContent, $m)) {
+        $coverRelPath = $m[1];
+    }
+
+    if ($coverRelPath) {
+        $fullCoverZipPath = $opfDir . ltrim(urldecode($coverRelPath), '/');
+        $coverData = $zip->getFromName($fullCoverZipPath);
+
+        if (!$coverData) {
+            $coverData = $zip->getFromName($coverRelPath);
+        }
+
+        if (!$coverData) {
+            $coverFilename = basename($coverRelPath);
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $entryName = $zip->getNameIndex($i);
+                if (basename($entryName) === $coverFilename) {
+                    $coverData = $zip->getFromName($entryName);
+                    break;
+                }
+            }
+        }
+
+        if ($coverData && strlen($coverData) > 100) {
+            $coverExt = pathinfo($coverRelPath, PATHINFO_EXTENSION) ?: 'jpg';
+            $coverFileName = md5($filePath) . '.' . $coverExt;
+            $coverDest = $coversDir . '/' . $coverFileName;
+
+            if (!file_exists($coverDest) || filesize($coverDest) !== strlen($coverData)) {
+                @file_put_contents($coverDest, $coverData);
+            }
+
+            if (file_exists($coverDest)) {
+                $meta['cover'] = $coversUrl . '/' . $coverFileName;
+            }
+        }
+    }
+
+    $zip->close();
+    return $meta;
+}
+
 function neural_get_books() {
+    $upload_dir = wp_upload_dir();
+    $books_dir  = $upload_dir['basedir'] . '/books';
+    $books_url  = $upload_dir['baseurl'] . '/books';
+    $covers_dir = $books_dir . '/covers';
+    $covers_url = $books_url . '/covers';
+
+    if (!file_exists($covers_dir)) {
+        @wp_mkdir_p($covers_dir);
+    }
+
+    $cache_key = 'neural_books_catalog_cache_v2';
+    $cached_catalog = get_transient($cache_key);
+
+    $epub_files = array();
+    if (file_exists($books_dir) && is_dir($books_dir)) {
+        $epub_files = glob($books_dir . '/*.epub') ?: array();
+    }
+
+    $file_mtimes = !empty($epub_files) ? array_map('filemtime', $epub_files) : array(0);
+    $fingerprint = count($epub_files) . '_' . max($file_mtimes);
+
+    if (is_array($cached_catalog) && isset($cached_catalog['fingerprint']) && $cached_catalog['fingerprint'] === $fingerprint) {
+        $books = $cached_catalog['books'];
+        foreach ($books as &$b) {
+            $fn = basename($b['url']);
+            $progress = get_option("neural_global_progress_" . md5($fn));
+            $b['perc'] = is_array($progress) && isset($progress['perc']) ? $progress['perc'] : null;
+        }
+        unset($b);
+        return rest_ensure_response($books);
+    }
+
+    $books = array();
+
+    // A. Check WordPress Media Library attachments
     $args = array(
         'post_type'      => 'attachment',
         'post_mime_type' => 'application/epub+zip',
@@ -4106,42 +4263,57 @@ function neural_get_books() {
         'posts_per_page' => -1,
     );
     $query = new WP_Query($args);
-    $books = array();
 
     if ($query->have_posts()) {
         foreach ($query->posts as $post) {
-            $filename = basename(wp_get_attachment_url($post->ID));
+            $file_url = wp_get_attachment_url($post->ID);
+            $file_path = get_attached_file($post->ID);
+            $filename = basename($file_url);
+
+            $meta = ($file_path && file_exists($file_path)) ? neural_parse_epub_metadata($file_path, $file_url, $covers_dir, $covers_url) : array();
+            $title = !empty($meta['title']) ? $meta['title'] : $post->post_title;
+            $author = !empty($meta['author']) ? $meta['author'] : (get_post_meta($post->ID, 'book_author', true) ?: 'Unknown Author');
+            $cover = !empty($meta['cover']) ? $meta['cover'] : null;
+
             $progress = get_option("neural_global_progress_" . md5($filename));
             $books[] = array(
-                'title'  => $post->post_title,
-                'author' => get_post_meta($post->ID, 'book_author', true) ?: 'Unknown Author',
-                'url'    => wp_get_attachment_url($post->ID),
+                'title'  => $title,
+                'author' => $author,
+                'url'    => $file_url,
+                'cover'  => $cover,
                 'perc'   => is_array($progress) && isset($progress['perc']) ? $progress['perc'] : null
             );
         }
     }
-    
-    // Fallback: Check if there is a 'books' folder in wp-content/uploads/books
-    if (empty($books)) {
-        $upload_dir = wp_upload_dir();
-        $books_dir = $upload_dir['basedir'] . '/books';
-        $books_url = $upload_dir['baseurl'] . '/books';
-        
-        if (file_exists($books_dir) && is_dir($books_dir)) {
-            $files = glob($books_dir . '/*.epub');
-            foreach ($files as $file) {
-                $filename = basename($file);
-                $progress = get_option("neural_global_progress_" . md5($filename));
-                $title = pathinfo($filename, PATHINFO_FILENAME);
-                $books[] = array(
-                    'title'  => str_replace(array('-', '_'), ' ', $title),
-                    'author' => 'Unknown Author',
-                    'url'    => $books_url . '/' . $filename,
-                    'perc'   => is_array($progress) && isset($progress['perc']) ? $progress['perc'] : null
-                );
-            }
+
+    // B. Check uploads/books/*.epub folder
+    if (empty($books) && !empty($epub_files)) {
+        foreach ($epub_files as $file) {
+            $filename = basename($file);
+            $file_url = $books_url . '/' . $filename;
+
+            $meta = neural_parse_epub_metadata($file, $file_url, $covers_dir, $covers_url);
+            $cleanTitle = pathinfo($filename, PATHINFO_FILENAME);
+            $title = !empty($meta['title']) ? $meta['title'] : str_replace(array('-', '_'), ' ', $cleanTitle);
+            $author = !empty($meta['author']) ? $meta['author'] : 'Unknown Author';
+            $cover = !empty($meta['cover']) ? $meta['cover'] : null;
+
+            $progress = get_option("neural_global_progress_" . md5($filename));
+            $books[] = array(
+                'title'  => $title,
+                'author' => $author,
+                'url'    => $file_url,
+                'cover'  => $cover,
+                'perc'   => is_array($progress) && isset($progress['perc']) ? $progress['perc'] : null
+            );
         }
     }
+
+    // Save transient cache for 12 hours (auto-invalidated if file count or filemtime changes)
+    set_transient($cache_key, array(
+        'fingerprint' => $fingerprint,
+        'books'       => $books
+    ), 12 * HOUR_IN_SECONDS);
 
     return rest_ensure_response($books);
 }

@@ -1135,6 +1135,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         align-items: center;
         text-align: center;
         position: relative;
+        content-visibility: auto;
+        contain-intrinsic-size: 140px 240px;
     }
 
     .book-card:hover {
