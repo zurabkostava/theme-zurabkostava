@@ -26,19 +26,21 @@ if (isset($_GET['diag'])) {
     $trustedClientToken = "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
     $path = "/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken={$trustedClientToken}&ConnectionId={$connId}&Sec-MS-GEC={$token}&Sec-MS-GEC-Version={$secVer}";
     
+    echo "Resolved IPs: " . implode(', ', (array)gethostbynamel('speech.platform.bing.com')) . "\n";
+    $targetHost = trim($_GET['host'] ?? 'speech.platform.bing.com');
     $context = stream_context_create([
         'ssl' => [
             'verify_peer' => true,
-            'verify_peer_name' => true,
+            'verify_peer_name' => false,
             'SNI_enabled' => true,
             'peer_name' => 'speech.platform.bing.com',
         ]
     ]);
-    $fp = @stream_socket_client('ssl://speech.platform.bing.com:443', $errno, $errstr, 10, STREAM_CLIENT_CONNECT, $context);
+    $fp = @stream_socket_client("ssl://{$targetHost}:443", $errno, $errstr, 10, STREAM_CLIENT_CONNECT, $context);
     if (!$fp) {
-        exit("Socket connection failed: $errstr ($errno)\n");
+        exit("Socket connection to {$targetHost} failed: $errstr ($errno)\n");
     }
-    echo "Connected to speech.platform.bing.com:443\n";
+    echo "Connected to {$targetHost}:443\n";
     
     $wsKey = base64_encode(random_bytes(16));
     $muid = strtoupper(bin2hex(random_bytes(16)));
