@@ -180,10 +180,14 @@ edge_tts_ws_send_frame($fp, $ssmlMsg, 1);
 
 // 7. Receive Audio Frames
 $audioData = '';
+$debugLog = [];
 
 while (!feof($fp)) {
     $h = edge_tts_ws_read_exact($fp, 2);
-    if ($h === null || strlen($h) < 2) break;
+    if ($h === null || strlen($h) < 2) {
+        $debugLog[] = "EOF or timeout reading 2-byte header";
+        break;
+    }
     
     $b1 = ord($h[0]);
     $b2 = ord($h[1]);
@@ -193,11 +197,17 @@ while (!feof($fp)) {
 
     if ($payLen === 126) {
         $ext = edge_tts_ws_read_exact($fp, 2);
-        if ($ext === null) break;
+        if ($ext === null) {
+            $debugLog[] = "Timeout reading 16-bit length";
+            break;
+        }
         $payLen = unpack('n', $ext)[1];
     } elseif ($payLen === 127) {
         $ext = edge_tts_ws_read_exact($fp, 8);
-        if ($ext === null) break;
+        if ($ext === null) {
+            $debugLog[] = "Timeout reading 64-bit length";
+            break;
+        }
         $arr = unpack('Nhigh/Nlow', $ext);
         $payLen = ($arr['high'] << 32) | $arr['low'];
     }
@@ -205,11 +215,17 @@ while (!feof($fp)) {
     $mask = '';
     if ($masked) {
         $mask = edge_tts_ws_read_exact($fp, 4);
-        if ($mask === null) break;
+        if ($mask === null) {
+            $debugLog[] = "Timeout reading mask";
+            break;
+        }
     }
 
     $payload = edge_tts_ws_read_exact($fp, $payLen);
-    if ($payload === null) break;
+    if ($payload === null) {
+        $debugLog[] = "Timeout reading payload of len {$payLen}";
+        break;
+    }
 
     if ($masked) {
         for ($i = 0; $i < strlen($payload); $i++) {
@@ -222,16 +238,23 @@ while (!feof($fp)) {
             $hdrLen = unpack('n', substr($payload, 0, 2))[1];
             $hdr = substr($payload, 2, $hdrLen);
             $data = substr($payload, 2 + $hdrLen);
+            $debugLog[] = "Binary frame (hdrLen={$hdrLen}): " . substr($hdr, 0, 60);
             if (strpos($hdr, 'Path:audio') !== false) {
                 $audioData .= $data;
             }
+        } else {
+            $debugLog[] = "Binary frame too short: " . strlen($payload);
         }
     } elseif ($opcode === 1) { // Text Frame
+        $debugLog[] = "Text frame: " . substr($payload, 0, 100);
         if (strpos($payload, 'Path:turn.end') !== false) {
             break;
         }
     } elseif ($opcode === 8) { // Close Frame
+        $debugLog[] = "Close frame received";
         break;
+    } else {
+        $debugLog[] = "Opcode {$opcode} received";
     }
 }
 
@@ -248,5 +271,6 @@ if (strlen($audioData) > 0) {
     exit;
 } else {
     http_response_code(502);
-    exit("No audio received from Edge TTS service");
+    header('Content-Type: text/plain; charset=utf-8');
+    exit("No audio received from Edge TTS service. Log:\n" . implode("\n", $debugLog));
 }
