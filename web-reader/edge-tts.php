@@ -17,19 +17,103 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 if (isset($_GET['diag'])) {
     header('Content-Type: text/plain; charset=utf-8');
+    echo "=== PHP DIAGNOSTICS ===\n";
     echo "PHP Version: " . PHP_VERSION . "\n";
-    echo "strlen: " . strlen('გამარჯობა') . "\n";
-    echo "mb_strlen 8bit: " . (function_exists('mb_strlen') ? mb_strlen('გამარჯობა', '8bit') : 'no mb') . "\n";
-    $errno = 0; $errstr = '';
-    $t0 = microtime(true);
-    $fp = @stream_socket_client('ssl://speech.platform.bing.com:443', $errno, $errstr, 5, STREAM_CLIENT_CONNECT);
-    $t1 = microtime(true);
+    $token = edge_tts_generate_token();
+    echo "Token: $token\n";
+    $connId = bin2hex(random_bytes(16));
+    $secVer = '1-143.0.3650.75';
+    $trustedClientToken = "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
+    $path = "/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken={$trustedClientToken}&ConnectionId={$connId}&Sec-MS-GEC={$token}&Sec-MS-GEC-Version={$secVer}";
+    
+    $context = stream_context_create([
+        'ssl' => [
+            'verify_peer' => true,
+            'verify_peer_name' => true,
+            'SNI_enabled' => true,
+            'peer_name' => 'speech.platform.bing.com',
+        ]
+    ]);
+    $fp = @stream_socket_client('ssl://speech.platform.bing.com:443', $errno, $errstr, 10, STREAM_CLIENT_CONNECT, $context);
     if (!$fp) {
-        echo "Socket failed: $errstr ($errno) in " . round($t1 - $t0, 3) . "s\n";
-    } else {
-        echo "Socket connected successfully in " . round($t1 - $t0, 3) . "s!\n";
-        fclose($fp);
+        exit("Socket connection failed: $errstr ($errno)\n");
     }
+    echo "Connected to speech.platform.bing.com:443\n";
+    
+    $wsKey = base64_encode(random_bytes(16));
+    $muid = strtoupper(bin2hex(random_bytes(16)));
+    $handshake = "GET {$path} HTTP/1.1\r\n" .
+                 "Host: speech.platform.bing.com\r\n" .
+                 "Connection: Upgrade\r\n" .
+                 "Upgrade: websocket\r\n" .
+                 "Sec-WebSocket-Key: {$wsKey}\r\n" .
+                 "Sec-WebSocket-Version: 13\r\n" .
+                 "Origin: chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold\r\n" .
+                 "Pragma: no-cache\r\n" .
+                 "Cache-Control: no-cache\r\n" .
+                 "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0\r\n" .
+                 "Accept-Encoding: gzip, deflate, br, zstd\r\n" .
+                 "Accept-Language: en-US,en;q=0.9\r\n" .
+                 "Cookie: muid={$muid};\r\n\r\n";
+    edge_tts_ws_write_all($fp, $handshake);
+    
+    $handshakeResp = '';
+    while (!feof($fp)) {
+        $line = fgets($fp, 1024);
+        if ($line === false) break;
+        $handshakeResp .= $line;
+        if ($line === "\r\n" || $line === "\n") break;
+    }
+    echo "Handshake Response:\n$handshakeResp\n";
+    
+    $dateStr = gmdate('D M d Y H:i:s') . ' GMT+0000 (Coordinated Universal Time)';
+    $config = "X-Timestamp:{$dateStr}\r\n" .
+              "Content-Type:application/json; charset=utf-8\r\n" .
+              "Path:speech.config\r\n\r\n" .
+              '{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"false"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}\r\n';
+    echo "Sending config (" . strlen($config) . " bytes)...\n";
+    edge_tts_ws_send_frame($fp, $config, 1);
+    
+    $ssml = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'>" .
+            "<voice name='ka-GE-EkaNeural'><prosody pitch='+0Hz' rate='+0%' volume='+0%'>გამარჯობა</prosody></voice></speak>";
+    $requestId = bin2hex(random_bytes(16));
+    $ssmlMsg = "X-RequestId:{$requestId}\r\n" .
+               "Content-Type:application/ssml+xml\r\n" .
+               "X-Timestamp:{$dateStr}Z\r\n" .
+               "Path:ssml\r\n\r\n" .
+               $ssml;
+    echo "Sending SSML (" . strlen($ssmlMsg) . " bytes)...\n";
+    edge_tts_ws_send_frame($fp, $ssmlMsg, 1);
+    
+    echo "Reading server frames...\n";
+    for ($frameIdx = 0; $frameIdx < 10; $frameIdx++) {
+        $h = edge_tts_ws_read_exact($fp, 2);
+        if (!$h) { echo "EOF on frame $frameIdx\n"; break; }
+        $b1 = ord($h[0]); $b2 = ord($h[1]);
+        $opcode = $b1 & 0x0F;
+        $payLen = $b2 & 0x7F;
+        if ($payLen === 126) {
+            $payLen = unpack('n', edge_tts_ws_read_exact($fp, 2))[1];
+        } elseif ($payLen === 127) {
+            $arr = unpack('Nhigh/Nlow', edge_tts_ws_read_exact($fp, 8));
+            $payLen = ($arr['high'] << 32) | $arr['low'];
+        }
+        $payload = edge_tts_ws_read_exact($fp, $payLen);
+        if ($opcode === 1) {
+            echo "--- FRAME $frameIdx (TEXT, {$payLen}b) ---\n" . trim($payload) . "\n";
+        } elseif ($opcode === 2) {
+            $hdrLen = unpack('n', substr($payload, 0, 2))[1];
+            $hdr = substr($payload, 2, $hdrLen);
+            $dataLen = strlen($payload) - 2 - $hdrLen;
+            echo "--- FRAME $frameIdx (BINARY/AUDIO, {$dataLen}b audio) ---\n" . strtok($hdr, "\r\n") . "\n";
+        } elseif ($opcode === 8) {
+            $code = (strlen($payload) >= 2) ? unpack('n', substr($payload, 0, 2))[1] : 0;
+            $reason = (strlen($payload) > 2) ? substr($payload, 2) : '';
+            echo "--- FRAME $frameIdx (CLOSE code=$code, reason=$reason) ---\n";
+            break;
+        }
+    }
+    fclose($fp);
     exit;
 }
 
