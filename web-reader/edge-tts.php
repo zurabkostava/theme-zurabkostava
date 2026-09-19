@@ -262,12 +262,14 @@ while (!feof($fp)) {
             $debugLog[] = "Binary frame too short: " . strlen($payload);
         }
     } elseif ($opcode === 1) { // Text Frame
-        $debugLog[] = "Text frame: " . substr($payload, 0, 100);
+        $debugLog[] = "Text frame: " . $payload;
         if (strpos($payload, 'Path:turn.end') !== false) {
             break;
         }
     } elseif ($opcode === 8) { // Close Frame
-        $debugLog[] = "Close frame received";
+        $closeCode = (strlen($payload) >= 2) ? unpack('n', substr($payload, 0, 2))[1] : 0;
+        $closeReason = (strlen($payload) > 2) ? substr($payload, 2) : '';
+        $debugLog[] = "Close frame: code={$closeCode}, reason={$closeReason}";
         break;
     } else {
         $debugLog[] = "Opcode {$opcode} received";
