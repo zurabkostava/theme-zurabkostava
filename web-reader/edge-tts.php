@@ -15,6 +15,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+if (isset($_GET['diag'])) {
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "PHP Version: " . PHP_VERSION . "\n";
+    $errno = 0; $errstr = '';
+    $t0 = microtime(true);
+    $fp = @stream_socket_client('ssl://speech.platform.bing.com:443', $errno, $errstr, 5, STREAM_CLIENT_CONNECT);
+    $t1 = microtime(true);
+    if (!$fp) {
+        echo "Socket failed: $errstr ($errno) in " . round($t1 - $t0, 3) . "s\n";
+    } else {
+        echo "Socket connected successfully in " . round($t1 - $t0, 3) . "s!\n";
+        fclose($fp);
+    }
+    exit;
+}
+
 // 2. Input Parameters
 $text = trim($_GET['text'] ?? $_POST['text'] ?? '');
 if (!$text) {
