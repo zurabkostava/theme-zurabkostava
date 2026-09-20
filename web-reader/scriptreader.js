@@ -1238,7 +1238,6 @@ function rebuildDynamicSettings() {
         <div class="setting-group">
             <label>Reading Speed <span id="unified-rate-val">1x</span></label>
             <input type="range" id="unified-rate-input" min="0.5" max="4" step="0.1" value="1">
-            <div id="unified-rate-note" style="font-size: 0.78rem; margin-top: 6px; color: var(--text-muted); line-height: 1.35; display: none;"></div>
         </div>
     `;
     container.appendChild(wrapper);
@@ -1248,7 +1247,6 @@ function rebuildDynamicSettings() {
     const dlBtn = wrapper.querySelector('#unified-download-btn');
     const rateInput = wrapper.querySelector('#unified-rate-input');
     const rateVal = wrapper.querySelector('#unified-rate-val');
-    const rateNote = wrapper.querySelector('#unified-rate-note');
 
     sortedLangs.forEach(langCode => {
         const opt = document.createElement('option');
@@ -1360,34 +1358,9 @@ function rebuildDynamicSettings() {
             }
         }
 
-        function updateRateDisplay() {
-            const selectedVoice = voiceSelect.value;
-            const isNative = !selectedVoice.startsWith('google:') && !piperList.some(v => v.name === selectedVoice);
-            const val = parseFloat(rateInput.value);
-
-            if (isNative) {
-                if (val > 2.0) {
-                    rateVal.innerHTML = `${val}x <span style="font-size: 0.72rem; color: #f59e0b; background: rgba(245, 158, 11, 0.15); padding: 2px 6px; border-radius: 4px; font-weight: 500;">მაქს. 2.0x ბრაუზერში</span>`;
-                    rateNote.style.display = 'block';
-                    rateNote.innerHTML = 'ℹ️ <strong>Microsoft/ბრაუზერის ხმების ლიმიტი:</strong> Web Speech API და Windows SAPI სიჩქარეს ზღუდავენ მაქსიმუმ 2.0x-ზე. <strong>4.0x-მდე</strong> სრული აჩქარებისთვის გამოიყენეთ <strong>Piper (ნათია)</strong>.';
-                } else {
-                    rateVal.textContent = val + 'x';
-                    rateNote.style.display = 'none';
-                }
-            } else {
-                rateVal.textContent = val + 'x';
-                if (val > 2.0) {
-                    rateNote.style.display = 'block';
-                    rateNote.innerHTML = '⚡ <strong>Piper Ultra-Speed:</strong> ნეირონული ხმა მუშაობს სრული ' + val + 'x აჩქარებით.';
-                } else {
-                    rateNote.style.display = 'none';
-                }
-            }
-        }
-
         const savedRate = localStorage.getItem(`rate-${currentLang}`) || '1';
         rateInput.value = savedRate;
-        updateRateDisplay();
+        rateVal.textContent = savedRate + 'x';
         updateDlBtn();
     }
 
@@ -1420,7 +1393,6 @@ function rebuildDynamicSettings() {
         if(currentLang) {
             try { localStorage.setItem(`voice-${currentLang}`, e.target.value); } catch(err) {}
             updateDlBtn();
-            updateRateDisplay();
         }
     });
 
@@ -1439,8 +1411,8 @@ function rebuildDynamicSettings() {
     rateInput.addEventListener('input', (e) => {
         const currentLang = langSelect.value;
         if(currentLang) {
+            rateVal.textContent = e.target.value + 'x';
             try { localStorage.setItem(`rate-${currentLang}`, e.target.value); } catch(err) {}
-            updateRateDisplay();
         }
     });
 
@@ -2735,8 +2707,7 @@ async function playNativeChunk(chunk, nativeVoice, rate, token) {
                 }
             }
             if (nativeVoice) utt.voice = nativeVoice;
-            // Web Speech API / Chromium hard-clamps rate to [0.1, 2.0]. Explicit clamping prevents browser speech queue freeze.
-            utt.rate = Math.min(2.0, Math.max(0.1, rate));
+            utt.rate = rate;
             utt.lang = chunk.lang;
 
             let lastActiveWord = null;
