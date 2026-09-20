@@ -1520,29 +1520,307 @@ function loadVoices() {
     }
 }
 
+const ROMAN_ORDINALS = {
+    'XXX': 'ოცდამეათე', 'XXIX': 'ოცდამეცხრე', 'XXVIII': 'ოცდამეთვრამეტე', 'XXVII': 'ოცდამეჩვიდმეტე',
+    'XXVI': 'ოცდამეთექვსმეტე', 'XXV': 'ოცდამეხუთე', 'XXIV': 'ოცდამეოთხე', 'XXIII': 'ოცდამესამე',
+    'XXII': 'ოცდამეორე', 'XXI': 'ოცდამეერთე', 'XX': 'მეოცე', 'XIX': 'მეცხრამეტე', 'XVIII': 'მეთვრამეტე',
+    'XVII': 'მეჩვიდმეტე', 'XVI': 'მეთექვსმეტე', 'XV': 'მეთხუთმეტე', 'XIV': 'მეთოთხმეტე',
+    'XIII': 'მეცამეტე', 'XII': 'მეთორმეტე', 'XI': 'მეთერთმეტე', 'X': 'მეათე', 'IX': 'მეცხრე',
+    'VIII': 'მერვე', 'VII': 'მეშვიდე', 'VI': 'მეექვსე', 'V': 'მეხუთე', 'IV': 'მეოთხე',
+    'III': 'მესამე', 'II': 'მეორე', 'I': 'პირველი',
+    'XL': 'მეორმოცე', 'L': 'ორმოცდამეათე', 'LX': 'მესამოცე', 'LXX': 'სამოცდამეათე',
+    'LXXX': 'მეოთხმოცე', 'XC': 'ოთხმოცდამეათე', 'C': 'მეასე', 'D': 'მეხუთასე', 'M': 'მეათასე'
+};
+
 function numToGeorgian(num) {
-    if (parseInt(num) === 0) return "ნული";
+    let n = parseInt(num, 10);
+    if (isNaN(n) || n === 0) return "ნული";
     const units = ["", "ერთ", "ორ", "სამ", "ოთხ", "ხუთ", "ექვს", "შვიდ", "რვ", "ცხრ"];
     const baseTens = { 20: "ოც", 40: "ორმოც", 60: "სამოც", 80: "ოთხმოც" };
-    function convertUnder20(n, isFinal) { n = parseInt(n); if (n === 0) return ""; if (n < 10) { let suffix = (n === 8 || n === 9) ? "ა" : "ი"; return units[n] + (isFinal ? suffix : ""); } const teens = ["ათ", "თერთმეტ", "თორმეტ", "ცამეტ", "თოთხმეტ", "თხუთმეტ", "თექვსმეტ", "ჩვიდმეტ", "თვრამეტ", "ცხრამეტ"]; return teens[n - 10] + (isFinal ? "ი" : ""); }
-    function convertUnder100(n, isFinal) { if (n < 20) return convertUnder20(n, isFinal); let remainder = n % 20; let tenKey = n - remainder; let prefix = baseTens[tenKey]; if (remainder === 0) return prefix + (isFinal ? "ი" : ""); return prefix + "და" + convertUnder20(remainder, isFinal); }
-    function convertUnder1000(n, isFinal) { if (n < 100) return convertUnder100(n, isFinal); let hundreds = Math.floor(n / 100); let remainder = n % 100; let prefix = (hundreds === 1 ? "" : units[hundreds]) + "ას"; if (remainder === 0) return prefix + (isFinal ? "ი" : ""); return prefix + " " + convertUnder100(remainder, isFinal); }
-    let n = parseInt(num); let result = "";
-    if (n >= 1000000000) { let bill = Math.floor(n / 1000000000); n %= 1000000000; result += (bill === 1 ? "" : convertUnder1000(bill, false)) + (n === 0 ? " მილიარდი " : " მილიარდ "); }
-    if (n >= 1000000) { let mill = Math.floor(n / 1000000); n %= 1000000; result += (mill === 1 ? "" : convertUnder1000(mill, false)) + (n === 0 ? " მილიონი " : " მილიონ "); }
-    if (n >= 1000) { let thou = Math.floor(n / 1000); n %= 1000; result += (thou === 1 ? "" : convertUnder1000(thou, false)) + (n === 0 ? " ათასი " : " ათას "); }
-    if (n > 0) { result += convertUnder1000(n, true); }
+    function convertUnder20(k, isFinal) {
+        k = parseInt(k, 10);
+        if (k === 0) return "";
+        if (k < 10) {
+            let suffix = (k === 8 || k === 9) ? "ა" : "ი";
+            return units[k] + (isFinal ? suffix : "");
+        }
+        const teens = ["ათ", "თერთმეტ", "თორმეტ", "ცამეტ", "თოთხმეტ", "თხუთმეტ", "თექვსმეტ", "ჩვიდმეტ", "თვრამეტ", "ცხრამეტ"];
+        return teens[k - 10] + (isFinal ? "ი" : "");
+    }
+    function convertUnder100(k, isFinal) {
+        if (k < 20) return convertUnder20(k, isFinal);
+        let rem = k % 20;
+        let tenKey = k - rem;
+        let prefix = baseTens[tenKey];
+        if (rem === 0) return prefix + (isFinal ? "ი" : "");
+        return prefix + "და" + convertUnder20(rem, isFinal);
+    }
+    function convertUnder1000(k, isFinal) {
+        if (k < 100) return convertUnder100(k, isFinal);
+        let hundreds = Math.floor(k / 100);
+        let rem = k % 100;
+        let prefix = (hundreds === 1 ? "" : units[hundreds]) + "ას";
+        if (rem === 0) return prefix + (isFinal ? "ი" : "");
+        return prefix + " " + convertUnder100(rem, isFinal);
+    }
+    let result = "";
+    if (n >= 1000000000) {
+        let bill = Math.floor(n / 1000000000);
+        n %= 1000000000;
+        result += (bill === 1 ? "" : convertUnder1000(bill, false)) + (n === 0 ? " მილიარდი " : " მილიარდ ");
+    }
+    if (n >= 1000000) {
+        let mill = Math.floor(n / 1000000);
+        n %= 1000000;
+        result += (mill === 1 ? "" : convertUnder1000(mill, false)) + (n === 0 ? " მილიონი " : " მილიონ ");
+    }
+    if (n >= 1000) {
+        let thou = Math.floor(n / 1000);
+        n %= 1000;
+        result += (thou === 1 ? "" : convertUnder1000(thou, false)) + (n === 0 ? " ათასი " : " ათას ");
+    }
+    if (n > 0) {
+        result += convertUnder1000(n, true);
+    }
     return result.trim();
 }
+
+function numToGeorgianOrdinal(num) {
+    let n = parseInt(num, 10);
+    if (isNaN(n) || n <= 0) return numToGeorgian(n);
+    if (n === 1) return "პირველი";
+    if (n === 8) return "მერვე";
+    if (n === 9) return "მეცხრე";
+    let cardinal = numToGeorgian(n);
+    let words = cardinal.split(/\s+/);
+    let last = words[words.length - 1];
+    let lastOrd = "";
+    if (last.includes("და") && !last.startsWith("და")) {
+        let parts = last.split("და");
+        let prefix = parts.slice(0, -1).join("და") + "და";
+        let remStr = parts[parts.length - 1];
+        let remN = n % 20;
+        if (remN === 1) {
+            lastOrd = prefix + "მეერთე";
+        } else if (remN === 8) {
+            lastOrd = prefix + "მერვე";
+        } else if (remN === 9) {
+            lastOrd = prefix + "მეცხრე";
+        } else if (remStr.endsWith("ი")) {
+            lastOrd = prefix + "მე" + remStr.slice(0, -1) + "ე";
+        } else {
+            lastOrd = prefix + "მე" + remStr + "ე";
+        }
+    } else {
+        if (last.endsWith("ი") || last.endsWith("ა")) {
+            let root = last.slice(0, -1);
+            lastOrd = "მე" + root + "ე";
+        } else {
+            lastOrd = "მე" + last + "ე";
+        }
+    }
+    words[words.length - 1] = lastOrd;
+    return words.join(" ");
+}
+
+function numToGeorgianWithCase(num, rawSuffix) {
+    let cardinal = numToGeorgian(num);
+    let suffix = rawSuffix.replace(/^-+/, '').trim();
+    let stem = cardinal;
+    let hasFinalI = cardinal.endsWith('ი');
+    if (hasFinalI) {
+        stem = cardinal.slice(0, -1);
+    }
+    if (suffix === 'მდე' || suffix === 'ამდე') {
+        if (cardinal.endsWith('ა')) return cardinal + 'მდე';
+        return stem + 'ამდე';
+    } else if (suffix === 'დან' || suffix === 'იდან') {
+        if (cardinal.endsWith('ა')) return cardinal.slice(0, -1) + 'იდან';
+        return stem + 'იდან';
+    } else if (suffix === 'ში') {
+        return (hasFinalI ? stem : cardinal) + 'ში';
+    } else if (suffix === 'ზე') {
+        return (hasFinalI ? stem : cardinal) + 'ზე';
+    } else if (suffix === 'ით' || suffix === 'თ') {
+        if (cardinal.endsWith('ა')) return cardinal.slice(0, -1) + 'ით';
+        return stem + 'ით';
+    } else if (suffix === 'ად' || suffix === 'დ') {
+        if (cardinal.endsWith('ა')) return cardinal + 'დ';
+        return stem + 'ად';
+    } else if (suffix === 'ს') {
+        return (hasFinalI ? stem : cardinal) + 'ს';
+    } else if (suffix === 'თან') {
+        return (hasFinalI ? stem : cardinal) + 'თან';
+    } else if (suffix === 'კენ') {
+        return (hasFinalI ? cardinal : cardinal + 'ს') + 'კენ';
+    } else if (suffix === 'მა' || suffix === 'მ') {
+        if (cardinal.endsWith('ა')) return cardinal + 'მ';
+        return stem + 'მა';
+    }
+    return cardinal + '-' + suffix;
+}
+
 function preprocessGeorgianText(text) {
-    let t = text; const decimalMap = new Map(); let decimalCounter = 0;
-    t = t.replace(/(\d+)\.(\d+)/g, (match, whole, frac) => { const wholeNum = parseInt(whole); const fracNum = parseInt(frac); const wholeStr = numToGeorgian(wholeNum); const fracStr = numToGeorgian(fracNum); const precision = frac.length; const precisionMap = { 1: "მეათედი", 2: "მეასედი", 3: "მეათასედი", 4: "მეათიათასედი", 5: "ასათასედი", 6: "მილიონედი" }; const unit = precisionMap[precision] || "ნაწილი"; const result = `${wholeStr} მთელი ${fracStr} ${unit}`; const placeholder = `___PROCESSED_DECIMAL_${decimalCounter}___`; decimalMap.set(placeholder, result); decimalCounter++; return placeholder; });
-    t = t.replace(/(\d+)\/(\d+)/g, (match, num, den) => { const numerator = parseInt(num); const denominator = parseInt(den); const numStr = numToGeorgian(numerator); let denStr = ""; if (denominator === 2) { denStr = (numerator === 1) ? "ნახევარი" : "მეორედი"; } else if (denominator === 4) { denStr = "მეოთხედი"; } else { let tempDen = numToGeorgian(denominator); if (tempDen.endsWith("ი")) { denStr = "მე" + tempDen.slice(0, -1) + "ედი"; } else { denStr = "მე" + tempDen + "ედი"; } } return `${numStr} ${denStr}`; });
-    t = t.replace(/(\d)[\s,]+(?=\d)/g, '$1');
-    t = t.replace(/\d+/g, (match) => { return numToGeorgian(match); });
-    const romanMap = { 'XXI': 'ოცდამეერთე', 'XX': 'მეოცე', 'XIX': 'მეცხრამეტე', 'XVIII': 'მეთვრამეტე', 'XVII': 'მეჩვიდმეტე', 'XVI': 'მეთექვსმეტე', 'XV': 'მეთხუთმეტე', 'XIV': 'მეთოთხმეტე', 'XIII': 'მეცამეტე', 'XII': 'მეთორმეტე', 'XI': 'მეთერთმეტე', 'X': 'მეათე', 'I': 'პირველი' }; for (const [r, v] of Object.entries(romanMap)) { t = t.replace(new RegExp(`\\b${r}\\b`, 'g'), v); }
-    const abbrList = [ { k: 'ძვ.წ.', v: 'ძველი წელთაღრიცხვით' }, { k: 'ახ.წ.', v: 'ახალი წელთაღრიცხვით' }, { k: 'ე.ი.', v: 'ესე იგი,' }, { k: 'ე.წ.', v: 'ეგრეთ წოდებული' }, { k: 'ა.შ.', v: 'ასე შემდეგ.' }, { k: 'ა.შ', v: 'ასე შემდეგ.' }, { k: 'აშშ', v: 'ამერიკის შეერთებული შტატები' }, { k: 'შ.პ.ს.', v: 'შეპესე' }, { k: 'კმ/სთ', v: 'კილომეტრი საათში' }, { k: 'კმ', v: 'კილომეტრი' }, { k: 'მ/წმ', v: 'მეტრი წამში' }, { k: 'წმ', v: 'წამში' }, { k: 'კვ.მ', v: 'კვადრატული მეტრი' }, { k: 'დნმ', v: 'დეენემი' }, { k: 'კგ', v: 'კილოგრამი' }, { k: 'გრ', v: 'გრამი' } ]; abbrList.forEach(item => { let pattern = item.k.replace(/\./g, '\\.\\s*'); t = t.replace(new RegExp(`(^|[\\s(])${pattern}(?=[\\s.,:;)]|$)`, 'gi'), `$1${item.v}`); });
-    t = t.replace(/%/g, ' პროცენტი').replace(/№/g, ' ნომერი ').replace(/₾/g, ' ლარი '); decimalMap.forEach((value, key) => { t = t.replace(key, value); }); return t.replace(/\s+/g, ' ').trim();
+    let t = text;
+    const decimalMap = new Map();
+    let decimalCounter = 0;
+    
+    // Decimal fractions: 3.14
+    t = t.replace(/(\d+)\.(\d+)/g, (match, whole, frac) => {
+        const wholeNum = parseInt(whole, 10);
+        const fracNum = parseInt(frac, 10);
+        const wholeStr = numToGeorgian(wholeNum);
+        const fracStr = numToGeorgian(fracNum);
+        const precision = frac.length;
+        const precisionMap = { 1: "მეათედი", 2: "მეასედი", 3: "მეათასედი", 4: "მეათიათასედი", 5: "ასათასედი", 6: "მილიონედი" };
+        const unit = precisionMap[precision] || "ნაწილი";
+        const result = `${wholeStr} მთელი ${fracStr} ${unit}`;
+        const placeholder = `___PROCESSED_DECIMAL_${decimalCounter}___`;
+        decimalMap.set(placeholder, result);
+        decimalCounter++;
+        return placeholder;
+    });
+
+    // Simple fractions: 1/2
+    t = t.replace(/(\d+)\/(\d+)/g, (match, num, den) => {
+        const numerator = parseInt(num, 10);
+        const denominator = parseInt(den, 10);
+        const numStr = numToGeorgian(numerator);
+        let denStr = "";
+        if (denominator === 2) {
+            denStr = (numerator === 1) ? "ნახევარი" : "მეორედი";
+        } else if (denominator === 4) {
+            denStr = "მეოთხედი";
+        } else {
+            let tempDen = numToGeorgian(denominator);
+            if (tempDen.endsWith("ი")) {
+                denStr = "მე" + tempDen.slice(0, -1) + "ედი";
+            } else {
+                denStr = "მე" + tempDen + "ედი";
+            }
+        }
+        return `${numStr} ${denStr}`;
+    });
+
+    // 1. Historical Eras (longest patterns first)
+    t = t.replace(/\bძვ[\.\s]+წ[\.\s]+აღ(?:რ)?[\.\s]*/gi, 'ძველი წელთაღრიცხვით ');
+    t = t.replace(/\bძვ[\.\s]+წ[\.\s]*/gi, 'ძველი წელთაღრიცხვით ');
+    t = t.replace(/\bახ[\.\s]+წ[\.\s]+აღ(?:რ)?[\.\s]*/gi, 'ახალი წელთაღრიცხვით ');
+    t = t.replace(/\bახ[\.\s]+წ[\.\s]*/gi, 'ახალი წელთაღრიცხვით ');
+    t = t.replace(/\bჩვ[\.\s]+წ[\.\s]+აღ(?:რ)?[\.\s]*/gi, 'ჩვენი წელთაღრიცხვით ');
+    t = t.replace(/\bჩვ[\.\s]+წ[\.\s]*/gi, 'ჩვენი წელთაღრიცხვით ');
+
+    // 2. Speeds & Measurements
+    t = t.replace(/\bკმ\s*\/\s*სთ\b/gi, 'კილომეტრ-საათი');
+    t = t.replace(/\bმ\s*\/\s*წმ\b/gi, 'მეტრი წამში');
+    t = t.replace(/\bკვ[\.\s]*კმ\b/gi, 'კვადრატული კილომეტრი');
+    t = t.replace(/\bკვ[\.\s]*მ\b/gi, 'კვადრატული მეტრი');
+    t = t.replace(/\bკუბ[\.\s]*მ\b/gi, 'კუბური მეტრი');
+
+    // 3. Plurals & Single-letter abbreviations
+    t = t.replace(/\bსს[\.]?(?=\s|[.,;:!?\)]|$)/gi, 'საუკუნეებში');
+    t = t.replace(/\bწწ[\.]?(?=\s|[.,;:!?\)]|$)/gi, 'წლებში');
+    t = t.replace(/\bს\.(?=\s|[.,;:!?\)]|$)/gi, 'საუკუნე');
+    t = t.replace(/\bწ\.(?=\s|[.,;:!?\)]|$)/gi, 'წელი');
+    t = t.replace(/\bგვ\.(?=\s|[.,;:!?\)]|$)/gi, 'გვერდი');
+    t = t.replace(/\bტ\.(?=\s|[.,;:!?\)]|$)/gi, 'ტომი');
+
+    // 4. Roman Numeral Ranges: XI-X, I-II, V-IV, XIX-XX
+    t = t.replace(/\b([IVXLCDM]+)\s*[-–—]\s*([IVXLCDM]+)\b/gi, (match, r1, r2) => {
+        let u1 = r1.toUpperCase();
+        let u2 = r2.toUpperCase();
+        if (ROMAN_ORDINALS[u1] && ROMAN_ORDINALS[u2]) {
+            return `${ROMAN_ORDINALS[u1]}-${ROMAN_ORDINALS[u2]}`;
+        }
+        return match;
+    });
+
+    // 5. Roman Numerals with case suffix: V-ში, V-დან, V-ს, V-ის, V-ით, V-ად, V-მდე
+    t = t.replace(/\b([IVXLCDM]+)-(ში|ის|ით|ზე|ად|ს|დან|იდან|მდე|ამდე|თან|კენ|მა|მ)\b/gi, (match, r, sfx) => {
+        let u = r.toUpperCase();
+        if (ROMAN_ORDINALS[u]) {
+            let ord = ROMAN_ORDINALS[u];
+            if (ord === 'პირველი') {
+                if (sfx === 'ში' || sfx === 'ზე' || sfx === 'თან' || sfx === 'კენ') return 'პირველ' + sfx;
+                if (sfx === 'დან' || sfx === 'იდან') return 'პირველიდან';
+                if (sfx === 'მდე' || sfx === 'ამდე') return 'პირველამდე';
+                if (sfx === 'ით' || sfx === 'თ') return 'პირველით';
+                if (sfx === 'ად' || sfx === 'დ') return 'პირველად';
+                if (sfx === 'მა' || sfx === 'მ') return 'პირველმა';
+                if (sfx === 'ს') return 'პირველს';
+                if (sfx === 'ის') return 'პირველის';
+            } else {
+                if (sfx === 'ში' || sfx === 'ზე' || sfx === 'თან') return ord + sfx;
+                if (sfx === 'დან' || sfx === 'იდან') return ord.slice(0, -1) + 'იდან';
+                if (sfx === 'მდე' || sfx === 'ამდე') return ord + 'მდე';
+                if (sfx === 'ით' || sfx === 'თ') return ord.slice(0, -1) + 'ით';
+                if (sfx === 'ად' || sfx === 'დ') return ord.slice(0, -1) + 'ედ';
+                if (sfx === 'მა' || sfx === 'მ') return ord + 'მ';
+                if (sfx === 'ს') return ord + 'ს';
+                if (sfx === 'ის') return ord.slice(0, -1) + 'ის';
+                if (sfx === 'კენ') return ord.slice(0, -1) + 'ისკენ';
+            }
+        }
+        return match;
+    });
+
+    // 6. Standalone Roman Numerals
+    const sortedRomans = Object.keys(ROMAN_ORDINALS).sort((a, b) => b.length - a.length);
+    for (const r of sortedRomans) {
+        t = t.replace(new RegExp(`\\b${r}\\b`, 'g'), ROMAN_ORDINALS[r]);
+    }
+
+    // 7. Georgian Numbers with prefix/suffix: მე-2, მე-5, მე-10, 1-ელ, 1-ლი
+    t = t.replace(/\bმე-(\d+)\b/g, (match, n) => numToGeorgianOrdinal(parseInt(n, 10)));
+    t = t.replace(/\b1-(?:ელ|ლი|ელი)\b/g, 'პირველი');
+    t = t.replace(/\b1-მა\b/g, 'პირველმა');
+    t = t.replace(/\b1-ს\b/g, 'პირველს');
+
+    // 8. Spaced Numbers (e.g. 40 000, 1 500 000, 40 000-მდე)
+    // Matches digits + space/comma/thin-space + 3 digits, running repeatedly
+    while (/(\d+)[\s\u00A0\u2009]+(\d{3})(?=\D|$)/.test(t)) {
+        t = t.replace(/(\d+)[\s\u00A0\u2009]+(\d{3})(?=\D|$)/g, '$1$2');
+    }
+
+    // 9. Numbers with case suffix: 10-დან, 40000-მდე, 2024-ში
+    t = t.replace(/\b(\d+)-(მდე|ამდე|დან|იდან|ში|ზე|ით|ად|ს|თან|კენ|მა|მ)\b/g, (match, n, sfx) => {
+        return numToGeorgianWithCase(parseInt(n, 10), sfx);
+    });
+
+    // 10. Normal integers
+    t = t.replace(/\b\d+\b/g, (match) => numToGeorgian(match));
+
+    // 11. Common Abbreviations
+    const abbrList = [
+        { k: 'ძვ.წ.', v: 'ძველი წელთაღრიცხვით' },
+        { k: 'ახ.წ.', v: 'ახალი წელთაღრიცხვით' },
+        { k: 'ე.ი.', v: 'ესე იგი,' },
+        { k: 'ე.წ.', v: 'ეგრეთ წოდებული' },
+        { k: 'ა.შ.', v: 'ასე შემდეგ.' },
+        { k: 'ა.შ', v: 'ასე შემდეგ.' },
+        { k: 'აშშ', v: 'ამერიკის შეერთებული შტატები' },
+        { k: 'შ.პ.ს.', v: 'შეპესე' },
+        { k: 'კგ', v: 'კილოგრამი' },
+        { k: 'გრ', v: 'გრამი' },
+        { k: 'დნმ', v: 'დეენემი' }
+    ];
+    abbrList.forEach(item => {
+        let pattern = item.k.replace(/\./g, '\\.\\s*');
+        t = t.replace(new RegExp(`(^|[\\s(„"\'«])${pattern}(?=[\\s.,:;!?\\)„"\'»]|$)`, 'gi'), `$1${item.v}`);
+    });
+
+    // 12. Currencies and symbols
+    t = t.replace(/(\d+)\s*₾/g, '$1 ლარი').replace(/₾\s*(\d+)/g, '$1 ლარი');
+    t = t.replace(/(\d+)\s*\$/g, '$1 დოლარი').replace(/\$\s*(\d+)/g, '$1 დოლარი');
+    t = t.replace(/(\d+)\s*€/g, '$1 ევრო').replace(/€\s*(\d+)/g, '$1 ევრო');
+    t = t.replace(/%/g, ' პროცენტი').replace(/№/g, ' ნომერი ').replace(/₾/g, ' ლარი ').replace(/°C/g, ' გრადუსი ცელსიუსი');
+
+    // Restore decimal fractions
+    decimalMap.forEach((value, key) => {
+        t = t.replace(key, value);
+    });
+
+    return t.replace(/\s+/g, ' ').trim();
 }
 function transliterateToGeorgian(text) {
     const dictionary = {
@@ -1607,8 +1885,42 @@ function processText(rawHtml) {
         let protectedText = paraText;
         const decimalPlaceholders = [];
         protectedText = protectedText.replace(/(\d+)\.(\d+)/g, (match) => { const placeholder = `___DECIMAL_${decimalPlaceholders.length}___`; decimalPlaceholders.push(match); return placeholder; });
-        const abbrs = ['ე.წ.', 'ე.ი.', 'ა.შ.', 'მ.შ.', 'ე.უ.', 'შ.პ.ს.', 'ს.ს.'];
-        abbrs.forEach(abbr => { let reg = new RegExp(abbr.replace(/\./g, '\\.\\s*'), 'gi'); protectedText = protectedText.replace(reg, m => m.replace(/\./g, '___DOT___')); });
+        // Multi-word historical and official abbreviations
+        const multiAbbrs = [
+            /ძვ\.\s*წ\.\s*აღ(?:რ)?\./gi,
+            /ძვ\.\s*წ\./gi,
+            /ახ\.\s*წ\.\s*აღ(?:რ)?\./gi,
+            /ახ\.\s*წ\./gi,
+            /ჩვ\.\s*წ\.\s*აღ(?:რ)?\./gi,
+            /ჩვ\.\s*წ\./gi,
+            /ე\.\s*წ\./gi,
+            /ე\.\s*ი\./gi,
+            /ა\.\s*შ\./gi,
+            /მ\.\s*შ\./gi,
+            /ე\.\s*უ\./gi,
+            /შ\.\s*პ\.\s*ს\./gi,
+            /ს\.\s*ს\./gi
+        ];
+        multiAbbrs.forEach(reg => {
+            protectedText = protectedText.replace(reg, m => m.replace(/\./g, '___DOT___'));
+        });
+
+        // Literature and reference single-word abbreviations when not at end of sentence
+        const singleAbbrs = [
+            'სს.', 'წწ.', 'გვ.', 'ტტ.', 'ტ.', 'პროფ.', 'აკად.', 'დოქტ.', 'მაგ.', 'მუხ.', 'თავ.', 'ნაწ.',
+            'სურ.', 'ნახ.', 'რედ.', 'შემდგ.', 'გამომც.', 'სთ.', 'წთ.', 'წმ.', 'ქ.', 'სოფ.'
+        ];
+        singleAbbrs.forEach(abbr => {
+            let escaped = abbr.replace(/\./g, '\\.');
+            let reg = new RegExp(`\\b${escaped}(?=\\s+(?:[0-9IVXLCDMა-ჰ]|___DECIMAL))`, 'gi');
+            protectedText = protectedText.replace(reg, m => m.replace(/\./g, '___DOT___'));
+        });
+
+        // Protect century and year abbreviations following numbers or Roman numerals: V ს., 2024 წ.
+        protectedText = protectedText.replace(/(\b[IVXLCDM0-9]+(?:-[IVXLCDM0-9]+)?\s+(?:ს|წ))\.(?=\s+(?:[0-9IVXLCDMა-ჰ]|___DECIMAL))/gi, '$1___DOT___');
+
+        // Protect Georgian personal initials: e.g. ი. ჭავჭავაძე, შ. რუსთაველი
+        protectedText = protectedText.replace(/(^|[\s(„"\'«])([ა-ჰ]{1,2})\.\s*(?=[ა-ჰ])/g, '$1$2___DOT___ ');
         const emojiRange = "\\u{1F000}-\\u{1FFFF}\\u{2600}-\\u{27BF}\\u{1F300}-\\u{1F5FF}\\u{1F680}-\\u{1F6FF}\\u{1F1E0}-\\u{1F1FF}";
         const sentenceRegex = new RegExp(`[^.!?${emojiRange}]+(?:[.!?]+|[${emojiRange}]+)+|[^.!?${emojiRange}]+$`, 'gu');
         // Hard split at forced header markers FIRST: the greedy [^.!?]+ class
@@ -1749,22 +2061,204 @@ const EMOJI_TEST_RE = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{1F300}-\u{1F5FF}\
 // Builds the spoken text for ONE sentence + char offsets of each visual word within it.
 // `raw` keeps the trailing space so offsets concatenate cleanly for native utterances.
 function buildSpokenSentence(sent, lang) {
-    const visualWords = sent.element.querySelectorAll('.word');
+    const visualWords = Array.from(sent.element.querySelectorAll('.word'));
     const wordRanges = [];
     let text = "";
-    visualWords.forEach(wordEl => {
+    let i = 0;
+    const n = visualWords.length;
+
+    while (i < n) {
+        const wordEl = visualWords[i];
         let raw = wordEl.innerText.trim();
-        let spoken = raw;
-        if (raw === '—' || raw === '–') { spoken = ","; }
-        else if (EMOJI_TEST_RE.test(raw)) { spoken = "."; }
-        else if (lang === 'ka') {
-            spoken = preprocessGeorgianText(raw);
-            if (/[a-zA-Z]/.test(spoken)) { spoken = transliterateToGeorgian(spoken); }
+
+        if (raw === '—' || raw === '–') {
+            const start = text.length;
+            text += ", ";
+            wordRanges.push({ el: wordEl, start: start, end: text.length });
+            i++;
+            continue;
         }
+        if (EMOJI_TEST_RE.test(raw)) {
+            const start = text.length;
+            text += ". ";
+            wordRanges.push({ el: wordEl, start: start, end: text.length });
+            i++;
+            continue;
+        }
+
+        if (lang === 'ka') {
+            const cleanCurr = raw.replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '');
+
+            // Lookahead Pattern 1: Spaced numbers (e.g. "40" + "000" or "1" + "500" + "000" + optional suffix)
+            if (/^\d{1,3}$/.test(cleanCurr) && i + 1 < n) {
+                const nextClean = visualWords[i + 1].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '');
+                if (/^\d{3}(?:-(?:მდე|ამდე|დან|იდან|ში|ზე|ით|ად|ს|თან|კენ|მა|მ))?$/.test(nextClean)) {
+                    let j = i + 1;
+                    while (j + 1 < n) {
+                        const candClean = visualWords[j + 1].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '');
+                        if (/^\d{3}(?:-(?:მდე|ამდე|დან|იდან|ში|ზე|ით|ად|ს|თან|კენ|მა|მ))?$/.test(candClean)) {
+                            j++;
+                        } else {
+                            break;
+                        }
+                    }
+                    const matchedEls = visualWords.slice(i, j + 1);
+                    const combinedRaw = matchedEls.map(el => el.innerText.trim()).join(' ');
+                    let spoken = preprocessGeorgianText(combinedRaw);
+                    if (/[a-zA-Z]/.test(spoken)) spoken = transliterateToGeorgian(spoken);
+
+                    const start = text.length;
+                    text += spoken + " ";
+                    const end = text.length;
+
+                    const spokenWords = spoken.split(/\s+/).filter(w => w.length > 0);
+                    if (spokenWords.length === matchedEls.length) {
+                        let currPos = start;
+                        for (let k = 0; k < matchedEls.length; k++) {
+                            let wLen = spokenWords[k].length + 1;
+                            wordRanges.push({ el: matchedEls[k], start: currPos, end: currPos + wLen });
+                            currPos += wLen;
+                        }
+                    } else {
+                        const spanLen = end - start;
+                        const chunkLen = spanLen / matchedEls.length;
+                        for (let k = 0; k < matchedEls.length; k++) {
+                            let sPos = Math.floor(start + k * chunkLen);
+                            let ePos = (k < matchedEls.length - 1) ? Math.floor(start + (k + 1) * chunkLen) : end;
+                            wordRanges.push({ el: matchedEls[k], start: sPos, end: ePos });
+                        }
+                    }
+                    i = j + 1;
+                    continue;
+                }
+            }
+
+            // Lookahead Pattern 2: Historical Eras across tokens (3 tokens: ძვ. + წ. + აღ. / 2 tokens: ძვ. + წ.)
+            if (i + 2 < n) {
+                const w1 = cleanCurr.toLowerCase();
+                const w2 = visualWords[i + 1].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
+                const w3 = visualWords[i + 2].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
+                if ((w1 === 'ძვ' || w1 === 'ახ' || w1 === 'ჩვ') && w2 === 'წ' && (w3 === 'აღ' || w3 === 'აღრ')) {
+                    const matchedEls = visualWords.slice(i, i + 3);
+                    const combinedRaw = matchedEls.map(el => el.innerText.trim()).join(' ');
+                    let spoken = preprocessGeorgianText(combinedRaw);
+                    const start = text.length;
+                    text += spoken + " ";
+                    const end = text.length;
+                    const chunkLen = (end - start) / 3;
+                    for (let k = 0; k < 3; k++) {
+                        let sPos = Math.floor(start + k * chunkLen);
+                        let ePos = (k < 2) ? Math.floor(start + (k + 1) * chunkLen) : end;
+                        wordRanges.push({ el: matchedEls[k], start: sPos, end: ePos });
+                    }
+                    i += 3;
+                    continue;
+                }
+            }
+            if (i + 1 < n) {
+                const w1 = cleanCurr.toLowerCase();
+                const w2 = visualWords[i + 1].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
+                if ((w1 === 'ძვ' || w1 === 'ახ' || w1 === 'ჩვ') && w2 === 'წ') {
+                    const matchedEls = visualWords.slice(i, i + 2);
+                    const combinedRaw = matchedEls.map(el => el.innerText.trim()).join(' ');
+                    let spoken = preprocessGeorgianText(combinedRaw);
+                    const start = text.length;
+                    text += spoken + " ";
+                    const end = text.length;
+                    const chunkLen = (end - start) / 2;
+                    for (let k = 0; k < 2; k++) {
+                        let sPos = Math.floor(start + k * chunkLen);
+                        let ePos = (k < 1) ? Math.floor(start + (k + 1) * chunkLen) : end;
+                        wordRanges.push({ el: matchedEls[k], start: sPos, end: ePos });
+                    }
+                    i += 2;
+                    continue;
+                }
+            }
+
+            // Lookahead Pattern 3: Roman ranges split across tokens: XI + - + X
+            if (i + 2 < n) {
+                const w1 = cleanCurr.toUpperCase();
+                const wMid = visualWords[i + 1].innerText.trim();
+                const w3 = visualWords[i + 2].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toUpperCase();
+                if (/^[IVXLCDM]+$/.test(w1) && (wMid === '-' || wMid === '–' || wMid === '—') && /^[IVXLCDM]+$/.test(w3)) {
+                    const matchedEls = visualWords.slice(i, i + 3);
+                    let spoken = preprocessGeorgianText(`${w1}-${w3}`);
+                    const start = text.length;
+                    text += spoken + " ";
+                    const end = text.length;
+                    const chunkLen = (end - start) / 3;
+                    for (let k = 0; k < 3; k++) {
+                        let sPos = Math.floor(start + k * chunkLen);
+                        let ePos = (k < 2) ? Math.floor(start + (k + 1) * chunkLen) : end;
+                        wordRanges.push({ el: matchedEls[k], start: sPos, end: ePos });
+                    }
+                    i += 3;
+                    continue;
+                }
+            }
+
+            // Lookahead Pattern 4: Roman/Number + Century/Year unit: V + ს. or XI-X + სს.
+            if (i + 1 < n) {
+                const nextClean = visualWords[i + 1].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
+                if (nextClean === 'ს' || nextClean === 'სს' || nextClean === 'წ' || nextClean === 'წწ' || nextClean === 'საუკუნე' || nextClean === 'საუკუნეში') {
+                    if (/^[IVXLCDM]+(?:-[IVXLCDM]+)?$/i.test(cleanCurr) || /^\d+(?:-\d+)?$/.test(cleanCurr)) {
+                        const matchedEls = visualWords.slice(i, i + 2);
+                        const combinedRaw = matchedEls.map(el => el.innerText.trim()).join(' ');
+                        let spoken = preprocessGeorgianText(combinedRaw);
+                        const start = text.length;
+                        text += spoken + " ";
+                        const end = text.length;
+                        const chunkLen = (end - start) / 2;
+                        for (let k = 0; k < 2; k++) {
+                            let sPos = Math.floor(start + k * chunkLen);
+                            let ePos = (k < 1) ? Math.floor(start + (k + 1) * chunkLen) : end;
+                            wordRanges.push({ el: matchedEls[k], start: sPos, end: ePos });
+                        }
+                        i += 2;
+                        continue;
+                    }
+                }
+            }
+
+            // Lookahead Pattern 5: Speed / Measurement unit split: კმ + / + სთ
+            if (i + 2 < n) {
+                const w1 = cleanCurr.toLowerCase();
+                const wMid = visualWords[i + 1].innerText.trim();
+                const w3 = visualWords[i + 2].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
+                if ((w1 === 'კმ' && wMid === '/' && w3 === 'სთ') || (w1 === 'მ' && wMid === '/' && w3 === 'წმ')) {
+                    const matchedEls = visualWords.slice(i, i + 3);
+                    let spoken = preprocessGeorgianText(`${w1}/${w3}`);
+                    const start = text.length;
+                    text += spoken + " ";
+                    const end = text.length;
+                    const chunkLen = (end - start) / 3;
+                    for (let k = 0; k < 3; k++) {
+                        let sPos = Math.floor(start + k * chunkLen);
+                        let ePos = (k < 2) ? Math.floor(start + (k + 1) * chunkLen) : end;
+                        wordRanges.push({ el: matchedEls[k], start: sPos, end: ePos });
+                    }
+                    i += 3;
+                    continue;
+                }
+            }
+
+            // Fallback single word for Georgian
+            let spoken = preprocessGeorgianText(raw);
+            if (/[a-zA-Z]/.test(spoken)) spoken = transliterateToGeorgian(spoken);
+            const start = text.length;
+            text += spoken + " ";
+            wordRanges.push({ el: wordEl, start: start, end: text.length });
+            i++;
+            continue;
+        }
+
+        // Non-Georgian language fallback
         const start = text.length;
-        text += spoken + " ";
+        text += raw + " ";
         wordRanges.push({ el: wordEl, start: start, end: text.length });
-    });
+        i++;
+    }
     
     let resultText = text.trim();
     // მომხმარებლის მოთხოვნა: ფიზიკური წერტილის დასმა სათაურებზე
