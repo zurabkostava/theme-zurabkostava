@@ -1358,7 +1358,7 @@ function rebuildDynamicSettings() {
             }
         }
 
-        const savedRate = localStorage.getItem(`rate-${currentLang}`) || '1';
+        const savedRate = localStorage.getItem(`rate-${currentLang}`) || localStorage.getItem('unified-reading-rate') || '1';
         rateInput.value = savedRate;
         rateVal.textContent = savedRate + 'x';
         updateDlBtn();
@@ -1410,10 +1410,12 @@ function rebuildDynamicSettings() {
 
     rateInput.addEventListener('input', (e) => {
         const currentLang = langSelect.value;
-        if(currentLang) {
-            rateVal.textContent = e.target.value + 'x';
-            try { localStorage.setItem(`rate-${currentLang}`, e.target.value); } catch(err) {}
-        }
+        const val = e.target.value;
+        rateVal.textContent = val + 'x';
+        try {
+            localStorage.setItem('unified-reading-rate', val);
+            if (currentLang) localStorage.setItem(`rate-${currentLang}`, val);
+        } catch(err) {}
     });
 
     updateVoiceDropdown();
@@ -2889,7 +2891,7 @@ async function playMergedQueue() {
         const rateInputId = `rate-${chunk.lang}`;
         const selectEl = document.getElementById(voiceSelectId);
         const selectedVoiceName = localStorage.getItem(voiceSelectId) || (selectEl ? selectEl.value : null);
-        const rate = parseFloat(localStorage.getItem(rateInputId) || '1');
+        const rate = parseFloat(localStorage.getItem(rateInputId) || localStorage.getItem('unified-reading-rate') || localStorage.getItem('rate-ka') || '1');
 
         const piperVoice = piperVoicesList.find(v => v && v.name === selectedVoiceName);
 
