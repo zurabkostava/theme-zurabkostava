@@ -1300,6 +1300,16 @@ function rebuildDynamicSettings() {
         }
 
         const piperForLang = piperList.filter(v => langMatches(v.lang, currentLang));
+        // If currentLang is English ('en'), offer Natia as a Georgian phonetic voice option!
+        if (currentLang === 'en') {
+            const natiaVoice = piperList.find(v => v.key === 'ka_GE-natia-medium');
+            if (natiaVoice && !piperForLang.some(v => v.key === natiaVoice.key)) {
+                piperForLang.push({
+                    ...natiaVoice,
+                    name: '🇬🇪 Natia (ქართული ფონეტიკური ტრანსლიტერაციით)'
+                });
+            }
+        }
         if (piperForLang.length > 0) {
             const optGroup = document.createElement('optgroup');
             optGroup.label = "Piper Offline Voices";
@@ -1703,27 +1713,28 @@ function preprocessGeorgianText(text) {
     });
 
     // 1. Historical Eras (longest patterns first)
-    t = t.replace(/\bძვ[\.\s]+წ[\.\s]+აღ(?:რ)?[\.\s]*/gi, 'ძველი წელთაღრიცხვით ');
-    t = t.replace(/\bძვ[\.\s]+წ[\.\s]*/gi, 'ძველი წელთაღრიცხვით ');
-    t = t.replace(/\bახ[\.\s]+წ[\.\s]+აღ(?:რ)?[\.\s]*/gi, 'ახალი წელთაღრიცხვით ');
-    t = t.replace(/\bახ[\.\s]+წ[\.\s]*/gi, 'ახალი წელთაღრიცხვით ');
-    t = t.replace(/\bჩვ[\.\s]+წ[\.\s]+აღ(?:რ)?[\.\s]*/gi, 'ჩვენი წელთაღრიცხვით ');
-    t = t.replace(/\bჩვ[\.\s]+წ[\.\s]*/gi, 'ჩვენი წელთაღრიცხვით ');
+    t = t.replace(/(?:^|[^\wა-ჰ])ძვ[\.\s]+წ[\.\s]+აღ(?:რ)?[\.\s]*/gi, ' ძველი წელთაღრიცხვით ');
+    t = t.replace(/(?:^|[^\wა-ჰ])ძვ[\.\s]+წ[\.\s]*/gi, ' ძველი წელთაღრიცხვით ');
+    t = t.replace(/(?:^|[^\wა-ჰ])ახ[\.\s]+წ[\.\s]+აღ(?:რ)?[\.\s]*/gi, ' ახალი წელთაღრიცხვით ');
+    t = t.replace(/(?:^|[^\wა-ჰ])ახ[\.\s]+წ[\.\s]*/gi, ' ახალი წელთაღრიცხვით ');
+    t = t.replace(/(?:^|[^\wა-ჰ])ჩვ[\.\s]+წ[\.\s]+აღ(?:რ)?[\.\s]*/gi, ' ჩვენი წელთაღრიცხვით ');
+    t = t.replace(/(?:^|[^\wა-ჰ])ჩვ[\.\s]+წ[\.\s]*/gi, ' ჩვენი წელთაღრიცხვით ');
 
-    // 2. Speeds & Measurements
-    t = t.replace(/\bკმ\s*\/\s*სთ\b/gi, 'კილომეტრ-საათი');
-    t = t.replace(/\bმ\s*\/\s*წმ\b/gi, 'მეტრი წამში');
-    t = t.replace(/\bკვ[\.\s]*კმ\b/gi, 'კვადრატული კილომეტრი');
-    t = t.replace(/\bკვ[\.\s]*მ\b/gi, 'კვადრატული მეტრი');
-    t = t.replace(/\bკუბ[\.\s]*მ\b/gi, 'კუბური მეტრი');
+    // 2. Speeds & Measurements (Georgian & English)
+    t = t.replace(/(?:^|[^\wა-ჰ])(?:კმ\s*\/\s*სთ|km\s*\/\s*h|kmh)(?=[\s.,:;!?\)„"\'»]|$)/gi, ' კილომეტრი საათში');
+    t = t.replace(/(?:^|[^\wა-ჰ])(?:მ\s*\/\s*წმ|m\s*\/\s*s)(?=[\s.,:;!?\)„"\'»]|$)/gi, ' მეტრი წამში');
+    t = t.replace(/(?:^|[^\wა-ჰ])mph(?=[\s.,:;!?\)„"\'»]|$)/gi, ' მილი საათში');
+    t = t.replace(/(?:^|[^\wა-ჰ])კვ[\.\s]*კმ(?=[\s.,:;!?\)„"\'»]|$)/gi, ' კვადრატული კილომეტრი');
+    t = t.replace(/(?:^|[^\wა-ჰ])კვ[\.\s]*მ(?=[\s.,:;!?\)„"\'»]|$)/gi, ' კვადრატული მეტრი');
+    t = t.replace(/(?:^|[^\wა-ჰ])კუბ[\.\s]*მ(?=[\s.,:;!?\)„"\'»]|$)/gi, ' კუბური მეტრი');
 
     // 3. Plurals & Single-letter abbreviations
-    t = t.replace(/\bსს[\.]?(?=\s|[.,;:!?\)]|$)/gi, 'საუკუნეებში');
-    t = t.replace(/\bწწ[\.]?(?=\s|[.,;:!?\)]|$)/gi, 'წლებში');
-    t = t.replace(/\bს\.(?=\s|[.,;:!?\)]|$)/gi, 'საუკუნე');
-    t = t.replace(/\bწ\.(?=\s|[.,;:!?\)]|$)/gi, 'წელი');
-    t = t.replace(/\bგვ\.(?=\s|[.,;:!?\)]|$)/gi, 'გვერდი');
-    t = t.replace(/\bტ\.(?=\s|[.,;:!?\)]|$)/gi, 'ტომი');
+    t = t.replace(/(?:^|[^\wა-ჰ])სს[\.]?(?=[\s.,:;!?\)„"\'»]|$)/gi, ' საუკუნეებში');
+    t = t.replace(/(?:^|[^\wა-ჰ])წწ[\.]?(?=[\s.,:;!?\)„"\'»]|$)/gi, ' წლებში');
+    t = t.replace(/(?:^|[^\wა-ჰ])ს\.(?=[\s.,:;!?\)„"\'»]|$)/gi, ' საუკუნე');
+    t = t.replace(/(?:^|[^\wა-ჰ])წ\.(?=[\s.,:;!?\)„"\'»]|$)/gi, ' წელი');
+    t = t.replace(/(?:^|[^\wა-ჰ])გვ\.(?=[\s.,:;!?\)„"\'»]|$)/gi, ' გვერდი');
+    t = t.replace(/(?:^|[^\wა-ჰ])ტ\.(?=[\s.,:;!?\)„"\'»]|$)/gi, ' ტომი');
 
     // 4. Roman Numeral Ranges: XI-X, I-II, V-IV, XIX-XX
     t = t.replace(/\b([IVXLCDM]+)\s*[-–—]\s*([IVXLCDM]+)\b/gi, (match, r1, r2) => {
@@ -1736,7 +1747,7 @@ function preprocessGeorgianText(text) {
     });
 
     // 5. Roman Numerals with case suffix: V-ში, V-დან, V-ს, V-ის, V-ით, V-ად, V-მდე
-    t = t.replace(/\b([IVXLCDM]+)-(ში|ის|ით|ზე|ად|ს|დან|იდან|მდე|ამდე|თან|კენ|მა|მ)\b/gi, (match, r, sfx) => {
+    t = t.replace(/\b([IVXLCDM]+)-(ში|ის|ით|ზე|ად|ს|დან|იდან|მდე|ამდე|თან|კენ|მა|მ)(?=[\s.,:;!?\)„"\'»]|$)/gi, (match, r, sfx) => {
         let u = r.toUpperCase();
         if (ROMAN_ORDINALS[u]) {
             let ord = ROMAN_ORDINALS[u];
@@ -1767,7 +1778,11 @@ function preprocessGeorgianText(text) {
     // 6. Standalone Roman Numerals
     const sortedRomans = Object.keys(ROMAN_ORDINALS).sort((a, b) => b.length - a.length);
     for (const r of sortedRomans) {
-        t = t.replace(new RegExp(`\\b${r}\\b`, 'g'), ROMAN_ORDINALS[r]);
+        if (r === 'I') {
+            t = t.replace(/\bI\b(?!\s+[a-zA-Z'’])/g, ROMAN_ORDINALS['I']);
+        } else {
+            t = t.replace(new RegExp(`\\b${r}\\b`, 'g'), ROMAN_ORDINALS[r]);
+        }
     }
 
     // 7. Georgian Numbers with prefix/suffix: მე-2, მე-5, მე-10, 1-ელ, 1-ლი
@@ -1783,14 +1798,22 @@ function preprocessGeorgianText(text) {
     }
 
     // 9. Numbers with case suffix: 10-დან, 40000-მდე, 2024-ში
-    t = t.replace(/\b(\d+)-(მდე|ამდე|დან|იდან|ში|ზე|ით|ად|ს|თან|კენ|მა|მ)\b/g, (match, n, sfx) => {
+    t = t.replace(/\b(\d+)-(მდე|ამდე|დან|იდან|ში|ზე|ით|ად|ს|თან|კენ|მა|მ)(?=[\s.,:;!?\)„"\'»]|$)/g, (match, n, sfx) => {
         return numToGeorgianWithCase(parseInt(n, 10), sfx);
     });
 
-    // 10. Normal integers
+    // 10. Currencies and symbols (handled before normal integers so $999 -> 999 დოლარი -> ცხრაას ოთხმოცდაცხრამეტი დოლარი)
+    t = t.replace(/(\d+)\s*₾/g, '$1 ლარი').replace(/₾\s*(\d+)/g, '$1 ლარი');
+    t = t.replace(/(\d+)\s*\$/g, '$1 დოლარი').replace(/\$\s*(\d+)/g, '$1 დოლარი');
+    t = t.replace(/(\d+)\s*€/g, '$1 ევრო').replace(/€\s*(\d+)/g, '$1 ევრო');
+    t = t.replace(/(\d+)\s*£/g, '$1 ფუნტი').replace(/£\s*(\d+)/g, '$1 ფუნტი');
+    t = t.replace(/(\d+)\s*¥/g, '$1 იენი').replace(/¥\s*(\d+)/g, '$1 იენი');
+    t = t.replace(/%/g, ' პროცენტი').replace(/№/g, ' ნომერი ').replace(/₾/g, ' ლარი ').replace(/°C/g, ' გრადუსი ცელსიუსი');
+
+    // 11. Normal integers
     t = t.replace(/\b\d+\b/g, (match) => numToGeorgian(match));
 
-    // 11. Common Abbreviations
+    // 12. Common Abbreviations
     const abbrList = [
         { k: 'ძვ.წ.', v: 'ძველი წელთაღრიცხვით' },
         { k: 'ახ.წ.', v: 'ახალი წელთაღრიცხვით' },
@@ -1809,12 +1832,6 @@ function preprocessGeorgianText(text) {
         t = t.replace(new RegExp(`(^|[\\s(„"\'«])${pattern}(?=[\\s.,:;!?\\)„"\'»]|$)`, 'gi'), `$1${item.v}`);
     });
 
-    // 12. Currencies and symbols
-    t = t.replace(/(\d+)\s*₾/g, '$1 ლარი').replace(/₾\s*(\d+)/g, '$1 ლარი');
-    t = t.replace(/(\d+)\s*\$/g, '$1 დოლარი').replace(/\$\s*(\d+)/g, '$1 დოლარი');
-    t = t.replace(/(\d+)\s*€/g, '$1 ევრო').replace(/€\s*(\d+)/g, '$1 ევრო');
-    t = t.replace(/%/g, ' პროცენტი').replace(/№/g, ' ნომერი ').replace(/₾/g, ' ლარი ').replace(/°C/g, ' გრადუსი ცელსიუსი');
-
     // Restore decimal fractions
     decimalMap.forEach((value, key) => {
         t = t.replace(key, value);
@@ -1823,6 +1840,9 @@ function preprocessGeorgianText(text) {
     return t.replace(/\s+/g, ' ').trim();
 }
 function transliterateToGeorgian(text) {
+    if (typeof window !== 'undefined' && typeof window.advancedTransliterateToGeorgian === 'function') {
+        return window.advancedTransliterateToGeorgian(text);
+    }
     const dictionary = {
         'a': 'ეი', 'ABC': 'ეიბისი', 'yoga': 'იოგა', 'ChatGPT': 'ჩეტჯიპიტი'
     };
@@ -1981,7 +2001,9 @@ function processText(rawHtml) {
             const textForLangCheck = originalDisplay.replace(/___HTML_\d+___/g, '');
             if (/[ა-ჰ]/.test(textForLangCheck)) detectedLang = 'ka';
             else if (/[А-Яа-я]/.test(textForLangCheck)) detectedLang = 'ru';
-            else if (/[A-Za-z]/.test(textForLangCheck)) detectedLang = 'en';
+            else if (/[A-Za-z]/.test(textForLangCheck)) {
+                detectedLang = isParaPrimarilyGeorgian ? 'ka' : 'en';
+            }
             lastDetectedLang = detectedLang;
             detectedBookLanguages.add(detectedLang);
             const sSpan = document.createElement('span');
@@ -2067,6 +2089,15 @@ function buildSpokenSentence(sent, lang) {
     let i = 0;
     const n = visualWords.length;
 
+    const voiceSelectId = `voice-${lang}`;
+    const selectEl = document.getElementById(voiceSelectId);
+    const selectedVoiceName = (localStorage.getItem(voiceSelectId) || (selectEl ? selectEl.value : '') || '').toLowerCase();
+    const isGeorgianTarget = lang === 'ka' || 
+                             selectedVoiceName.includes('ka_ge') || 
+                             selectedVoiceName.includes('natia') || 
+                             selectedVoiceName.includes('georgian') || 
+                             selectedVoiceName.includes('ქართული');
+
     while (i < n) {
         const wordEl = visualWords[i];
         let raw = wordEl.innerText.trim();
@@ -2086,7 +2117,7 @@ function buildSpokenSentence(sent, lang) {
             continue;
         }
 
-        if (lang === 'ka') {
+        if (isGeorgianTarget) {
             const cleanCurr = raw.replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '');
 
             // Lookahead Pattern 1: Spaced numbers (e.g. "40" + "000" or "1" + "500" + "000" + optional suffix)
@@ -2379,12 +2410,19 @@ function getHeaderType(span) {
 }
 
 async function playPiperChunk(chunk, rate, token) {
-    const state = piperWorkers[chunk.lang];
+    let effectiveLang = chunk.lang;
+    const voiceSelectId = `voice-${chunk.lang}`;
+    const selectEl = document.getElementById(voiceSelectId);
+    const selectedVoiceName = localStorage.getItem(voiceSelectId) || (selectEl ? selectEl.value : null);
+    if (selectedVoiceName && (selectedVoiceName.includes('ka_GE-natia') || selectedVoiceName.includes('Natia') || selectedVoiceName.includes('natia'))) {
+        effectiveLang = 'ka';
+    }
+    const state = piperWorkers[effectiveLang] || piperWorkers['ka'];
     const ready = await waitForPiperReady(state, token);
     if (!ready) return false;
 
     const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
-    const wavPromises = spokenList.map(spoken => synthesizeSentence(chunk.lang, spoken.text, token));
+    const wavPromises = spokenList.map(spoken => synthesizeSentence(effectiveLang, spoken.text, token));
 
     // Group sentences by pIndex
     const paragraphs = [];
@@ -2859,7 +2897,11 @@ async function playMergedQueue() {
             const ok = await playGoogleChunk(chunk, rate, token);
             if (!ok) return;
         } else if (piperVoice) {
-            const state = piperWorkers[chunk.lang];
+            let effectiveLang = chunk.lang;
+            if (piperVoice.key === 'ka_GE-natia-medium' || piperVoice.lang === 'ka_GE' || piperVoice.name.includes('Natia')) {
+                effectiveLang = 'ka';
+            }
+            const state = piperWorkers[effectiveLang] || piperWorkers['ka'];
             if (!state || state.voicePath !== piperVoice.path) {
                 stopReading();
                 alert(`გთხოვთ, პარამეტრებიდან ჯერ ჩამოტვირთოთ/გაააქტიუროთ ხმა:\n"${piperVoice.name}"`);

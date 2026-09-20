@@ -1275,6 +1275,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 </script>
+<script src="<?php echo get_template_directory_uri(); ?>/web-reader/english-phonetics.js?v=<?php echo time(); ?>"></script>
 <script src="<?php echo get_template_directory_uri(); ?>/web-reader/scriptreader.js?v=<?php echo time(); ?>"></script>
 <?php wp_footer(); ?>
 </body>
