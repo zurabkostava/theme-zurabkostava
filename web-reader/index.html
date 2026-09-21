@@ -241,13 +241,14 @@
 
 <div id="settings-modal" class="info-modal-overlay hidden">
     <div class="info-modal-content settings-modal-card">
-        <button id="close-settings-btn" class="icon-btn close-modal" title="Close Settings">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <button id="close-settings-btn" class="close-modal" title="Close Settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
 
         <div class="modal-header settings-header">
+            <div class="settings-header-icon">⚙️</div>
             <div class="modal-title-group">
-                <h2>⚙️ Settings</h2>
+                <h2>Settings</h2>
                 <h3>Configure voice, speech rate, and audio pauses</h3>
             </div>
         </div>
@@ -255,7 +256,12 @@
         <div class="settings-modal-body">
             <div id="dynamic-voice-settings"></div>
             <div class="settings-bottom-actions">
-                <button id="refresh-voices-btn" class="ctrl-btn sm refresh-voices-action">Refresh Voices ↻</button>
+                <button id="refresh-voices-btn" class="settings-refresh-btn" title="Refresh available voices">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                    </svg>
+                    <span>Refresh Voices</span>
+                </button>
             </div>
         </div>
     </div>
@@ -1549,64 +1555,418 @@
     .library-scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
     .library-scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
-    /* --- SETTINGS MODAL --- */
+    /* --- SETTINGS MODAL STYLES --- */
     .settings-modal-card {
-        max-width: 560px !important;
+        max-width: 540px !important;
         width: 92% !important;
-        max-height: 85vh !important;
+        max-height: 88vh !important;
         overflow-y: auto !important;
-        background: rgba(15, 23, 42, 0.96) !important;
-        border: 1px solid rgba(56, 189, 248, 0.2) !important;
-        border-radius: 20px !important;
-        padding: 28px !important;
-        box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 35px rgba(56, 189, 248, 0.12) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
+        background: linear-gradient(170deg, rgba(15, 23, 42, 0.98) 0%, rgba(10, 15, 29, 0.98) 100%) !important;
+        border: 1px solid rgba(56, 189, 248, 0.22) !important;
+        border-radius: 22px !important;
+        padding: 26px 24px !important;
+        box-shadow: 0 28px 70px rgba(0, 0, 0, 0.7), 0 0 35px rgba(56, 189, 248, 0.12) !important;
+        backdrop-filter: blur(25px) !important;
+        -webkit-backdrop-filter: blur(25px) !important;
+        position: relative !important;
     }
 
+    .settings-modal-card::-webkit-scrollbar { width: 6px; }
+    .settings-modal-card::-webkit-scrollbar-track { background: transparent; }
+    .settings-modal-card::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
+    .settings-modal-card::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.3); }
+
+    /* Close Button */
+    #neural-app-root #close-settings-btn,
+    .settings-modal-card .close-modal {
+        all: unset !important;
+        box-sizing: border-box !important;
+        position: absolute !important;
+        top: 20px !important;
+        right: 20px !important;
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 50% !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #94a3b8 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        transition: all 0.25s ease !important;
+        z-index: 10 !important;
+    }
+
+    #neural-app-root #close-settings-btn:hover,
+    .settings-modal-card .close-modal:hover {
+        background: rgba(239, 68, 68, 0.15) !important;
+        border-color: rgba(239, 68, 68, 0.5) !important;
+        color: #ef4444 !important;
+        transform: rotate(90deg) !important;
+        box-shadow: 0 0 16px rgba(239, 68, 68, 0.3) !important;
+    }
+
+    #neural-app-root #close-settings-btn svg,
+    .settings-modal-card .close-modal svg {
+        width: 18px !important;
+        height: 18px !important;
+        stroke: currentColor !important;
+        stroke-width: 2.2 !important;
+        display: block !important;
+    }
+
+    /* Header */
     .settings-header {
-        margin-bottom: 20px !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        padding-bottom: 14px;
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+        margin-bottom: 22px !important;
+        padding-bottom: 18px !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
 
-    .settings-header h2 {
-        font-size: 1.3rem;
-        font-weight: 700;
-        margin: 0 0 4px 0;
-        color: #f8fafc;
-    }
-
-    .settings-header h3 {
-        font-size: 0.85rem;
-        color: #94a3b8;
-        margin: 0;
-        font-weight: 400;
-    }
-
-    .settings-bottom-actions {
+    .settings-header-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(56, 189, 248, 0.1);
+        border: 1px solid rgba(56, 189, 248, 0.25);
         display: flex;
-        gap: 12px;
-        margin-top: 18px;
-        padding-top: 16px;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        box-shadow: 0 4px 16px rgba(56, 189, 248, 0.15);
+        flex-shrink: 0;
     }
 
-    #neural-app-root .refresh-voices-action {
-        flex: 1;
+    .settings-header .modal-title-group h2 {
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        color: #f8fafc !important;
+        margin: 0 0 3px 0 !important;
+        letter-spacing: -0.3px !important;
+    }
+
+    .settings-header .modal-title-group h3 {
+        font-size: 0.82rem !important;
+        color: #94a3b8 !important;
+        margin: 0 !important;
+        font-weight: 400 !important;
+    }
+
+    /* Section Cards */
+    .settings-card-section {
+        background: rgba(30, 41, 59, 0.3) !important;
+        border: 1px solid rgba(255, 255, 255, 0.07) !important;
+        border-radius: 16px !important;
+        padding: 18px !important;
+        margin-bottom: 16px !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .settings-section-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .settings-section-icon {
+        font-size: 1rem;
+    }
+
+    .settings-section-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #38bdf8;
+    }
+
+    /* Form Groups & Labels */
+    .settings-modal-card .setting-group {
+        margin-bottom: 16px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+    }
+
+    .settings-modal-card .setting-group:last-child {
+        margin-bottom: 0 !important;
+    }
+
+    .settings-modal-card .setting-group > label {
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        color: #cbd5e1 !important;
+        letter-spacing: 0.3px !important;
+        margin-bottom: 2px !important;
+    }
+
+    /* Custom Dropdown (Select) */
+    .settings-modal-card .select-wrapper {
+        position: relative !important;
+        width: 100% !important;
+    }
+
+    .settings-modal-card .settings-select {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        width: 100% !important;
+        background: rgba(15, 23, 42, 0.85) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        color: #f8fafc !important;
         border-radius: 10px !important;
-        padding: 10px !important;
-        background: rgba(255, 255, 255, 0.04) !important;
-        border: 1px solid var(--border) !important;
-        color: var(--text-muted) !important;
-        font-size: 0.85rem !important;
-        font-weight: 500 !important;
+        padding: 10px 40px 10px 14px !important;
+        font-size: 0.88rem !important;
+        outline: none !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
     }
 
-    #neural-app-root .refresh-voices-action:hover {
-        background: rgba(56, 189, 248, 0.12) !important;
+    .settings-modal-card .settings-select:hover {
+        border-color: rgba(56, 189, 248, 0.4) !important;
+    }
+
+    .settings-modal-card .settings-select:focus {
         border-color: #38bdf8 !important;
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18) !important;
+    }
+
+    .settings-modal-card .settings-select option,
+    .settings-modal-card .settings-select optgroup {
+        background: #0f172a !important;
+        color: #f8fafc !important;
+        padding: 8px !important;
+    }
+
+    .settings-modal-card .select-chevron {
+        position: absolute !important;
+        right: 14px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        pointer-events: none !important;
+        color: #94a3b8 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Sliders */
+    .slider-header-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 6px !important;
+    }
+
+    .slider-val-badge {
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
         color: #38bdf8 !important;
+        background: rgba(56, 189, 248, 0.12) !important;
+        border: 1px solid rgba(56, 189, 248, 0.28) !important;
+        padding: 2px 10px !important;
+        border-radius: 99px !important;
+        letter-spacing: 0.5px !important;
+        min-width: 44px !important;
+        text-align: center !important;
+    }
+
+    .settings-modal-card input[type="range"].settings-slider {
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        width: 100% !important;
+        height: 6px !important;
+        background: rgba(255, 255, 255, 0.12) !important;
+        border-radius: 99px !important;
+        outline: none !important;
+        cursor: pointer !important;
+        transition: background 0.2s ease !important;
+        margin: 8px 0 !important;
+    }
+
+    .settings-modal-card input[type="range"].settings-slider::-webkit-slider-thumb {
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        width: 18px !important;
+        height: 18px !important;
+        border-radius: 50% !important;
+        background: #38bdf8 !important;
+        border: 2.5px solid #ffffff !important;
+        box-shadow: 0 0 10px rgba(56, 189, 248, 0.7) !important;
+        cursor: pointer !important;
+        transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+    }
+
+    .settings-modal-card input[type="range"].settings-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2) !important;
+        box-shadow: 0 0 16px rgba(56, 189, 248, 0.9) !important;
+    }
+
+    .settings-modal-card input[type="range"].settings-slider::-moz-range-thumb {
+        width: 18px !important;
+        height: 18px !important;
+        border-radius: 50% !important;
+        background: #38bdf8 !important;
+        border: 2.5px solid #ffffff !important;
+        box-shadow: 0 0 10px rgba(56, 189, 248, 0.7) !important;
+        cursor: pointer !important;
+    }
+
+    /* Toggle Switch for Parentheses */
+    .settings-modal-card .settings-toggle-label {
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+        cursor: pointer !important;
+        user-select: none !important;
+        padding: 10px 12px !important;
+        border-radius: 12px !important;
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .settings-modal-card .settings-toggle-label:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .settings-modal-card .settings-toggle-checkbox {
+        position: absolute !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    .settings-modal-card .settings-toggle-custom {
+        width: 42px !important;
+        height: 24px !important;
+        background: rgba(255, 255, 255, 0.15) !important;
+        border-radius: 99px !important;
+        position: relative !important;
+        transition: all 0.25s ease !important;
+        flex-shrink: 0 !important;
+    }
+
+    .settings-modal-card .settings-toggle-custom::after {
+        content: '' !important;
+        position: absolute !important;
+        top: 3px !important;
+        left: 3px !important;
+        width: 18px !important;
+        height: 18px !important;
+        border-radius: 50% !important;
+        background: #ffffff !important;
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .settings-modal-card .settings-toggle-checkbox:checked + .settings-toggle-custom {
+        background: #38bdf8 !important;
+        box-shadow: 0 0 12px rgba(56, 189, 248, 0.4) !important;
+    }
+
+    .settings-modal-card .settings-toggle-checkbox:checked + .settings-toggle-custom::after {
+        transform: translateX(18px) !important;
+    }
+
+    .toggle-text-block {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+    }
+
+    .toggle-title {
+        font-size: 0.88rem !important;
+        font-weight: 600 !important;
+        color: #f1f5f9 !important;
+    }
+
+    .toggle-desc {
+        font-size: 0.74rem !important;
+        color: #94a3b8 !important;
+        line-height: 1.3 !important;
+    }
+
+    /* Download Voice Button */
+    .settings-download-btn {
+        all: unset !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        margin-top: 10px !important;
+        font-size: 0.88rem !important;
+        font-weight: 600 !important;
+        padding: 10px !important;
+        border-radius: 10px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(56, 189, 248, 0.1) !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+        color: #38bdf8 !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .settings-download-btn:hover {
+        background: rgba(56, 189, 248, 0.2) !important;
+        border-color: #38bdf8 !important;
+        box-shadow: 0 0 16px rgba(56, 189, 248, 0.25) !important;
+    }
+
+    /* Bottom Actions & Refresh Voices */
+    .settings-bottom-actions {
+        margin-top: 20px !important;
+        padding-top: 16px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    #neural-app-root .settings-refresh-btn,
+    .settings-modal-card .settings-refresh-btn {
+        all: unset !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 9px !important;
+        padding: 12px 20px !important;
+        background: rgba(30, 41, 59, 0.5) !important;
+        border: 1px solid rgba(56, 189, 248, 0.28) !important;
+        border-radius: 12px !important;
+        color: #38bdf8 !important;
+        font-size: 0.88rem !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    #neural-app-root .settings-refresh-btn:hover,
+    .settings-modal-card .settings-refresh-btn:hover {
+        background: rgba(56, 189, 248, 0.15) !important;
+        border-color: #38bdf8 !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 20px rgba(56, 189, 248, 0.3) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    #neural-app-root .settings-refresh-btn svg,
+    .settings-modal-card .settings-refresh-btn svg {
+        width: 16px !important;
+        height: 16px !important;
+        stroke: currentColor !important;
+        transition: transform 0.4s ease !important;
+    }
+
+    #neural-app-root .settings-refresh-btn:hover svg,
+    .settings-modal-card .settings-refresh-btn:hover svg {
+        transform: rotate(180deg) !important;
     }
 
     /* --- LIBRARY GRID & COVERS --- */

@@ -1450,38 +1450,47 @@ function rebuildDynamicSettings() {
     });
 
     const wrapper = document.createElement('div');
-    wrapper.style.marginBottom = '16px';
-    wrapper.style.padding = '12px';
-    wrapper.style.background = 'rgba(255,255,255,0.02)';
-    wrapper.style.borderRadius = '12px';
-    wrapper.style.border = '1px solid rgba(255,255,255,0.05)';
-
+    wrapper.className = 'settings-card-section';
     wrapper.innerHTML = `
-        <div class="setting-group" style="margin-bottom: 12px;">
-            <label style="color: #38bdf8;">🌐 Select Language to Configure</label>
-            <div class="select-wrapper">
-                <select id="unified-lang-select"></select>
-            </div>
-        </div>
-        <div class="setting-group" style="margin-bottom: 12px;">
-            <label>Selected Voice</label>
-            <div class="select-wrapper">
-                <select id="unified-voice-select"></select>
-            </div>
-            <button id="unified-download-btn" class="hidden" style="width: 100%; margin-top: 10px; font-size: 0.95rem; padding: 10px; border-radius: 8px; justify-content: center; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; cursor: pointer; transition: all 0.2s;">📥 Download / Init Voice</button>
+        <div class="settings-section-badge">
+            <span class="settings-section-icon">🎙️</span>
+            <span class="settings-section-title">Voice & Speech Engine</span>
         </div>
         <div class="setting-group">
-            <label>Reading Speed <span id="unified-rate-val">1x</span></label>
-            <input type="range" id="unified-rate-input" min="0.5" max="4" step="0.1" value="1">
-        </div>
-        <div class="setting-group" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06);">
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; margin-bottom: 0; text-transform: none; font-size: 0.9rem; color: var(--text-main);">
-                <input type="checkbox" id="skip-parentheses-checkbox" ${skipParenthesesSetting ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: #38bdf8; cursor: pointer; border-radius: 4px;">
-                <span style="font-weight: 500;">🚫 Skip Parentheses ( )</span>
-            </label>
-            <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; margin-left: 28px; line-height: 1.3;">
-                Automatically skips text enclosed in parentheses during reading
+            <label>Select Language to Configure</label>
+            <div class="select-wrapper">
+                <select id="unified-lang-select" class="settings-select"></select>
+                <div class="select-chevron">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
             </div>
+        </div>
+        <div class="setting-group">
+            <label>Selected Voice</label>
+            <div class="select-wrapper">
+                <select id="unified-voice-select" class="settings-select"></select>
+                <div class="select-chevron">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+            </div>
+            <button id="unified-download-btn" class="hidden settings-download-btn">📥 Download / Init Voice</button>
+        </div>
+        <div class="setting-group slider-group">
+            <div class="slider-header-row">
+                <label>Reading Speed</label>
+                <span class="slider-val-badge" id="unified-rate-val">1x</span>
+            </div>
+            <input type="range" class="settings-slider" id="unified-rate-input" min="0.5" max="4" step="0.1" value="1">
+        </div>
+        <div class="setting-group" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07);">
+            <label class="settings-toggle-label">
+                <input type="checkbox" id="skip-parentheses-checkbox" class="settings-toggle-checkbox" ${skipParenthesesSetting ? 'checked' : ''}>
+                <span class="settings-toggle-custom"></span>
+                <div class="toggle-text-block">
+                    <span class="toggle-title">🚫 Skip Parentheses ( )</span>
+                    <span class="toggle-desc">Automatically skips text enclosed in parentheses during reading</span>
+                </div>
+            </label>
         </div>
     `;
     container.appendChild(wrapper);
@@ -1726,24 +1735,33 @@ function rebuildDynamicSettings() {
 
     // Add Global Pause Settings
     const pauseWrapper = document.createElement('div');
+    pauseWrapper.className = 'settings-card-section';
     pauseWrapper.style.marginTop = '16px';
-    pauseWrapper.style.padding = '12px';
-    pauseWrapper.style.background = 'rgba(255,255,255,0.02)';
-    pauseWrapper.style.borderRadius = '12px';
-    pauseWrapper.style.border = '1px solid rgba(255,255,255,0.05)';
     pauseWrapper.innerHTML = `
-        <h4 style="margin: 0 0 12px 0; font-size: 0.9rem; color: var(--text-main); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">⏱️ Pause Durations</h4>
-        <div class="setting-group" style="margin-bottom: 10px;">
-            <label>Main Header (ms) <span id="val-pause-main">${pauseSettings.mainHeader}</span></label>
-            <input type="range" id="input-pause-main" min="0" max="10000" step="50" value="${pauseSettings.mainHeader}">
+        <div class="settings-section-badge">
+            <span class="settings-section-icon">⏱️</span>
+            <span class="settings-section-title">Pause Durations</span>
         </div>
-        <div class="setting-group" style="margin-bottom: 10px;">
-            <label>Post-Header (ms) <span id="val-pause-post">${pauseSettings.postHeader}</span></label>
-            <input type="range" id="input-pause-post" min="0" max="10000" step="50" value="${pauseSettings.postHeader}">
+        <div class="setting-group slider-group">
+            <div class="slider-header-row">
+                <label>Main Header</label>
+                <span class="slider-val-badge" id="val-pause-main">${pauseSettings.mainHeader} ms</span>
+            </div>
+            <input type="range" class="settings-slider" id="input-pause-main" min="0" max="10000" step="50" value="${pauseSettings.mainHeader}">
         </div>
-        <div class="setting-group" style="margin-bottom: 0;">
-            <label>Paragraph (ms) <span id="val-pause-paragraph">${pauseSettings.paragraph}</span></label>
-            <input type="range" id="input-pause-paragraph" min="0" max="10000" step="50" value="${pauseSettings.paragraph}">
+        <div class="setting-group slider-group">
+            <div class="slider-header-row">
+                <label>Post-Header</label>
+                <span class="slider-val-badge" id="val-pause-post">${pauseSettings.postHeader} ms</span>
+            </div>
+            <input type="range" class="settings-slider" id="input-pause-post" min="0" max="10000" step="50" value="${pauseSettings.postHeader}">
+        </div>
+        <div class="setting-group slider-group">
+            <div class="slider-header-row">
+                <label>Paragraph</label>
+                <span class="slider-val-badge" id="val-pause-paragraph">${pauseSettings.paragraph} ms</span>
+            </div>
+            <input type="range" class="settings-slider" id="input-pause-paragraph" min="0" max="10000" step="50" value="${pauseSettings.paragraph}">
         </div>
     `;
     container.appendChild(pauseWrapper);
@@ -1754,7 +1772,7 @@ function rebuildDynamicSettings() {
         if (input) {
             input.addEventListener('input', (e) => {
                 const v = parseInt(e.target.value);
-                if (valSpan) valSpan.textContent = v;
+                if (valSpan) valSpan.textContent = `${v} ms`;
                 pauseSettings[key] = v;
                 try { localStorage.setItem('ttsPauseSettings', JSON.stringify(pauseSettings)); } catch(err) {}
             });
