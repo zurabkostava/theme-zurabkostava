@@ -123,12 +123,6 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             </div>
         </div>
 
-        <div id="settings-panel" class="settings-panel hidden">
-            <div id="dynamic-voice-settings"></div>
-            <button id="refresh-voices-btn" class="ctrl-btn sm" style="width:100%; margin-top:10px;">Refresh Voices ↻</button>
-            <button id="settings-pwa-install-btn" class="ctrl-btn sm hidden" style="width:100%; margin-top:10px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; font-weight: 600;">📱 Add to Home Screen (Install App)</button>
-        </div>
-
         <div id="progress-container">
             <div id="progress-bar"></div>
         </div>
@@ -155,7 +149,6 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <div class="hub-card-content">
                             <div class="hub-card-title">Library</div>
                             <div class="hub-card-desc">Browse &amp; resume saved books</div>
-                            <span class="hub-card-tag">📚 ბიბლიოთეკა</span>
                         </div>
                         <div class="hub-card-arrow">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -173,7 +166,6 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <div class="hub-card-content">
                             <div class="hub-card-title">Open EPUB</div>
                             <div class="hub-card-desc">Choose or drop an .epub file</div>
-                            <span class="hub-card-tag">📖 EPUB გახსნა</span>
                         </div>
                         <div class="hub-card-arrow">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -190,7 +182,6 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <div class="hub-card-content">
                             <div class="hub-card-title">Edit / Paste Text</div>
                             <div class="hub-card-desc">Type, paste or edit any text</div>
-                            <span class="hub-card-tag">✍️ ტექსტის ჩასმა</span>
                         </div>
                         <div class="hub-card-arrow">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -207,7 +198,6 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <div class="hub-card-content">
                             <div class="hub-card-title">Settings</div>
                             <div class="hub-card-desc">Voices, speed &amp; pause tuning</div>
-                            <span class="hub-card-tag">⚙️ პარამეტრები</span>
                         </div>
                         <div class="hub-card-arrow">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -273,25 +263,64 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 </div>
 </div>
 
-<div id="library-modal" class="info-modal-overlay hidden">
-    <div class="info-modal-content premium-modal" style="max-width: 900px;">
-        <button id="close-library-btn" class="icon-btn close-modal">
+<div id="library-modal" class="library-fullscreen-overlay hidden">
+    <div class="library-fullscreen-container">
+        <div class="library-navbar">
+            <div class="library-brand-block">
+                <h2>📚 Library <span id="total-books-count" class="count-badge">...</span></h2>
+                <p class="library-subheading">Select a book to start reading</p>
+            </div>
+
+            <div class="library-controls-block">
+                <div class="library-search-wrapper">
+                    <svg class="search-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="library-search-input" placeholder="Search books by title or author...">
+                </div>
+
+                <div class="library-sort-bar">
+                    <span class="sort-prefix">Sort by:</span>
+                    <button type="button" class="library-sort-btn active" id="sort-title-btn" data-sort="title">
+                        <span>🔤 Title (A-Z)</span>
+                    </button>
+                    <button type="button" class="library-sort-btn" id="sort-author-btn" data-sort="author">
+                        <span>👤 Author (A-Z)</span>
+                    </button>
+                    <button type="button" class="library-sort-btn" id="sort-progress-btn" data-sort="progress">
+                        <span>📊 Progress (%)</span>
+                    </button>
+                </div>
+            </div>
+
+            <button id="close-library-btn" class="library-exit-btn" title="Close Library">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <span>Close</span>
+            </button>
+        </div>
+
+        <div class="library-scroll-area">
+            <div id="library-grid" class="library-grid"></div>
+        </div>
+    </div>
+</div>
+
+<div id="settings-modal" class="info-modal-overlay hidden">
+    <div class="info-modal-content settings-modal-card">
+        <button id="close-settings-btn" class="icon-btn close-modal" title="Close Settings">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
 
-        <div class="modal-header premium-header">
-            <div class="modal-title-group" style="text-align: center; width: 100%;">
-                <h2 class="premium-title">📚 Your Library <span id="total-books-count" class="count-badge">...</span></h2>
-                <h3 class="premium-subtitle">Select a book to read</h3>
+        <div class="modal-header settings-header">
+            <div class="modal-title-group">
+                <h2>⚙️ Settings</h2>
+                <h3>Configure voice, speech rate, and audio pauses</h3>
             </div>
         </div>
-        <div class="sticky-search-wrapper">
-            <div class="search-icon-wrapper">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+
+        <div class="settings-modal-body">
+            <div id="dynamic-voice-settings"></div>
+            <div class="settings-bottom-actions">
+                <button id="refresh-voices-btn" class="ctrl-btn sm refresh-voices-action">Refresh Voices ↻</button>
             </div>
-            <input type="text" id="library-search-input" class="premium-search-input" placeholder="Search by title or author...">
-        </div>
-        <div id="library-grid" class="library-grid">
         </div>
     </div>
 </div>
@@ -1461,63 +1490,248 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         opacity: 0.7;
         font-size: 0.9em;
     }
-    /* Premium Modal Header */
-    .premium-header {
-        margin-bottom: 30px;
+    /* --- FULLSCREEN LIBRARY --- */
+    .library-fullscreen-overlay {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        z-index: 100050 !important;
+        background: rgba(9, 11, 17, 0.98) !important;
+        backdrop-filter: blur(25px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+        display: flex;
         flex-direction: column;
-        align-items: center;
-        border-bottom: none;
-    }
-    .premium-title {
-        font-size: 2rem !important;
-        font-weight: 700 !important;
-        margin-bottom: 8px !important;
-        background: linear-gradient(135deg, #f8fafc, #94a3b8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        letter-spacing: -0.5px;
-    }
-    .premium-subtitle {
-        color: #94a3b8 !important;
-        font-size: 1rem !important;
-        font-weight: 400 !important;
-        margin: 0 !important;
+        overflow: hidden;
+        animation: fadeIn 0.25s ease-out;
     }
 
-    /* Premium Search */
-    .sticky-search-wrapper {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        margin-bottom: 24px;
-        padding: 10px 0 20px 0;
-        background: linear-gradient(to bottom, rgba(15, 23, 42, 0.95) 60%, rgba(15, 23, 42, 0.5) 85%, transparent);
+    .library-fullscreen-overlay.hidden {
+        display: none !important;
     }
-    .search-icon-wrapper {
-        position: absolute;
-        left: 16px;
-        top: 23px;
+
+    .library-fullscreen-container {
+        width: 100%;
+        height: 100%;
+        max-width: 1500px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        padding: 24px 32px 30px 32px;
+        overflow: hidden;
+    }
+
+    .library-navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        flex-shrink: 0;
+        flex-wrap: wrap;
+    }
+
+    .library-brand-block h2 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin: 0 0 4px 0;
+        color: #f8fafc;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .library-subheading {
+        font-size: 0.85rem;
         color: #94a3b8;
-        width: 18px;
-        height: 18px;
+        margin: 0;
+    }
+
+    .library-controls-block {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex: 1;
+        max-width: 750px;
+        justify-content: center;
+    }
+
+    .library-search-wrapper {
+        position: relative;
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .library-search-wrapper .search-svg {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
         pointer-events: none;
     }
-    .premium-search-input {
+
+    #neural-app-root .library-search-wrapper input {
         width: 100%;
-        padding: 14px 20px 14px 44px;
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        background: rgba(0, 0, 0, 0.4) !important;
-        color: #f8fafc !important;
+        padding: 10px 16px 10px 42px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        color: #f8fafc;
+        font-size: 0.88rem;
         outline: none;
-        font-size: 1rem;
-        transition: all 0.3s;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        transition: all 0.2s ease;
     }
-    .premium-search-input:focus {
-        border-color: var(--primary) !important;
-        background: rgba(0, 0, 0, 0.6) !important;
-        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1), inset 0 2px 4px rgba(0,0,0,0.2);
+
+    #neural-app-root .library-search-wrapper input:focus {
+        border-color: #38bdf8;
+        background: rgba(56, 189, 248, 0.05);
+        box-shadow: 0 0 16px rgba(56, 189, 248, 0.2);
+    }
+
+    .library-sort-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sort-prefix {
+        font-size: 0.8rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-right: 2px;
+    }
+
+    #neural-app-root .library-sort-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px;
+        padding: 7px 14px !important;
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 20px !important;
+        color: #94a3b8 !important;
+        font-size: 0.8rem !important;
+        font-weight: 500 !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        white-space: nowrap;
+    }
+
+    #neural-app-root .library-sort-btn:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: #f8fafc !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    #neural-app-root .library-sort-btn.active {
+        background: rgba(56, 189, 248, 0.18) !important;
+        border-color: #38bdf8 !important;
+        color: #38bdf8 !important;
+        font-weight: 600 !important;
+        box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+
+    #neural-app-root .library-exit-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px;
+        padding: 8px 18px !important;
+        background: rgba(239, 68, 68, 0.1) !important;
+        border: 1px solid rgba(239, 68, 68, 0.25) !important;
+        border-radius: 20px !important;
+        color: #f87171 !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+
+    #neural-app-root .library-exit-btn:hover {
+        background: rgba(239, 68, 68, 0.2) !important;
+        border-color: #ef4444 !important;
+        color: #fff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+    }
+
+    .library-scroll-area {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 24px 8px 50px 8px;
+    }
+
+    .library-scroll-area::-webkit-scrollbar { width: 8px; }
+    .library-scroll-area::-webkit-scrollbar-track { background: transparent; }
+    .library-scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    .library-scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    /* --- SETTINGS MODAL --- */
+    .settings-modal-card {
+        max-width: 560px !important;
+        width: 92% !important;
+        max-height: 85vh !important;
+        overflow-y: auto !important;
+        background: rgba(15, 23, 42, 0.96) !important;
+        border: 1px solid rgba(56, 189, 248, 0.2) !important;
+        border-radius: 20px !important;
+        padding: 28px !important;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 35px rgba(56, 189, 248, 0.12) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+    }
+
+    .settings-header {
+        margin-bottom: 20px !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding-bottom: 14px;
+    }
+
+    .settings-header h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0 0 4px 0;
+        color: #f8fafc;
+    }
+
+    .settings-header h3 {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        margin: 0;
+        font-weight: 400;
+    }
+
+    .settings-bottom-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    #neural-app-root .refresh-voices-action {
+        flex: 1;
+        border-radius: 10px !important;
+        padding: 10px !important;
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text-muted) !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+    }
+
+    #neural-app-root .refresh-voices-action:hover {
+        background: rgba(56, 189, 248, 0.12) !important;
+        border-color: #38bdf8 !important;
+        color: #38bdf8 !important;
     }
 
     /* --- LIBRARY GRID STYLES --- */
@@ -1690,6 +1904,23 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         }
         .hub-drop-hint {
             font-size: 0.75rem;
+        }
+        .library-navbar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        .library-controls-block {
+            flex-direction: column;
+            align-items: stretch;
+            max-width: 100%;
+        }
+        .library-sort-bar {
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .library-fullscreen-container {
+            padding: 16px;
         }
     }
 

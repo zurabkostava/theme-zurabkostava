@@ -212,7 +212,8 @@ const stopBtn = document.getElementById('stop-btn');
 const nextBtn = document.getElementById('next-btn');
 const prevBtn = document.getElementById('prev-btn');
 const settingsBtn = document.getElementById('settings-btn');
-const settingsPanel = document.getElementById('settings-panel');
+const settingsModal = document.getElementById('settings-modal') || document.getElementById('settings-panel');
+const closeSettingsBtn = document.getElementById('close-settings-btn');
 const dynamicVoiceSettings = document.getElementById('dynamic-voice-settings');
 // --- LIBRARY ELEMENTS ---
 const libraryBtn = document.getElementById('library-btn');
@@ -331,7 +332,7 @@ if (appLogo) {
     appLogo.title = 'Neural Reader PRO — Return to Home Hub';
     appLogo.addEventListener('click', () => {
         if (document.body.classList.contains('is-reading')) {
-            if (confirm("დავბრუნდეთ მთავარ მენიუში? (Return to Home Hub?)")) {
+            if (confirm("Return to home screen?")) {
                 stopReading();
                 showDropZone();
             }
@@ -1102,7 +1103,6 @@ function showDropZone() {
                 <div class="hub-card-content">
                     <div class="hub-card-title">Library</div>
                     <div class="hub-card-desc">Browse &amp; resume saved books</div>
-                    <span class="hub-card-tag">📚 ბიბლიოთეკა</span>
                 </div>
                 <div class="hub-card-arrow">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -1120,7 +1120,6 @@ function showDropZone() {
                 <div class="hub-card-content">
                     <div class="hub-card-title">Open EPUB</div>
                     <div class="hub-card-desc">Choose or drop an .epub file</div>
-                    <span class="hub-card-tag">📖 EPUB გახსნა</span>
                 </div>
                 <div class="hub-card-arrow">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -1137,7 +1136,6 @@ function showDropZone() {
                 <div class="hub-card-content">
                     <div class="hub-card-title">Edit / Paste Text</div>
                     <div class="hub-card-desc">Type, paste or edit any text</div>
-                    <span class="hub-card-tag">✍️ ტექსტის ჩასმა</span>
                 </div>
                 <div class="hub-card-arrow">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -1154,7 +1152,6 @@ function showDropZone() {
                 <div class="hub-card-content">
                     <div class="hub-card-title">Settings</div>
                     <div class="hub-card-desc">Voices, speed &amp; pause tuning</div>
-                    <span class="hub-card-tag">⚙️ პარამეტრები</span>
                 </div>
                 <div class="hub-card-arrow">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -1480,10 +1477,10 @@ function rebuildDynamicSettings() {
         <div class="setting-group" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06);">
             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; margin-bottom: 0; text-transform: none; font-size: 0.9rem; color: var(--text-main);">
                 <input type="checkbox" id="skip-parentheses-checkbox" ${skipParenthesesSetting ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: #38bdf8; cursor: pointer; border-radius: 4px;">
-                <span style="font-weight: 500;">🚫 ფრჩხილების გამოტოვება ( )</span>
+                <span style="font-weight: 500;">🚫 Skip Parentheses ( )</span>
             </label>
             <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; margin-left: 28px; line-height: 1.3;">
-                კითხვისას ავტომატურად გამოტოვებს ფრჩხილებში ჩასმულ ტექსტს
+                Automatically skips text enclosed in parentheses during reading
             </div>
         </div>
     `;
@@ -1741,10 +1738,6 @@ function rebuildDynamicSettings() {
             <input type="range" id="input-pause-main" min="0" max="10000" step="50" value="${pauseSettings.mainHeader}">
         </div>
         <div class="setting-group" style="margin-bottom: 10px;">
-            <label>Internal Header (ms) <span id="val-pause-internal">${pauseSettings.internalHeader}</span></label>
-            <input type="range" id="input-pause-internal" min="0" max="10000" step="50" value="${pauseSettings.internalHeader}">
-        </div>
-        <div class="setting-group" style="margin-bottom: 10px;">
             <label>Post-Header (ms) <span id="val-pause-post">${pauseSettings.postHeader}</span></label>
             <input type="range" id="input-pause-post" min="0" max="10000" step="50" value="${pauseSettings.postHeader}">
         </div>
@@ -1768,7 +1761,6 @@ function rebuildDynamicSettings() {
         }
     };
     bindPauseInput('input-pause-main', 'mainHeader', 'val-pause-main');
-    bindPauseInput('input-pause-internal', 'internalHeader', 'val-pause-internal');
     bindPauseInput('input-pause-post', 'postHeader', 'val-pause-post');
     bindPauseInput('input-pause-paragraph', 'paragraph', 'val-pause-paragraph');
 }
@@ -3618,14 +3610,66 @@ function initCoverObserver() {
     }, { rootMargin: '150px 0px' });
 }
 
+let currentLibrarySort = 'title';
+let allBooksCache = [];
+
+function getBookProgress(book) {
+    const fileName = book.url ? book.url.split('/').pop() : '';
+    const saved = localStorage.getItem('epub_perc_' + fileName);
+    if (saved !== null && saved !== undefined && !isNaN(parseFloat(saved))) {
+        return parseFloat(saved);
+    }
+    if (book.perc !== undefined && book.perc !== null && !isNaN(parseFloat(book.perc))) {
+        return parseFloat(book.perc);
+    }
+    return 0;
+}
+
+function getFilteredAndSortedBooks() {
+    const searchInput = document.getElementById('library-search-input');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    let list = allBooksCache ? [...allBooksCache] : [];
+    if (searchTerm) {
+        list = list.filter(book => 
+            (book.title && book.title.toLowerCase().includes(searchTerm)) || 
+            (book.author && book.author.toLowerCase().includes(searchTerm))
+        );
+    }
+    if (currentLibrarySort === 'title') {
+        list.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    } else if (currentLibrarySort === 'author') {
+        list.sort((a, b) => (a.author || '').localeCompare(b.author || ''));
+    } else if (currentLibrarySort === 'progress') {
+        list.sort((a, b) => {
+            const diff = getBookProgress(b) - getBookProgress(a);
+            if (Math.abs(diff) > 0.001) return diff;
+            return (a.title || '').localeCompare(b.title || '');
+        });
+    }
+    return list;
+}
+
+function bindLibrarySortButtons() {
+    const sortBtns = document.querySelectorAll('.library-sort-btn');
+    sortBtns.forEach(btn => {
+        btn.onclick = () => {
+            sortBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentLibrarySort = btn.dataset.sort || 'title';
+            drawBooksToGrid(getFilteredAndSortedBooks());
+        };
+    });
+}
+
 async function renderLibrary() {
     libraryGrid.innerHTML = '<div style="color:white; text-align:center; padding:20px;">Scanning bookshelf... 📚</div>';
     try {
+        bindLibrarySortButtons();
         const response = await fetch('/wp-json/neural/v1/books');
         if (!response.ok) throw new Error("Scanner failed");
         allBooksCache = await response.json();
         updateCountBadge(allBooksCache.length);
-        drawBooksToGrid(allBooksCache);
+        drawBooksToGrid(getFilteredAndSortedBooks());
 
         const searchInput = document.getElementById('library-search-input');
         if (searchInput) {
@@ -3633,16 +3677,7 @@ async function renderLibrary() {
             searchInput.oninput = (e) => {
                 clearTimeout(searchDebounceTimer);
                 searchDebounceTimer = setTimeout(() => {
-                    const searchTerm = e.target.value.toLowerCase().trim();
-                    if (!searchTerm) {
-                        drawBooksToGrid(allBooksCache);
-                        return;
-                    }
-                    const filteredBooks = allBooksCache.filter(book => 
-                        (book.title && book.title.toLowerCase().includes(searchTerm)) || 
-                        (book.author && book.author.toLowerCase().includes(searchTerm))
-                    );
-                    drawBooksToGrid(filteredBooks);
+                    drawBooksToGrid(getFilteredAndSortedBooks());
                 }, 150);
             };
         }
@@ -3710,7 +3745,7 @@ function drawBooksToGrid(booksList) {
             const btn = e.target.closest('.reset-book-btn');
             if (btn) {
                 e.stopPropagation();
-                if (!confirm("ნამდვილად გსურთ ამ წიგნის პროგრესის განულება?")) return;
+                if (!confirm("Are you sure you want to reset reading progress for this book?")) return;
 
                 localStorage.removeItem('epub_progress_' + fileName);
                 localStorage.removeItem('epub_idx_' + fileName);
@@ -3799,7 +3834,7 @@ async function extractCoverForCard(bookUrl, cardId) {
         const coverUrl = await tempBook.coverUrl();
 
         const extractedData = {
-            author: finalAuthor || "უცნობი ავტორი",
+            author: finalAuthor || "Unknown Author",
             title: title,
             coverUrl: coverUrl || null
         };
@@ -3854,6 +3889,11 @@ async function loadBookFromUrl(url) {
 }
 async function sha256(message) { const msgBuffer = new TextEncoder().encode(message); const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer); const hashArray = Array.from(new Uint8Array(hashBuffer)); return hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); }
 libraryBtn.onclick = async () => {
+    if (!libraryModal.classList.contains('hidden')) {
+        libraryModal.classList.add('hidden');
+        libraryBtn.classList.remove('active');
+        return;
+    }
     const CORRECT_HASH = "3ac7e6bf7ea7627138da7b458762c4a8246d3f97b074bc557ea4b531c2e0a686";
     const isUnlocked = sessionStorage.getItem('library_unlocked');
     if (isUnlocked === 'true') {
@@ -3864,14 +3904,13 @@ libraryBtn.onclick = async () => {
         const userPass = prompt("🔐 Enter Library Password:");
         if (userPass) {
             const userHash = await sha256(userPass);
-            console.log("---------------- დიაგნოსტიკა ----------------"); console.log("შენახული ჰეში (კოდში):", CORRECT_HASH); console.log("შენი შეყვანილი პაროლი:", userPass); console.log("შენი შეყვანილი პაროლის ჰეში:", userHash); console.log("ემთხვევა თუ არა?", userHash === CORRECT_HASH.trim()); console.log("---------------------------------------------");
             if (userHash === CORRECT_HASH.trim()) {
                 sessionStorage.setItem('library_unlocked', 'true');
                 renderLibrary();
                 libraryModal.classList.remove('hidden');
                 libraryBtn.classList.add('active');
             } else {
-                alert("⛔ Access Denied! Wrong Password. (Check Console F12)");
+                alert("⛔ Access Denied! Wrong Password.");
             }
         }
     }
@@ -3891,10 +3930,43 @@ playBtn.onclick = togglePlay;
 stopBtn.onclick = stopReading;
 nextBtn.onclick = () => navigateSentence(1);
 prevBtn.onclick = () => navigateSentence(-1);
+
 settingsBtn.onclick = () => {
-    settingsPanel.classList.toggle('hidden');
-    settingsBtn.classList.toggle('active', !settingsPanel.classList.contains('hidden'));
+    if (settingsModal) {
+        settingsModal.classList.toggle('hidden');
+        settingsBtn.classList.toggle('active', !settingsModal.classList.contains('hidden'));
+    }
 };
+
+if (closeSettingsBtn && settingsModal) {
+    closeSettingsBtn.onclick = () => {
+        settingsModal.classList.add('hidden');
+        settingsBtn.classList.remove('active');
+    };
+}
+
+if (settingsModal) {
+    settingsModal.onclick = (e) => {
+        if (e.target === settingsModal) {
+            settingsModal.classList.add('hidden');
+            settingsBtn.classList.remove('active');
+        }
+    };
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        if (libraryModal && !libraryModal.classList.contains('hidden')) {
+            libraryModal.classList.add('hidden');
+            libraryBtn.classList.remove('active');
+        }
+        if (settingsModal && !settingsModal.classList.contains('hidden')) {
+            settingsModal.classList.add('hidden');
+            settingsBtn.classList.remove('active');
+        }
+    }
+});
+
 const globalMetaBtn = document.getElementById('book-meta-container');
 if(globalMetaBtn) { const newBtn = globalMetaBtn.cloneNode(true); globalMetaBtn.parentNode.replaceChild(newBtn, globalMetaBtn); newBtn.onclick = (e) => { console.log("🔘 Meta Container Clicked - Opening Modal Forcefully"); e.preventDefault(); e.stopPropagation(); handleMetaClick(); }; window.activeMetaBtn = newBtn; }
 init();
@@ -3913,7 +3985,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 const triggerPwaInstallFlow = async () => {
     if (!pwaDeferredPrompt) {
-        alert('აპლიკაციის სახით დასაყენებლად:\nბრაუზერის მენიუში (⋮) აირჩიეთ "Install app" ან "Add to Home screen".');
+        alert('To install as an app:\nIn your browser menu (⋮), choose "Install app" or "Add to Home screen".');
         return;
     }
     pwaDeferredPrompt.prompt();
