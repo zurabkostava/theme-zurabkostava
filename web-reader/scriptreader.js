@@ -3687,6 +3687,59 @@ async function renderLibrary() {
     }
 }
 
+// --- PROCEDURAL BOOK COVER SYSTEM ---
+function getProceduralPaletteIndex(str) {
+    if (!str) return 0;
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+    }
+    return Math.abs(hash) % 8;
+}
+
+const PROCEDURAL_EMBLEMS = ['📖', '⚡', '✨', '🌌', '🌿', '🔮', '🏛️', '🧭', '📜', '🌙'];
+function getProceduralEmblem(str) {
+    if (!str) return '📖';
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash << 3) - hash + str.charCodeAt(i);
+        hash |= 0;
+    }
+    return PROCEDURAL_EMBLEMS[Math.abs(hash) % PROCEDURAL_EMBLEMS.length];
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function renderProceduralCover(title, author) {
+    const safeTitle = escapeHtml(title || 'Untitled');
+    const safeAuthor = escapeHtml(author || 'Classic Edition');
+    const paletteIdx = getProceduralPaletteIndex(title || '');
+    const emblem = getProceduralEmblem(title || '');
+
+    return `
+    <div class="procedural-book-cover procedural-palette-${paletteIdx}">
+        <div class="cover-spine-highlight"></div>
+        <div class="cover-top-accent">
+            <span class="cover-emblem">${emblem}</span>
+        </div>
+        <div class="cover-center-content">
+            <div class="cover-book-title">${safeTitle}</div>
+            <div class="cover-accent-divider"></div>
+            <div class="cover-book-author">${safeAuthor}</div>
+        </div>
+        <div class="cover-bottom-tag">NEURAL EDITION</div>
+    </div>`;
+}
+
 function drawBooksToGrid(booksList) {
     libraryGrid.innerHTML = '';
     if (booksList.length === 0) {
@@ -3704,7 +3757,6 @@ function drawBooksToGrid(booksList) {
         card.className = 'book-card';
         const uniqueId = `book-card-${Math.random().toString(36).substr(2, 9)}`;
         card.id = uniqueId;
-        const randomHue = Math.floor(Math.random() * 360);
         const fileName = book.url ? book.url.split('/').pop() : '';
 
         if (book.perc !== undefined && book.perc !== null) {
@@ -3724,22 +3776,19 @@ function drawBooksToGrid(booksList) {
             </div>`;
         }
 
-        let coverHtml = '';
-        const hasServerCover = book.cover && typeof book.cover === 'string';
+        const hasServerCover = book.cover && typeof book.cover === 'string' && book.cover.trim() !== '';
+        const proceduralHtml = renderProceduralCover(book.title, book.author);
 
-        if (hasServerCover) {
-            coverHtml = `
-            <div class="book-card-cover" style="background:transparent; border:none;">
-                <img loading="lazy" src="${book.cover}" style="width:100%; height:100%; object-fit:cover; border-radius:4px;" alt="Cover" onerror="this.parentElement.innerHTML='<span style=\\'font-size:2rem;opacity:0.5;\\'>📖</span>'">
-            </div>`;
-        } else {
-            coverHtml = `
-            <div class="book-card-cover placeholder" style="background: hsl(${randomHue}, 30%, 20%); border: 1px solid hsl(${randomHue}, 40%, 30%); display:flex; align-items:center; justify-content:center;">
-                <span style="font-size: 2rem; opacity:0.5;">📖</span>
-            </div>`;
-        }
+        const coverHtml = `
+        <div class="book-cover-container">
+            ${proceduralHtml}
+            ${hasServerCover ? `<img class="book-real-cover" loading="lazy" src="${escapeHtml(book.cover)}" alt="" onerror="this.remove();">` : ''}
+        </div>`;
 
-        card.innerHTML = `${percHtml}${coverHtml}<div class="book-card-title" title="${book.title}">${book.title}</div><div class="book-card-author" title="${book.author}">${book.author}</div>`;
+        const safeTitle = escapeHtml(book.title || 'Untitled');
+        const safeAuthor = escapeHtml(book.author || 'Unknown');
+
+        card.innerHTML = `${percHtml}${coverHtml}<div class="book-card-title" title="${safeTitle}">${safeTitle}</div><div class="book-card-author" title="${safeAuthor}">${safeAuthor}</div>`;
 
         card.onclick = (e) => {
             const btn = e.target.closest('.reset-book-btn');
@@ -3773,6 +3822,9 @@ function drawBooksToGrid(booksList) {
             card.dataset.cardId = uniqueId;
             getCachedBookMeta(book.url).then(cachedMeta => {
                 if (cachedMeta) {
+                    if (cachedMeta.coverUrl && cachedMeta.coverUrl.startsWith('blob:')) {
+                        cachedMeta.coverUrl = null;
+                    }
                     applyMetaToCard(card, cachedMeta);
                 } else if (coverObserver) {
                     coverObserver.observe(card);
@@ -3789,23 +3841,38 @@ function applyMetaToCard(card, meta) {
     if (meta.author && meta.author.trim()) {
         const authorEl = card.querySelector('.book-card-author');
         if (authorEl) { authorEl.textContent = meta.author; authorEl.title = meta.author; }
+        const coverAuthor = card.querySelector('.cover-book-author');
+        if (coverAuthor) { coverAuthor.textContent = meta.author; }
     }
     if (meta.title && meta.title.trim()) {
         const titleEl = card.querySelector('.book-card-title');
         if (titleEl) { titleEl.textContent = meta.title; titleEl.title = meta.title; }
+        const coverTitle = card.querySelector('.cover-book-title');
+        if (coverTitle) { coverTitle.textContent = meta.title; }
     }
-    if (meta.coverUrl) {
-        const coverContainer = card.querySelector('.book-card-cover');
+    if (meta.coverUrl && typeof meta.coverUrl === 'string' && (meta.coverUrl.startsWith('http') || meta.coverUrl.startsWith('data:') || meta.coverUrl.startsWith('blob:'))) {
+        const coverContainer = card.querySelector('.book-cover-container') || card.querySelector('.book-card-cover');
         if (coverContainer) {
-            coverContainer.innerHTML = `<img loading="lazy" src="${meta.coverUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:4px;" alt="Cover">`;
-            coverContainer.classList.remove('placeholder');
-            coverContainer.style.background = 'transparent';
-            coverContainer.style.border = 'none';
+            let realCover = coverContainer.querySelector('.book-real-cover');
+            if (!realCover) {
+                realCover = document.createElement('img');
+                realCover.className = 'book-real-cover';
+                realCover.loading = 'lazy';
+                realCover.alt = '';
+                coverContainer.appendChild(realCover);
+            }
+            realCover.onerror = () => { realCover.remove(); };
+            realCover.src = meta.coverUrl;
         }
     }
 }
 
 function updateCountBadge(count) {
+    const totalCountEl = document.getElementById('total-books-count');
+    if (totalCountEl) {
+        totalCountEl.textContent = `${count} books`;
+        return;
+    }
     const modalTitle = document.querySelector('#library-modal h2');
     if (modalTitle) {
         modalTitle.innerHTML = `📚 Library <span style="display: inline-block; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 0.75rem; font-weight: 600; padding: 4px 12px; border-radius: 99px; border: 1px solid rgba(56, 189, 248, 0.3); margin-left: 12px; vertical-align: middle; letter-spacing: 0.5px;">${count}</span>`;
@@ -3819,6 +3886,9 @@ async function extractCoverForCard(bookUrl, cardId) {
 
         const cached = await getCachedBookMeta(bookUrl);
         if (cached) {
+            if (cached.coverUrl && cached.coverUrl.startsWith('blob:')) {
+                cached.coverUrl = null;
+            }
             applyMetaToCard(card, cached);
             return;
         }
@@ -3831,7 +3901,23 @@ async function extractCoverForCard(bookUrl, cardId) {
         if (Array.isArray(finalAuthor)) finalAuthor = finalAuthor.join(", ");
 
         const title = meta.title || "";
-        const coverUrl = await tempBook.coverUrl();
+        let coverUrl = null;
+        try {
+            const rawCoverUrl = await tempBook.coverUrl();
+            if (rawCoverUrl) {
+                const blobRes = await fetch(rawCoverUrl);
+                const blobData = await blobRes.blob();
+                if (blobData && blobData.size > 100) {
+                    coverUrl = await new Promise((res) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => res(reader.result);
+                        reader.readAsDataURL(blobData);
+                    });
+                }
+            }
+        } catch (e) {
+            coverUrl = null;
+        }
 
         const extractedData = {
             author: finalAuthor || "Unknown Author",

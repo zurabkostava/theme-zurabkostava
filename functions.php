@@ -4182,6 +4182,24 @@ function neural_parse_epub_metadata($filePath, $fileUrl, $coversDir, $coversUrl)
         $coverRelPath = $m[1];
     }
 
+    // Approach D: Any image in manifest containing "cover", "title", "jacket", or "front"
+    if (!$coverRelPath && preg_match('/<item[^>]+href=["\']([^"\']*(?:cover|title|jacket|front)[^"\']*\.(?:jpg|jpeg|png|webp))["\']/i', $opfContent, $m)) {
+        $coverRelPath = $m[1];
+    }
+
+    // Approach E: Search zip files directly for cover images
+    if (!$coverRelPath) {
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $entryName = $zip->getNameIndex($i);
+            $lowerEntry = strtolower($entryName);
+            if (preg_match('/cover\.(jpg|jpeg|png|webp)$/i', $lowerEntry) ||
+                preg_match('/(?:titlepage|cover-image|jacket|cover_image)\.(jpg|jpeg|png|webp)$/i', $lowerEntry)) {
+                $coverRelPath = $entryName;
+                break;
+            }
+        }
+    }
+
     if ($coverRelPath) {
         $fullCoverZipPath = $opfDir . ltrim(urldecode($coverRelPath), '/');
         $coverData = $zip->getFromName($fullCoverZipPath);
@@ -4231,7 +4249,7 @@ function neural_get_books() {
         @wp_mkdir_p($covers_dir);
     }
 
-    $cache_key = 'neural_books_catalog_cache_v2';
+    $cache_key = 'neural_books_catalog_cache_v3';
     $cached_catalog = get_transient($cache_key);
 
     $epub_files = array();

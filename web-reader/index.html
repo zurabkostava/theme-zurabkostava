@@ -195,40 +195,42 @@
         </div>
     </div>
 </div>
-</div>
 
 <div id="library-modal" class="library-fullscreen-overlay hidden">
     <div class="library-fullscreen-container">
         <div class="library-navbar">
             <div class="library-brand-block">
-                <h2>📚 Library <span id="total-books-count" class="count-badge">...</span></h2>
-                <p class="library-subheading">Select a book to start reading</p>
+                <div class="library-brand-icon">📚</div>
+                <div class="library-brand-text">
+                    <h2>Library <span id="total-books-count" class="count-badge">...</span></h2>
+                    <p class="library-subheading">Select a book to start reading</p>
+                </div>
             </div>
 
-            <div class="library-controls-block">
-                <div class="library-search-wrapper">
-                    <svg class="search-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" id="library-search-input" placeholder="Search books by title or author...">
-                </div>
+            <div class="library-search-wrapper">
+                <svg class="search-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="library-search-input" placeholder="Search by title or author..." autocomplete="off">
+            </div>
 
+            <div class="library-right-actions">
                 <div class="library-sort-bar">
-                    <span class="sort-prefix">Sort by:</span>
+                    <span class="sort-prefix">Sort:</span>
                     <button type="button" class="library-sort-btn active" id="sort-title-btn" data-sort="title">
                         <span>🔤 Title (A-Z)</span>
                     </button>
                     <button type="button" class="library-sort-btn" id="sort-author-btn" data-sort="author">
-                        <span>👤 Author (A-Z)</span>
+                        <span>👤 Author</span>
                     </button>
                     <button type="button" class="library-sort-btn" id="sort-progress-btn" data-sort="progress">
-                        <span>📊 Progress (%)</span>
+                        <span>📊 Progress</span>
                     </button>
                 </div>
-            </div>
 
-            <button id="close-library-btn" class="library-exit-btn" title="Close Library">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                <span>Close</span>
-            </button>
+                <button id="close-library-btn" class="library-exit-btn" title="Close Library (Esc)">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <span>Close</span>
+                </button>
+            </div>
         </div>
 
         <div class="library-scroll-area">
@@ -257,6 +259,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 <style>
     /* --- WP OVERRIDES & ISOLATION --- */
@@ -1322,54 +1325,88 @@
     .library-fullscreen-container {
         width: 100%;
         height: 100%;
-        max-width: 1500px;
+        max-width: 1560px;
         margin: 0 auto;
         display: flex;
         flex-direction: column;
         padding: 24px 32px 30px 32px;
         overflow: hidden;
+        box-sizing: border-box;
     }
 
+    /* --- PREMIUM LIBRARY TOP NAVBAR --- */
     .library-navbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 20px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 16px 24px;
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         flex-shrink: 0;
-        flex-wrap: wrap;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     }
 
-    .library-brand-block h2 {
-        font-size: 1.4rem;
-        font-weight: 700;
-        margin: 0 0 4px 0;
-        color: #f8fafc;
+    .library-brand-block {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .library-brand-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(56, 189, 248, 0.12);
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        box-shadow: 0 0 16px rgba(56, 189, 248, 0.15);
+        flex-shrink: 0;
+    }
+
+    .library-brand-text h2 {
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        margin: 0 !important;
+        color: #f8fafc !important;
         display: flex;
         align-items: center;
         gap: 10px;
+        line-height: 1.2 !important;
     }
 
     .library-subheading {
-        font-size: 0.85rem;
-        color: #94a3b8;
-        margin: 0;
+        font-size: 0.8rem !important;
+        color: #94a3b8 !important;
+        margin: 3px 0 0 0 !important;
+        line-height: 1 !important;
     }
 
-    .library-controls-block {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        flex: 1;
-        max-width: 750px;
-        justify-content: center;
+    .count-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        font-size: 0.72rem !important;
+        font-weight: 600 !important;
+        padding: 2px 10px !important;
+        border-radius: 99px !important;
+        background: rgba(56, 189, 248, 0.15) !important;
+        color: #38bdf8 !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
     }
 
     .library-search-wrapper {
         position: relative;
         flex: 1;
-        min-width: 200px;
+        max-width: 460px;
+        min-width: 240px;
     }
 
     .library-search-wrapper .search-svg {
@@ -1379,99 +1416,132 @@
         transform: translateY(-50%);
         color: #64748b;
         pointer-events: none;
+        width: 18px;
+        height: 18px;
+        transition: color 0.2s ease;
     }
 
-    #neural-app-root .library-search-wrapper input {
-        width: 100%;
-        padding: 10px 16px 10px 42px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-        color: #f8fafc;
-        font-size: 0.88rem;
-        outline: none;
-        transition: all 0.2s ease;
+    .library-fullscreen-overlay .library-search-wrapper input {
+        all: unset !important;
+        display: block !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        height: 42px !important;
+        padding: 0 18px 0 42px !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        border-radius: 24px !important;
+        color: #f8fafc !important;
+        font-size: 0.88rem !important;
+        font-family: inherit !important;
+        outline: none !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
-    #neural-app-root .library-search-wrapper input:focus {
-        border-color: #38bdf8;
-        background: rgba(56, 189, 248, 0.05);
-        box-shadow: 0 0 16px rgba(56, 189, 248, 0.2);
+    .library-fullscreen-overlay .library-search-wrapper input:focus {
+        border-color: #38bdf8 !important;
+        background: rgba(56, 189, 248, 0.07) !important;
+        box-shadow: 0 0 20px rgba(56, 189, 248, 0.25) !important;
+    }
+
+    .library-fullscreen-overlay .library-search-wrapper input:focus ~ .search-svg {
+        color: #38bdf8;
+    }
+
+    .library-right-actions {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-shrink: 0;
     }
 
     .library-sort-bar {
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 4px;
+        background: rgba(255, 255, 255, 0.04);
+        padding: 4px;
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .sort-prefix {
-        font-size: 0.8rem;
+        font-size: 0.72rem;
         color: #64748b;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-right: 2px;
+        letter-spacing: 0.6px;
+        padding: 0 6px 0 10px;
     }
 
-    #neural-app-root .library-sort-btn {
+    .library-fullscreen-overlay .library-sort-btn {
+        all: unset !important;
+        box-sizing: border-box !important;
         display: inline-flex !important;
         align-items: center !important;
-        gap: 6px;
-        padding: 7px 14px !important;
-        background: rgba(255, 255, 255, 0.04) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        padding: 6px 14px !important;
+        height: 32px !important;
+        background: transparent !important;
+        border: 1px solid transparent !important;
         border-radius: 20px !important;
         color: #94a3b8 !important;
         font-size: 0.8rem !important;
         font-weight: 500 !important;
         cursor: pointer !important;
-        transition: all 0.2s ease !important;
-        white-space: nowrap;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        white-space: nowrap !important;
+        user-select: none !important;
     }
 
-    #neural-app-root .library-sort-btn:hover {
+    .library-fullscreen-overlay .library-sort-btn:hover {
         background: rgba(255, 255, 255, 0.08) !important;
         color: #f8fafc !important;
-        border-color: rgba(255, 255, 255, 0.2) !important;
     }
 
-    #neural-app-root .library-sort-btn.active {
-        background: rgba(56, 189, 248, 0.18) !important;
+    .library-fullscreen-overlay .library-sort-btn.active {
+        background: rgba(56, 189, 248, 0.2) !important;
         border-color: #38bdf8 !important;
         color: #38bdf8 !important;
         font-weight: 600 !important;
-        box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+        box-shadow: 0 0 14px rgba(56, 189, 248, 0.3) !important;
     }
 
-    #neural-app-root .library-exit-btn {
+    .library-fullscreen-overlay .library-exit-btn {
+        all: unset !important;
+        box-sizing: border-box !important;
         display: inline-flex !important;
         align-items: center !important;
-        gap: 8px;
-        padding: 8px 18px !important;
-        background: rgba(239, 68, 68, 0.1) !important;
-        border: 1px solid rgba(239, 68, 68, 0.25) !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        padding: 0 18px !important;
+        height: 40px !important;
+        background: rgba(239, 68, 68, 0.12) !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
         border-radius: 20px !important;
         color: #f87171 !important;
         font-size: 0.85rem !important;
         font-weight: 600 !important;
         cursor: pointer !important;
-        transition: all 0.2s ease !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        white-space: nowrap !important;
+        user-select: none !important;
     }
 
-    #neural-app-root .library-exit-btn:hover {
-        background: rgba(239, 68, 68, 0.2) !important;
+    .library-fullscreen-overlay .library-exit-btn:hover {
+        background: #ef4444 !important;
         border-color: #ef4444 !important;
-        color: #fff !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+        color: #ffffff !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 18px rgba(239, 68, 68, 0.45) !important;
     }
 
     .library-scroll-area {
         flex: 1;
         min-height: 0;
         overflow-y: auto;
-        padding: 24px 8px 50px 8px;
+        padding: 10px 8px 50px 8px;
     }
 
     .library-scroll-area::-webkit-scrollbar { width: 8px; }
@@ -1539,77 +1609,196 @@
         color: #38bdf8 !important;
     }
 
-    /* --- LIBRARY GRID STYLES --- */
+    /* --- LIBRARY GRID & COVERS --- */
     .library-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
         gap: 24px;
-        padding-top: 10px;
+        padding-top: 4px;
     }
 
     .book-card {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--border);
-        border-radius: 8px;
+        background: rgba(30, 41, 59, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 14px;
         padding: 10px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
+        position: relative;
         content-visibility: auto;
-        contain-intrinsic-size: 140px 220px;
+        contain-intrinsic-size: 160px 280px;
     }
 
     .book-card:hover {
-        background: rgba(56, 189, 248, 0.1);
-        border-color: var(--primary);
+        background: rgba(30, 41, 59, 0.75);
+        border-color: rgba(56, 189, 248, 0.35);
         transform: translateY(-5px);
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 24px rgba(56, 189, 248, 0.12);
     }
 
-    .book-card-cover {
+    .book-cover-container {
+        position: relative;
         width: 100%;
-        aspect-ratio: 2/3;
-        background: #0f172a;
-        border-radius: 4px;
-        margin-bottom: 10px;
+        aspect-ratio: 1 / 1.48;
+        border-radius: 9px;
+        margin-bottom: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: #090b11;
+    }
+
+    .book-real-cover {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
+        z-index: 2;
+        border-radius: 8px;
+        display: block;
+    }
+
+    /* --- PROCEDURAL BOOK COVERS --- */
+    .procedural-book-cover {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 14px 10px 10px 14px;
+        box-sizing: border-box;
+        border-radius: 8px;
+        user-select: none;
+        z-index: 1;
+        overflow: hidden;
+        text-align: center;
+        box-shadow: inset 6px 0 12px -2px rgba(0, 0, 0, 0.7), inset -1px 0 2px rgba(255, 255, 255, 0.12);
+    }
+
+    .cover-spine-highlight {
+        position: absolute;
+        left: 7px;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: rgba(255, 255, 255, 0.12);
+        box-shadow: 1px 0 2px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+    }
+
+    .cover-top-accent {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .cover-emblem {
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        color: var(--text-muted);
-        font-size: 2rem;
-        border: 1px solid rgba(255,255,255,0.1);
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        font-size: 0.95rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
-    /* --- UPDATED CARD TYPOGRAPHY --- */
-    .book-card-title {
-        font-size: 0.95rem;      /* ოდნავ გავზარდეთ */
-        font-weight: 700;        /* უფრო მსუქანი (Bold) */
-        color: #f8fafc;          /* მკვეთრი თეთრი */
-        margin-bottom: 6px;      /* დაშორება ავტორამდე */
-        line-height: 1.3;
+    .cover-center-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 6px 2px;
+        min-height: 0;
+    }
 
-        /* ტექსტის შეკვეცა 2 ხაზზე */
+    .cover-book-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #f8fafc;
+        line-height: 1.25;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.85);
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+        letter-spacing: -0.2px;
+    }
+
+    .cover-accent-divider {
+        width: 24px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.35);
+        margin: 6px auto;
+        border-radius: 2px;
+    }
+
+    .cover-book-author {
+        font-size: 0.62rem;
+        color: rgba(255, 255, 255, 0.8);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        font-weight: 500;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    }
+
+    .cover-bottom-tag {
+        font-size: 0.5rem;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.45);
+        font-weight: 600;
+    }
+
+    /* Procedural Palette Gradients */
+    .procedural-palette-0 { background: linear-gradient(150deg, #0b192c 0%, #172554 50%, #1e40af 100%); }
+    .procedural-palette-1 { background: linear-gradient(150deg, #022c22 0%, #064e3b 50%, #059669 100%); }
+    .procedural-palette-2 { background: linear-gradient(150deg, #2e1065 0%, #581c87 50%, #7e22ce 100%); }
+    .procedural-palette-3 { background: linear-gradient(150deg, #4c0519 0%, #881337 50%, #be123c 100%); }
+    .procedural-palette-4 { background: linear-gradient(150deg, #451a03 0%, #78350f 50%, #b45309 100%); }
+    .procedural-palette-5 { background: linear-gradient(150deg, #082f49 0%, #075985 50%, #0284c7 100%); }
+    .procedural-palette-6 { background: linear-gradient(150deg, #3b0764 0%, #6b21a8 50%, #9333ea 100%); }
+    .procedural-palette-7 { background: linear-gradient(150deg, #18181b 0%, #27272a 50%, #3f3f46 100%); }
+
+    .book-card-title {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #f8fafc;
+        margin-bottom: 4px;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
+        line-height: 1.3;
+        width: 100%;
     }
 
     .book-card-author {
-        font-size: 0.75rem;      /* პატარა ზომა */
-        color: #94a3b8;          /* ნაცრისფერი (Muted) */
-        font-weight: 500;
-        text-transform: uppercase; /* დიდი ასოებით (სტილისთვის) */
-        letter-spacing: 0.5px;     /* ასოების დაშორება */
-
-        /* ტექსტის შეკვეცა 1 ხაზზე */
+        color: #94a3b8;
+        font-size: 0.78rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        max-width: 100%;
         width: 100%;
     }
 
@@ -1635,14 +1824,17 @@
         position: absolute;
         top: 8px;
         right: 8px;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        font-size: 0.65rem;
-        padding: 2px 6px;
-        border-radius: 4px;
-        backdrop-filter: blur(4px);
+        background: rgba(15, 23, 42, 0.85);
+        color: #38bdf8;
+        font-weight: 700;
+        font-size: 0.7rem;
+        padding: 4px 8px;
+        border-radius: 6px;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         z-index: 5;
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
 
     .book-card { position: relative; } /* აუცილებელია პოზიციონირებისთვის */
@@ -1677,19 +1869,34 @@
         .library-navbar {
             flex-direction: column;
             align-items: stretch;
-            gap: 12px;
+            gap: 14px;
+            padding: 14px 16px;
         }
-        .library-controls-block {
+        .library-brand-block {
+            width: 100%;
+            justify-content: flex-start;
+        }
+        .library-search-wrapper {
+            max-width: 100%;
+            min-width: 100%;
+            width: 100%;
+        }
+        .library-right-actions {
+            width: 100%;
             flex-direction: column;
             align-items: stretch;
-            max-width: 100%;
+            gap: 10px;
         }
         .library-sort-bar {
+            width: 100%;
             overflow-x: auto;
-            padding-bottom: 4px;
+            justify-content: space-between;
+        }
+        .library-fullscreen-overlay .library-exit-btn {
+            width: 100%;
         }
         .library-fullscreen-container {
-            padding: 16px;
+            padding: 16px 14px;
         }
     }
 
