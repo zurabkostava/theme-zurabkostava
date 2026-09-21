@@ -236,13 +236,15 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         </div>
 
         <div id="book-info-modal" class="info-modal-overlay hidden">
-            <div class="info-modal-content">
-                <button id="close-modal-btn" class="icon-btn close-modal">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <div class="info-modal-content premium-modal">
+                <button id="close-modal-btn" class="close-modal" title="Close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
 
                 <div class="modal-header">
-                    <img id="modal-book-cover" src="" alt="Book Cover" style="display:none;">
+                    <div id="modal-cover-container" class="modal-cover-container">
+                        <img id="modal-book-cover" src="" alt="Cover" style="display:none;" onerror="this.style.display='none';">
+                    </div>
                     <div class="modal-title-group">
                         <h2 id="modal-book-title">Book Title</h2>
                         <h3 id="modal-book-author">Author Name</h3>
@@ -251,11 +253,32 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                     </div>
                 </div>
 
+                <!-- Reading Progress & Mark as Read Toggle -->
+                <div class="modal-read-status-card">
+                    <label class="modal-read-toggle-label">
+                        <input type="checkbox" id="modal-mark-read-checkbox" class="modal-read-toggle-checkbox">
+                        <span class="modal-read-toggle-custom"></span>
+                        <div class="modal-read-info">
+                            <div class="modal-read-header">
+                                <span class="modal-read-title">წაკითხულია (Finished / Read)</span>
+                                <span id="modal-read-badge" class="modal-read-badge">0%</span>
+                            </div>
+                            <span class="modal-read-hint">მონიშნეთ როგორც წაკითხული ან მოაშორეთ პროგრესის გასანულებლად</span>
+                        </div>
+                    </label>
+                </div>
+
                 <div class="modal-body">
                     <h4>Description</h4>
                     <div id="modal-book-desc" class="desc-text">
                         No description available.
                     </div>
+                </div>
+
+                <div class="modal-footer-actions">
+                    <button id="modal-open-book-btn" class="modal-action-read-btn" type="button">
+                        <span>📖 Read Book</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1499,6 +1522,180 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         opacity: 0.7;
         font-size: 0.9em;
     }
+
+    /* Modal Reading Status & Mark Read Toggle */
+    .modal-read-status-card {
+        background: rgba(30, 41, 59, 0.45) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 14px !important;
+        padding: 12px 14px !important;
+        margin: 16px 0 !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .modal-read-toggle-label {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        cursor: pointer !important;
+        user-select: none !important;
+        width: 100% !important;
+    }
+
+    .modal-read-toggle-checkbox {
+        position: absolute !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    .modal-read-toggle-custom {
+        width: 42px !important;
+        height: 24px !important;
+        background: rgba(255, 255, 255, 0.15) !important;
+        border-radius: 99px !important;
+        position: relative !important;
+        transition: all 0.25s ease !important;
+        flex-shrink: 0 !important;
+    }
+
+    .modal-read-toggle-custom::after {
+        content: '' !important;
+        position: absolute !important;
+        top: 3px !important;
+        left: 3px !important;
+        width: 18px !important;
+        height: 18px !important;
+        border-radius: 50% !important;
+        background: #ffffff !important;
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .modal-read-toggle-checkbox:checked + .modal-read-toggle-custom {
+        background: #10b981 !important;
+        box-shadow: 0 0 12px rgba(16, 185, 129, 0.5) !important;
+    }
+
+    .modal-read-toggle-checkbox:checked + .modal-read-toggle-custom::after {
+        transform: translateX(18px) !important;
+    }
+
+    .modal-read-info {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 3px !important;
+    }
+
+    .modal-read-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+
+    .modal-read-title {
+        font-size: 0.88rem !important;
+        font-weight: 600 !important;
+        color: #f1f5f9 !important;
+    }
+
+    .modal-read-badge {
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        padding: 2px 8px !important;
+        border-radius: 99px !important;
+        background: rgba(56, 189, 248, 0.15) !important;
+        color: #38bdf8 !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    }
+
+    .modal-read-badge.completed {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #6ee7b7 !important;
+        border-color: rgba(16, 185, 129, 0.4) !important;
+    }
+
+    .modal-read-hint {
+        font-size: 0.73rem !important;
+        color: #94a3b8 !important;
+        line-height: 1.3 !important;
+    }
+
+    .modal-cover-container {
+        width: 100px;
+        min-width: 100px;
+        aspect-ratio: 1 / 1.48;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #090b11;
+        flex-shrink: 0;
+    }
+
+    .modal-cover-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .modal-footer-actions {
+        margin-top: 18px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .modal-action-read-btn {
+        all: unset !important;
+        box-sizing: border-box !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        padding: 10px 22px !important;
+        background: rgba(56, 189, 248, 0.15) !important;
+        border: 1px solid rgba(56, 189, 248, 0.35) !important;
+        border-radius: 10px !important;
+        color: #38bdf8 !important;
+        font-weight: 600 !important;
+        font-size: 0.88rem !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .modal-action-read-btn:hover {
+        background: #38bdf8 !important;
+        color: #090b11 !important;
+        box-shadow: 0 0 16px rgba(56, 189, 248, 0.4) !important;
+    }
+
+    /* Completed Checkmark Badge for Book Cards */
+    .card-progress-overlay.card-progress-completed {
+        background: rgba(6, 78, 59, 0.92) !important;
+        border-color: rgba(52, 211, 153, 0.6) !important;
+        color: #a7f3d0 !important;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45) !important;
+    }
+
+    .completed-check-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: #10b981;
+        color: #022c22;
+        font-size: 9px;
+        font-weight: 900;
+        line-height: 1;
+        margin-right: 3px;
+    }
+
     /* --- FULLSCREEN LIBRARY --- */
     .library-fullscreen-overlay {
         position: fixed !important;
@@ -2374,6 +2571,11 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         margin-top: 4px;
         align-self: flex-start;
         font-weight: 600;
+    }
+    .progress-badge.completed {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #6ee7b7 !important;
+        border-color: rgba(16, 185, 129, 0.4) !important;
     }
 
     /* პროგრესი ბიბლიოთეკის ბარათზე */

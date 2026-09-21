@@ -349,14 +349,68 @@ async function handleMetaClick() {
     const currentCoverSrc = document.getElementById('book-cover-img')?.src;
     safeSetText('modal-book-title', title);
     safeSetText('modal-book-author', author);
+
+    const coverContainer = document.getElementById('modal-cover-container');
     const modalCover = document.getElementById('modal-book-cover');
-    if (modalCover) {
+    if (coverContainer) {
         if (currentCoverSrc && !currentCoverSrc.includes(window.location.host + '/#') && currentCoverSrc !== window.location.href) {
-            modalCover.src = currentCoverSrc;
-            modalCover.style.display = 'block';
+            coverContainer.innerHTML = '';
+            if (modalCover) {
+                modalCover.src = currentCoverSrc;
+                modalCover.style.display = 'block';
+                coverContainer.appendChild(modalCover);
+            }
         } else {
-            modalCover.style.display = 'none';
+            coverContainer.innerHTML = renderProceduralCover(title, author);
         }
+    }
+
+    const fileName = window.currentRawEpubFile ? window.currentRawEpubFile.name : '';
+    const markReadCheckbox = document.getElementById('modal-mark-read-checkbox');
+    const readBadge = document.getElementById('modal-read-badge');
+    if (fileName && markReadCheckbox) {
+        const savedPerc = localStorage.getItem('epub_perc_' + fileName) || '0';
+        const numPerc = parseFloat(savedPerc) || 0;
+        const isCompleted = numPerc >= 99;
+        markReadCheckbox.checked = isCompleted;
+        if (readBadge) {
+            readBadge.textContent = isCompleted ? `${savedPerc}% ✓` : `${numPerc > 0 ? savedPerc + '%' : '0%'}`;
+            readBadge.classList.toggle('completed', isCompleted);
+        }
+        markReadCheckbox.onchange = (e) => {
+            if (e.target.checked) {
+                try { localStorage.setItem('epub_perc_' + fileName, '100'); } catch(err){}
+                fetch(`/wp-json/neural/v1/progress?book=${encodeURIComponent(fileName)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ href: '', idx: 0, perc: '100.00' })
+                }).catch(err => console.error(err));
+                if (readBadge) {
+                    readBadge.textContent = '100% ✓';
+                    readBadge.classList.add('completed');
+                }
+            } else {
+                try {
+                    localStorage.removeItem('epub_perc_' + fileName);
+                    localStorage.removeItem('epub_progress_' + fileName);
+                    localStorage.removeItem('epub_idx_' + fileName);
+                } catch(err){}
+                fetch(`/wp-json/neural/v1/progress?book=${encodeURIComponent(fileName)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ href: '', idx: 0, perc: '0.00' })
+                }).catch(err => console.error(err));
+                if (readBadge) {
+                    readBadge.textContent = '0%';
+                    readBadge.classList.remove('completed');
+                }
+            }
+        };
+    }
+
+    const openBtn = document.getElementById('modal-open-book-btn');
+    if (openBtn) {
+        openBtn.onclick = () => { modal.classList.add('hidden'); };
     }
     const pubEl = document.getElementById('modal-book-publisher');
     const genreContainer = document.getElementById('modal-book-genre');
@@ -675,7 +729,9 @@ function updateProgressPercentage() {
 
     // 5. UI განახლება (აუცილებლად!)
     if (badge) {
-        badge.textContent = displayPercentage.toFixed(2) + '%';
+        const isCompleted = displayPercentage >= 99;
+        badge.innerHTML = isCompleted ? `<span style="color:#10b981;font-weight:bold;margin-right:3px;">✓</span>${displayPercentage.toFixed(2)}%` : `${displayPercentage.toFixed(2)}%`;
+        badge.classList.toggle('completed', isCompleted);
         badge.classList.remove('hidden'); // 🔥 ეს აჩენს ჰედერში ეგრევე
         const resetBtn = document.getElementById('reset-progress-btn');
         if (resetBtn) resetBtn.classList.remove('hidden');
@@ -3507,10 +3563,114 @@ function clearHighlights() {
 function setupModalClosing() {
     const modalOverlay = document.getElementById('book-info-modal');
     const closeBtn = document.getElementById('close-modal-btn');
-    if (closeBtn && modalOverlay) {
-        closeBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); modalOverlay.classList.add('hidden'); };
-        modalOverlay.onclick = (e) => { if (e.target === modalOverlay) { modalOverlay.classList.add('hidden'); } };
+    if (!modalOverlay) return;
+
+    if (closeBtn) {
+        closeBtn.onclick = (e) => { 
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            modalOverlay.classList.add('hidden'); 
+            modalOverlay.dataset.openedBy = '';
+        };
     }
+
+    // Dismiss on backdrop click or pointerdown
+    modalOverlay.addEventListener('pointerdown', (e) => {
+        if (e.target === modalOverlay) {
+            modalOverlay.classList.add('hidden');
+            modalOverlay.dataset.openedBy = '';
+        }
+    });
+
+    // Mobile Long-Press on Modal or Backdrop to Close (500ms touch & hold)
+    let modalTouchTimer = null;
+    let modalTouchStartX = 0;
+    let modalTouchStartY = 0;
+
+    modalOverlay.addEventListener('touchstart', (e) => {
+        if (modalOverlay.classList.contains('hidden')) return;
+        if (e.target.closest('#modal-mark-read-checkbox') || 
+            e.target.closest('#modal-open-book-btn') || 
+            e.target.closest('#close-modal-btn') ||
+            e.target.closest('.modal-read-toggle-label')) {
+            return;
+        }
+        if (e.touches.length !== 1) return;
+        modalTouchStartX = e.touches[0].clientX;
+        modalTouchStartY = e.touches[0].clientY;
+
+        modalTouchTimer = setTimeout(() => {
+            if (navigator.vibrate) {
+                try { navigator.vibrate(40); } catch(err){}
+            }
+            modalOverlay.classList.add('hidden');
+            modalOverlay.dataset.openedBy = '';
+        }, 500);
+    }, { passive: true });
+
+    modalOverlay.addEventListener('touchmove', (e) => {
+        if (!modalTouchTimer) return;
+        const dx = Math.abs(e.touches[0].clientX - modalTouchStartX);
+        const dy = Math.abs(e.touches[0].clientY - modalTouchStartY);
+        if (dx > 10 || dy > 10) {
+            clearTimeout(modalTouchTimer);
+            modalTouchTimer = null;
+        }
+    }, { passive: true });
+
+    modalOverlay.addEventListener('touchend', () => {
+        if (modalTouchTimer) {
+            clearTimeout(modalTouchTimer);
+            modalTouchTimer = null;
+        }
+    });
+
+    // Desktop Hover / Unhover Auto-close
+    const modalContent = modalOverlay.querySelector('.info-modal-content');
+    let hoverCloseTimer = null;
+
+    if (modalContent) {
+        modalContent.addEventListener('mouseenter', () => {
+            modalOverlay.dataset.hasEnteredContent = 'true';
+            if (hoverCloseTimer) {
+                clearTimeout(hoverCloseTimer);
+                hoverCloseTimer = null;
+            }
+        });
+
+        modalContent.addEventListener('mouseleave', () => {
+            if (modalOverlay.dataset.openedBy === 'hover') {
+                hoverCloseTimer = setTimeout(() => {
+                    modalOverlay.classList.add('hidden');
+                    modalOverlay.dataset.openedBy = '';
+                }, 220);
+            }
+        });
+    }
+
+    modalOverlay.addEventListener('mousemove', (e) => {
+        if (modalOverlay.dataset.openedBy === 'hover' && e.target === modalOverlay) {
+            const openTime = parseInt(modalOverlay.dataset.openTime || '0', 10);
+            const elapsed = Date.now() - openTime;
+            if (modalOverlay.dataset.hasEnteredContent === 'true' || elapsed > 550) {
+                if (!hoverCloseTimer) {
+                    hoverCloseTimer = setTimeout(() => {
+                        modalOverlay.classList.add('hidden');
+                        modalOverlay.dataset.openedBy = '';
+                    }, 180);
+                }
+            }
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (!modalOverlay.classList.contains('hidden')) {
+                modalOverlay.classList.add('hidden');
+                modalOverlay.dataset.openedBy = '';
+            }
+        }
+    });
 }
 setupModalClosing();
 function init() {
@@ -3758,6 +3918,178 @@ function renderProceduralCover(title, author) {
     </div>`;
 }
 
+let currentModalBook = null;
+let currentModalCard = null;
+
+function updateCardProgressBadge(card, fileName, perc) {
+    if (!card) return;
+    let overlay = card.querySelector('.card-progress-overlay');
+    if (!perc || parseFloat(perc) <= 0) {
+        if (overlay) overlay.remove();
+        return;
+    }
+    const num = parseFloat(perc) || 0;
+    const isCompleted = num >= 99;
+
+    const badgeContent = isCompleted ? `
+        <span style="display:flex; align-items:center; gap:4px;"><span class="completed-check-icon">✓</span>${perc}%</span>
+        <button class="reset-book-btn" title="Reset Progress" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:2px; height:18px; width:18px;">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+        </button>
+    ` : `
+        <span>${perc}%</span>
+        <button class="reset-book-btn" title="Reset Progress" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:2px; height:18px; width:18px;">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+        </button>
+    `;
+
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'card-progress-overlay' + (isCompleted ? ' card-progress-completed' : '');
+        overlay.style.display = 'flex';
+        overlay.style.justifyContent = 'space-between';
+        overlay.style.alignItems = 'center';
+        overlay.innerHTML = badgeContent;
+        card.insertBefore(overlay, card.firstChild);
+    } else {
+        overlay.className = 'card-progress-overlay' + (isCompleted ? ' card-progress-completed' : '');
+        overlay.innerHTML = badgeContent;
+    }
+}
+
+async function openBookInfoModal(book, card, triggerType = 'click') {
+    const modal = document.getElementById('book-info-modal');
+    if (!modal) return;
+    currentModalBook = book;
+    currentModalCard = card;
+
+    modal.dataset.openedBy = triggerType;
+    modal.dataset.openTime = Date.now().toString();
+    modal.dataset.hasEnteredContent = 'false';
+
+    const safeSetText = (id, text) => { 
+        const el = document.getElementById(id); 
+        if (el) el.textContent = text; 
+    };
+
+    const fileName = book.url ? book.url.split('/').pop() : '';
+    safeSetText('modal-book-title', book.title || 'Untitled');
+    safeSetText('modal-book-author', book.author || 'Unknown Author');
+
+    // Setup cover in info modal
+    const coverContainer = document.getElementById('modal-cover-container');
+    if (coverContainer) {
+        const hasCover = book.cover && typeof book.cover === 'string' && book.cover.trim() !== '';
+        if (hasCover) {
+            coverContainer.innerHTML = `<img id="modal-book-cover" src="${escapeHtml(book.cover)}" alt="Cover" onerror="this.parentElement.innerHTML = renderProceduralCover('${escapeHtml(book.title || '')}', '${escapeHtml(book.author || '')}');">`;
+        } else {
+            coverContainer.innerHTML = renderProceduralCover(book.title, book.author);
+        }
+    }
+
+    // Progress & Mark as Read Toggle
+    const markReadCheckbox = document.getElementById('modal-mark-read-checkbox');
+    const readBadge = document.getElementById('modal-read-badge');
+    
+    let savedPerc = localStorage.getItem('epub_perc_' + fileName);
+    if (!savedPerc && book.perc !== undefined && book.perc !== null) {
+        savedPerc = String(book.perc);
+    }
+    const numPerc = parseFloat(savedPerc || '0');
+    const isCompleted = numPerc >= 99;
+
+    if (markReadCheckbox) {
+        markReadCheckbox.checked = isCompleted;
+        markReadCheckbox.onchange = (e) => {
+            const checked = e.target.checked;
+            if (checked) {
+                try { localStorage.setItem('epub_perc_' + fileName, '100'); } catch(err){}
+                book.perc = '100';
+                fetch(`/wp-json/neural/v1/progress?book=${encodeURIComponent(fileName)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ href: '', idx: 0, perc: '100.00' })
+                }).catch(err => console.error(err));
+
+                if (readBadge) {
+                    readBadge.textContent = '100% ✓';
+                    readBadge.classList.add('completed');
+                }
+                updateCardProgressBadge(card, fileName, '100');
+            } else {
+                try {
+                    localStorage.removeItem('epub_perc_' + fileName);
+                    localStorage.removeItem('epub_progress_' + fileName);
+                    localStorage.removeItem('epub_idx_' + fileName);
+                } catch(err){}
+                book.perc = '0';
+                fetch(`/wp-json/neural/v1/progress?book=${encodeURIComponent(fileName)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ href: '', idx: 0, perc: '0.00' })
+                }).catch(err => console.error(err));
+
+                if (readBadge) {
+                    readBadge.textContent = '0%';
+                    readBadge.classList.remove('completed');
+                }
+                updateCardProgressBadge(card, fileName, null);
+            }
+        };
+    }
+
+    if (readBadge) {
+        if (isCompleted) {
+            readBadge.textContent = `${savedPerc || '100'}% ✓`;
+            readBadge.classList.add('completed');
+        } else {
+            readBadge.textContent = numPerc > 0 ? `${savedPerc}%` : '0%';
+            readBadge.classList.remove('completed');
+        }
+    }
+
+    const openBtn = document.getElementById('modal-open-book-btn');
+    if (openBtn) {
+        openBtn.onclick = () => {
+            modal.classList.add('hidden');
+            loadBookFromUrl(book.url);
+        };
+    }
+
+    const pubEl = document.getElementById('modal-book-publisher');
+    const genreContainer = document.getElementById('modal-book-genre');
+    const descEl = document.getElementById('modal-book-desc');
+
+    if (genreContainer) genreContainer.innerHTML = '<span class="genre-tag">Library Book</span>';
+    if (pubEl) pubEl.classList.add('hidden');
+    if (descEl) descEl.innerHTML = 'Scan in reader for full book summary.';
+
+    if (book.url) {
+        getCachedBookMeta(book.url).then(cached => {
+            if (cached) {
+                if (cached.publisher && pubEl) {
+                    pubEl.textContent = cached.publisher;
+                    pubEl.classList.remove('hidden');
+                }
+                if (cached.genres && cached.genres.length > 0 && genreContainer) {
+                    genreContainer.innerHTML = '';
+                    cached.genres.forEach(g => {
+                        const tag = document.createElement('span');
+                        tag.className = 'genre-tag';
+                        tag.textContent = g;
+                        genreContainer.appendChild(tag);
+                    });
+                }
+                if (cached.description && descEl) {
+                    descEl.innerHTML = cached.description;
+                }
+            }
+        });
+    }
+
+    modal.classList.remove('hidden');
+}
+
 function drawBooksToGrid(booksList) {
     libraryGrid.innerHTML = '';
     if (booksList.length === 0) {
@@ -3785,9 +4117,11 @@ function drawBooksToGrid(booksList) {
 
         let percHtml = '';
         if (savedPerc) {
+            const numPerc = parseFloat(savedPerc) || 0;
+            const isCompleted = numPerc >= 99;
             percHtml = `
-            <div class="card-progress-overlay" style="display:flex; justify-content:space-between; align-items:center;">
-                <span>${savedPerc}%</span>
+            <div class="card-progress-overlay${isCompleted ? ' card-progress-completed' : ''}" style="display:flex; justify-content:space-between; align-items:center;">
+                ${isCompleted ? `<span style="display:flex; align-items:center; gap:4px;"><span class="completed-check-icon">✓</span>${savedPerc}%</span>` : `<span>${savedPerc}%</span>`}
                 <button class="reset-book-btn" title="Reset Progress" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:2px; height:18px; width:18px;">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
                 </button>
@@ -3808,7 +4142,73 @@ function drawBooksToGrid(booksList) {
 
         card.innerHTML = `${percHtml}${coverHtml}<div class="book-card-title" title="${safeTitle}">${safeTitle}</div><div class="book-card-author" title="${safeAuthor}">${safeAuthor}</div>`;
 
+        // Desktop Hover (with 450ms intent delay)
+        let hoverTimer = null;
+        card.addEventListener('mouseenter', () => {
+            if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+                hoverTimer = setTimeout(() => {
+                    openBookInfoModal(book, card, 'hover');
+                }, 450);
+            }
+        });
+        card.addEventListener('mouseleave', () => {
+            if (hoverTimer) {
+                clearTimeout(hoverTimer);
+                hoverTimer = null;
+            }
+        });
+
+        // Mobile Long-Press (Touch & Hold ~500ms)
+        let touchTimer = null;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isLongPress = false;
+
+        card.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            isLongPress = false;
+
+            touchTimer = setTimeout(() => {
+                isLongPress = true;
+                if (navigator.vibrate) {
+                    try { navigator.vibrate(40); } catch(err){}
+                }
+                openBookInfoModal(book, card, 'longpress');
+            }, 500);
+        }, { passive: true });
+
+        card.addEventListener('touchmove', (e) => {
+            if (!touchTimer) return;
+            const dx = Math.abs(e.touches[0].clientX - touchStartX);
+            const dy = Math.abs(e.touches[0].clientY - touchStartY);
+            if (dx > 10 || dy > 10) {
+                clearTimeout(touchTimer);
+                touchTimer = null;
+            }
+        }, { passive: true });
+
+        card.addEventListener('touchend', (e) => {
+            if (touchTimer) {
+                clearTimeout(touchTimer);
+                touchTimer = null;
+            }
+            if (isLongPress) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
         card.onclick = (e) => {
+            if (isLongPress) {
+                isLongPress = false;
+                return;
+            }
+            if (hoverTimer) {
+                clearTimeout(hoverTimer);
+                hoverTimer = null;
+            }
             const btn = e.target.closest('.reset-book-btn');
             if (btn) {
                 e.stopPropagation();
