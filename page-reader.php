@@ -100,20 +100,25 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             <div class="header-actions">
                 <button id="pwa-install-btn" class="icon-btn hidden" title="Add to Phone (Install App)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span class="action-label">Install</span>
                 </button>
                 <button id="library-btn" class="icon-btn" title="Library">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <span class="action-label">Library</span>
                 </button>
                 <input type="file" id="file-input" accept=".epub" style="display: none;">
 
-                <button id="upload-btn" class="icon-btn" title="Upload EPUB">
+                <button id="upload-btn" class="icon-btn" title="Open EPUB">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <span class="action-label">Open EPUB</span>
                 </button>
                 <button id="edit-btn" class="icon-btn" title="Edit / Paste Text">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    <span class="action-label">Edit Text</span>
                 </button>
                 <button id="settings-btn" class="icon-btn" title="Settings">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l-.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <span class="action-label">Settings</span>
                 </button>
             </div>
         </div>
@@ -129,12 +134,96 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         </div>
 
         <div id="content-area" class="content-area">
-            <div id="drop-zone" class="drop-zone">
-                <div class="drop-content">
-                    <svg viewBox="0 0 24 24" width="64" height="64" stroke="currentColor" fill="none" stroke-width="1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="12" y2="12"></line><line x1="15" y1="15" x2="12" y2="12"></line></svg>
-                    <h3>Drag & Drop EPUB here</h3>
-                    <p>or click the upload button above</p>
-                    <p class="sub-text">You can also paste text manually via Edit mode</p>
+            <div id="welcome-hub" class="welcome-hub">
+                <div class="hub-hero">
+                    <div class="hub-badge">
+                        <span class="pulse-dot"></span>
+                        <span>AI Voice &amp; EPUB Reader</span>
+                    </div>
+                    <h1 class="hub-title">Ready to <span class="gradient-text">Listen &amp; Read?</span></h1>
+                    <p class="hub-subtitle">Choose an option below to start your immersive reading experience</p>
+                </div>
+
+                <div class="hub-grid">
+                    <button id="hub-library-btn" class="hub-card" type="button">
+                        <div class="hub-card-icon icon-library">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="hub-card-content">
+                            <div class="hub-card-title">Library</div>
+                            <div class="hub-card-desc">Browse &amp; resume saved books</div>
+                            <span class="hub-card-tag">📚 ბიბლიოთეკა</span>
+                        </div>
+                        <div class="hub-card-arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                    </button>
+
+                    <button id="hub-open-epub-btn" class="hub-card" type="button">
+                        <div class="hub-card-icon icon-epub">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <div class="hub-card-content">
+                            <div class="hub-card-title">Open EPUB</div>
+                            <div class="hub-card-desc">Choose or drop an .epub file</div>
+                            <span class="hub-card-tag">📖 EPUB გახსნა</span>
+                        </div>
+                        <div class="hub-card-arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                    </button>
+
+                    <button id="hub-edit-text-btn" class="hub-card" type="button">
+                        <div class="hub-card-icon icon-edit">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </div>
+                        <div class="hub-card-content">
+                            <div class="hub-card-title">Edit / Paste Text</div>
+                            <div class="hub-card-desc">Type, paste or edit any text</div>
+                            <span class="hub-card-tag">✍️ ტექსტის ჩასმა</span>
+                        </div>
+                        <div class="hub-card-arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                    </button>
+
+                    <button id="hub-settings-btn" class="hub-card" type="button">
+                        <div class="hub-card-icon icon-settings">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l-.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                        </div>
+                        <div class="hub-card-content">
+                            <div class="hub-card-title">Settings</div>
+                            <div class="hub-card-desc">Voices, speed &amp; pause tuning</div>
+                            <span class="hub-card-tag">⚙️ პარამეტრები</span>
+                        </div>
+                        <div class="hub-card-arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                    </button>
+                </div>
+
+                <div class="hub-drop-hint">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <line x1="9" y1="15" x2="12" y2="12"></line>
+                        <line x1="15" y1="15" x2="12" y2="12"></line>
+                    </svg>
+                    <span>Or drag &amp; drop an EPUB file anywhere on this screen</span>
                 </div>
             </div>
         </div>
@@ -399,8 +488,72 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             max-width: 220px; /* მეტი ადგილი სათაურს */
         }
     }
-    #neural-app-root .icon-btn:hover { background: rgba(255,255,255,0.05) !important; color: var(--text-main) !important; }
-    #neural-app-root .icon-btn svg { width: 20px !important; height: 20px !important; fill: none !important; stroke: currentColor !important; }
+    #neural-app-root .icon-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 7px;
+        padding: 8px 14px !important;
+        border-radius: 20px !important;
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text-muted) !important;
+        font-size: 0.84rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        white-space: nowrap;
+    }
+    #neural-app-root .icon-btn:hover {
+        background: rgba(56, 189, 248, 0.12) !important;
+        border-color: rgba(56, 189, 248, 0.4) !important;
+        color: var(--text-main) !important;
+        box-shadow: 0 4px 14px rgba(56, 189, 248, 0.18);
+    }
+    #neural-app-root .icon-btn.active,
+    #neural-app-root .icon-btn:focus-visible {
+        background: rgba(56, 189, 248, 0.2) !important;
+        border-color: var(--primary) !important;
+        color: var(--primary) !important;
+    }
+    #neural-app-root .icon-btn.sm {
+        padding: 0 !important;
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 50% !important;
+    }
+    #neural-app-root .icon-btn.close-modal {
+        padding: 0 !important;
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 50% !important;
+    }
+    #neural-app-root .icon-btn svg {
+        width: 17px !important;
+        height: 17px !important;
+        fill: none !important;
+        stroke: currentColor !important;
+        flex-shrink: 0;
+    }
+    .action-label {
+        font-weight: 500;
+        font-size: 0.82rem;
+    }
+    /* In Active Reading Mode: enhance the top-right toolbar visibility */
+    body.is-reading #neural-app-root .header-actions .icon-btn {
+        background: rgba(30, 41, 59, 0.8) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #e2e8f0 !important;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+    body.is-reading #neural-app-root .header-actions .icon-btn:hover {
+        background: rgba(56, 189, 248, 0.18) !important;
+        border-color: #38bdf8 !important;
+        color: #38bdf8 !important;
+        transform: translateY(-1px);
+    }
 
     /* --- SETTINGS --- */
     .settings-panel {
@@ -752,7 +905,248 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     }
     .sidebar-overlay.hidden { opacity: 0; pointer-events: none; }
 
-    /* --- DROP ZONE --- */
+    /* --- WELCOME HUB (Center Interface) --- */
+    .welcome-hub {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100%;
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        text-align: center;
+        animation: hubFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        z-index: 2;
+    }
+
+    @keyframes hubFadeIn {
+        from { opacity: 0; transform: translateY(14px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .hub-hero {
+        margin-bottom: 34px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .hub-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        border-radius: 20px;
+        background: rgba(56, 189, 248, 0.08);
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        color: #38bdf8;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-bottom: 16px;
+        box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+    }
+
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #38bdf8;
+        box-shadow: 0 0 10px #38bdf8;
+        animation: pulseGlow 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .hub-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #f8fafc;
+        margin: 0 0 12px 0;
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #f472b6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hub-subtitle {
+        font-size: 1rem;
+        color: #94a3b8;
+        margin: 0;
+        max-width: 520px;
+        line-height: 1.5;
+    }
+
+    .hub-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+        width: 100%;
+        max-width: 780px;
+        margin-bottom: 26px;
+    }
+
+    #neural-app-root .hub-card {
+        position: relative;
+        display: flex !important;
+        align-items: center !important;
+        text-align: left !important;
+        padding: 20px 22px !important;
+        background: rgba(18, 24, 38, 0.65) !important;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 16px !important;
+        cursor: pointer !important;
+        transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        overflow: hidden;
+        gap: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    #neural-app-root .hub-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    }
+
+    #neural-app-root .hub-card:hover {
+        transform: translateY(-4px);
+        background: rgba(28, 38, 58, 0.85) !important;
+        border-color: rgba(56, 189, 248, 0.4) !important;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 25px rgba(56, 189, 248, 0.15);
+    }
+
+    .hub-card-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+    }
+
+    #neural-app-root .hub-card:hover .hub-card-icon {
+        transform: scale(1.08) rotate(2deg);
+    }
+
+    .hub-card-icon svg {
+        width: 26px;
+        height: 26px;
+    }
+
+    .icon-library {
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(99, 102, 241, 0.25));
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        color: #38bdf8;
+    }
+
+    .icon-epub {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.25));
+        border: 1px solid rgba(236, 72, 153, 0.35);
+        color: #f472b6;
+    }
+
+    .icon-edit {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.25));
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        color: #34d399;
+    }
+
+    .icon-settings {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.25));
+        border: 1px solid rgba(245, 158, 11, 0.35);
+        color: #fbbf24;
+    }
+
+    .hub-card-content {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .hub-card-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #f8fafc;
+        letter-spacing: -0.2px;
+    }
+
+    .hub-card-desc {
+        font-size: 0.82rem;
+        color: #94a3b8;
+        line-height: 1.35;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .hub-card-tag {
+        align-self: flex-start;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #cbd5e1;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 2px 8px;
+        border-radius: 6px;
+        margin-top: 4px;
+    }
+
+    .hub-card-arrow {
+        color: #64748b;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+    }
+
+    .hub-card-arrow svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    #neural-app-root .hub-card:hover .hub-card-arrow {
+        color: #38bdf8;
+        transform: translateX(4px);
+    }
+
+    .hub-drop-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 0.85rem;
+        color: #64748b;
+        padding: 10px 20px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px dashed rgba(255, 255, 255, 0.1);
+        transition: all 0.25s;
+    }
+
+    .content-area.dragover .welcome-hub {
+        border: 2px dashed #38bdf8;
+        background: rgba(56, 189, 248, 0.08);
+        border-radius: 20px;
+    }
+
+    /* Legacy drop-zone fallback */
     .drop-zone {
         width: 100%;
         height: 100%;
@@ -786,6 +1180,17 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         justify-content: center;
         z-index: 20;
         pointer-events: none;
+
+        /* Default: hidden until book or text is loaded */
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    body.is-reading .controls-overlay {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
     }
 
     .controls {
@@ -1260,6 +1665,31 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             margin: 20px auto;
             padding: 20px;
             max-height: 80vh;
+        }
+        .hub-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        .hub-title {
+            font-size: 1.6rem;
+        }
+        .hub-subtitle {
+            font-size: 0.9rem;
+        }
+        #neural-app-root .hub-card {
+            padding: 16px 18px !important;
+        }
+        .action-label {
+            display: none !important;
+        }
+        #neural-app-root .header-actions .icon-btn {
+            padding: 8px !important;
+            border-radius: 12px !important;
+            width: 38px !important;
+            height: 38px !important;
+        }
+        .hub-drop-hint {
+            font-size: 0.75rem;
         }
     }
 

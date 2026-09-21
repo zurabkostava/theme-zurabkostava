@@ -272,20 +272,72 @@ fileInput.addEventListener('change', (e) => {
     if (file) loadEpub(file);
 });
 uploadBtn.addEventListener('click', () => fileInput.click());
-contentArea.addEventListener('dragover', (e) => { e.preventDefault(); if(dropZone) dropZone.classList.add('dragover'); });
-contentArea.addEventListener('dragleave', (e) => { e.preventDefault(); if(dropZone) dropZone.classList.remove('dragover'); });
+
+function bindHubEvents() {
+    const hubLibraryBtn = document.getElementById('hub-library-btn');
+    if (hubLibraryBtn) hubLibraryBtn.onclick = () => libraryBtn.click();
+
+    const hubOpenEpubBtn = document.getElementById('hub-open-epub-btn');
+    if (hubOpenEpubBtn) hubOpenEpubBtn.onclick = () => fileInput.click();
+
+    const hubEditTextBtn = document.getElementById('hub-edit-text-btn');
+    if (hubEditTextBtn) hubEditTextBtn.onclick = () => editBtn.click();
+
+    const hubSettingsBtn = document.getElementById('hub-settings-btn');
+    if (hubSettingsBtn) hubSettingsBtn.onclick = () => settingsBtn.click();
+}
+// Initial bind on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindHubEvents);
+} else {
+    bindHubEvents();
+}
+
+contentArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    contentArea.classList.add('dragover');
+    const dz = document.getElementById('drop-zone');
+    if (dz) dz.classList.add('dragover');
+});
+contentArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    contentArea.classList.remove('dragover');
+    const dz = document.getElementById('drop-zone');
+    if (dz) dz.classList.remove('dragover');
+});
 contentArea.addEventListener('drop', (e) => {
     e.preventDefault();
-    if(dropZone) dropZone.classList.remove('dragover');
+    contentArea.classList.remove('dragover');
+    const dz = document.getElementById('drop-zone');
+    if (dz) dz.classList.remove('dragover');
     if (e.dataTransfer.items) {
         [...e.dataTransfer.items].forEach((item, i) => {
             if (item.kind === 'file') {
                 const file = item.getAsFile();
-                if(file.name.endsWith('.epub')) loadEpub(file);
+                if (file && file.name.endsWith('.epub')) loadEpub(file);
             }
+        });
+    } else if (e.dataTransfer.files) {
+        [...e.dataTransfer.files].forEach(file => {
+            if (file && file.name.endsWith('.epub')) loadEpub(file);
         });
     }
 });
+
+// Logo click to return to home Welcome Hub
+const appLogo = document.querySelector('.logo');
+if (appLogo) {
+    appLogo.style.cursor = 'pointer';
+    appLogo.title = 'Neural Reader PRO — Return to Home Hub';
+    appLogo.addEventListener('click', () => {
+        if (document.body.classList.contains('is-reading')) {
+            if (confirm("დავბრუნდეთ მთავარ მენიუში? (Return to Home Hub?)")) {
+                stopReading();
+                showDropZone();
+            }
+        }
+    });
+}
 
 async function handleMetaClick() {
     const modal = document.getElementById('book-info-modal');
@@ -994,7 +1046,9 @@ editBtn.onclick = () => {
         contentArea.focus();
         const dz = document.getElementById('drop-zone');
         if(dz) dz.remove();
-        editBtn.innerHTML = iconSave;
+        const hub = document.getElementById('welcome-hub');
+        if(hub) hub.remove();
+        editBtn.innerHTML = `${iconSave} <span class="action-label">Save Text</span>`;
         editBtn.style.backgroundColor = '#38bdf8';
         editBtn.style.color = '#09090b';
     } else {
@@ -1012,7 +1066,7 @@ editBtn.onclick = () => {
             if (txt) paragraphsArray.push(txt);
         }
         const updatedText = paragraphsArray.join('\n\n');
-        editBtn.innerHTML = iconEdit;
+        editBtn.innerHTML = `${iconEdit} <span class="action-label">Edit Text</span>`;
         editBtn.style.backgroundColor = '';
         editBtn.style.color = '';
         if(updatedText.length > 0) { processText(updatedText); }
@@ -1020,15 +1074,106 @@ editBtn.onclick = () => {
     }
 };
 function showDropZone() {
+    document.body.classList.remove('is-reading');
+    const bookMeta = document.getElementById('book-meta-container');
+    if (bookMeta) bookMeta.classList.add('hidden');
+    if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
+    if (sidebar && sidebar.classList.contains('open')) closeSidebar();
+
     contentArea.innerHTML = `
-<div id="drop-zone" class="drop-zone">
-<div class="drop-content">
-<svg viewBox="0 0 24 24" width="64" height="64" stroke="currentColor" fill="none" stroke-width="1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="12" y2="12"></line><line x1="15" y1="15" x2="12" y2="12"></line></svg>
-<h3>Drag & Drop EPUB here</h3>
-<p>or click the upload button above</p>
-<p class="sub-text">You can also paste text manually via Edit mode</p>
-</div>
-</div>`;
+    <div id="welcome-hub" class="welcome-hub">
+        <div class="hub-hero">
+            <div class="hub-badge">
+                <span class="pulse-dot"></span>
+                <span>AI Voice &amp; EPUB Reader</span>
+            </div>
+            <h1 class="hub-title">Ready to <span class="gradient-text">Listen &amp; Read?</span></h1>
+            <p class="hub-subtitle">Choose an option below to start your immersive reading experience</p>
+        </div>
+
+        <div class="hub-grid">
+            <button id="hub-library-btn" class="hub-card" type="button">
+                <div class="hub-card-icon icon-library">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                </div>
+                <div class="hub-card-content">
+                    <div class="hub-card-title">Library</div>
+                    <div class="hub-card-desc">Browse &amp; resume saved books</div>
+                    <span class="hub-card-tag">📚 ბიბლიოთეკა</span>
+                </div>
+                <div class="hub-card-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            </button>
+
+            <button id="hub-open-epub-btn" class="hub-card" type="button">
+                <div class="hub-card-icon icon-epub">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                </div>
+                <div class="hub-card-content">
+                    <div class="hub-card-title">Open EPUB</div>
+                    <div class="hub-card-desc">Choose or drop an .epub file</div>
+                    <span class="hub-card-tag">📖 EPUB გახსნა</span>
+                </div>
+                <div class="hub-card-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            </button>
+
+            <button id="hub-edit-text-btn" class="hub-card" type="button">
+                <div class="hub-card-icon icon-edit">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                </div>
+                <div class="hub-card-content">
+                    <div class="hub-card-title">Edit / Paste Text</div>
+                    <div class="hub-card-desc">Type, paste or edit any text</div>
+                    <span class="hub-card-tag">✍️ ტექსტის ჩასმა</span>
+                </div>
+                <div class="hub-card-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            </button>
+
+            <button id="hub-settings-btn" class="hub-card" type="button">
+                <div class="hub-card-icon icon-settings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </div>
+                <div class="hub-card-content">
+                    <div class="hub-card-title">Settings</div>
+                    <div class="hub-card-desc">Voices, speed &amp; pause tuning</div>
+                    <span class="hub-card-tag">⚙️ პარამეტრები</span>
+                </div>
+                <div class="hub-card-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            </button>
+        </div>
+
+        <div class="hub-drop-hint">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <line x1="9" y1="15" x2="12" y2="12"></line>
+                <line x1="15" y1="15" x2="12" y2="12"></line>
+            </svg>
+            <span>Or drag &amp; drop an EPUB file anywhere on this screen</span>
+        </div>
+    </div>`;
+    bindHubEvents();
 }
 // Helpers
 
@@ -2090,6 +2235,7 @@ function transliterateToGeorgian(text) {
 }
 function processText(rawHtml) {
     stopReading();
+    document.body.classList.add('is-reading');
     lastLoadedText = rawHtml.trim();
     contentArea.innerHTML = '';
     contentArea.scrollTop = 0;
@@ -3710,23 +3856,45 @@ async function sha256(message) { const msgBuffer = new TextEncoder().encode(mess
 libraryBtn.onclick = async () => {
     const CORRECT_HASH = "3ac7e6bf7ea7627138da7b458762c4a8246d3f97b074bc557ea4b531c2e0a686";
     const isUnlocked = sessionStorage.getItem('library_unlocked');
-    if (isUnlocked === 'true') { renderLibrary(); libraryModal.classList.remove('hidden'); } else {
+    if (isUnlocked === 'true') {
+        renderLibrary();
+        libraryModal.classList.remove('hidden');
+        libraryBtn.classList.add('active');
+    } else {
         const userPass = prompt("🔐 Enter Library Password:");
         if (userPass) {
             const userHash = await sha256(userPass);
             console.log("---------------- დიაგნოსტიკა ----------------"); console.log("შენახული ჰეში (კოდში):", CORRECT_HASH); console.log("შენი შეყვანილი პაროლი:", userPass); console.log("შენი შეყვანილი პაროლის ჰეში:", userHash); console.log("ემთხვევა თუ არა?", userHash === CORRECT_HASH.trim()); console.log("---------------------------------------------");
-            if (userHash === CORRECT_HASH.trim()) { sessionStorage.setItem('library_unlocked', 'true'); renderLibrary(); libraryModal.classList.remove('hidden'); } else { alert("⛔ Access Denied! Wrong Password. (Check Console F12)"); }
+            if (userHash === CORRECT_HASH.trim()) {
+                sessionStorage.setItem('library_unlocked', 'true');
+                renderLibrary();
+                libraryModal.classList.remove('hidden');
+                libraryBtn.classList.add('active');
+            } else {
+                alert("⛔ Access Denied! Wrong Password. (Check Console F12)");
+            }
         }
     }
 };
-closeLibraryBtn.onclick = () => libraryModal.classList.add('hidden');
-libraryModal.onclick = (e) => { if(e.target === libraryModal) libraryModal.classList.add('hidden'); };
+closeLibraryBtn.onclick = () => {
+    libraryModal.classList.add('hidden');
+    libraryBtn.classList.remove('active');
+};
+libraryModal.onclick = (e) => {
+    if(e.target === libraryModal) {
+        libraryModal.classList.add('hidden');
+        libraryBtn.classList.remove('active');
+    }
+};
 
 playBtn.onclick = togglePlay;
 stopBtn.onclick = stopReading;
 nextBtn.onclick = () => navigateSentence(1);
 prevBtn.onclick = () => navigateSentence(-1);
-settingsBtn.onclick = () => settingsPanel.classList.toggle('hidden');
+settingsBtn.onclick = () => {
+    settingsPanel.classList.toggle('hidden');
+    settingsBtn.classList.toggle('active', !settingsPanel.classList.contains('hidden'));
+};
 const globalMetaBtn = document.getElementById('book-meta-container');
 if(globalMetaBtn) { const newBtn = globalMetaBtn.cloneNode(true); globalMetaBtn.parentNode.replaceChild(newBtn, globalMetaBtn); newBtn.onclick = (e) => { console.log("🔘 Meta Container Clicked - Opening Modal Forcefully"); e.preventDefault(); e.stopPropagation(); handleMetaClick(); }; window.activeMetaBtn = newBtn; }
 init();
