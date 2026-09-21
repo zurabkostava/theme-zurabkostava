@@ -374,7 +374,7 @@ async function handleMetaClick() {
         const isCompleted = numPerc >= 99;
         markReadCheckbox.checked = isCompleted;
         if (readBadge) {
-            readBadge.textContent = isCompleted ? `${savedPerc}% ✓` : `${numPerc > 0 ? savedPerc + '%' : '0%'}`;
+            readBadge.textContent = isCompleted ? '✓' : `${numPerc > 0 ? savedPerc + '%' : '0%'}`;
             readBadge.classList.toggle('completed', isCompleted);
         }
         markReadCheckbox.onchange = (e) => {
@@ -386,8 +386,14 @@ async function handleMetaClick() {
                     body: JSON.stringify({ href: '', idx: 0, perc: '100.00' })
                 }).catch(err => console.error(err));
                 if (readBadge) {
-                    readBadge.textContent = '100% ✓';
+                    readBadge.textContent = '✓';
                     readBadge.classList.add('completed');
+                }
+                const headerBadge = document.getElementById('header-progress-badge');
+                if (headerBadge) {
+                    headerBadge.innerHTML = '<span style="color:#10b981;font-weight:bold;font-size:0.85rem;">✓</span>';
+                    headerBadge.classList.add('completed');
+                    headerBadge.classList.remove('hidden');
                 }
             } else {
                 try {
@@ -730,7 +736,7 @@ function updateProgressPercentage() {
     // 5. UI განახლება (აუცილებლად!)
     if (badge) {
         const isCompleted = displayPercentage >= 99;
-        badge.innerHTML = isCompleted ? `<span style="color:#10b981;font-weight:bold;margin-right:3px;">✓</span>${displayPercentage.toFixed(2)}%` : `${displayPercentage.toFixed(2)}%`;
+        badge.innerHTML = isCompleted ? `<span style="color:#10b981;font-weight:bold;font-size:0.85rem;">✓</span>` : `${displayPercentage.toFixed(2)}%`;
         badge.classList.toggle('completed', isCompleted);
         badge.classList.remove('hidden'); // 🔥 ეს აჩენს ჰედერში ეგრევე
         const resetBtn = document.getElementById('reset-progress-btn');
@@ -3932,7 +3938,7 @@ function updateCardProgressBadge(card, fileName, perc) {
     const isCompleted = num >= 99;
 
     const badgeContent = isCompleted ? `
-        <span style="display:flex; align-items:center; gap:4px;"><span class="completed-check-icon">✓</span>${perc}%</span>
+        <span style="display:flex; align-items:center;"><span class="completed-check-icon" title="წაკითხულია / Finished">✓</span></span>
         <button class="reset-book-btn" title="Reset Progress" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:2px; height:18px; width:18px;">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
         </button>
@@ -4012,7 +4018,7 @@ async function openBookInfoModal(book, card, triggerType = 'click') {
                 }).catch(err => console.error(err));
 
                 if (readBadge) {
-                    readBadge.textContent = '100% ✓';
+                    readBadge.textContent = '✓';
                     readBadge.classList.add('completed');
                 }
                 updateCardProgressBadge(card, fileName, '100');
@@ -4040,7 +4046,7 @@ async function openBookInfoModal(book, card, triggerType = 'click') {
 
     if (readBadge) {
         if (isCompleted) {
-            readBadge.textContent = `${savedPerc || '100'}% ✓`;
+            readBadge.textContent = '✓';
             readBadge.classList.add('completed');
         } else {
             readBadge.textContent = numPerc > 0 ? `${savedPerc}%` : '0%';
@@ -4121,7 +4127,7 @@ function drawBooksToGrid(booksList) {
             const isCompleted = numPerc >= 99;
             percHtml = `
             <div class="card-progress-overlay${isCompleted ? ' card-progress-completed' : ''}" style="display:flex; justify-content:space-between; align-items:center;">
-                ${isCompleted ? `<span style="display:flex; align-items:center; gap:4px;"><span class="completed-check-icon">✓</span>${savedPerc}%</span>` : `<span>${savedPerc}%</span>`}
+                ${isCompleted ? `<span style="display:flex; align-items:center;"><span class="completed-check-icon" title="წაკითხულია / Finished">✓</span></span>` : `<span>${savedPerc}%</span>`}
                 <button class="reset-book-btn" title="Reset Progress" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:2px; height:18px; width:18px;">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
                 </button>

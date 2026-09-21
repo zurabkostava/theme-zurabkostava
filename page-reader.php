@@ -1613,6 +1613,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         background: rgba(16, 185, 129, 0.2) !important;
         color: #6ee7b7 !important;
         border-color: rgba(16, 185, 129, 0.4) !important;
+        font-weight: 800 !important;
+        font-size: 0.85rem !important;
+        padding: 2px 9px !important;
     }
 
     .modal-read-hint {
@@ -1679,21 +1682,23 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         border-color: rgba(52, 211, 153, 0.6) !important;
         color: #a7f3d0 !important;
         box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45) !important;
+        padding: 3px 6px !important;
+        gap: 6px !important;
     }
 
     .completed-check-icon {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 13px;
-        height: 13px;
+        width: 16px;
+        height: 16px;
         border-radius: 50%;
         background: #10b981;
         color: #022c22;
-        font-size: 9px;
+        font-size: 10px;
         font-weight: 900;
         line-height: 1;
-        margin-right: 3px;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
     }
 
     /* --- FULLSCREEN LIBRARY --- */
