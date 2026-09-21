@@ -1121,11 +1121,14 @@ function initPiperWorker(langCode, voicePath) {
         else if (msg.kind === 'ready') {
             state.ready = true;
             state.initializing = false;
+            try { localStorage.setItem('piper_downloaded_' + voicePath, 'true'); } catch (e) {}
             setTtsStatus(null);
 
             const unifiedDlBtn = document.getElementById('unified-download-btn');
-            const unifiedLangSelect = document.getElementById('unified-lang-select');
-            if (unifiedDlBtn && unifiedLangSelect && unifiedLangSelect.value === langCode) {
+            const unifiedVoiceSelect = document.getElementById('unified-voice-select');
+            const currentVoiceName = unifiedVoiceSelect ? unifiedVoiceSelect.value : '';
+            const isMatch = (voicePath === state.voicePath) || (isNatiaVoice(currentVoiceName) && isNatiaVoice(voicePath));
+            if (unifiedDlBtn && isMatch) {
                 unifiedDlBtn.textContent = "✅ Voice Ready";
                 unifiedDlBtn.style.opacity = "0.5";
                 unifiedDlBtn.disabled = true;
@@ -1183,6 +1186,83 @@ function langMatches(voiceLang, langCode) {
     return v === base || v.startsWith(base + '-');
 }
 
+function isNatiaVoice(name) {
+    if (!name || typeof name !== 'string') return false;
+    return name.includes('Natia') || name.includes('natia') || name.includes('ka_GE-natia') || name.includes('ქართული ფონეტიკური');
+}
+
+function findPiperVoice(voiceName) {
+    if (!voiceName) return null;
+    if (isNatiaVoice(voiceName)) {
+        return piperVoicesList.find(v => v.key === 'ka_GE-natia-medium') || PIPER_FALLBACK_VOICES[0];
+    }
+    return piperVoicesList.find(v => v && v.name === voiceName) || null;
+}
+
+function autoWarmupSavedPiperVoices() {
+    if (!localStorage.getItem('voice-ka')) {
+        try { localStorage.setItem('voice-ka', '☁️ Piper — Georgian (Natia, medium)'); } catch (e) {}
+    }
+
+    const savedUiLang = localStorage.getItem('unified-ui-lang') || 'ka';
+    const langsToCheck = new Set(['ka', savedUiLang]);
+    if (detectedBookLanguages) {
+        detectedBookLanguages.forEach(l => langsToCheck.add(String(l).split(/[-_]/)[0].toLowerCase()));
+    }
+
+    langsToCheck.forEach(lang => {
+        const vName = localStorage.getItem(`voice-${lang}`);
+        if (vName) {
+            const pVoice = findPiperVoice(vName);
+            if (pVoice) {
+                const workerLang = (isNatiaVoice(pVoice.name) || pVoice.key === 'ka_GE-natia-medium') ? 'ka' : lang;
+                const isDownloaded = localStorage.getItem('piper_downloaded_' + pVoice.path) === 'true';
+                if (isDownloaded || isNatiaVoice(pVoice.name)) {
+                    const state = piperWorkers[workerLang];
+                    if (!state || (!state.ready && !state.initializing)) {
+                        initPiperWorker(workerLang, pVoice.path);
+                    }
+                }
+            }
+        }
+    });
+}
+
+async function checkAndMarkCachedPiperVoices() {
+    if (!('caches' in window)) return;
+    try {
+        const cache = await caches.open('piper-models-cache-v1');
+        const keys = await cache.keys();
+        keys.forEach(req => {
+            const url = req.url || '';
+            piperVoicesList.forEach(v => {
+                if (v && v.path && url.includes(v.path)) {
+                    try { localStorage.setItem('piper_downloaded_' + v.path, 'true'); } catch (e) {}
+                }
+            });
+        });
+        autoWarmupSavedPiperVoices();
+        const dlBtn = document.getElementById('unified-download-btn');
+        const vSelect = document.getElementById('unified-voice-select');
+        if (dlBtn && vSelect) {
+            const pVoice = findPiperVoice(vSelect.value);
+            if (pVoice) {
+                const isDownloaded = localStorage.getItem('piper_downloaded_' + pVoice.path) === 'true';
+                const workerLang = (isNatiaVoice(pVoice.name) || pVoice.key === 'ka_GE-natia-medium') ? 'ka' : (document.getElementById('unified-lang-select')?.value || 'ka');
+                const state = piperWorkers[workerLang];
+                if (state && state.ready) {
+                    dlBtn.textContent = "✅ Voice Ready";
+                    dlBtn.style.opacity = "0.5"; dlBtn.disabled = true;
+                } else if (isDownloaded && (!state || (!state.ready && !state.initializing))) {
+                    initPiperWorker(workerLang, pVoice.path);
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('Cache check note:', e);
+    }
+}
+
 function rebuildDynamicSettings() {
     const container = dynamicVoiceSettings || document.getElementById('dynamic-voice-settings');
     if (!container) {
@@ -1202,6 +1282,8 @@ function rebuildDynamicSettings() {
     allLangs.add('ka');
     allLangs.add('en');
     allLangs.add('ru');
+    const savedUiLang = localStorage.getItem('unified-ui-lang');
+    if (savedUiLang) allLangs.add(savedUiLang.toLowerCase());
 
     if (detectedBookLanguages) {
         detectedBookLanguages.forEach(l => allLangs.add(getBaseLang(l)));
@@ -1218,6 +1300,10 @@ function rebuildDynamicSettings() {
         const bDet = detectedBookLanguages && detectedBookLanguages.has(b);
         if (aDet && !bDet) return -1;
         if (!aDet && bDet) return 1;
+        if (a === 'ka' && b !== 'ka') return -1;
+        if (b === 'ka' && a !== 'ka') return 1;
+        if (a === 'en' && b !== 'en') return -1;
+        if (b === 'en' && a !== 'en') return 1;
         return a.localeCompare(b);
     });
 
@@ -1274,9 +1360,15 @@ function rebuildDynamicSettings() {
         langSelect.appendChild(opt);
     });
 
-    const savedUiLang = localStorage.getItem('unified-ui-lang');
     if (savedUiLang && Array.from(langSelect.options).some(o => o.value === savedUiLang)) {
         langSelect.value = savedUiLang;
+    } else if (detectedBookLanguages && detectedBookLanguages.size > 0) {
+        const firstDet = Array.from(detectedBookLanguages)[0];
+        if (Array.from(langSelect.options).some(o => o.value === firstDet)) {
+            langSelect.value = firstDet;
+        } else if (langSelect.options.length > 0) {
+            langSelect.selectedIndex = 0;
+        }
     } else if (langSelect.options.length > 0) {
         langSelect.selectedIndex = 0;
     }
@@ -1284,7 +1376,7 @@ function rebuildDynamicSettings() {
     function updateVoiceDropdown() {
         const currentLang = langSelect.value;
         if (!currentLang) return;
-        localStorage.setItem('unified-ui-lang', currentLang);
+        try { localStorage.setItem('unified-ui-lang', currentLang); } catch(e){}
 
         voiceSelect.innerHTML = '';
         const nativeVoices = nativeList.filter(v => langMatches(v.lang, currentLang) || (v.name && v.name.toLowerCase().includes('multilingual')));
@@ -1315,14 +1407,15 @@ function rebuildDynamicSettings() {
             voiceSelect.appendChild(optGroup);
         }
 
-        const piperForLang = piperList.filter(v => langMatches(v.lang, currentLang));
+        const piperForLang = piperList.filter(v => langMatches(v.lang, currentLang)).map(v => ({ ...v }));
         // If currentLang is English ('en'), offer Natia as a Georgian phonetic voice option!
         if (currentLang === 'en') {
-            const natiaVoice = piperList.find(v => v.key === 'ka_GE-natia-medium');
-            if (natiaVoice && !piperForLang.some(v => v.key === natiaVoice.key)) {
+            const natiaVoice = piperList.find(v => v.key === 'ka_GE-natia-medium') || PIPER_FALLBACK_VOICES[0];
+            if (natiaVoice && !piperForLang.some(v => isNatiaVoice(v.name) || v.key === natiaVoice.key)) {
                 piperForLang.push({
                     ...natiaVoice,
-                    name: '🇬🇪 Natia (ქართული ფონეტიკური ტრანსლიტერაციით)'
+                    name: natiaVoice.name,
+                    displayName: '🇬🇪 Natia (ქართული ფონეტიკური ტრანსლიტერაციით)'
                 });
             }
         }
@@ -1331,7 +1424,8 @@ function rebuildDynamicSettings() {
             optGroup.label = "Piper Offline Voices";
             piperForLang.forEach(v => {
                 const opt = document.createElement('option');
-                opt.value = v.name; opt.textContent = v.name;
+                opt.value = v.name;
+                opt.textContent = v.displayName || v.name;
                 optGroup.appendChild(opt);
             });
             voiceSelect.appendChild(optGroup);
@@ -1346,31 +1440,54 @@ function rebuildDynamicSettings() {
 
         voiceSelect.appendChild(googleOptGroup);
 
-        if (voiceSelect.options.length === 0) {
-            const opt = document.createElement('option');
-            opt.value = ''; opt.textContent = `⚠️ No voices found`; opt.disabled = true; opt.selected = true;
-            voiceSelect.appendChild(opt);
-        } else {
-            const savedVoice = localStorage.getItem(`voice-${currentLang}`);
-            const piperOpt = Array.from(voiceSelect.options).find(o => Array.from(voiceSelect.options).some(x => x.parentElement.label === "Piper Offline Voices" && x === o));
+        // --- Determine the selected voice for currentLang ---
+        let savedVoice = localStorage.getItem(`voice-${currentLang}`);
 
-            if (savedVoice && Array.from(voiceSelect.options).some(o => o.value === savedVoice)) {
-                // If Georgian ('ka') and saved voice was mistakenly set to google:standard, recover Piper Natia!
-                if (currentLang === 'ka' && savedVoice.startsWith('google:')) {
-                    voiceSelect.value = piperOpt ? piperOpt.value : voiceSelect.options[0].value;
-                    try { localStorage.setItem(`voice-${currentLang}`, voiceSelect.value); } catch(e){}
-                } else {
-                    voiceSelect.value = savedVoice;
-                }
-            } else {
-                if (piperOpt) {
-                    voiceSelect.value = piperOpt.value;
-                } else {
-                    voiceSelect.selectedIndex = 0;
-                }
-                if (voiceSelect.value) {
-                    try { localStorage.setItem(`voice-${currentLang}`, voiceSelect.value); } catch(e){}
-                }
+        // Default for Georgian ('ka') is ALWAYS Natia!
+        if (currentLang === 'ka') {
+            if (!savedVoice || savedVoice.startsWith('google:')) {
+                savedVoice = '☁️ Piper — Georgian (Natia, medium)';
+                try { localStorage.setItem('voice-ka', savedVoice); } catch(e){}
+            }
+        }
+
+        const isSavedNatia = isNatiaVoice(savedVoice);
+
+        // Find matching option in the dropdown
+        let matchedOpt = null;
+        for (let opt of voiceSelect.options) {
+            if (savedVoice && opt.value === savedVoice) {
+                matchedOpt = opt;
+                break;
+            }
+            if (isSavedNatia && (isNatiaVoice(opt.value) || isNatiaVoice(opt.textContent))) {
+                matchedOpt = opt;
+                break;
+            }
+        }
+
+        if (matchedOpt) {
+            voiceSelect.value = matchedOpt.value;
+            try { localStorage.setItem(`voice-${currentLang}`, matchedOpt.value); } catch(e){}
+        } else if (savedVoice) {
+            // savedVoice exists, but its option hasn't loaded yet into voiceSelect (e.g. async fetch).
+            // Retain it! Add a temporary option so voiceSelect keeps the value and doesn't get overwritten!
+            const tempOpt = document.createElement('option');
+            tempOpt.value = savedVoice;
+            tempOpt.textContent = isSavedNatia ? '🇬🇪 Natia (ქართული ფონეტიკური ტრანსლიტერაციით)' : savedVoice;
+            tempOpt.selected = true;
+            voiceSelect.insertBefore(tempOpt, voiceSelect.firstChild);
+            voiceSelect.value = savedVoice;
+        } else {
+            // First time ever: pick best default
+            const piperOpt = Array.from(voiceSelect.options).find(o => o.parentElement && o.parentElement.label === "Piper Offline Voices");
+            if (piperOpt) {
+                voiceSelect.value = piperOpt.value;
+            } else if (voiceSelect.options.length > 0) {
+                voiceSelect.selectedIndex = 0;
+            }
+            if (voiceSelect.value) {
+                try { localStorage.setItem(`voice-${currentLang}`, voiceSelect.value); } catch(e){}
             }
         }
 
@@ -1383,15 +1500,31 @@ function rebuildDynamicSettings() {
     function updateDlBtn() {
         const currentLang = langSelect.value;
         const selectedVoice = voiceSelect.value;
-        const chosenPiper = piperList.find(v => v.name === selectedVoice);
+        const chosenPiper = piperList.find(v => v.name === selectedVoice || (isNatiaVoice(selectedVoice) && isNatiaVoice(v.name)));
         
         if (chosenPiper) {
             dlBtn.classList.remove('hidden');
-            const state = piperWorkers[currentLang];
+            let workerLang = currentLang;
+            if (isNatiaVoice(chosenPiper.name) || chosenPiper.key === 'ka_GE-natia-medium') {
+                workerLang = 'ka';
+            }
+            const state = piperWorkers[workerLang];
+            const isDownloaded = localStorage.getItem('piper_downloaded_' + chosenPiper.path) === 'true';
+
             if (state && state.voicePath === chosenPiper.path && state.ready) {
                 dlBtn.textContent = "✅ Voice Ready";
                 dlBtn.style.opacity = "0.5"; dlBtn.disabled = true;
                 dlBtn.style.background = "transparent"; dlBtn.style.border = "1px solid rgba(255,255,255,0.1)"; dlBtn.style.color = "var(--text-muted)";
+            } else if (state && state.voicePath === chosenPiper.path && state.initializing) {
+                dlBtn.textContent = "⏳ Initializing Voice...";
+                dlBtn.style.opacity = "0.7"; dlBtn.disabled = true;
+                dlBtn.style.background = "rgba(56, 189, 248, 0.1)"; dlBtn.style.border = "1px solid rgba(56, 189, 248, 0.3)"; dlBtn.style.color = "#38bdf8";
+            } else if (isDownloaded) {
+                // If previously downloaded, auto-activate worker so it is ready right away!
+                dlBtn.textContent = "⏳ Activating Cached Voice...";
+                dlBtn.style.opacity = "0.7"; dlBtn.disabled = true;
+                dlBtn.style.background = "rgba(56, 189, 248, 0.1)"; dlBtn.style.border = "1px solid rgba(56, 189, 248, 0.3)"; dlBtn.style.color = "#38bdf8";
+                initPiperWorker(workerLang, chosenPiper.path);
             } else {
                 dlBtn.textContent = "📥 Download / Init Voice";
                 dlBtn.style.opacity = "1"; dlBtn.disabled = false;
@@ -1416,9 +1549,13 @@ function rebuildDynamicSettings() {
         const currentLang = langSelect.value;
         const selectedVoice = voiceSelect.value;
         
-        const chosen = piperList.find(v => v.name === selectedVoice);
+        const chosen = piperList.find(v => v.name === selectedVoice || (isNatiaVoice(selectedVoice) && isNatiaVoice(v.name)));
         if (currentLang && chosen) {
-            initPiperWorker(currentLang, chosen.path);
+            let workerLang = currentLang;
+            if (isNatiaVoice(chosen.name) || chosen.key === 'ka_GE-natia-medium') {
+                workerLang = 'ka';
+            }
+            initPiperWorker(workerLang, chosen.path);
             dlBtn.textContent = "⏳ Initializing...";
             dlBtn.disabled = true; dlBtn.style.opacity = "0.7";
         }
@@ -2534,7 +2671,7 @@ async function playPiperChunk(chunk, rate, token) {
     const voiceSelectId = `voice-${chunk.lang}`;
     const selectEl = document.getElementById(voiceSelectId);
     const selectedVoiceName = localStorage.getItem(voiceSelectId) || (selectEl ? selectEl.value : null);
-    if (selectedVoiceName && (selectedVoiceName.includes('ka_GE-natia') || selectedVoiceName.includes('Natia') || selectedVoiceName.includes('natia'))) {
+    if (isNatiaVoice(selectedVoiceName)) {
         effectiveLang = 'ka';
     }
     const state = piperWorkers[effectiveLang] || piperWorkers['ka'];
@@ -3011,21 +3148,27 @@ async function playMergedQueue() {
         const selectedVoiceName = localStorage.getItem(voiceSelectId) || (selectEl ? selectEl.value : null);
         const rate = parseFloat(localStorage.getItem(rateInputId) || '1');
 
-        const piperVoice = piperVoicesList.find(v => v && v.name === selectedVoiceName);
+        const piperVoice = findPiperVoice(selectedVoiceName);
 
         if (selectedVoiceName && selectedVoiceName.startsWith('google:')) {
             const ok = await playGoogleChunk(chunk, rate, token);
             if (!ok) return;
         } else if (piperVoice) {
             let effectiveLang = chunk.lang;
-            if (piperVoice.key === 'ka_GE-natia-medium' || piperVoice.lang === 'ka_GE' || piperVoice.name.includes('Natia')) {
+            if (piperVoice.key === 'ka_GE-natia-medium' || piperVoice.lang === 'ka_GE' || isNatiaVoice(piperVoice.name)) {
                 effectiveLang = 'ka';
             }
-            const state = piperWorkers[effectiveLang] || piperWorkers['ka'];
-            if (!state || state.voicePath !== piperVoice.path) {
-                stopReading();
-                alert(`გთხოვთ, პარამეტრებიდან ჯერ ჩამოტვირთოთ/გაააქტიუროთ ხმა:\n"${piperVoice.name}"`);
-                return;
+            let state = piperWorkers[effectiveLang] || piperWorkers['ka'];
+            if (!state || state.voicePath !== piperVoice.path || !state.ready) {
+                setTtsStatus(`Initializing Neural Voice (${piperVoice.name})...`);
+                initPiperWorker(effectiveLang, piperVoice.path);
+                state = piperWorkers[effectiveLang] || piperWorkers['ka'];
+                const ok = await waitForPiperReady(state, token);
+                setTtsStatus(null);
+                if (!ok || token !== playbackToken || !isPlaying) {
+                    stopReading();
+                    return;
+                }
             }
             const ok = await playPiperChunk(chunk, rate, token);
             if (!ok) return;
@@ -3221,9 +3364,15 @@ function init() {
     // Proactively warm up browser speech engine on Android / Edge
     wakeUpSpeechEngine();
 
+    // Auto-warmup saved Piper voices (e.g. Natia) from cache immediately
+    autoWarmupSavedPiperVoices();
+    checkAndMarkCachedPiperVoices();
+
     fetchPiperVoices().then(() => {
         rebuildDynamicSettings();
         loadVoices();
+        autoWarmupSavedPiperVoices();
+        checkAndMarkCachedPiperVoices();
     }).catch(e => {
         console.error('init voices failed', e);
         rebuildDynamicSettings();
