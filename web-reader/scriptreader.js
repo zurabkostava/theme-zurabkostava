@@ -1728,15 +1728,7 @@ function preprocessGeorgianText(text) {
     t = t.replace(/(?:^|[^\wა-ჰ])კვ[\.\s]*მ(?=[\s.,:;!?\)„"\'»]|$)/gi, ' კვადრატული მეტრი');
     t = t.replace(/(?:^|[^\wა-ჰ])კუბ[\.\s]*მ(?=[\s.,:;!?\)„"\'»]|$)/gi, ' კუბური მეტრი');
 
-    // 3. Plurals & Single-letter abbreviations
-    t = t.replace(/(?:^|[^\wა-ჰ])სს[\.]?(?=[\s.,:;!?\)„"\'»]|$)/gi, ' საუკუნეებში');
-    t = t.replace(/(?:^|[^\wა-ჰ])წწ[\.]?(?=[\s.,:;!?\)„"\'»]|$)/gi, ' წლებში');
-    t = t.replace(/(?:^|[^\wა-ჰ])ს\.(?=[\s.,:;!?\)„"\'»]|$)/gi, ' საუკუნე');
-    t = t.replace(/(?:^|[^\wა-ჰ])წ\.(?=[\s.,:;!?\)„"\'»]|$)/gi, ' წელი');
-    t = t.replace(/(?:^|[^\wა-ჰ])გვ\.(?=[\s.,:;!?\)„"\'»]|$)/gi, ' გვერდი');
-    t = t.replace(/(?:^|[^\wა-ჰ])ტ\.(?=[\s.,:;!?\)„"\'»]|$)/gi, ' ტომი');
-
-    // 4. Roman Numeral Ranges: XI-X, I-II, V-IV, XIX-XX
+    // 3. Roman Numeral Ranges: XI-X, I-II, V-IV, XIX-XX
     t = t.replace(/\b([IVXLCDM]+)\s*[-–—]\s*([IVXLCDM]+)\b/gi, (match, r1, r2) => {
         let u1 = r1.toUpperCase();
         let u2 = r2.toUpperCase();
@@ -1746,7 +1738,8 @@ function preprocessGeorgianText(text) {
         return match;
     });
 
-    // 5. Roman Numerals with case suffix: V-ში, V-დან, V-ს, V-ის, V-ით, V-ად, V-მდე
+    // 4. Roman Numerals with case suffix: V-ში, V-დან, V-ს, V-ის, V-ით, V-ად, V-მდე, II-ს
+    // MUST run BEFORE abbreviation parsing so II-ს. becomes მეორეს. and is not confused with century!
     t = t.replace(/\b([IVXLCDM]+)-(ში|ის|ით|ზე|ად|ს|დან|იდან|მდე|ამდე|თან|კენ|მა|მ)(?=[\s.,:;!?\)„"\'»]|$)/gi, (match, r, sfx) => {
         let u = r.toUpperCase();
         if (ROMAN_ORDINALS[u]) {
@@ -1775,7 +1768,7 @@ function preprocessGeorgianText(text) {
         return match;
     });
 
-    // 6. Standalone Roman Numerals
+    // 5. Standalone Roman Numerals
     const sortedRomans = Object.keys(ROMAN_ORDINALS).sort((a, b) => b.length - a.length);
     for (const r of sortedRomans) {
         if (r === 'I') {
@@ -1785,22 +1778,75 @@ function preprocessGeorgianText(text) {
         }
     }
 
-    // 7. Georgian Numbers with prefix/suffix: მე-2, მე-5, მე-10, 1-ელ, 1-ლი
-    t = t.replace(/\bმე-(\d+)\b/g, (match, n) => numToGeorgianOrdinal(parseInt(n, 10)));
+    // 6. Georgian Numbers with prefix/suffix: მე-2, მე-5, მე-10, 1-ელ, 1-ლი
+    t = t.replace(/(^|[\s(„"\'«])მე-(\d+)-(მდე|ამდე|დან|იდან|ში|ზე|ით|ად|ს|თან|კენ|მა|მ)(?=[\s.,:;!?\)„"\'»]|$)/g, (match, pfx, n, sfx) => {
+        const ord = numToGeorgianOrdinal(parseInt(n, 10));
+        let res = ord;
+        if (sfx === 'ს') res = ord + 'ს';
+        else if (sfx === 'მ' || sfx === 'მა') res = ord + 'მ';
+        else if (sfx === 'ში' || sfx === 'ზე') res = ord + sfx;
+        else if (sfx === 'დან' || sfx === 'იდან') res = ord.slice(0, -1) + 'იდან';
+        else if (sfx === 'მდე' || sfx === 'ამდე') res = ord + 'მდე';
+        else res = ord + sfx;
+        return pfx + res;
+    });
+    t = t.replace(/(^|[\s(„"\'«])მე-(\d+)\b/g, (match, pfx, n) => pfx + numToGeorgianOrdinal(parseInt(n, 10)));
     t = t.replace(/\b1-(?:ელ|ლი|ელი)\b/g, 'პირველი');
     t = t.replace(/\b1-მა\b/g, 'პირველმა');
     t = t.replace(/\b1-ს\b/g, 'პირველს');
 
-    // 8. Spaced Numbers (e.g. 40 000, 1 500 000, 40 000-მდე)
+    // 7. Spaced Numbers (e.g. 40 000, 1 500 000, 40 000-მდე)
     // Matches digits + space/comma/thin-space + 3 digits, running repeatedly
     while (/(\d+)[\s\u00A0\u2009]+(\d{3})(?=\D|$)/.test(t)) {
         t = t.replace(/(\d+)[\s\u00A0\u2009]+(\d{3})(?=\D|$)/g, '$1$2');
     }
 
-    // 9. Numbers with case suffix: 10-დან, 40000-მდე, 2024-ში
+    // 8. Numbers with case suffix: 10-დან, 40000-მდე, 2024-ში, 10-ს
     t = t.replace(/\b(\d+)-(მდე|ამდე|დან|იდან|ში|ზე|ით|ად|ს|თან|კენ|მა|მ)(?=[\s.,:;!?\)„"\'»]|$)/g, (match, n, sfx) => {
         return numToGeorgianWithCase(parseInt(n, 10), sfx);
     });
+
+    // 9. Century & Year inflected abbreviations: ს-ში, ს.-ში, ს-ის, ს-დან, etc.
+    // MUST be strictly preceded by whitespace or beginning (NEVER hyphen/dash)
+    t = t.replace(/(^|[\s(„"\'«])ს[\.]?-(?:ში|ზე)(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1საუკუნეში');
+    t = t.replace(/(^|[\s(„"\'«])ს[\.]?-ის(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1საუკუნის');
+    t = t.replace(/(^|[\s(„"\'«])ს[\.]?-დან(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1საუკუნიდან');
+    t = t.replace(/(^|[\s(„"\'«])ს[\.]?-მდე(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1საუკუნემდე');
+    t = t.replace(/(^|[\s(„"\'«])ს[\.]?-ით(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1საუკუნით');
+    t = t.replace(/(^|[\s(„"\'«])სს[\.]?-(?:ში|ზე)(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1საუკუნეებში');
+    t = t.replace(/(^|[\s(„"\'«])სს[\.]?-ის(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1საუკუნეების');
+    t = t.replace(/(^|[\s(„"\'«])სს[\.]?-დან(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1საუკუნეებიდან');
+    t = t.replace(/(^|[\s(„"\'«])სს[\.]?-მდე(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1საუკუნეებამდე');
+    t = t.replace(/(^|[\s(„"\'«])წ[\.]?-ში(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1წელში');
+    t = t.replace(/(^|[\s(„"\'«])წ[\.]?-დან(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1წლიდან');
+    t = t.replace(/(^|[\s(„"\'«])წ[\.]?-მდე(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1წლამდე');
+    t = t.replace(/(^|[\s(„"\'«])წ[\.]?-ით(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1წლით');
+    t = t.replace(/(^|[\s(„"\'«])წწ[\.]?-(?:ში|ზე)(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1წლებში');
+    t = t.replace(/(^|[\s(„"\'«])წწ[\.]?-დან(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1წლებიდან');
+    t = t.replace(/(^|[\s(„"\'«])წწ[\.]?-მდე(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1წლებამდე');
+
+    // 10. Century / Year plurals: სს., წწ.
+    // MUST be strictly preceded by whitespace, start, or opening quote (NEVER hyphen)
+    t = t.replace(/(^|[\s(„"\'«])სს[\.]?(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1საუკუნეებში');
+    t = t.replace(/(^|[\s(„"\'«])წწ[\.]?(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1წლებში');
+
+    // 11. Single-letter abbreviations following numbers/ordinals OR standalone:
+    // Protected against mistaking personal initials (e.g. "ს. წერეთელი") for "საუკუნე წერეთელი"
+    // After ordinal words or numbers:
+    t = t.replace(/(\b(?:[0-9IVXLCDM]+|მე-\d+|პირველი|მეორე|მესამე|მეოთხე|მეხუთე|მეექვსე|მეშვიდე|მერვე|მეცხრე|მეათე|მეთერთმეტე|მეთორმეტე|მეცამეტე|მეთოთხმეტე|მეთხუთმეტე|მეთექვსმეტე|მეჩვიდმეტე|მეთვრამეტე|მეცხრამეტე|მეოცე|ოცდამეერთე|ოცდამეორე|ოცდამეათე|მეორმოცე|ორმოცდამეათე|მეასე|ერთი|ორი|სამი|ოთხი|ხუთი|ექვსი|შვიდი|რვა|ცხრა|ათი|ოცი)\s+)ს\.(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1საუკუნე');
+    t = t.replace(/(\b(?:[0-9IVXLCDM]+|მე-\d+|პირველი|მეორე|მესამე|მეოთხე|მეხუთე|მეექვსე|მეშვიდე|მერვე|მეცხრე|მეათე|მეთერთმეტე|მეთორმეტე|მეცამეტე|მეთოთხმეტე|მეთხუთმეტე|მეთექვსმეტე|მეჩვიდმეტე|მეთვრამეტე|მეცხრამეტე|მეოცე|ოცდამეერთე|ოცდამეორე|ოცდამეათე|მეორმოცე|ორმოცდამეათე|მეასე|ერთი|ორი|სამი|ოთხი|ხუთი|ექვსი|შვიდი|რვა|ცხრა|ათი|ოცი)\s+)ს(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1საუკუნე');
+
+    // Year abbreviations after numbers/words:
+    t = t.replace(/(\b[ა-ჰ0-9]+\s+)წ\.(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1წელი');
+    t = t.replace(/(\b[ა-ჰ0-9]+\s+)წ(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1წელი');
+
+    // Standalone ს. and წ. ONLY when surrounded by whitespace or boundary (NOT followed by a Georgian name/word):
+    t = t.replace(/(^|[\s(„"\'«])ს\.(?=[.,:;!?\)„"\'»]|\s+[^ა-ჰ]|$)/g, '$1საუკუნე');
+    t = t.replace(/(^|[\s(„"\'«])წ\.(?=[.,:;!?\)„"\'»]|\s+[^ა-ჰ]|$)/g, '$1წელი');
+
+    // Page (გვ.) and Volume (ტ.):
+    t = t.replace(/(^|[\s(„"\'«])გვ\.(?=[\s.,:;!?\)„"\'»]|$)/gi, '$1გვერდი');
+    t = t.replace(/(^|[\s(„"\'«])ტ\.(?=\s*(?:[0-9IVXLCDM]|პირველ|მეორ|მესამ|მეოთხ|მეხუთ|[.,:;!?\)„"\'»]|$))/gi, '$1ტომი ');
 
     // 10. Currencies and symbols (handled before normal integers so $999 -> 999 დოლარი -> ცხრაას ოთხმოცდაცხრამეტი დოლარი)
     t = t.replace(/(\d+)\s*₾/g, '$1 ლარი').replace(/₾\s*(\d+)/g, '$1 ლარი');
@@ -1932,8 +1978,8 @@ function processText(rawHtml) {
         ];
         singleAbbrs.forEach(abbr => {
             let escaped = abbr.replace(/\./g, '\\.');
-            let reg = new RegExp(`\\b${escaped}(?=\\s+(?:[0-9IVXLCDMა-ჰ]|___DECIMAL))`, 'gi');
-            protectedText = protectedText.replace(reg, m => m.replace(/\./g, '___DOT___'));
+            let reg = new RegExp(`(^|[\\s(„"\'«])${escaped}(?=\\s+(?:[0-9IVXLCDMა-ჰ]|___DECIMAL))`, 'gi');
+            protectedText = protectedText.replace(reg, (m, p1) => p1 + m.slice(p1.length).replace(/\./g, '___DOT___'));
         });
 
         // Protect century and year abbreviations following numbers or Roman numerals: V ს., 2024 წ.
@@ -2232,8 +2278,12 @@ function buildSpokenSentence(sent, lang) {
             // Lookahead Pattern 4: Roman/Number + Century/Year unit: V + ს. or XI-X + სს.
             if (i + 1 < n) {
                 const nextClean = visualWords[i + 1].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
-                if (nextClean === 'ს' || nextClean === 'სს' || nextClean === 'წ' || nextClean === 'წწ' || nextClean === 'საუკუნე' || nextClean === 'საუკუნეში') {
-                    if (/^[IVXLCDM]+(?:-[IVXLCDM]+)?$/i.test(cleanCurr) || /^\d+(?:-\d+)?$/.test(cleanCurr)) {
+                const isCenturyOrYearUnit = nextClean === 'ს' || nextClean === 'სს' || nextClean === 'წ' || nextClean === 'წწ' || 
+                                            nextClean === 'საუკუნე' || nextClean === 'საუკუნეში' ||
+                                            nextClean.startsWith('ს-') || nextClean.startsWith('ს.-') ||
+                                            nextClean.startsWith('სს-') || nextClean.startsWith('წ-') || nextClean.startsWith('წწ-');
+                if (isCenturyOrYearUnit) {
+                    if (/^(?:[IVXLCDM]+|\d+|მე-\d+)(?:-[IVXLCDM\d]+)?$/i.test(cleanCurr)) {
                         const matchedEls = visualWords.slice(i, i + 2);
                         const combinedRaw = matchedEls.map(el => el.innerText.trim()).join(' ');
                         let spoken = preprocessGeorgianText(combinedRaw);
