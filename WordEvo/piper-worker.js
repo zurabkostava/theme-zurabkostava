@@ -36,9 +36,16 @@ function PCM2WAV(buffer, sampleRate) {
     writeStr(36, 'data');
     view.setUint32(40, dataLength, true);
 
-    const VOLUME_MULTIPLIER = 5.0; // Boost volume to match English native TTS
+    // Clean Peak Normalization to 0.95 (-0.45 dBFS)
+    // Eliminates harsh clipping/distortion while maximizing clear, comfortable speech volume
+    let maxVal = 0;
     for (let i = 0; i < buffer.length; i++) {
-        const s = Math.max(-1, Math.min(1, buffer[i] * VOLUME_MULTIPLIER));
+        const abs = Math.abs(buffer[i]);
+        if (abs > maxVal) maxVal = abs;
+    }
+    const gain = maxVal > 0.05 ? Math.min(3.5, 0.95 / maxVal) : 1.0;
+    for (let i = 0; i < buffer.length; i++) {
+        const s = Math.max(-1, Math.min(1, buffer[i] * gain));
         view.setInt16(headerLength + i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
     }
 
