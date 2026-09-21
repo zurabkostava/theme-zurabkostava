@@ -29,6 +29,13 @@ try {
     console.error("Error loading pause settings:", e);
 }
 
+let skipParenthesesSetting = false;
+try {
+    skipParenthesesSetting = localStorage.getItem('tts-skip-parentheses') === 'true';
+} catch (e) {
+    console.error("Error loading skip parentheses setting:", e);
+}
+
 let cloudSaveTimeout = null;
 function syncProgressToCloud(force = false) {
     if (!window.currentRawEpubFile) return;
@@ -1239,6 +1246,15 @@ function rebuildDynamicSettings() {
             <label>Reading Speed <span id="unified-rate-val">1x</span></label>
             <input type="range" id="unified-rate-input" min="0.5" max="4" step="0.1" value="1">
         </div>
+        <div class="setting-group" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06);">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; margin-bottom: 0; text-transform: none; font-size: 0.9rem; color: var(--text-main);">
+                <input type="checkbox" id="skip-parentheses-checkbox" ${skipParenthesesSetting ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: #38bdf8; cursor: pointer; border-radius: 4px;">
+                <span style="font-weight: 500;">🚫 ფრჩხილების გამოტოვება ( )</span>
+            </label>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; margin-left: 28px; line-height: 1.3;">
+                კითხვისას ავტომატურად გამოტოვებს ფრჩხილებში ჩასმულ ტექსტს
+            </div>
+        </div>
     `;
     container.appendChild(wrapper);
 
@@ -1415,6 +1431,17 @@ function rebuildDynamicSettings() {
             try { localStorage.setItem(`rate-${currentLang}`, e.target.value); } catch(err) {}
         }
     });
+
+    const skipParenCheckbox = wrapper.querySelector('#skip-parentheses-checkbox');
+    if (skipParenCheckbox) {
+        skipParenCheckbox.addEventListener('change', (e) => {
+            skipParenthesesSetting = e.target.checked;
+            try { localStorage.setItem('tts-skip-parentheses', skipParenthesesSetting ? 'true' : 'false'); } catch(err) {}
+            if (isPlaying) {
+                playMergedQueue();
+            }
+        });
+    }
 
     updateVoiceDropdown();
 
@@ -2135,6 +2162,36 @@ function buildSpokenSentence(sent, lang) {
     let i = 0;
     const n = visualWords.length;
 
+    let parenDepth = 0;
+    const wordInfos = visualWords.map(wordEl => {
+        const orig = wordEl.innerText.trim();
+        if (!skipParenthesesSetting) {
+            return { el: wordEl, raw: orig, skip: false, isOnlyPunct: false, original: orig };
+        }
+        let outChars = [];
+        for (let ch of orig) {
+            if (ch === '(' || ch === '[' || ch === '{' || ch === '⟨') {
+                parenDepth++;
+                continue;
+            } else if (ch === ')' || ch === ']' || ch === '}' || ch === '⟩') {
+                if (parenDepth > 0) parenDepth--;
+                continue;
+            }
+            if (parenDepth === 0) {
+                outChars.push(ch);
+            }
+        }
+        const cleaned = outChars.join('').trim();
+        const isOnlyPunct = cleaned.length > 0 && /^[.,:;!?„"\'»]+$/.test(cleaned);
+        return {
+            el: wordEl,
+            raw: cleaned,
+            skip: cleaned.length === 0,
+            isOnlyPunct: isOnlyPunct,
+            original: orig
+        };
+    });
+
     const voiceSelectId = `voice-${lang}`;
     const selectEl = document.getElementById(voiceSelectId);
     const selectedVoiceName = (localStorage.getItem(voiceSelectId) || (selectEl ? selectEl.value : '') || '').toLowerCase();
@@ -2145,8 +2202,21 @@ function buildSpokenSentence(sent, lang) {
                              selectedVoiceName.includes('ქართული');
 
     while (i < n) {
-        const wordEl = visualWords[i];
-        let raw = wordEl.innerText.trim();
+        const info = wordInfos[i];
+        if (info.skip) {
+            i++;
+            continue;
+        }
+        if (info.isOnlyPunct) {
+            if (text.length > 0) {
+                text = text.trimEnd() + info.raw + " ";
+            }
+            i++;
+            continue;
+        }
+
+        const wordEl = info.el;
+        let raw = info.raw;
 
         if (raw === '—' || raw === '–') {
             const start = text.length;
@@ -2167,12 +2237,12 @@ function buildSpokenSentence(sent, lang) {
             const cleanCurr = raw.replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '');
 
             // Lookahead Pattern 1: Spaced numbers (e.g. "40" + "000" or "1" + "500" + "000" + optional suffix)
-            if (/^\d{1,3}$/.test(cleanCurr) && i + 1 < n) {
-                const nextClean = visualWords[i + 1].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '');
+            if (/^\d{1,3}$/.test(cleanCurr) && i + 1 < n && !wordInfos[i + 1].skip && !wordInfos[i + 1].isOnlyPunct) {
+                const nextClean = wordInfos[i + 1].raw.replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '');
                 if (/^\d{3}(?:-(?:მდე|ამდე|დან|იდან|ში|ზე|ით|ად|ს|თან|კენ|მა|მ))?$/.test(nextClean)) {
                     let j = i + 1;
-                    while (j + 1 < n) {
-                        const candClean = visualWords[j + 1].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '');
+                    while (j + 1 < n && !wordInfos[j + 1].skip && !wordInfos[j + 1].isOnlyPunct) {
+                        const candClean = wordInfos[j + 1].raw.replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '');
                         if (/^\d{3}(?:-(?:მდე|ამდე|დან|იდან|ში|ზე|ით|ად|ს|თან|კენ|მა|მ))?$/.test(candClean)) {
                             j++;
                         } else {
@@ -2180,7 +2250,7 @@ function buildSpokenSentence(sent, lang) {
                         }
                     }
                     const matchedEls = visualWords.slice(i, j + 1);
-                    const combinedRaw = matchedEls.map(el => el.innerText.trim()).join(' ');
+                    const combinedRaw = wordInfos.slice(i, j + 1).map(x => x.raw).join(' ');
                     let spoken = preprocessGeorgianText(combinedRaw);
                     if (/[a-zA-Z]/.test(spoken)) spoken = transliterateToGeorgian(spoken);
 
@@ -2211,13 +2281,13 @@ function buildSpokenSentence(sent, lang) {
             }
 
             // Lookahead Pattern 2: Historical Eras across tokens (3 tokens: ძვ. + წ. + აღ. / 2 tokens: ძვ. + წ.)
-            if (i + 2 < n) {
+            if (i + 2 < n && !wordInfos[i + 1].skip && !wordInfos[i + 2].skip) {
                 const w1 = cleanCurr.toLowerCase();
-                const w2 = visualWords[i + 1].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
-                const w3 = visualWords[i + 2].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
+                const w2 = wordInfos[i + 1].raw.replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
+                const w3 = wordInfos[i + 2].raw.replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
                 if ((w1 === 'ძვ' || w1 === 'ახ' || w1 === 'ჩვ') && w2 === 'წ' && (w3 === 'აღ' || w3 === 'აღრ')) {
                     const matchedEls = visualWords.slice(i, i + 3);
-                    const combinedRaw = matchedEls.map(el => el.innerText.trim()).join(' ');
+                    const combinedRaw = wordInfos.slice(i, i + 3).map(x => x.raw).join(' ');
                     let spoken = preprocessGeorgianText(combinedRaw);
                     const start = text.length;
                     text += spoken + " ";
@@ -2232,12 +2302,12 @@ function buildSpokenSentence(sent, lang) {
                     continue;
                 }
             }
-            if (i + 1 < n) {
+            if (i + 1 < n && !wordInfos[i + 1].skip) {
                 const w1 = cleanCurr.toLowerCase();
-                const w2 = visualWords[i + 1].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
+                const w2 = wordInfos[i + 1].raw.replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
                 if ((w1 === 'ძვ' || w1 === 'ახ' || w1 === 'ჩვ') && w2 === 'წ') {
                     const matchedEls = visualWords.slice(i, i + 2);
-                    const combinedRaw = matchedEls.map(el => el.innerText.trim()).join(' ');
+                    const combinedRaw = wordInfos.slice(i, i + 2).map(x => x.raw).join(' ');
                     let spoken = preprocessGeorgianText(combinedRaw);
                     const start = text.length;
                     text += spoken + " ";
@@ -2254,10 +2324,10 @@ function buildSpokenSentence(sent, lang) {
             }
 
             // Lookahead Pattern 3: Roman ranges split across tokens: XI + - + X
-            if (i + 2 < n) {
+            if (i + 2 < n && !wordInfos[i + 1].skip && !wordInfos[i + 2].skip) {
                 const w1 = cleanCurr.toUpperCase();
-                const wMid = visualWords[i + 1].innerText.trim();
-                const w3 = visualWords[i + 2].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toUpperCase();
+                const wMid = wordInfos[i + 1].raw;
+                const w3 = wordInfos[i + 2].raw.replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toUpperCase();
                 if (/^[IVXLCDM]+$/.test(w1) && (wMid === '-' || wMid === '–' || wMid === '—') && /^[IVXLCDM]+$/.test(w3)) {
                     const matchedEls = visualWords.slice(i, i + 3);
                     let spoken = preprocessGeorgianText(`${w1}-${w3}`);
@@ -2276,8 +2346,8 @@ function buildSpokenSentence(sent, lang) {
             }
 
             // Lookahead Pattern 4: Roman/Number + Century/Year unit: V + ს. or XI-X + სს.
-            if (i + 1 < n) {
-                const nextClean = visualWords[i + 1].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
+            if (i + 1 < n && !wordInfos[i + 1].skip) {
+                const nextClean = wordInfos[i + 1].raw.replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
                 const isCenturyOrYearUnit = nextClean === 'ს' || nextClean === 'სს' || nextClean === 'წ' || nextClean === 'წწ' || 
                                             nextClean === 'საუკუნე' || nextClean === 'საუკუნეში' ||
                                             nextClean.startsWith('ს-') || nextClean.startsWith('ს.-') ||
@@ -2285,7 +2355,7 @@ function buildSpokenSentence(sent, lang) {
                 if (isCenturyOrYearUnit) {
                     if (/^(?:[IVXLCDM]+|\d+|მე-\d+)(?:-[IVXLCDM\d]+)?$/i.test(cleanCurr)) {
                         const matchedEls = visualWords.slice(i, i + 2);
-                        const combinedRaw = matchedEls.map(el => el.innerText.trim()).join(' ');
+                        const combinedRaw = wordInfos.slice(i, i + 2).map(x => x.raw).join(' ');
                         let spoken = preprocessGeorgianText(combinedRaw);
                         const start = text.length;
                         text += spoken + " ";
@@ -2303,10 +2373,10 @@ function buildSpokenSentence(sent, lang) {
             }
 
             // Lookahead Pattern 5: Speed / Measurement unit split: კმ + / + სთ
-            if (i + 2 < n) {
+            if (i + 2 < n && !wordInfos[i + 1].skip && !wordInfos[i + 2].skip) {
                 const w1 = cleanCurr.toLowerCase();
-                const wMid = visualWords[i + 1].innerText.trim();
-                const w3 = visualWords[i + 2].innerText.trim().replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
+                const wMid = wordInfos[i + 1].raw;
+                const w3 = wordInfos[i + 2].raw.replace(/^[„"\'«\(\[]+|[.,:;!?„"\'»\)\]]+$/g, '').toLowerCase();
                 if ((w1 === 'კმ' && wMid === '/' && w3 === 'სთ') || (w1 === 'მ' && wMid === '/' && w3 === 'წმ')) {
                     const matchedEls = visualWords.slice(i, i + 3);
                     let spoken = preprocessGeorgianText(`${w1}/${w3}`);
