@@ -84,7 +84,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
                         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
                     </svg>
-                    Neural Reader <span style="font-size: 0.7em; opacity: 0.5; margin-left: 5px;">PRO</span>
+                    <span class="logo-title">Neural Reader</span>
+                    <span class="logo-pro-badge">PRO</span>
                 </div>
 
                 <div id="book-meta-container" class="book-meta hidden">
@@ -214,6 +215,26 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <line x1="15" y1="15" x2="12" y2="12"></line>
                     </svg>
                     <span>Or drag &amp; drop an EPUB file anywhere on this screen</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Edit Mode Bar with Prominent Save Button -->
+        <div id="edit-mode-floating-bar" class="edit-mode-floating-bar hidden">
+            <div class="edit-mode-pill">
+                <div class="edit-mode-status">
+                    <span class="edit-mode-indicator"></span>
+                    <span class="edit-mode-label">Editing Mode</span>
+                </div>
+                <div class="edit-mode-actions">
+                    <button id="big-save-text-btn" class="big-save-btn" type="button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        <span>Save &amp; Read Text</span>
+                    </button>
+                    <button id="cancel-edit-text-btn" class="cancel-edit-btn" type="button" title="Cancel Editing">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        <span>Cancel</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -455,15 +476,42 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     }
 
     .logo {
-        font-weight: 600;
+        font-weight: 700;
         font-size: 0.95rem;
         color: var(--text-main);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        letter-spacing: 0.5px;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        letter-spacing: 0.2px;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        user-select: none;
+        cursor: pointer;
     }
-    .logo svg { color: var(--primary); }
+    .logo svg { color: var(--primary); flex-shrink: 0; }
+    .logo-title {
+        font-weight: 700 !important;
+        color: #f8fafc !important;
+        white-space: nowrap !important;
+        display: inline-block !important;
+    }
+    .logo-pro-badge {
+        font-size: 0.62rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.7px !important;
+        padding: 1.5px 6px !important;
+        border-radius: 6px !important;
+        background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%) !important;
+        color: #090d16 !important;
+        line-height: 1.25 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 1px 6px rgba(56, 189, 248, 0.4) !important;
+        flex-shrink: 0 !important;
+        text-transform: uppercase;
+        margin-left: 2px !important;
+    }
 
     .header-actions { display: flex; gap: 8px; }
     .header-left { display: flex; align-items: center; gap: 15px; }
@@ -782,10 +830,164 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         position: relative;
     }
 
+    /* --- FLOATING EDIT MODE BAR --- */
+    .edit-mode-floating-bar {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 60000;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: auto;
+        max-width: 94vw;
+        width: auto;
+    }
+
+    #neural-app-root .edit-mode-floating-bar.hidden {
+        display: none !important;
+    }
+
+    .edit-mode-pill {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 10px 8px 16px;
+        background: rgba(15, 23, 42, 0.94);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        border-radius: 9999px;
+        box-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.75), 0 0 25px rgba(56, 189, 248, 0.25);
+        animation: slideUpEditBar 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUpEditBar {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .edit-mode-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-right: 4px;
+    }
+
+    .edit-mode-indicator {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #38bdf8;
+        box-shadow: 0 0 10px #38bdf8;
+        animation: pulseEditDot 1.5s infinite;
+    }
+
+    @keyframes pulseEditDot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(1.3); }
+    }
+
+    .edit-mode-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #e2e8f0;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+    }
+
+    .edit-mode-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .big-save-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+        color: #090d16 !important;
+        border: none;
+        border-radius: 9999px;
+        padding: 10px 22px;
+        font-size: 0.92rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(56, 189, 248, 0.45);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        white-space: nowrap;
+    }
+
+    .big-save-btn svg {
+        width: 18px;
+        height: 18px;
+        color: #090d16;
+    }
+
+    .big-save-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(56, 189, 248, 0.65);
+        filter: brightness(1.08);
+    }
+
+    .big-save-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(56, 189, 248, 0.4);
+    }
+
+    .cancel-edit-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #94a3b8 !important;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 9999px;
+        padding: 10px 16px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .cancel-edit-btn svg {
+        width: 15px;
+        height: 15px;
+        color: currentColor;
+    }
+
+    .cancel-edit-btn:hover {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.35);
+        color: #f87171 !important;
+    }
+
     .edit-mode-active {
-        outline: 2px dashed var(--primary);
-        outline-offset: -2px;
-        background: rgba(56, 189, 248, 0.02);
+        outline: 2px dashed rgba(56, 189, 248, 0.6) !important;
+        outline-offset: 4px;
+        background: rgba(56, 189, 248, 0.03) !important;
+        border-radius: 8px;
+        min-height: 250px;
+        padding-bottom: 90px !important;
+    }
+
+    .edit-mode-active:empty:before {
+        content: "Type or paste your text here (ჩაწერეთ ან ჩასვით ტექსტი)...";
+        color: rgba(148, 163, 184, 0.5);
+        font-style: italic;
+        pointer-events: none;
+        display: block;
+    }
+
+    body.is-editing-text .controls-overlay {
+        display: none !important;
     }
 
 
@@ -2598,25 +2800,49 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     @media (max-width: 768px) {
         .header {
             padding: 8px 12px !important;
-            min-height: 56px !important;
-            height: 56px !important;
+            min-height: 54px !important;
+            height: 54px !important;
             gap: 8px !important;
             background: rgba(15, 23, 42, 0.95) !important;
             backdrop-filter: blur(16px) !important;
             -webkit-backdrop-filter: blur(16px) !important;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
             box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
         }
 
         .header-left {
-            flex: 1 1 auto !important;
+            flex: 0 0 auto !important;
             min-width: 0 !important;
             display: flex !important;
             align-items: center !important;
             gap: 8px !important;
         }
 
-        .logo { font-size: 0.85rem; }
+        body.is-reading .header-left {
+            flex: 1 1 auto !important;
+        }
+
+        .logo {
+            font-size: 0.88rem !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+        }
+
+        .logo-title {
+            font-size: 0.88rem !important;
+            white-space: nowrap !important;
+        }
+
+        .logo-pro-badge {
+            font-size: 0.58rem !important;
+            padding: 1px 5px !important;
+        }
 
         /* Hide Logo when reading */
         body.is-reading .logo {
@@ -2698,6 +2924,13 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             display: none !important;
         }
 
+        /* Also on mobile Welcome Hub screen, hide upload and edit buttons from the header,
+           because huge interactive cards are already prominently featured in the hub grid */
+        body:not(.is-reading) #neural-app-root .header-actions #upload-btn,
+        body:not(.is-reading) #neural-app-root .header-actions #edit-btn {
+            display: none !important;
+        }
+
         .action-label {
             display: none !important;
         }
@@ -2729,6 +2962,30 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             padding: 20px 16px 125px 16px !important;
             scroll-padding-top: 25px !important;
             font-size: 1rem;
+        }
+
+        .edit-mode-floating-bar {
+            bottom: 20px !important;
+            width: calc(100% - 24px) !important;
+            max-width: 400px !important;
+        }
+        .edit-mode-pill {
+            width: 100% !important;
+            justify-content: space-between !important;
+            padding: 8px 10px 8px 14px !important;
+            box-sizing: border-box !important;
+        }
+        .edit-mode-label {
+            display: none !important;
+        }
+        .big-save-btn {
+            flex: 1 !important;
+            justify-content: center !important;
+            padding: 10px 16px !important;
+            font-size: 0.88rem !important;
+        }
+        .cancel-edit-btn {
+            padding: 10px 14px !important;
         }
 
         .settings-panel { padding: 15px; }

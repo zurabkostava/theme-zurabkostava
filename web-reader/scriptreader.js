@@ -206,6 +206,20 @@ function updateMediaPosition() {
 }
 // --- 2. DOM Elements ---
 const editBtn = document.getElementById('edit-btn');
+const editModeFloatingBar = document.getElementById('edit-mode-floating-bar');
+const bigSaveTextBtn = document.getElementById('big-save-text-btn');
+const cancelEditTextBtn = document.getElementById('cancel-edit-text-btn');
+let preEditContentBackup = '';
+
+function showEditModeBar() {
+    if (editModeFloatingBar) editModeFloatingBar.classList.remove('hidden');
+    document.body.classList.add('is-editing-text');
+}
+
+function hideEditModeBar() {
+    if (editModeFloatingBar) editModeFloatingBar.classList.add('hidden');
+    document.body.classList.remove('is-editing-text');
+}
 const contentArea = document.getElementById('content-area');
 const playBtn = document.getElementById('play-btn');
 const stopBtn = document.getElementById('stop-btn');
@@ -1106,6 +1120,7 @@ const iconSave = `<svg viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-w
 editBtn.onclick = () => {
     isEditMode = !isEditMode;
     if (isEditMode) {
+        preEditContentBackup = contentArea.innerHTML;
         stopReading();
         contentArea.contentEditable = "true";
         contentArea.classList.add('edit-mode-active');
@@ -1117,7 +1132,9 @@ editBtn.onclick = () => {
         editBtn.innerHTML = `${iconSave} <span class="action-label">Save Text</span>`;
         editBtn.style.backgroundColor = '#38bdf8';
         editBtn.style.color = '#09090b';
+        showEditModeBar();
     } else {
+        hideEditModeBar();
         contentArea.contentEditable = "false";
         contentArea.classList.remove('edit-mode-active');
         let paragraphsArray = [];
@@ -1139,7 +1156,49 @@ editBtn.onclick = () => {
         else { showDropZone(); }
     }
 };
+
+// Prominent floating action bar buttons for intuitive saving & cancelling in edit mode
+if (bigSaveTextBtn) {
+    bigSaveTextBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isEditMode) {
+            editBtn.click();
+        }
+    };
+}
+
+if (cancelEditTextBtn) {
+    cancelEditTextBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isEditMode) {
+            isEditMode = false;
+            hideEditModeBar();
+            contentArea.contentEditable = "false";
+            contentArea.classList.remove('edit-mode-active');
+            editBtn.innerHTML = `${iconEdit} <span class="action-label">Edit Text</span>`;
+            editBtn.style.backgroundColor = '';
+            editBtn.style.color = '';
+            if (preEditContentBackup && preEditContentBackup.trim().length > 0 && !preEditContentBackup.includes('welcome-hub')) {
+                contentArea.innerHTML = preEditContentBackup;
+            } else {
+                showDropZone();
+            }
+        }
+    };
+}
+
 function showDropZone() {
+    isEditMode = false;
+    hideEditModeBar();
+    contentArea.contentEditable = "false";
+    contentArea.classList.remove('edit-mode-active');
+    if (editBtn) {
+        editBtn.innerHTML = `${iconEdit} <span class="action-label">Edit Text</span>`;
+        editBtn.style.backgroundColor = '';
+        editBtn.style.color = '';
+    }
     document.body.classList.remove('is-reading');
     const bookMeta = document.getElementById('book-meta-container');
     if (bookMeta) bookMeta.classList.add('hidden');
