@@ -577,14 +577,16 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         display: none !important;
     }
 
-    /* Sidebar toggle button (Table of Contents) rules: NEVER show when book is not open */
+    /* Sidebar toggle button (Burger Menu / Table of Contents): ONLY show when EPUB is opened */
     #sidebar-toggle-btn,
-    #neural-app-root #sidebar-toggle-btn,
-    body:not(.is-reading) #sidebar-toggle-btn {
+    #sidebar-toggle-btn.hidden,
+    #neural-app-root #sidebar-toggle-btn.hidden,
+    body:not(.is-reading) #sidebar-toggle-btn,
+    body:not(.is-reading) #neural-app-root #sidebar-toggle-btn {
         display: none !important;
     }
 
-    body.is-reading #sidebar-toggle-btn:not(.hidden) {
+    body.is-reading #neural-app-root #sidebar-toggle-btn:not(.hidden) {
         display: inline-flex !important;
     }
 

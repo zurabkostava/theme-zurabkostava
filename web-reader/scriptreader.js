@@ -2370,6 +2370,7 @@ function transliterateToGeorgian(text) {
 function processText(rawHtml) {
     stopReading();
     document.body.classList.add('is-reading');
+    if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
     lastLoadedText = rawHtml.trim();
     contentArea.innerHTML = '';
     contentArea.scrollTop = 0;
