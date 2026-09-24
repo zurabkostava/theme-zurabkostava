@@ -297,9 +297,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 </div>
 
                 <div class="modal-footer-actions">
-                    <button id="modal-open-book-btn" class="modal-action-read-btn" type="button">
-                        <span>📖 Read Book</span>
-                    </button>
+
                 </div>
             </div>
         </div>
@@ -1665,8 +1663,20 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         position: absolute;
         top: 15px;
         right: 15px;
+        width: 34px !important;
+        height: 34px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         background: rgba(255,255,255,0.1) !important;
         border-radius: 50% !important;
+        border: none !important;
+        color: white !important;
+        cursor: pointer !important;
+        transition: background 0.2s ease !important;
+    }
+    .close-modal:hover {
+        background: rgba(255,255,255,0.2) !important;
     }
 
     .modal-header {
