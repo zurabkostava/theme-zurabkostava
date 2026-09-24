@@ -824,6 +824,9 @@ async function displayChapter(href, delay = 0) {
             el.classList.add('active');
         }
     });
+    
+    // Auto-scroll the TOC to show the active chapter
+    scrollToActiveTocItem();
 
     setTtsStatus("Loading chapter text...");
     
@@ -1077,7 +1080,23 @@ function handleNextChapterLogic() {
         stopReading();
     }
 }
-// --- SIDEBAR CONTROLS ---
+let tocScrollTimeout;
+function scrollToActiveTocItem() {
+    if (tocScrollTimeout) clearTimeout(tocScrollTimeout);
+    tocScrollTimeout = setTimeout(() => {
+        const activeToc = document.querySelector('.toc-item.active');
+        const tocList = document.getElementById('toc-list');
+        if (activeToc && tocList) {
+            const listRect = tocList.getBoundingClientRect();
+            const itemRect = activeToc.getBoundingClientRect();
+            tocList.scrollBy({
+                top: itemRect.top - listRect.top - (tocList.clientHeight / 2) + (itemRect.height / 2),
+                behavior: 'smooth'
+            });
+        }
+    }, 150);
+}
+
 function openSidebar() { 
     if (window.innerWidth >= 769) {
         sidebar.classList.remove('collapsed');
@@ -1085,6 +1104,7 @@ function openSidebar() {
         sidebar.classList.add('open'); 
         sidebarOverlay.classList.remove('hidden'); 
     }
+    scrollToActiveTocItem();
 }
 
 function closeSidebar() { 
@@ -1099,6 +1119,9 @@ function closeSidebar() {
 sidebarToggleBtn.onclick = () => {
     if (window.innerWidth >= 769) {
         sidebar.classList.toggle('collapsed');
+        if (!sidebar.classList.contains('collapsed')) {
+            scrollToActiveTocItem();
+        }
     } else {
         if (sidebar.classList.contains('open')) {
             closeSidebar();
