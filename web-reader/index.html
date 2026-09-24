@@ -446,38 +446,29 @@
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* მობილურზე დავმალოთ, რომ ადგილი არ წაიღოს */
-    @media (max-width: 600px) {
-        /* დეფოლტად (როცა წიგნი არ არის) მეტა დამალულია */
-        .book-meta { display: none; }
-
-        /* როცა წიგნი იხსნება (is-reading კლასი) */
-        body.is-reading .logo {
-            display: none !important; /* ლოგოს დამალვა */
-        }
-
-        body.is-reading .book-meta {
-            display: flex !important; /* სათაურის გამოჩენა */
-            margin-left: 0;
-            padding-left: 0;
-            border-left: none;
-            width: 100%;
-        }
-
-        /* მობილურზე ავტორი დავმალოთ, რომ სათაური კარგად დაეტიოს */
-        body.is-reading #book-author-text {
-            display: none;
-        }
-
-        body.is-reading #book-title-text {
-            font-size: 0.95rem; /* ოდნავ გავადიდოთ */
-            max-width: 220px; /* მეტი ადგილი სათაურს */
-        }
+    /* Specificity defense: .hidden and [hidden] MUST ALWAYS hide elements */
+    #neural-app-root .hidden,
+    #neural-app-root .icon-btn.hidden,
+    #neural-app-root button.hidden,
+    #neural-app-root [hidden] {
+        display: none !important;
     }
-    #neural-app-root .icon-btn {
+
+    /* Sidebar toggle button (Table of Contents) rules: NEVER show when book is not open */
+    #sidebar-toggle-btn,
+    #neural-app-root #sidebar-toggle-btn,
+    body:not(.is-reading) #sidebar-toggle-btn {
+        display: none !important;
+    }
+
+    body.is-reading #sidebar-toggle-btn:not(.hidden) {
         display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
+    }
+
+    #neural-app-root .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         gap: 7px;
         padding: 8px 14px !important;
         border-radius: 20px !important;
@@ -2408,27 +2399,139 @@
 
     /* --- MOBILE RESPONSIVENESS FOR HUB & ACTIONS --- */
     @media (max-width: 768px) {
-        .hub-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
+        .header {
+            padding: 8px 12px !important;
+            min-height: 56px !important;
+            height: 56px !important;
+            gap: 8px !important;
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45) !important;
         }
-        .hub-title {
-            font-size: 1.6rem;
+
+        .header-left {
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
         }
-        .hub-subtitle {
-            font-size: 0.9rem;
+
+        .logo { font-size: 0.85rem; }
+
+        /* Hide Logo when reading */
+        body.is-reading .logo {
+            display: none !important;
         }
-        #neural-app-root .hub-card {
-            padding: 16px 18px !important;
+
+        /* Show Book Meta in place of Logo */
+        body.is-reading .book-meta {
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border-left: none !important;
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+            width: auto !important;
+            cursor: pointer !important;
         }
+
+        body.is-reading #book-cover-img {
+            height: 36px !important;
+            width: 25px !important;
+            border-radius: 4px !important;
+            object-fit: cover !important;
+            flex-shrink: 0 !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+
+        body.is-reading .book-text-info {
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            gap: 2px !important;
+            overflow: hidden !important;
+        }
+
+        body.is-reading #book-title-text {
+            font-size: 0.85rem !important;
+            font-weight: 600 !important;
+            color: #f8fafc !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            max-width: 100% !important;
+            display: block !important;
+            line-height: 1.2 !important;
+        }
+
+        body.is-reading #book-author-text {
+            display: none !important;
+        }
+
+        body.is-reading #header-progress-badge {
+            font-size: 0.65rem !important;
+            padding: 1px 6px !important;
+            border-radius: 99px !important;
+            margin-top: 1px !important;
+            align-self: flex-start !important;
+            line-height: 1.25 !important;
+            font-weight: 700 !important;
+        }
+
+        /* Right actions in reading mode on mobile */
+        .header-actions {
+            flex: 0 0 auto !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+        }
+
+        /* Hide non-essential buttons during reading mode to prevent header overflow */
+        body.is-reading #neural-app-root .header-actions #upload-btn,
+        body.is-reading #neural-app-root .header-actions #edit-btn,
+        body.is-reading #neural-app-root .header-actions #pwa-install-btn {
+            display: none !important;
+        }
+
         .action-label {
             display: none !important;
         }
-        #neural-app-root .header-actions .icon-btn {
-            padding: 8px !important;
-            border-radius: 12px !important;
-            width: 38px !important;
-            height: 38px !important;
+
+        #neural-app-root .header-actions .icon-btn,
+        #neural-app-root #sidebar-toggle-btn {
+            padding: 0 !important;
+            border-radius: 10px !important;
+            width: 36px !important;
+            height: 36px !important;
+            min-width: 36px !important;
+            max-width: 36px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-shrink: 0 !important;
+            background: rgba(30, 41, 59, 0.75) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            color: #e2e8f0 !important;
+        }
+
+        #neural-app-root .header-actions .icon-btn svg,
+        #neural-app-root #sidebar-toggle-btn svg {
+            width: 17px !important;
+            height: 17px !important;
+        }
+
+        #content-area {
+            padding: 20px 16px 125px 16px !important;
+            scroll-padding-top: 25px !important;
+            font-size: 1rem;
         }
         .hub-drop-hint {
             font-size: 0.75rem;

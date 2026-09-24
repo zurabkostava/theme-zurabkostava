@@ -225,6 +225,9 @@ let myBooks = [];
 const sidebar = document.getElementById('sidebar');
 const sidebarOverlay = document.getElementById('sidebar-overlay');
 const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+if (sidebarToggleBtn && !document.body.classList.contains('is-reading')) {
+    sidebarToggleBtn.classList.add('hidden');
+}
 const closeSidebarBtn = document.getElementById('close-sidebar-btn');
 const tocList = document.getElementById('toc-list');
 // Upload Elements
