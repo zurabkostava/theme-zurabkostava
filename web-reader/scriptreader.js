@@ -3847,7 +3847,7 @@ function initCoverObserver() {
     }, { rootMargin: '150px 0px' });
 }
 
-let currentLibrarySort = 'title';
+let currentLibrarySort = localStorage.getItem('neural_library_sort') || 'progress';
 let allBooksCache = [];
 
 function getBookProgress(book) {
@@ -3889,10 +3889,16 @@ function getFilteredAndSortedBooks() {
 function bindLibrarySortButtons() {
     const sortBtns = document.querySelectorAll('.library-sort-btn');
     sortBtns.forEach(btn => {
+        if (btn.dataset.sort === currentLibrarySort) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
         btn.onclick = () => {
             sortBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            currentLibrarySort = btn.dataset.sort || 'title';
+            currentLibrarySort = btn.dataset.sort || 'progress';
+            localStorage.setItem('neural_library_sort', currentLibrarySort);
             drawBooksToGrid(getFilteredAndSortedBooks());
         };
     });
@@ -4040,20 +4046,20 @@ function drawBooksToGrid(booksList) {
             try { localStorage.setItem('epub_perc_' + fileName, book.perc); } catch(e){}
         }
 
-        const savedPerc = localStorage.getItem('epub_perc_' + fileName);
+        const savedPerc = localStorage.getItem('epub_perc_' + fileName) || '0.00';
+        const numPerc = parseFloat(savedPerc) || 0;
+        const isCompleted = numPerc >= 99;
+        
+        const resetBtnHtml = numPerc > 0 ? `
+            <button class="reset-book-btn" title="Reset Progress" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:2px; height:18px; width:18px;">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+            </button>` : '';
 
-        let percHtml = '';
-        if (savedPerc) {
-            const numPerc = parseFloat(savedPerc) || 0;
-            const isCompleted = numPerc >= 99;
-            percHtml = `
-            <div class="card-progress-overlay${isCompleted ? ' card-progress-completed' : ''}" style="display:flex; justify-content:space-between; align-items:center;">
-                ${isCompleted ? `<span style="display:flex; align-items:center;"><span class="completed-check-icon" title="წაკითხულია / Finished">✓</span></span>` : `<span>${savedPerc}%</span>`}
-                <button class="reset-book-btn" title="Reset Progress" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:2px; height:18px; width:18px;">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-                </button>
-            </div>`;
-        }
+        const percHtml = `
+        <div class="card-progress-overlay${isCompleted ? ' card-progress-completed' : ''}" style="display:flex; justify-content:space-between; align-items:center;">
+            ${isCompleted ? `<span style="display:flex; align-items:center;"><span class="completed-check-icon" title="წაკითხულია / Finished">✓</span></span>` : `<span>${savedPerc}%</span>`}
+            ${resetBtnHtml}
+        </div>`;
 
         const hasServerCover = book.cover && typeof book.cover === 'string' && book.cover.trim() !== '';
         const proceduralHtml = renderProceduralCover(book.title, book.author);
