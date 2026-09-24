@@ -590,6 +590,13 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         display: inline-flex !important;
     }
 
+    /* Hide Edit Text and Open EPUB buttons when a book is open */
+    body.is-reading #neural-app-root .header-actions #upload-btn,
+    body.is-reading #neural-app-root .header-actions #edit-btn {
+        display: none !important;
+    }
+
+
     #neural-app-root #sidebar-toggle-btn {
         width: 38px !important;
         height: 38px !important;
