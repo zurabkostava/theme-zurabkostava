@@ -326,6 +326,14 @@ async function pushSettingsToSupabase() {
     } catch (e) {}
 }
 
+const statsWriter = WordevoData.latestWriter(async payload => {
+    if (currentUser?.id !== payload.user_id) throw new Error('Account changed before statistics were saved');
+    return supabaseClient.from('user_stats').upsert(payload, { onConflict: 'user_id' });
+}, error => {
+    console.error('[Wordevo] Statistics save failed:', error);
+    showToast('სტატისტიკა სერვერზე ვერ შეინახა. შეამოწმეთ კავშირი.', 'error');
+});
+
 async function pushStatsToSupabase() {
     if (!currentUser || currentUser.id === 'offline-user') return;
     const tests = parseInt(localStorage.getItem('TOTAL_TESTS') || '0');
@@ -334,15 +342,13 @@ async function pushStatsToSupabase() {
     let daily = {};
     try { daily = JSON.parse(localStorage.getItem('DAILY_STATS')) || {}; } catch(e) {}
     
-    try {
-        await supabaseClient.from('user_stats').upsert({
+    return statsWriter.enqueue(currentUser.id, {
             user_id: currentUser.id,
             total_tests: tests,
             total_correct: correct,
             total_wrong: wrong,
             daily_stats: daily
-        }, { onConflict: 'user_id' });
-    } catch (e) {}
+        });
 }
 
 function incrementStat(key, amount = 1) {
@@ -1579,7 +1585,8 @@ function renderLibraryUI() {
     });
 }
 
-async function loadDataFromSupabase(retryCount = 0) {
+let dataLoadVersion = 0;
+async function loadDataFromSupabase(retryCount = 0, version = ++dataLoadVersion) {
     if (!currentUser) { console.warn('[Wordevo] loadData: no currentUser'); return; }
     if (currentUser.id === 'offline-user') return;
     console.log('[Wordevo] loadData: starting, dictionaryId:', currentDictionaryId, 'retry:', retryCount);
@@ -1587,37 +1594,32 @@ async function loadDataFromSupabase(retryCount = 0) {
         console.error('[Wordevo] loadData: currentDictionaryId is null/undefined!');
         return;
     }
-// 1. ვიღებთ *All* მონაცემს პარალელურად
-    let cardsResponse, tagsResponse, relationsResponse;
+    const userId = currentUser.id;
+    const dictionaryId = currentDictionaryId;
+    let cards, tags, relations;
     try {
-        [cardsResponse, tagsResponse, relationsResponse] = await Promise.all([
-            supabaseClient.from('cards').select('*').eq('user_id', currentUser.id).eq('dictionary_id', currentDictionaryId),
-            supabaseClient.from('tags').select('*').eq('user_id', currentUser.id),
-            supabaseClient.from('card_tags').select('*') // user_id-ს RLS პოლისი ამოწმებს
+        [cards, tags, relations] = await Promise.all([
+            WordevoData.readAll(() => supabaseClient.from('cards').select('*')
+                .eq('user_id', userId).eq('dictionary_id', dictionaryId).order('id')),
+            WordevoData.readAll(() => supabaseClient.from('tags').select('id,name')
+                .eq('user_id', userId).order('id')),
+            WordevoData.readAll(() => supabaseClient.from('card_tags')
+                .select('card_id,tag_id,cards!inner(user_id,dictionary_id)')
+                .eq('cards.user_id', userId).eq('cards.dictionary_id', dictionaryId)
+                .order('card_id').order('tag_id'))
         ]);
     } catch (networkError) {
+        if (version !== dataLoadVersion || currentUser?.id !== userId || currentDictionaryId !== dictionaryId) return;
         if (retryCount < 2) {
             console.warn(`Network error loading data, retrying (${retryCount + 1})...`);
-            await new Promise(r => setTimeout(r, 1500));
-            return loadDataFromSupabase(retryCount + 1);
+            await new Promise(r => setTimeout(r, 1500 * (2 ** retryCount)));
+            if (version !== dataLoadVersion || currentUser?.id !== userId || currentDictionaryId !== dictionaryId) return;
+            return loadDataFromSupabase(retryCount + 1, version);
         }
         showToast('ქსელის Error. გადატვირთეთ გვერდი.', 'error');
         return;
     }
-// შეცდომების დამუშავება
-    if (cardsResponse.error || tagsResponse.error || relationsResponse.error) {
-        const errMsg = cardsResponse.error?.message || tagsResponse.error?.message || relationsResponse.error?.message;
-        if (retryCount < 2) {
-            console.warn(`Error loading data, retrying (${retryCount + 1})...`);
-            await new Promise(r => setTimeout(r, 1500));
-            return loadDataFromSupabase(retryCount + 1);
-        }
-        showToast(`Error loading data: ${errMsg}`, "error");
-        return;
-    }
-    const cards = cardsResponse.data;
-    const tags = tagsResponse.data;
-    const relations = relationsResponse.data;
+    if (version !== dataLoadVersion || currentUser?.id !== userId || currentDictionaryId !== dictionaryId) return;
 // 2. ვასუფთავებთ UI-ს და გლობალურ სიებს
     document.getElementById('cardContainer').innerHTML = '';
     allTags.clear();
@@ -1629,11 +1631,14 @@ async function loadDataFromSupabase(retryCount = 0) {
         tagMap.set(tag.id, tag.name);
     });
 // 4. ვამატებთ თეგებს ბარათებს
+    const tagsByCard = new Map();
+    relations.forEach(relation => {
+        if (!tagsByCard.has(relation.card_id)) tagsByCard.set(relation.card_id, []);
+        tagsByCard.get(relation.card_id).push(relation.tag_id);
+    });
     const cardsWithTags = cards.map(card => {
 // 1. იპოვე ამ cardsს თეგის ID-ები
-        const relatedTagIds = relations
-            .filter(r => r.card_id === card.id)
-            .map(r => r.tag_id);
+        const relatedTagIds = tagsByCard.get(card.id) || [];
 // 2. გადააქციე ID-ები თეგის ობიექტებად
         card.tags = relatedTagIds.map(tagId => {
             return {id: tagId, name: tagMap.get(tagId)}
@@ -2053,6 +2058,7 @@ async function deleteCard(card) {
         }
     };
     logoutBtn.onclick = async () => {
+        await Promise.all([statsWriter.flush(), progressWriter.flush()]);
         await supabaseClient.auth.signOut();
     };
 // Skip Login (Offline mode)
@@ -2084,6 +2090,7 @@ async function deleteCard(card) {
     document.getElementById('resetStatsBtn')?.addEventListener('click', async () => {
         if (!confirm("ნამდვილად გსურს All cardsს პროგრესის განულება?")) return;
         if (!currentUser) return;
+        await Promise.all([statsWriter.flush(), progressWriter.flush()]);
 // 1. ვასუფთავებთ ლოკალურ სტატისტიკას (ტესტები)
         localStorage.removeItem('TOTAL_TESTS');
         localStorage.removeItem('TOTAL_CORRECT');

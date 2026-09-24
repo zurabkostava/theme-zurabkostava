@@ -42,8 +42,9 @@ self.addEventListener('push', event => {
                             if (res.ok) break;
                         } catch (err) {
                             if (i === 2) throw err;
-                            await new Promise(r => setTimeout(r, 2000));
                         }
+                        // HTTP errors need backoff too, not just network exceptions.
+                        if (i < 2) await new Promise(r => setTimeout(r, 2000 * (2 ** i)));
                     }
 
                     if (res && res.ok) {

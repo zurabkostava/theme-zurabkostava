@@ -57,6 +57,7 @@ async function sendPush(endpoint: string): Promise<void> {
   const jwt = await vapidJwt(`${u.protocol}//${u.host}`)
   const res = await fetch(endpoint, {
     method: 'POST',
+    signal: AbortSignal.timeout(10000),
     headers: { 
       'TTL': '86400', 
       'Urgency': 'high',
@@ -79,7 +80,7 @@ Deno.serve(async () => {
 
     const { data: schedules, error } = await db
       .from('notification_schedules')
-      .select('*')
+      .select('id,user_id')
       .eq('enabled', true)
       .eq('time', time)
       .contains('days', [day])
@@ -95,45 +96,28 @@ Deno.serve(async () => {
     const errorDetails: string[] = []
 
     for (const s of schedules) {
-      // Get random card (direct query — RPC uses auth.uid() which is null in service role)
-      let title = 'Wordevo', body = ''
-      try {
-        let query = db.from('cards').select('id, word, main_translations, progress')
-          .eq('user_id', s.user_id)
+      // Check delivery targets before reading a word or changing its progress.
+      const { data: subs, error: subsErr } = await db.from('push_subscriptions')
+        .select('id,endpoint').eq('user_id', s.user_id)
+      if (subsErr) {
+        errors++
+        errorDetails.push('subscriptions: ' + subsErr.message)
+        continue
+      }
+      if (!subs?.length) continue
 
-        if (s.dictionary_id) query = query.eq('dictionary_id', s.dictionary_id)
-
-        if (s.progress_range) {
-          const [min, max] = s.progress_range.split('-')
-          query = query.gte('progress', parseInt(min)).lte('progress', parseInt(max))
-        }
-
-        // If tags specified, get card IDs that have those tags
-        if (s.tags?.length > 0) {
-          const { data: taggedIds } = await db
-            .from('card_tags').select('card_id, tags!inner(name)')
-            .in('tags.name', s.tags)
-          if (taggedIds?.length) {
-            query = query.in('id', taggedIds.map((r: { card_id: string }) => r.card_id))
-          }
-        }
-
-        const { data: cards } = await query
-        if (cards?.length) {
-          const card = cards[Math.floor(Math.random() * cards.length)]
-          title = card.word || title
-          body = (card.main_translations || []).join(', ')
-          
-          // Increment progress by 1%
-          const newProgress = Math.min(100, (card.progress || 0) + 1)
-          await db.from('cards').update({ progress: newProgress }).eq('id', card.id)
-        }
-      } catch (e) { console.error('Card fetch error:', e) }
-
-      // Get user's push subscriptions
-      const { data: subs, error: subsErr } = await db.from('push_subscriptions').select('*').eq('user_id', s.user_id)
-      console.log(`subs for schedule ${s.id}: ${subs?.length ?? 0}`, subsErr?.message ?? '')
-      if (!subs?.length) { errorDetails.push(`schedule ${s.id}: no subscriptions`); continue }
+      // The service-only RPC selects one word from the entire dictionary and
+      // increments progress atomically. No API row limit or full-word download.
+      const { data: card, error: cardErr } = await db.rpc('wordevo_pick_push_card', {
+        p_schedule_id: s.id
+      })
+      if (cardErr) {
+        errors++
+        errorDetails.push('card: ' + cardErr.message)
+        continue
+      }
+      const title = card?.word || 'Wordevo'
+      const body = (card?.main_translations || []).join(', ')
 
       // Store ONE queue entry for all devices
       const { error: qErr } = await db.from('push_queue').insert({
@@ -143,6 +127,8 @@ Deno.serve(async () => {
       if (qErr) {
           console.error(`queue insert FAILED: ${qErr.message}`)
           errorDetails.push(`queue: ${qErr.message}`)
+          errors++
+          continue
       }
 
       for (const sub of subs) {
@@ -155,7 +141,7 @@ Deno.serve(async () => {
           const msg = err instanceof Error ? err.message : String(err)
           errorDetails.push(`push: ${msg.substring(0, 200)}`)
           console.error('Push failed:', msg)
-          if (msg.includes('410') || msg.includes('404')) {
+          if (/^(410|404):/.test(msg)) {
             await db.from('push_subscriptions').delete().eq('id', sub.id)
           }
         }

@@ -42,6 +42,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="console.error('Supabase CDN failed to load')"></script>
     <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/supabase-client.js?v=<?php echo time(); ?>"></script>
+    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/data-access.js?v=<?php echo time(); ?>"></script>
     <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/script.js?v=<?php echo time(); ?>"></script>
     <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/quiz.js?v=<?php echo time(); ?>"></script>
     <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/wordhear.js?v=<?php echo time(); ?>"></script>

@@ -7,6 +7,7 @@
  */
 function updateCardProgress(card, delta) {
     let current = parseFloat(card.dataset.progress || '0');
+    const previousProgress = current;
     current = Math.max(0, Math.min(100, current + delta));
     const newProgress = parseFloat(current.toFixed(1)); // სუფთა, საბოლოო მნიშვნელობა
 
@@ -35,11 +36,11 @@ function updateCardProgress(card, delta) {
 
     // --- NEW: ბაზის განახლების გამოძახება ---
     const cardId = card.dataset.id;
-    if (cardId) {
+    if (cardId && newProgress !== previousProgress) {
         // ჩვენ ვიძახებთ async ფუნქციას, მაგრამ არ "ველოდებით" (no await)
         // ეს UI-ს მომენტალურად ანახლებს და ბაზას ფონურ რეჟიმში წერს.
         updateCardProgressInDB(cardId, newProgress);
-    } else {
+    } else if (!cardId) {
         console.warn("Skipping progress save: card.dataset.id is missing.");
     }
 
@@ -49,6 +50,16 @@ function updateCardProgress(card, delta) {
 /**
  * NEW: ეს ფუნქცია კონკრეტულად Supabase-ში ანახლებს პროგრესს
  */
+const progressWriter = WordevoData.latestWriter(async payload => {
+    if (currentUser?.id !== payload.userId) throw new Error('Account changed before progress was saved');
+    return supabaseClient.from('cards')
+        .update({ progress: payload.progress, updated_at: payload.updatedAt })
+        .eq('id', payload.cardId).eq('user_id', payload.userId);
+}, error => {
+    console.error('[Wordevo] Progress save failed:', error);
+    showToast('პროგრესი სერვერზე ვერ შეინახა. შეამოწმეთ კავშირი.', 'error');
+});
+
 async function updateCardProgressInDB(cardId, newProgress) {
     // ვამოწმებთ, რომ კლიენტი არსებობს (script.js-დან)
     if (!cardId || typeof supabaseClient === 'undefined') {
@@ -56,18 +67,10 @@ async function updateCardProgressInDB(cardId, newProgress) {
         return;
     }
 
-    const { error } = await supabaseClient
-        .from('cards')
-        .update({
-            progress: newProgress,
-            updated_at: new Date().toISOString() // განახლების დროის დაფიქსირება
-        })
-        .eq('id', cardId); // ვანახლებთ მხოლოდ ამ ID-ის ბარათს
-
-    if (error) {
-        console.error(`DB Progress Update Error for ${cardId}:`, error.message);
-        // showToast(`პროგრესის შენახვა ვერ მოხერხდა`, "error"); // (სურვილისამებრ)
-    }
+    if (!currentUser || currentUser.id === 'offline-user') return;
+    return progressWriter.enqueue(`${currentUser.id}:${cardId}`, {
+        userId: currentUser.id, cardId, progress: newProgress, updatedAt: new Date().toISOString()
+    });
 }
 
 

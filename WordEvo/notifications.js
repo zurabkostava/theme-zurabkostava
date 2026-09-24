@@ -76,16 +76,20 @@ async function subscribeToPush(forceNew = false) {
                 await supabaseClient.from('push_subscriptions').delete()
                     .eq('user_id', currentUser.id).eq('endpoint', oldEndpoint);
             }
-            await supabaseClient.from('push_subscriptions').delete()
-                .eq('user_id', currentUser.id).eq('endpoint', key.endpoint);
-            const { error: insertErr } = await supabaseClient.from('push_subscriptions').insert({
+            const { data: existing, error: lookupErr } = await supabaseClient
+                .from('push_subscriptions').select('p256dh,auth')
+                .eq('user_id', currentUser.id).eq('endpoint', key.endpoint).maybeSingle();
+            if (lookupErr) throw lookupErr;
+            if (existing?.p256dh === key.keys.p256dh && existing?.auth === key.keys.auth) return true;
+            const { error: insertErr } = await supabaseClient.from('push_subscriptions').upsert({
                 user_id: currentUser.id,
                 endpoint: key.endpoint,
                 p256dh: key.keys.p256dh,
                 auth: key.keys.auth
-            });
+            }, { onConflict: 'user_id,endpoint' });
             if (insertErr) {
                 console.error('[Push] FAILED to save:', insertErr.message);
+                return false;
             } else {
                 console.log('[Push] SUCCESS: subscription saved to DB');
             }
