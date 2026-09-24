@@ -503,16 +503,31 @@
     }
 
     /* Sidebar toggle button (Burger Menu / Table of Contents): ONLY show when EPUB is opened */
-    #sidebar-toggle-btn,
-    #sidebar-toggle-btn.hidden,
-    #neural-app-root #sidebar-toggle-btn.hidden,
+    body:not(.is-epub) #sidebar-toggle-btn,
+    body:not(.is-epub) #neural-app-root #sidebar-toggle-btn,
     body:not(.is-reading) #sidebar-toggle-btn,
     body:not(.is-reading) #neural-app-root #sidebar-toggle-btn {
         display: none !important;
     }
 
-    body.is-reading #neural-app-root #sidebar-toggle-btn:not(.hidden) {
+    body.is-epub #neural-app-root #sidebar-toggle-btn,
+    body.is-reading.is-epub #neural-app-root #sidebar-toggle-btn {
         display: inline-flex !important;
+    }
+
+    #neural-app-root #sidebar-toggle-btn {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    #neural-app-root #sidebar-toggle-btn svg {
+        width: 19px !important;
+        height: 19px !important;
     }
 
     #neural-app-root .icon-btn {
@@ -2737,6 +2752,10 @@
         }
 
         .action-label {
+            display: none !important;
+        }
+
+        body:not(.is-epub) #neural-app-root #sidebar-toggle-btn {
             display: none !important;
         }
 

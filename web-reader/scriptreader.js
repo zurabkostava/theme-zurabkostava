@@ -526,6 +526,9 @@ async function loadEpub(file) {
         const bookData = e.target.result;
         currentBook = ePub(bookData);
         window.currentBook = currentBook;
+        document.body.classList.add('is-reading');
+        document.body.classList.add('is-epub');
+        if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
 
         // 🏗️ 1. Locations დაგენერირება (Background / Non-blocking)
         currentBook.ready.then(() => {
@@ -1200,6 +1203,7 @@ function showDropZone() {
         editBtn.style.color = '';
     }
     document.body.classList.remove('is-reading');
+    document.body.classList.remove('is-epub');
     const bookMeta = document.getElementById('book-meta-container');
     if (bookMeta) bookMeta.classList.add('hidden');
     if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
