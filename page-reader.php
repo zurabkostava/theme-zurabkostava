@@ -751,6 +751,14 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     /* --- PROGRESS & CONTENT --- */
     @keyframes spin { 100% { transform: rotate(360deg); } }
     
+    body:not(.is-reading) #progress-container {
+        display: none !important;
+    }
+    body:not(.is-epub) #sidebar,
+    body:not(.is-epub) #sidebar-overlay {
+        display: none !important;
+    }
+
     #progress-container {
         flex: 0 0 auto;
         width: 100%;
