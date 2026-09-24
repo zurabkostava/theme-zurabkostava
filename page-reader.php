@@ -270,6 +270,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <h2 id="modal-book-title">Book Title</h2>
                         <h3 id="modal-book-author">Author Name</h3>
                         <div id="modal-book-publisher" class="publisher-info hidden"></div>
+                        <div id="modal-book-date" class="date-info hidden"></div>
                         <div id="modal-book-genre" class="genre-row"></div>
                     </div>
                 </div>
@@ -1613,6 +1614,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         opacity: 0 !important;
         pointer-events: none !important;
         visibility: hidden !important;
+        display: flex !important;
     }
 
     .info-modal-content {
@@ -1680,6 +1682,13 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
+    .modal-title-group {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding-right: 28px; /* Prevent overlap with X close button */
+    }
+
     .modal-title-group h2 {
         font-size: 1.2rem;
         margin: 0 0 5px 0;
@@ -1731,7 +1740,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         white-space: pre-wrap; /* ინარჩუნებს აბზაცებს */
     }
 
-    .publisher-info {
+    .publisher-info, .date-info {
         font-size: 0.8rem;
         color: var(--text-muted);
         margin-bottom: 8px;
@@ -1742,6 +1751,12 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 
     .publisher-info::before {
         content: '🏢'; /* პატარა შენობის აიკონი */
+        opacity: 0.7;
+        font-size: 0.9em;
+    }
+
+    .date-info::before {
+        content: '📅';
         opacity: 0.7;
         font-size: 0.9em;
     }

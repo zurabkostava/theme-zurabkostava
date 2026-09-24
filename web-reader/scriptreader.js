@@ -384,10 +384,12 @@ async function handleMetaClick() {
 
     const fileName = window.currentRawEpubFile ? window.currentRawEpubFile.name : '';
     const pubEl = document.getElementById('modal-book-publisher');
+    const dateEl = document.getElementById('modal-book-date');
     const genreContainer = document.getElementById('modal-book-genre');
     const descEl = document.getElementById('modal-book-desc');
     if (genreContainer) genreContainer.innerHTML = '<span class="genre-tag" style="background:gray; color:white;">Scanning...</span>';
     if (pubEl) pubEl.classList.add('hidden');
+    if (dateEl) dateEl.classList.add('hidden');
     if (descEl) descEl.innerHTML = 'Scanning file for details...';
     modal.classList.remove('hidden');
     if (window.JSZip && window.currentRawEpubFile) {
@@ -402,6 +404,19 @@ async function handleMetaClick() {
                     if (pubMatch && pubMatch[1]) {
                         pubEl.textContent = pubMatch[1].trim();
                         pubEl.classList.remove('hidden');
+                    }
+                }
+                const dateEl = document.getElementById('modal-book-date');
+                if (dateEl) {
+                    const dateMatch = opfText.match(/<dc:date[^>]*>(.*?)<\/dc:date>/i) || opfText.match(/<date[^>]*>(.*?)<\/date>/i);
+                    if (dateMatch && dateMatch[1]) {
+                        // Usually format is YYYY-MM-DD, just take the year for simplicity or the full string
+                        const fullDate = dateMatch[1].trim();
+                        const yearMatch = fullDate.match(/^(\d{4})/);
+                        dateEl.textContent = yearMatch ? yearMatch[1] : fullDate;
+                        dateEl.classList.remove('hidden');
+                    } else {
+                        dateEl.classList.add('hidden');
                     }
                 }
                 if (genreContainer) {
