@@ -400,7 +400,7 @@ async function handleMetaClick() {
             if (opfFileName) {
                 const opfText = await content.files[opfFileName].async("string");
                 if (pubEl) {
-                    const pubMatch = opfText.match(/<dc:publisher[^>]*>(.*?)<\/dc:publisher>/i) || opfText.match(/<publisher[^>]*>(.*?)<\/publisher>/i);
+                    const pubMatch = opfText.match(/<(?:[a-zA-Z0-9]+:)?publisher[^>]*>(.*?)<\/(?:[a-zA-Z0-9]+:)?publisher>/is);
                     if (pubMatch && pubMatch[1]) {
                         pubEl.textContent = pubMatch[1].trim();
                         pubEl.classList.remove('hidden');
@@ -408,9 +408,8 @@ async function handleMetaClick() {
                 }
                 const dateEl = document.getElementById('modal-book-date');
                 if (dateEl) {
-                    const dateMatch = opfText.match(/<dc:date[^>]*>(.*?)<\/dc:date>/i) || opfText.match(/<date[^>]*>(.*?)<\/date>/i);
+                    const dateMatch = opfText.match(/<(?:[a-zA-Z0-9]+:)?date[^>]*>(.*?)<\/(?:[a-zA-Z0-9]+:)?date>/is);
                     if (dateMatch && dateMatch[1]) {
-                        // Usually format is YYYY-MM-DD, just take the year for simplicity or the full string
                         const fullDate = dateMatch[1].trim();
                         const yearMatch = fullDate.match(/^(\d{4})/);
                         dateEl.textContent = yearMatch ? yearMatch[1] : fullDate;
@@ -421,7 +420,7 @@ async function handleMetaClick() {
                 }
                 if (genreContainer) {
                     const uniqueGenres = new Set();
-                    const subjectRegex = /<dc:subject[^>]*>(.*?)<\/dc:subject>/gi;
+                    const subjectRegex = /<(?:[a-zA-Z0-9]+:)?subject[^>]*>(.*?)<\/(?:[a-zA-Z0-9]+:)?subject>/gis;
                     let match;
                     while ((match = subjectRegex.exec(opfText)) !== null) {
                         let rawGenre = match[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1');
@@ -443,7 +442,7 @@ async function handleMetaClick() {
                     }
                 }
                 if (descEl) {
-                    const descMatch = opfText.match(/<dc:description[^>]*>(.*?)<\/dc:description>/is) || opfText.match(/<description[^>]*>(.*?)<\/description>/is);
+                    const descMatch = opfText.match(/<(?:[a-zA-Z0-9]+:)?description[^>]*>(.*?)<\/(?:[a-zA-Z0-9]+:)?description>/is);
                     if (descMatch && descMatch[1]) {
                         let d = descMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/gs, '$1');
                         d = d.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
