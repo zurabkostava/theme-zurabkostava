@@ -383,58 +383,6 @@ async function handleMetaClick() {
     }
 
     const fileName = window.currentRawEpubFile ? window.currentRawEpubFile.name : '';
-    const markReadCheckbox = document.getElementById('modal-mark-read-checkbox');
-    const readBadge = document.getElementById('modal-read-badge');
-    if (fileName && markReadCheckbox) {
-        const savedPerc = localStorage.getItem('epub_perc_' + fileName) || '0';
-        const numPerc = parseFloat(savedPerc) || 0;
-        const isCompleted = numPerc >= 99;
-        markReadCheckbox.checked = isCompleted;
-        if (readBadge) {
-            readBadge.textContent = isCompleted ? '✓' : `${numPerc > 0 ? savedPerc + '%' : '0%'}`;
-            readBadge.classList.toggle('completed', isCompleted);
-        }
-        markReadCheckbox.onchange = (e) => {
-            if (e.target.checked) {
-                try { localStorage.setItem('epub_perc_' + fileName, '100'); } catch(err){}
-                fetch(`/wp-json/neural/v1/progress?book=${encodeURIComponent(fileName)}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ href: '', idx: 0, perc: '100.00' })
-                }).catch(err => console.error(err));
-                if (readBadge) {
-                    readBadge.textContent = '✓';
-                    readBadge.classList.add('completed');
-                }
-                const headerBadge = document.getElementById('header-progress-badge');
-                if (headerBadge) {
-                    headerBadge.innerHTML = '<span style="color:#10b981;font-weight:bold;font-size:0.85rem;">✓</span>';
-                    headerBadge.classList.add('completed');
-                    headerBadge.classList.remove('hidden');
-                }
-            } else {
-                try {
-                    localStorage.removeItem('epub_perc_' + fileName);
-                    localStorage.removeItem('epub_progress_' + fileName);
-                    localStorage.removeItem('epub_idx_' + fileName);
-                } catch(err){}
-                fetch(`/wp-json/neural/v1/progress?book=${encodeURIComponent(fileName)}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ href: '', idx: 0, perc: '0.00' })
-                }).catch(err => console.error(err));
-                if (readBadge) {
-                    readBadge.textContent = '0%';
-                    readBadge.classList.remove('completed');
-                }
-            }
-        };
-    }
-
-    const openBtn = document.getElementById('modal-open-book-btn');
-    if (openBtn) {
-        openBtn.onclick = () => { modal.classList.add('hidden'); };
-    }
     const pubEl = document.getElementById('modal-book-publisher');
     const genreContainer = document.getElementById('modal-book-genre');
     const descEl = document.getElementById('modal-book-desc');
