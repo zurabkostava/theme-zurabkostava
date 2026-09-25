@@ -457,7 +457,7 @@ async function initNotificationUI() {
             if ('serviceWorker' in navigator) {
                 try {
                     const reg = await window.registerWordevoWorker();
-                    await reg.showNotification('Wordevo Test', {
+                    await reg.showNotification('WordEvo · Test', {
                         body: 'Test notification works!',
                         icon: window.WORDEVO_ASSET_PATH + '/icons/wordevo-192.png',
                         badge: window.WORDEVO_ASSET_PATH + '/icons/wordevo-192.png',
@@ -469,7 +469,7 @@ async function initNotificationUI() {
                     showToast('Test notification sent!', 'success');
                 } catch(e) {
                     console.error('[Notif] Test SW showNotification failed:', e);
-                    new Notification('Wordevo Test', {
+                    new Notification('WordEvo · Test', {
                         body: 'Test notification works!',
                         icon: window.WORDEVO_ASSET_PATH + '/icons/wordevo-192.png'
                     });
@@ -477,7 +477,7 @@ async function initNotificationUI() {
                 }
             } else {
                 // Fallback
-                new Notification('Wordevo Test', {
+                new Notification('WordEvo · Test', {
                     body: 'Test notification works!',
                     icon: window.WORDEVO_ASSET_PATH + '/icons/wordevo-192.png'
                 });
@@ -568,11 +568,11 @@ async function showNotificationWithCard(notif) {
     const dictName = getDictionaryNameById(notif.dictionaryId);
     const card = await fetchRandomCard(notif.dictionaryId, notif.tags, notif.progressRange);
 
-    let title = 'Wordevo';
+    let title = 'WordEvo';
     let body;
 
     if (card) {
-        title = card.word || 'Wordevo';
+        title = card.word ? 'WordEvo · ' + card.word : 'WordEvo';
         body = (card.main_translations || []).join(', ');
     } else {
         body = `Time to review your words! (${dictName})`;

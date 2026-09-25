@@ -1,9 +1,13 @@
 ﻿// ==== Wordevo Service Worker ====
-const SW_VERSION = 15;
+const SW_VERSION = 16;
 const workerUrl = new URL(self.location.href);
 const requestedApp = new URL(workerUrl.searchParams.get('app') || '/', workerUrl.origin);
 const APP_URL = requestedApp.origin === workerUrl.origin ? requestedApp.href : workerUrl.origin + '/';
 const ICON_URL = new URL('./icons/wordevo-192.png', workerUrl).href;
+// Keep the vocabulary word visible while identifying the app in every title.
+function notificationTitle(title) {
+    return !title || /^wordevo$/i.test(title) ? 'WordEvo' : /^wordevo[ ·:—-]/i.test(title) ? title : 'WordEvo · ' + title;
+}
 const PUSH_URL = 'https://wdgvxerfxwtmpqztwgtj.supabase.co/functions/v1/get-push-notification';
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -59,7 +63,7 @@ self.addEventListener('push', event => {
             }
         }
 
-        return self.registration.showNotification(title, {
+        return self.registration.showNotification(notificationTitle(title), {
             body,
             tag,
             icon: ICON_URL,
@@ -75,7 +79,7 @@ self.addEventListener('push', event => {
 self.addEventListener('message', event => {
     const d = event.data;
     if (d?.type === 'SHOW_NOTIFICATION') {
-        self.registration.showNotification(d.title || 'Wordevo', {
+        event.waitUntil(self.registration.showNotification(notificationTitle(d.title), {
             body: d.body || '',
             icon: ICON_URL,
             badge: ICON_URL,
@@ -83,7 +87,7 @@ self.addEventListener('message', event => {
             renotify: true,
             vibrate: [200, 100, 200],
             requireInteraction: true,
-        });
+        }));
     }
 });
 

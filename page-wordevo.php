@@ -41,7 +41,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 <head>
     <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Wordevo</title>
+    <title>WordEvo</title>
     
     <?php wp_head(); ?>
 
@@ -49,7 +49,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;900&display=swap" rel="stylesheet">
     <link rel="manifest" href="<?php echo esc_url(add_query_arg('wordevo_manifest', '1', $wordevo_url)); ?>">
-    <link rel="icon" type="image/png" href="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo esc_url($wordevo_assets); ?>/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="<?php echo esc_url($wordevo_assets); ?>/icons/favicon-48.png">
     <link rel="apple-touch-icon" href="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png">
     <meta name="theme-color" content="#ffffff">
 
@@ -85,13 +86,13 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<button type="button" id="wordevoInstall" hidden>Install Wordevo</button>
+<button type="button" id="wordevoInstall" hidden>Install WordEvo</button>
 <div id="globalLoadingScreen">
     <div class="wordevo-spinner"></div>
 </div>
 <div class="auth-container" id="authContainer" style="display: none;">
     <div class="auth-box" id="loginBox">
-        <h2>Wordevo</h2>
+        <h2>WordEvo</h2>
         <p>Welcome Back</p>
         <div class="input-container">
             <label class="material-input">
@@ -116,7 +117,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     </div>
 
     <div class="auth-box" id="registerBox" style="display: none;">
-        <h2>Wordevo</h2>
+        <h2>WordEvo</h2>
         <p>Create an Account</p>
         <div class="input-container">
             <label class="material-input">
@@ -151,7 +152,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             <button class="mobile-tags-btn" id="mobileToggleSidebarBtn" title="Tags">
                 <i class="fas fa-tags"></i>
             </button>
-            <div class="app-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png" alt="" width="36" height="36">Wordevo</div>
+            <div class="app-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png" alt="" width="36" height="36">WordEvo</div>
             <button class="mobile-menu-btn" id="mobileMenuBtn">
                 <i class="fas fa-bars"></i>
             </button>
@@ -159,7 +160,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         <div class="top">
         <div class="top-bar">
             <div class="top-left" style="display: flex; align-items: center; gap: 15px;">
-                <div class="app-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png" alt="" width="36" height="36">Wordevo</div>
+                <div class="app-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png" alt="" width="36" height="36">WordEvo</div>
                 <div class="library-selector-wrapper">
                     <button id="libraryManagerBtn" class="library-manager-btn premium-library-btn" title="Manage Libraries">
                         <i class="fas fa-book library-icon"></i>
@@ -1004,7 +1005,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     </div>
 </div>
     
-    <h2 class="app-logo mobile-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png" alt="" width="36" height="36">Wordevo</h2>
+    <h2 class="app-logo mobile-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png" alt="" width="36" height="36">WordEvo</h2>
     <div class="toast-container" id="toastContainer"></div>
 </div>
 
