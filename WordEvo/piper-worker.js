@@ -2,8 +2,8 @@
 // Runs Piper neural TTS locally in the browser via WASM + ONNX Runtime
 
 const PIPER_WASM_BASE = 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/';
-const ORT_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.17.1/ort.min.js';
-const HF_BASE = 'https://huggingface.co/rhasspy/piper-voices/resolve/main/';
+const ORT_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.18.0/ort.min.js';
+const HF_BASE = 'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/';
 
 let phonemizeModule = null;
 let phonemizeCallback = null;
@@ -49,9 +49,11 @@ async function init(voicePath) {
     // 1. Load ONNX Runtime
     self.postMessage({ kind: 'status', message: 'ONNX Runtime loading...' });
     importScripts(ORT_CDN);
-    ort.env.wasm.numThreads = navigator.hardwareConcurrency ? Math.max(1, navigator.hardwareConcurrency - 1) : 4;
+    // Keep browser inference deterministic and match Sherpa/vits-web output.
+    // Multithreaded WASM can produce device-dependent numerical differences.
+    ort.env.wasm.numThreads = 1;
     ort.env.wasm.simd = true;
-    ort.env.wasm.wasmPaths = 'https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.17.1/';
+    ort.env.wasm.wasmPaths = 'https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.18.0/';
 
     // 2. Load Piper phonemize WASM
     self.postMessage({ kind: 'status', message: 'Piper Phonemize loading...' });
@@ -86,7 +88,7 @@ async function init(voicePath) {
 
     self.postMessage({ kind: 'status', message: 'Voice model checking in local storage...' });
     const modelUrl = HF_BASE + voicePath + '.onnx';
-    const CACHE_NAME = 'piper-models-cache-v1';
+    const CACHE_NAME = 'piper-models-cache-v2';
     let modelBuffer;
 
     let cache;

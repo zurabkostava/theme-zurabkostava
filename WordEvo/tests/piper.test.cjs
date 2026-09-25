@@ -5,6 +5,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const source = fs.readFileSync(path.join(__dirname, '../piper-worker.js'), 'utf8');
 
+test('Piper browser runtime is pinned to the clean v1.0.0 model and deterministic ORT', () => {
+    assert.match(source, /onnxruntime-web\/1\.18\.0/);
+    assert.match(source, /piper-voices\/resolve\/v1\.0\.0/);
+    assert.match(source, /numThreads = 1/);
+    assert.match(source, /piper-models-cache-v2/);
+});
+
 test('Piper changes model timing instead of stretching generated audio', async () => {
     const messages = [];
     const tensors = {};
