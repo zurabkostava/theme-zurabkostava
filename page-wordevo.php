@@ -63,6 +63,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         }
     </script>
     <script defer src="<?php echo esc_url($wordevo_assets); ?>/pwa.js?v=19"></script>
+    <script defer src="<?php echo esc_url($wordevo_assets); ?>/voice-probe.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="console.error('Supabase CDN failed to load')"></script>
     <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/supabase-client.js?v=<?php echo time(); ?>"></script>
     <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/data-access.js?v=<?php echo time(); ?>"></script>
@@ -449,6 +450,10 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <button class="close-button" id="closeSettingsBtn">×</button>
             </div>
             <div class="modal-body">
+            <div style="margin-bottom:16px">
+                <button type="button" id="voiceProbe">Try Microsoft voices (experimental)</button>
+                <p id="voiceProbeStatus" role="status" style="font-size:13px;margin-top:8px">უფასო ცდა — შეამოწმებს, გამოჩნდება თუ არა დამატებითი ხმები Read Aloud-ის გარეშე.</p>
+            </div>
             <div class="input-container">
                 <label class="material-input material-select">
                     <select id="voiceSelect" required="">
