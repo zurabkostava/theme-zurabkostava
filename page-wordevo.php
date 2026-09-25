@@ -49,9 +49,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;900&display=swap" rel="stylesheet">
     <link rel="manifest" href="<?php echo esc_url(add_query_arg('wordevo_manifest', '1', $wordevo_url)); ?>">
-    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-w-32.png">
-    <link rel="icon" type="image/png" sizes="48x48" href="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-w-48.png">
-    <link rel="apple-touch-icon" href="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-w-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo esc_url($wordevo_assets); ?>/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="<?php echo esc_url($wordevo_assets); ?>/icons/favicon-48.png">
+    <link rel="apple-touch-icon" href="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png">
     <meta name="theme-color" content="#ffffff">
 
     <script>
@@ -152,7 +152,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             <button class="mobile-tags-btn" id="mobileToggleSidebarBtn" title="Tags">
                 <i class="fas fa-tags"></i>
             </button>
-            <div class="app-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-w-192.png" alt="" width="36" height="36">WordEvo</div>
+            <div class="app-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png" alt="" width="36" height="36">WordEvo</div>
             <button class="mobile-menu-btn" id="mobileMenuBtn">
                 <i class="fas fa-bars"></i>
             </button>
@@ -160,7 +160,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         <div class="top">
         <div class="top-bar">
             <div class="top-left" style="display: flex; align-items: center; gap: 15px;">
-                <div class="app-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-w-192.png" alt="" width="36" height="36">WordEvo</div>
+                <div class="app-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png" alt="" width="36" height="36">WordEvo</div>
                 <div class="library-selector-wrapper">
                     <button id="libraryManagerBtn" class="library-manager-btn premium-library-btn" title="Manage Libraries">
                         <i class="fas fa-book library-icon"></i>
@@ -1005,7 +1005,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     </div>
 </div>
     
-    <h2 class="app-logo mobile-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-w-192.png" alt="" width="36" height="36">WordEvo</h2>
+    <h2 class="app-logo mobile-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png" alt="" width="36" height="36">WordEvo</h2>
     <div class="toast-container" id="toastContainer"></div>
 </div>
 
