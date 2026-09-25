@@ -6,6 +6,7 @@ const PIPER_FALLBACK_VOICES = [
 let piperVoicesList = PIPER_FALLBACK_VOICES.slice();
 let detectedBookLanguages = new Set();
 let piperWorkers = {};
+let piperRequestId = 0;
 let parsedContent = [];
 let currentIdx = 0;
 let isPlaying = false;
@@ -1365,10 +1366,12 @@ function initPiperWorker(langCode, voicePath) {
     // Fires when the worker script itself can't load (404/MIME/network) or throws at top level.
     // Without this the UI waits for a 'ready' message that will never come.
     worker.onerror = (e) => {
+        if (state.worker !== worker) return;
         failInit(e.message || "Voice worker script failed to load — check " + getPiperWorkerUrl());
     };
 
     worker.onmessage = (e) => {
+        if (state.worker !== worker) return;
         const msg = e.data || {};
         if (msg.kind === 'status') {
             setTtsStatus(msg.message);
@@ -1414,18 +1417,16 @@ function initPiperWorker(langCode, voicePath) {
                 // Runtime synthesis error: reject only the affected sentence request,
                 // the playback loop decides whether to retry/skip — don't kill playback here
                 console.error("Piper Error:", msg.message);
-                const p = state.pending.shift();
+                const index = state.pending.findIndex(p => p.requestId === msg.requestId);
+                const p = index < 0 ? null : state.pending.splice(index, 1)[0];
                 if (p) {
                     p.reject(new Error(msg.message));
-                } else {
-                    setTtsStatus("Error: " + msg.message);
-                    setTimeout(() => setTtsStatus(null), 5000);
-                    stopReading();
                 }
             }
         }
         else if (msg.kind === 'output' && msg.wav) {
-            const p = state.pending.shift();
+            const index = state.pending.findIndex(p => p.requestId === msg.requestId);
+            const p = index < 0 ? null : state.pending.splice(index, 1)[0];
             if (p) p.resolve(msg.wav);
         }
     };
@@ -1434,6 +1435,7 @@ function initPiperWorker(langCode, voicePath) {
 
 function stopPiperAudio() {
     Object.values(piperWorkers).forEach(state => {
+        if (state.finishAudio) state.finishAudio();
         if (state.currentAudio) { state.currentAudio.pause(); state.currentAudio = null; }
         if (state.worker) { state.worker.postMessage({ kind: 'clear' }); }
         while (state.pending && state.pending.length > 0) {
@@ -1819,7 +1821,11 @@ function rebuildDynamicSettings() {
         const currentLang = langSelect.value;
         if(currentLang) {
             try { localStorage.setItem(`voice-${currentLang}`, e.target.value); } catch(err) {}
+            playbackToken++;
+            synthesis.cancel();
+            stopPiperAudio();
             updateDlBtn();
+            if (isPlaying) playMergedQueue();
         }
     });
 
@@ -1845,6 +1851,9 @@ function rebuildDynamicSettings() {
             rateVal.textContent = e.target.value + 'x';
             try { localStorage.setItem(`rate-${currentLang}`, e.target.value); } catch(err) {}
         }
+    });
+    rateInput.addEventListener('change', () => {
+        if (isPlaying) playMergedQueue();
     });
 
     const skipParenCheckbox = wrapper.querySelector('#skip-parentheses-checkbox');
@@ -2861,8 +2870,9 @@ function piperSynthesize(state, text, rate = 1) {
         })();
         if (!text || !hasSpeakable) { resolve(null); return; }
         if (!state || !state.worker || !state.ready) { reject(new Error('Piper worker not ready')); return; }
-        state.pending.push({ resolve: resolve, reject: reject });
-        state.worker.postMessage({ kind: 'synthesize', text: text, rate: rate });
+        const requestId = ++piperRequestId;
+        state.pending.push({ resolve: resolve, reject: reject, requestId });
+        state.worker.postMessage({ kind: 'synthesize', text: text, rate: rate, requestId });
     });
 }
 
@@ -2914,15 +2924,18 @@ function playPiperAudio(state, wavBlob, rate, spoken, token) {
         const finish = () => {
             if (done) return;
             done = true;
+            audio.pause();
             clearInterval(guard);
             URL.revokeObjectURL(url);
             if (state.currentAudio === audio) state.currentAudio = null;
+            if (state.finishAudio === finish) state.finishAudio = null;
             resolve();
         };
         // stop/pause/seek invalidate the token or isPlaying — kill this audio then
         const guard = setInterval(() => {
-            if (token !== playbackToken || !isPlaying) { audio.pause(); finish(); }
+            if (token !== playbackToken) { audio.pause(); finish(); }
         }, 100);
+        state.finishAudio = finish;
         audio.onended = finish;
         audio.onerror = finish;
         runWordHighlights(audio, spoken, token);
@@ -3482,6 +3495,7 @@ function togglePlay() {
     if (parsedContent.length === 0) return;
 
     if (isPlaying) {
+        Object.values(piperWorkers).forEach(state => state.currentAudio?.pause());
         synthesis.pause();
         ghostAudio.pause();
         isPlaying = false;
@@ -3492,12 +3506,20 @@ function togglePlay() {
         // Proactively wake up speech engine on user play gesture
         wakeUpSpeechEngine();
 
+        const resumeToken = playbackToken;
+        isPlaying = true;
+        updatePlayIcon(true);
+
         ghostAudio.play().then(() => {
+            if (resumeToken !== playbackToken || !isPlaying) return;
             updateMediaSessionMetadata();
             if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
             updateMediaPosition();
             requestWakeLock();
-            if (synthesis.paused) {
+            const piperAudio = Object.values(piperWorkers).find(state => state.currentAudio)?.currentAudio;
+            if (piperAudio) {
+                piperAudio.play().catch(() => stopReading());
+            } else if (synthesis.paused && synthesis.speaking) {
                 synthesis.resume();
             } else {
                 playMergedQueue();
@@ -3505,6 +3527,7 @@ function togglePlay() {
             isPlaying = true;
             updatePlayIcon(true);
         }).catch(e => {
+            if (resumeToken !== playbackToken || !isPlaying) return;
             console.error("Audio Play failed:", e);
             playMergedQueue();
             isPlaying = true;

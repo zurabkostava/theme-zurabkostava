@@ -10,6 +10,7 @@ let selectedGeorgianVoice = null;
 let piperVoicesList = []; // Array of fetched piper voices
 let piperRequestId = 0;
 let ttsGeneration = 0;
+let finishNativeSpeech = null;
 
 // Workers map: we keep up to 2 workers alive (one for lang1, one for lang2)
 let piperWorkers = {
@@ -373,6 +374,15 @@ document.addEventListener('change', event => {
     loadVoices();
 });
 
+// Persist speed as the slider moves; the next utterance uses it immediately.
+document.addEventListener('input', event => {
+    const key = event.target.id === 'englishRateSlider' ? ENGLISH_RATE_KEY :
+        event.target.id === 'georgianRateSlider' ? GEORGIAN_RATE_KEY : null;
+    if (!key) return;
+    const rate = Number(event.target.value);
+    if (Number.isFinite(rate)) localStorage.setItem(key, Math.max(0.5, Math.min(rate, 2)));
+});
+
 function initPiperWorker(workerKey, voicePath) {
     const state = piperWorkers[workerKey];
     if (state.worker && state.voicePath === voicePath && (state.ready || state.initializing)) return; // Already loaded
@@ -510,6 +520,7 @@ function speakWithPiper(text, rate = 1, workerKey) {
 
 function stopAllTTS(hardStop = false) {
     ttsGeneration++;
+    if (finishNativeSpeech) finishNativeSpeech();
     for (const state of Object.values(piperWorkers)) {
         state.activePlayback?.stop();
         state.activePlayback = null;
@@ -546,6 +557,7 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
 
     const speak = (txt, el) => {
         return new Promise(resolve => {
+            if (generation !== ttsGeneration) return resolve();
             if (el) {
                 el.classList.add('highlighted-sentence');
                 if (el.parentElement && el.parentElement.classList.contains('sentence-pair')) {
@@ -584,7 +596,11 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
             const rateKey = workerKey === 'lang1' ? ENGLISH_RATE_KEY : GEORGIAN_RATE_KEY;
             utterance.rate = parseFloat(localStorage.getItem(rateKey) || 1);
 
-            utterance.onend = () => {
+            let finished = false;
+            const finish = () => {
+                if (finished) return;
+                finished = true;
+                if (finishNativeSpeech === finish) finishNativeSpeech = null;
                 if (el) {
                     el.classList.remove('highlighted-sentence');
                     if (el.parentElement) el.parentElement.classList.remove('active-pair');
@@ -592,6 +608,9 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
                 if (buttonEl) buttonEl.classList.remove('active');
                 resolve();
             };
+            finishNativeSpeech = finish;
+            utterance.onend = finish;
+            utterance.onerror = finish;
 
             speechSynthesis.speak(utterance);
         });
@@ -610,12 +629,21 @@ document.addEventListener('click', async (e) => {
     if (!speakBtn) return;
 
     e.stopPropagation();
+    if (typeof isPlaying !== 'undefined' && isPlaying) {
+        document.getElementById('playToggleBtn')?.click();
+    }
+    if (speakBtn.classList.contains('active')) {
+        stopAllTTS(true);
+        return;
+    }
 
     if (speakBtn.dataset.readBoth === 'true') {
         const textEn = speakBtn.dataset.textEn;
         const textGe = speakBtn.dataset.textGe;
+        const generation = ttsGeneration + (textEn && selectedVoice ? 1 : 0);
         if (textEn) await speakWithVoice(textEn, selectedVoice, speakBtn);
         if (textEn && textGe) await delay(800);
+        if (generation !== ttsGeneration) return;
         if (textGe) await speakWithVoice(textGe, selectedGeorgianVoice, speakBtn);
         return;
     }

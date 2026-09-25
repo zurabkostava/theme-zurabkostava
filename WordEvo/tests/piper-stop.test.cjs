@@ -27,7 +27,7 @@ test('Stop cancels Piper playback and queued synthesis before it can restart', a
     const context = vm.createContext({
         Worker, Audio, URL: { createObjectURL: () => 'blob:sample', revokeObjectURL() {} },
         window: { WORDEVO_ASSET_PATH: '/theme/WordEvo', WORDEVO_PIPER_WORKER_VERSION: 123, speechSynthesis: { cancel() { canceled++; } } },
-        piperWorkers: { lang1: state }, piperRequestId: 0, ttsGeneration: 0,
+        piperWorkers: { lang1: state }, piperRequestId: 0, ttsGeneration: 0, finishNativeSpeech: null,
         speechSynthesis: { cancel() { canceled++; } }, setPiperStatus() {}, console
     });
     vm.runInContext(source.slice(start, end), context);
@@ -76,7 +76,7 @@ test('late output from canceled request does not satisfy new playback', async ()
     const context = vm.createContext({
         Worker, Audio, URL: { createObjectURL: () => 'blob:sample', revokeObjectURL() {} },
         window: { WORDEVO_ASSET_PATH: '/theme/WordEvo', speechSynthesis: { cancel() {} } },
-        piperWorkers: { lang1: state }, piperRequestId: 0, ttsGeneration: 0,
+        piperWorkers: { lang1: state }, piperRequestId: 0, ttsGeneration: 0, finishNativeSpeech: null,
         speechSynthesis: { cancel() {} }, setPiperStatus() {}, console
     });
     vm.runInContext(source.slice(start, end), context);

@@ -455,6 +455,8 @@ function getVisibleCards() {
 }
 async function speakPreviewCard(card) {
     if (!card) return;
+    const runId = autoPlayRunId;
+    const isCurrent = () => !stopRequested && runId === autoPlayRunId;
     const word = card.querySelector('.word').textContent;
     const translationEl = card.querySelector('.translation');
     const mainPart = translationEl.childNodes[0]?.textContent?.trim() || '';
@@ -466,12 +468,14 @@ async function speakPreviewCard(card) {
     const en = JSON.parse(card.dataset.english || '[]');
     const ge = JSON.parse(card.dataset.georgian || '[]');
     await delay(500);
+    if (!isCurrent()) return;
 
     const modal = document.getElementById('cardPreviewModal');
     if (modal) modal.classList.add('focus-mode');
     
     // Helper to safely speak and clean up
     const safeSpeak = async (text, voice, btn, extra, phase) => {
+        if (!isCurrent()) return;
         window.currentSpeakingPhase = phase;
         window.currentSpeakingCardId = card.dataset.id;
         const isShowing = modal && modal.dataset.currentCardId === card.dataset.id;
@@ -488,14 +492,15 @@ async function speakPreviewCard(card) {
         }
         
         await speakWithVoice(text, voice, btn, extra, el, true);
+        if (!isCurrent()) return;
         document.querySelectorAll('.highlighted-sentence').forEach(e => e.classList.remove('highlighted-sentence'));
     };
 
     await safeSpeak(word, selectedVoice, null, null, { type: 'word' });
-    if (!stopRequested) updateCardProgress(card, window.ProgressConfig.listen_word || 0.1);
+    if (isCurrent()) updateCardProgress(card, window.ProgressConfig.listen_word || 0.1);
 
     await safeSpeak(mainPart, selectedGeorgianVoice, null, extraPart, { type: 'translation' });
-    if (!stopRequested) {
+    if (isCurrent()) {
         updateCardProgress(card, window.ProgressConfig.listen_translation || 0.1); // For mainPart
         if (extraPart) {
             updateCardProgress(card, window.ProgressConfig.listen_translation || 0.1); // For extraPart
@@ -506,7 +511,7 @@ async function speakPreviewCard(card) {
     const skipMnemonic = localStorage.getItem('skip_mnemonic') === 'true';
     if (!skipMnemonic && mnemonic.trim() !== '') {
         await safeSpeak(mnemonic, selectedGeorgianVoice, null, null, { type: 'mnemonic' });
-        if (!stopRequested) updateCardProgress(card, window.ProgressConfig.listen_mnemonic || 0.1);
+        if (isCurrent()) updateCardProgress(card, window.ProgressConfig.listen_mnemonic || 0.1);
     }
 
     const limitStr = localStorage.getItem('read_examples_limit') || 'all';
@@ -529,6 +534,7 @@ async function speakPreviewCard(card) {
     examples = examples.slice(0, maxExamples);
 
     for (let i = 0; i < examples.length; i++) {
+        if (!isCurrent()) return;
         const ex = examples[i];
         if (ex.en) {
             await safeSpeak(ex.en, selectedVoice, null, null, { type: 'en', index: ex.originalIndex });
@@ -537,16 +543,17 @@ async function speakPreviewCard(card) {
             await safeSpeak(ex.ge, selectedGeorgianVoice, null, null, { type: 'ge', index: ex.originalIndex });
         }
         
-        if (!stopRequested && (ex.en || ex.ge)) {
+        if (isCurrent() && (ex.en || ex.ge)) {
             updateCardProgress(card, window.ProgressConfig.listen_example || 0.1);
         }
         
         // --- NEW: პაუზა მაგალითებს შორის ---
-        if (i < examples.length - 1 && !stopRequested) {
+        if (i < examples.length - 1 && isCurrent()) {
             await delay(1500); // 1.5 წამი პაუზა შემდეგ წინადადებაზე გადასვლამდე
         }
     }
     
+    if (!isCurrent()) return;
     window.currentSpeakingPhase = null;
     if (modal) modal.classList.remove('focus-mode');
 }
@@ -2174,7 +2181,8 @@ async function deleteCard(card) {
             stopRequested = true;
             autoPlayRunId++;
             stopAllTTS(true);
-            setTimeout(() => { if (isPlaying) startAutoPlay(); }, 300);
+            const navigationRunId = autoPlayRunId;
+            setTimeout(() => { if (isPlaying && navigationRunId === autoPlayRunId) startAutoPlay(); }, 300);
         } else {
             stopAllTTS(true);
         }
@@ -2207,7 +2215,8 @@ async function deleteCard(card) {
             stopRequested = true;
             autoPlayRunId++;
             stopAllTTS(true);
-            setTimeout(() => { if (isPlaying) startAutoPlay(); }, 300);
+            const navigationRunId = autoPlayRunId;
+            setTimeout(() => { if (isPlaying && navigationRunId === autoPlayRunId) startAutoPlay(); }, 300);
         } else {
             stopAllTTS(true);
         }
@@ -2248,6 +2257,8 @@ async function deleteCard(card) {
             
             stopAllTTS(true);
             stopBackgroundAudio();
+            window.currentSpeakingPhase = null;
+            document.getElementById('cardPreviewModal')?.classList.remove('focus-mode');
             
             document.querySelectorAll('.card').forEach(c => c.classList.remove('playing'));
             document.querySelectorAll('.highlighted-sentence').forEach(el => el.classList.remove('highlighted-sentence'));
