@@ -69,10 +69,13 @@ window.addEventListener('beforeunload', () => {
 
 // EPUB Globals
 let currentBook = null;
+let currentMediaCoverUrl = null;
 let currentSpineIndex = 0; // ეს არის ის, რასაც ვუყურებთ
 let tocHrefSet = new Set();
 // --- GHOST PLAYER (Android Fix) ---
-const ghostAudio = new Audio("https://github.com/anars/blank-audio/blob/master/10-minutes-of-silence.mp3?raw=true");
+// Keep the OS media controls alive without depending on an external audio host.
+const readerAssetBase = new URL('.', document.currentScript.src);
+const ghostAudio = new Audio(new URL('silent-loop.wav', readerAssetBase).href);
 ghostAudio.loop = true;
 ghostAudio.preload = 'auto';
 ghostAudio.volume = 0.1;
@@ -170,14 +173,21 @@ function releaseWakeLock() {
 }
 function updateMediaSessionMetadata() {
     if ('mediaSession' in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: 'ReadRoad Playing',
-            artist: 'Zurab Kostava',
-            album: currentBook ? 'EPUB Book' : 'Reading Session',
+        const metadata = {
+            title: currentBook ? (document.getElementById('book-title-text')?.textContent || 'ReadRoad') : 'ReadRoad',
+            artist: currentBook ? (document.getElementById('book-author-text')?.textContent || 'Zurab Kostava') : 'Zurab Kostava',
+            album: 'ReadRoad',
             artwork: [
-                { src: 'https://cdn-icons-png.flaticon.com/512/2995/2995101.png', sizes: '512x512', type: 'image/png' }
+                currentMediaCoverUrl ? { src: currentMediaCoverUrl } : { src: new URL('icons/icon-512.png', readerAssetBase).href, sizes: '512x512', type: 'image/png' }
             ]
-        });
+        };
+        try {
+            navigator.mediaSession.metadata = new MediaMetadata(metadata);
+        } catch (error) {
+            // Some browsers reject blob: EPUB cover URLs as media artwork.
+            metadata.artwork = [{ src: new URL('icons/icon-512.png', readerAssetBase).href, sizes: '512x512', type: 'image/png' }];
+            navigator.mediaSession.metadata = new MediaMetadata(metadata);
+        }
         navigator.mediaSession.setActionHandler('play', () => { togglePlay(); });
         navigator.mediaSession.setActionHandler('pause', () => { togglePlay(); });
         navigator.mediaSession.setActionHandler('previoustrack', () => navigateSentence(-1));
@@ -262,7 +272,7 @@ function initMediaSession() {
             title: 'ReadRoad',
             artist: 'Zurab Kostava',
             album: 'EPUB Audiobook',
-            artwork: [{ src: 'https://cdn-icons-png.flaticon.com/512/2995/2995101.png', sizes: '512x512', type: 'image/png' }]
+            artwork: [{ src: new URL('icons/icon-512.png', readerAssetBase).href, sizes: '512x512', type: 'image/png' }]
         });
         navigator.mediaSession.setActionHandler('play', () => togglePlay());
         navigator.mediaSession.setActionHandler('pause', () => togglePlay());
@@ -477,6 +487,7 @@ async function loadEpub(file) {
 
     if (currentBook) {
         currentBook.destroy();
+        currentMediaCoverUrl = null;
         tocList.innerHTML = '';
         tocHrefSet.clear();
         document.getElementById('book-meta-container').classList.add('hidden');
@@ -502,15 +513,18 @@ async function loadEpub(file) {
         });
 
         // 🏗️ 2. Metadata
-        currentBook.loaded.metadata.then(meta => {
+        const loadedBook = currentBook;
+        loadedBook.loaded.metadata.then(meta => {
             const metaContainer = document.getElementById('book-meta-container');
             document.getElementById('book-title-text').textContent = meta.title || "Unknown Title";
             document.getElementById('book-author-text').textContent = meta.creator || "Unknown Author";
-            currentBook.coverUrl().then(url => {
+            loadedBook.coverUrl().then(url => {
+                if (currentBook !== loadedBook) return;
                 const img = document.getElementById('book-cover-img');
-                if(url) { img.src = url; img.style.display = 'block'; }
+                if(url) { img.src = url; img.style.display = 'block'; currentMediaCoverUrl = url; }
                 else { img.style.display = 'none'; }
-            });
+                if (isPlaying) updateMediaSessionMetadata();
+            }).catch(() => { if (currentBook === loadedBook) currentMediaCoverUrl = null; });
             metaContainer.classList.remove('hidden');
             document.body.classList.add('is-reading');
             metaContainer.onclick = handleMetaClick;
