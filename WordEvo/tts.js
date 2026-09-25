@@ -239,11 +239,12 @@ async function loadVoices() {
         const pv = piperVoicesList.find(p => p.key === key);
         if (pv) {
             selectedVoice = { name: pv.name, lang: pv.lang, isPiperDummy: true, voicePath: pv.path };
-            piperWorkers['lang1'].voicePath = pv.path;
+            initPiperWorker('lang1', pv.path);
         }
     } else if (storedVoice) {
         selectedVoice = voices.find(v => v.name === storedVoice);
         piperWorkers['lang1'].voicePath = null;
+        setPiperStatus('lang1', '');
         if (piperWorkers['lang1'].worker) {
             piperWorkers['lang1'].worker.terminate();
             piperWorkers['lang1'].worker = null;
@@ -284,11 +285,12 @@ async function loadVoices() {
         const pv = piperVoicesList.find(p => p.key === key);
         if (pv) {
             selectedGeorgianVoice = { name: pv.name, lang: pv.lang, isPiperDummy: true, voicePath: pv.path };
-            piperWorkers['lang2'].voicePath = pv.path;
+            initPiperWorker('lang2', pv.path);
         }
     } else if (storedGeo) {
         selectedGeorgianVoice = voices.find(v => v.name === storedGeo);
         piperWorkers['lang2'].voicePath = null;
+        setPiperStatus('lang2', '');
         if (piperWorkers['lang2'].worker) {
             piperWorkers['lang2'].worker.terminate();
             piperWorkers['lang2'].worker = null;
@@ -316,30 +318,96 @@ function loadVoicesWithDelay(retry = 0) {
 
 speechSynthesis.onvoiceschanged = loadVoices;
 
+// Visible even when Settings is closed during automatic startup.
+function setPiperStatus(key, text, percent = null, failed = false) {
+    let panel = document.getElementById('piperLoadStatus');
+    if (!panel) {
+        panel = document.createElement('aside');
+        panel.id = 'piperLoadStatus';
+        panel.setAttribute('aria-live', 'polite');
+        document.body.appendChild(panel);
+    }
+    let row = document.getElementById('piperStatus-' + key);
+    if (!row) {
+        row = document.createElement('div');
+        row.id = 'piperStatus-' + key;
+        panel.appendChild(row);
+    }
+    row.replaceChildren();
+    row.hidden = !text;
+    panel.hidden = !Array.from(panel.children).some(child => !child.hidden);
+    if (!text) return;
+    const label = document.createElement('span');
+    const selected = key === 'lang1' ? selectedVoice : selectedGeorgianVoice;
+    label.textContent = (selected?.name || 'Piper') + ': ' + text;
+    row.appendChild(label);
+    if (percent !== 100 && !failed) {
+        const progress = document.createElement('progress');
+        progress.max = 100;
+        if (percent !== null) progress.value = percent;
+        progress.setAttribute('aria-label', 'Piper model download');
+        row.appendChild(progress);
+    }
+    if (percent === 100) {
+        const close = document.createElement('button');
+        close.type = 'button'; close.textContent = 'დახურვა';
+        close.onclick = () => setPiperStatus(key, '');
+        row.appendChild(close);
+    }
+    if (failed) {
+        const retry = document.createElement('button');
+        retry.type = 'button'; retry.textContent = 'თავიდან ცდა';
+        retry.onclick = () => initPiperWorker(key, piperWorkers[key].voicePath);
+        row.appendChild(retry);
+    }
+}
+
+// A voice selection is saved immediately and starts preparation without playback.
+document.addEventListener('change', event => {
+    const key = event.target.id === 'voiceSelect' ? VOICE_STORAGE_KEY :
+        event.target.id === 'georgianVoiceSelect' ? GEORGIAN_VOICE_KEY : null;
+    if (!key) return;
+    localStorage.setItem(key + '_' + localStorage.getItem('wordevo_current_dictionary'), event.target.value);
+    loadVoices();
+});
+
 function initPiperWorker(workerKey, voicePath) {
     const state = piperWorkers[workerKey];
-    if (state.worker && state.voicePath === voicePath) return; // Already loaded
+    if (state.worker && state.voicePath === voicePath && (state.ready || state.initializing)) return; // Already loaded
 
     if (state.worker) {
         state.worker.terminate();
+        for (const item of [...state.queue, ...state.pendingCallbacks]) item.reject(new Error('Piper voice changed'));
+        state.queue = []; state.pendingCallbacks = [];
         state.worker = null;
         state.ready = false;
         state.initializing = false;
     }
 
+    state.ready = false;
+    state.cacheWarning = false;
     state.initializing = true;
+    setPiperStatus(workerKey, 'მზადდება…');
     state.voicePath = voicePath;
 
     if (typeof showToast === 'function') showToast(`ხმის მოდელი იტვირთება (${workerKey})...`, 'info');
     
-    const workerPath = (window.WORDEVO_ASSET_PATH || '.') + '/piper-worker.js';
-    const worker = new Worker(workerPath);
+    const workerPath = (window.WORDEVO_ASSET_PATH || '.') + '/piper-worker.js?v=2';
+    let worker;
+    try { worker = new Worker(workerPath); }
+    catch (error) {
+        state.initializing = false;
+        setPiperStatus(workerKey, 'ჩატვირთვა ვერ მოხერხდა. აირჩიე ხმა თავიდან.', null, true);
+        return;
+    }
     state.worker = worker;
 
     worker.addEventListener('message', (e) => {
-        const { kind, wav, message } = e.data;
+        if (state.worker !== worker) return;
+        const { kind, wav, message, info } = e.data;
         if (kind === 'ready') {
             state.ready = true;
+            setPiperStatus(workerKey, state.cacheWarning ? 'მზადაა — შენახვა ვერ მოხერხდა; შემდეგ გახსნაზე თავიდან ჩამოიტვირთება.' : 'მზადაა ✓', 100);
             state.initializing = false;
             if (typeof showToast === 'function') showToast(`Piper TTS მზადაა!`, 'success');
             while (state.queue.length > 0) {
@@ -356,14 +424,39 @@ function initPiperWorker(workerKey, voicePath) {
             if (state.pendingCallbacks.length > 0) state.pendingCallbacks.shift().reject(new Error(message));
             if (!state.ready) {
                 state.initializing = false;
+                setPiperStatus(workerKey, 'ჩატვირთვა ვერ მოხერხდა. აირჩიე ხმა თავიდან.', null, true);
                 while (state.queue.length > 0) state.queue.shift().reject(new Error(message));
                 if (typeof showToast === 'function') showToast('Piper TTS ვერ ჩაიტვირთა', 'error');
             }
+        } else if (kind === 'progress') {
+            const mb = (info.loaded / 1048576).toFixed(1);
+            const percent = info.total > 0 ? Math.min(100, Math.round(info.loaded / info.total * 100)) : null;
+            setPiperStatus(workerKey, percent === null ? 'იწერება: ' + mb + ' MB' : 'იწერება: ' + percent + '% (' + mb + ' MB)', percent);
+        } else if (kind === 'cache-warning') {
+            state.cacheWarning = true;
         } else if (kind === 'status') {
-            console.log('[Piper]', message);
+            const labels = {
+                'ONNX Runtime loading...': 'ხმოვანი ძრავა იტვირთება…',
+                'Piper Phonemize loading...': 'გამოთქმის მოდული იტვირთება…',
+                'Configuration loading...': 'ხმის პარამეტრები იტვირთება…',
+                'Voice model checking in local storage...': 'შენახული მოდელი მოწმდება…',
+                'Model loading from storage...': 'ხმა იტვირთება მოწყობილობიდან…',
+                'Starting download...': 'ხმის ჩამოტვირთვა იწყება…',
+                'Saving model...': 'მოდელი ინახება მოწყობილობაზე…',
+                'Model initializing...': 'ხმა მზადდება გამოსაყენებლად…'
+            };
+            setPiperStatus(workerKey, labels[message] || message);
         }
     });
 
+    worker.addEventListener('error', () => {
+        if (state.worker !== worker) return;
+        state.initializing = false;
+        state.ready = false;
+        setPiperStatus(workerKey, 'ჩატვირთვა ვერ მოხერხდა. აირჩიე ხმა თავიდან.', null, true);
+        for (const item of [...state.queue, ...state.pendingCallbacks]) item.reject(new Error('Piper worker failed'));
+        state.queue = []; state.pendingCallbacks = [];
+    });
     worker.postMessage({ kind: 'init', voicePath });
 }
 

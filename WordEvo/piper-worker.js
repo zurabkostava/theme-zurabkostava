@@ -36,16 +36,9 @@ function PCM2WAV(buffer, sampleRate) {
     writeStr(36, 'data');
     view.setUint32(40, dataLength, true);
 
-    // Clean Peak Normalization to 0.95 (-0.45 dBFS)
-    // Eliminates harsh clipping/distortion while maximizing clear, comfortable speech volume
-    let maxVal = 0;
+    // Preserve model amplitude; clamp only for valid 16-bit PCM conversion.
     for (let i = 0; i < buffer.length; i++) {
-        const abs = Math.abs(buffer[i]);
-        if (abs > maxVal) maxVal = abs;
-    }
-    const gain = maxVal > 0.05 ? Math.min(3.5, 0.95 / maxVal) : 1.0;
-    for (let i = 0; i < buffer.length; i++) {
-        const s = Math.max(-1, Math.min(1, buffer[i] * gain));
+        const s = Math.max(-1, Math.min(1, buffer[i]));
         view.setInt16(headerLength + i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
     }
 
@@ -96,74 +89,45 @@ async function init(voicePath) {
     const CACHE_NAME = 'piper-models-cache-v1';
     let modelBuffer;
 
+    let cache;
+    let cachedResponse;
     try {
-        const cache = await caches.open(CACHE_NAME);
-        const cachedResponse = await cache.match(modelUrl);
-        
-        if (cachedResponse) {
-            self.postMessage({ kind: 'status', message: 'Model loading from storage...' });
-            modelBuffer = await cachedResponse.arrayBuffer();
-        } else {
-            self.postMessage({ kind: 'status', message: 'Starting download...' });
-            
-            const response = await fetch(modelUrl);
-            if (!response.ok) throw new Error('Failed to fetch voice model');
-            
-            const contentLength = response.headers.get('Content-Length');
-            const total = contentLength ? parseInt(contentLength, 10) : 0;
-            let loaded = 0;
-            
-            const reader = response.body.getReader();
-            const chunks = [];
-            
-            while(true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                chunks.push(value);
-                loaded += value.length;
-                if (total) {
-                    self.postMessage({ 
-                        kind: 'progress', 
-                        info: { status: 'progress', file: 'model.onnx', loaded, total }
-                    });
-                }
-            }
-            
-            const blob = new Blob(chunks);
-            modelBuffer = await blob.arrayBuffer();
-            
-            // Save to cache for future
-            await cache.put(modelUrl, new Response(blob));
-        }
-    } catch (e) {
-        console.warn('[Piper Worker] Cache API failed, falling back to network:', e);
-        self.postMessage({ kind: 'status', message: 'Starting download (no cache)...' });
-        
+        cache = await caches.open(CACHE_NAME);
+        cachedResponse = await cache.match(modelUrl);
+    } catch (error) { console.warn('Model cache unavailable', error); }
+    if (cachedResponse) {
+        self.postMessage({ kind: 'status', message: 'Model loading from storage...' });
+        modelBuffer = await cachedResponse.arrayBuffer();
+    } else {
+        self.postMessage({ kind: 'status', message: 'Starting download...' });
         const response = await fetch(modelUrl);
         if (!response.ok) throw new Error('Failed to fetch voice model');
-        
-        const contentLength = response.headers.get('Content-Length');
-        const total = contentLength ? parseInt(contentLength, 10) : 0;
+        const total = Number(response.headers.get('Content-Length')) || 0;
         let loaded = 0;
-        
-        const reader = response.body.getReader();
         const chunks = [];
-        
-        while(true) {
+        const reader = response.body.getReader();
+        let lastUpdate = 0;
+        while (true) {
             const { done, value } = await reader.read();
             if (done) break;
             chunks.push(value);
             loaded += value.length;
-            if (total) {
-                self.postMessage({ 
-                    kind: 'progress', 
-                    info: { status: 'progress', file: 'model.onnx', loaded, total }
-                });
+            if (Date.now() - lastUpdate > 150) {
+                self.postMessage({ kind: 'progress', info: { loaded, total } });
+                lastUpdate = Date.now();
             }
         }
-        
+        self.postMessage({ kind: 'progress', info: { loaded, total } });
         const blob = new Blob(chunks);
         modelBuffer = await blob.arrayBuffer();
+        if (cache) {
+            self.postMessage({ kind: 'status', message: 'Saving model...' });
+            try { await cache.put(modelUrl, new Response(blob)); }
+            catch (error) {
+                // A quota failure must not download the entire model a second time.
+                self.postMessage({ kind: 'cache-warning' });
+            }
+        } else self.postMessage({ kind: 'cache-warning' });
     }
 
     self.postMessage({ kind: 'status', message: 'Model initializing...' });
