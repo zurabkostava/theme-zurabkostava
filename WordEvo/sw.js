@@ -1,5 +1,5 @@
 ﻿// ==== Wordevo Service Worker ====
-const SW_VERSION = 17;
+const SW_VERSION = 19;
 const workerUrl = new URL(self.location.href);
 const requestedApp = new URL(workerUrl.searchParams.get('app') || '/', workerUrl.origin);
 const APP_URL = requestedApp.origin === workerUrl.origin ? requestedApp.href : workerUrl.origin + '/';

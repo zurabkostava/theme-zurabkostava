@@ -5,6 +5,20 @@ const fs = require('node:fs');
 const path = require('node:path');
 const source = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
 
+test('opening a Push-capable browser never starts a second local reminder', async () => {
+    let timers = 0;
+    const context = vm.createContext({
+        navigator: { serviceWorker: {} }, window: { PushManager: function () {} },
+        console, setInterval() { timers++; }, clearInterval() {},
+    });
+    vm.runInContext(source('notifications.js'), context);
+    // Simulate repeated initialization after navigation/reopening in the due minute.
+    await vm.runInContext('startNotificationChecker()', context);
+    await vm.runInContext('startNotificationChecker()', context);
+    await vm.runInContext('checkNotificationSchedule()', context);
+    assert.equal(timers, 0);
+});
+
 test('notification clicks ignore other apps and open the canonical Wordevo page', async () => {
     const handlers = {};
     const target = 'https://example.com/projects/wordevo/';

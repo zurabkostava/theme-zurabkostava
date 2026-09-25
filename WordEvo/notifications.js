@@ -489,7 +489,7 @@ async function initNotificationUI() {
     // Subscribe to push notifications
     await subscribeToPush();
 
-    // Start client-side schedule checker (works while browser is open)
+    // Local reminders are only for browsers without Web Push support.
     startNotificationChecker();
 }
 
@@ -498,8 +498,10 @@ async function initNotificationUI() {
 async function startNotificationChecker() {
     if (notifCheckInterval) clearInterval(notifCheckInterval);
 
-    // Always run client-side checker as fallback — push may not be delivered.
-    // Duplicate notifications are prevented by the notification tag (browser deduplicates same tag).
+    notifCheckInterval = null;
+    // A failed subscription attempt does not prove that the server cannot send.
+    // Never race server Push with local reminders on a Push-capable browser.
+    if ('serviceWorker' in navigator && 'PushManager' in window) return;
     console.log(`[NotifCheck] Started. ${notificationSchedules.length} schedules loaded.`);
     notifCheckInterval = setInterval(checkNotificationSchedule, 30000);
     // Also run immediately on start
@@ -507,6 +509,7 @@ async function startNotificationChecker() {
 }
 
 async function checkNotificationSchedule() {
+    if ('serviceWorker' in navigator && 'PushManager' in window) return;
     // Check permission
     if ('Notification' in window && Notification.permission !== 'granted') {
         console.log('[NotifCheck] Permission not granted:', Notification.permission);
