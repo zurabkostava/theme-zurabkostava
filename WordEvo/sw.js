@@ -1,15 +1,15 @@
 ﻿// ==== Wordevo Service Worker ====
-const SW_VERSION = 14;
+const SW_VERSION = 15;
+const workerUrl = new URL(self.location.href);
+const requestedApp = new URL(workerUrl.searchParams.get('app') || '/', workerUrl.origin);
+const APP_URL = requestedApp.origin === workerUrl.origin ? requestedApp.href : workerUrl.origin + '/';
+const ICON_URL = new URL('./icons/wordevo-192.png', workerUrl).href;
 const PUSH_URL = 'https://wdgvxerfxwtmpqztwgtj.supabase.co/functions/v1/get-push-notification';
 
 self.addEventListener('install', () => self.skipWaiting());
 
 self.addEventListener('activate', event => {
-    event.waitUntil(
-        caches.keys()
-            .then(keys => Promise.all(keys.map(k => caches.delete(k))))
-            .then(() => self.clients.claim())
-    );
+    event.waitUntil(self.clients.claim());
 });
 
 // ==== Push: fetch content from queue, show notification ====
@@ -62,8 +62,8 @@ self.addEventListener('push', event => {
         return self.registration.showNotification(title, {
             body,
             tag,
-            icon: './icons/icon-192.png',
-            badge: './icons/icon-192.png',
+            icon: ICON_URL,
+            badge: ICON_URL,
             renotify: true,
             vibrate: [200, 100, 200],
             requireInteraction: true,
@@ -77,8 +77,8 @@ self.addEventListener('message', event => {
     if (d?.type === 'SHOW_NOTIFICATION') {
         self.registration.showNotification(d.title || 'Wordevo', {
             body: d.body || '',
-            icon: './icons/icon-192.png',
-            badge: './icons/icon-192.png',
+            icon: ICON_URL,
+            badge: ICON_URL,
             tag: d.tag || 'wordevo-reminder',
             renotify: true,
             vibrate: [200, 100, 200],
@@ -92,7 +92,15 @@ self.addEventListener('notificationclick', event => {
     event.notification.close();
     event.waitUntil(
         self.clients.matchAll({ type: 'window', includeUncontrolled: true })
-            .then(clients => clients.length > 0 ? clients[0].focus() : self.clients.openWindow('./'))
+            .then(clients => {
+                const target = new URL(APP_URL);
+                const existing = clients.find(client => {
+                    const url = new URL(client.url);
+                    return url.origin === target.origin && url.pathname === target.pathname &&
+                        url.searchParams.get('page_id') === target.searchParams.get('page_id');
+                });
+                return existing ? existing.focus() : self.clients.openWindow(APP_URL);
+            })
     );
 });
 

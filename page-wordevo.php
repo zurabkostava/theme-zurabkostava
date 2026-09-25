@@ -3,6 +3,24 @@
 Template Name: App - WordEvo
 */
 
+// Use the actual WordPress permalink, including installations in subdirectories.
+$wordevo_url = get_permalink();
+$wordevo_assets = get_template_directory_uri() . '/WordEvo';
+if (isset($_GET['wordevo_manifest']) && $_GET['wordevo_manifest'] === '1') {
+    $manifest = json_decode(file_get_contents(get_template_directory() . '/WordEvo/manifest.json'), true);
+    $manifest['id'] = $wordevo_url;
+    $manifest['start_url'] = $wordevo_url;
+    $manifest['scope'] = wp_parse_url($wordevo_url, PHP_URL_PATH) ?: '/';
+    foreach ($manifest['icons'] as &$icon) {
+        $icon['src'] = $wordevo_assets . '/' . $icon['src'];
+    }
+    unset($icon);
+    header('Content-Type: application/manifest+json; charset=utf-8');
+    nocache_headers();
+    echo wp_json_encode($manifest, JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 // Protect this custom app from global WordPress styles and scripts
 add_action('wp_enqueue_scripts', function() {
     wp_dequeue_style('zk-style');
@@ -30,16 +48,20 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;900&display=swap" rel="stylesheet">
-    <link rel="manifest" href="<?php echo get_template_directory_uri(); ?>/WordEvo/manifest.json">
+    <link rel="manifest" href="<?php echo esc_url(add_query_arg('wordevo_manifest', '1', $wordevo_url)); ?>">
+    <link rel="icon" type="image/png" href="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png">
+    <link rel="apple-touch-icon" href="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png">
     <meta name="theme-color" content="#ffffff">
 
     <script>
-        window.WORDEVO_ASSET_PATH = '<?php echo get_template_directory_uri(); ?>/WordEvo';
+        window.WORDEVO_ASSET_PATH = <?php echo wp_json_encode($wordevo_assets); ?>;
+        window.WORDEVO_APP_URL = <?php echo wp_json_encode($wordevo_url); ?>;
         // Apply dark mode immediately to prevent flash
         if (localStorage.getItem('theme') === 'dark') {
             document.documentElement.classList.add('dark');
         }
     </script>
+    <script defer src="<?php echo esc_url($wordevo_assets); ?>/pwa.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="console.error('Supabase CDN failed to load')"></script>
     <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/supabase-client.js?v=<?php echo time(); ?>"></script>
     <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/data-access.js?v=<?php echo time(); ?>"></script>
@@ -63,6 +85,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+<button type="button" id="wordevoInstall" hidden>Install Wordevo</button>
 <div id="globalLoadingScreen">
     <div class="wordevo-spinner"></div>
 </div>
@@ -128,7 +151,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             <button class="mobile-tags-btn" id="mobileToggleSidebarBtn" title="Tags">
                 <i class="fas fa-tags"></i>
             </button>
-            <div class="app-logo">Wordevo</div>
+            <div class="app-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png" alt="" width="36" height="36">Wordevo</div>
             <button class="mobile-menu-btn" id="mobileMenuBtn">
                 <i class="fas fa-bars"></i>
             </button>
@@ -136,7 +159,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         <div class="top">
         <div class="top-bar">
             <div class="top-left" style="display: flex; align-items: center; gap: 15px;">
-                <div class="app-logo">Wordevo</div>
+                <div class="app-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png" alt="" width="36" height="36">Wordevo</div>
                 <div class="library-selector-wrapper">
                     <button id="libraryManagerBtn" class="library-manager-btn premium-library-btn" title="Manage Libraries">
                         <i class="fas fa-book library-icon"></i>
@@ -981,7 +1004,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     </div>
 </div>
     
-    <h2 class="app-logo mobile-logo">Wordevo</h2>
+    <h2 class="app-logo mobile-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png" alt="" width="36" height="36">Wordevo</h2>
     <div class="toast-container" id="toastContainer"></div>
 </div>
 

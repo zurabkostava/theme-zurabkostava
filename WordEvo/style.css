@@ -8450,3 +8450,8 @@ body:not(.dark) .premium-library-btn:hover i.fa-chevron-down {
 
 
 
+
+/* Home-screen installation and app identity. */
+.wordevo-brand-icon { width:36px; height:36px; border-radius:9px; vertical-align:middle; margin-right:9px; }
+#wordevoInstall { position:fixed; right:16px; bottom:calc(80px + env(safe-area-inset-bottom)); z-index:1500; padding:11px 17px; border:0; border-radius:24px; background:#0077cc; color:white; font:600 14px system-ui,sans-serif; box-shadow:0 3px 14px #0003; cursor:pointer; }
+#wordevoInstall[hidden] { display:none !important; }

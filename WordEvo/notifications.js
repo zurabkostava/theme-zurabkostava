@@ -34,8 +34,7 @@ async function subscribeToPush(forceNew = false) {
 
     try {
         console.log('[Push] Step 1: waiting for SW registration...');
-        const swPath = (window.WORDEVO_ASSET_PATH || '.') + '/sw.js';
-        const reg = await navigator.serviceWorker.register(swPath, { updateViaCache: 'none' });
+        const reg = await window.registerWordevoWorker();
         console.log('[Push] Step 2: SW ready, checking existing subscription...');
         let subscription = await reg.pushManager.getSubscription();
         console.log('[Push] Step 3: existing subscription:', subscription ? 'yes' : 'no');
@@ -457,12 +456,11 @@ async function initNotificationUI() {
             // Send test via SW
             if ('serviceWorker' in navigator) {
                 try {
-                    const swPath = (window.WORDEVO_ASSET_PATH || '.') + '/sw.js';
-                    const reg = await navigator.serviceWorker.register(swPath, { updateViaCache: 'none' });
+                    const reg = await window.registerWordevoWorker();
                     await reg.showNotification('Wordevo Test', {
                         body: 'Test notification works!',
-                        icon: './icons/icon-192.png',
-                        badge: './icons/icon-192.png',
+                        icon: window.WORDEVO_ASSET_PATH + '/icons/wordevo-192.png',
+                        badge: window.WORDEVO_ASSET_PATH + '/icons/wordevo-192.png',
                         tag: 'wordevo-test',
                         renotify: true,
                         vibrate: [200, 100, 200],
@@ -473,7 +471,7 @@ async function initNotificationUI() {
                     console.error('[Notif] Test SW showNotification failed:', e);
                     new Notification('Wordevo Test', {
                         body: 'Test notification works!',
-                        icon: './icons/logo.svg'
+                        icon: window.WORDEVO_ASSET_PATH + '/icons/wordevo-192.png'
                     });
                     showToast('Test notification sent!', 'success');
                 }
@@ -481,7 +479,7 @@ async function initNotificationUI() {
                 // Fallback
                 new Notification('Wordevo Test', {
                     body: 'Test notification works!',
-                    icon: './icons/logo.svg'
+                    icon: window.WORDEVO_ASSET_PATH + '/icons/wordevo-192.png'
                 });
                 showToast('Test notification sent!', 'success');
             }
@@ -583,12 +581,11 @@ async function showNotificationWithCard(notif) {
     // Show via service worker (persists even if tab not focused)
     if ('serviceWorker' in navigator) {
         try {
-            const swPath = (window.WORDEVO_ASSET_PATH || '.') + '/sw.js';
-            const reg = await navigator.serviceWorker.register(swPath, { updateViaCache: 'none' });
+            const reg = await window.registerWordevoWorker();
             await reg.showNotification(title, {
                 body,
-                icon: './icons/icon-192.png',
-                badge: './icons/icon-192.png',
+                icon: window.WORDEVO_ASSET_PATH + '/icons/wordevo-192.png',
+                badge: window.WORDEVO_ASSET_PATH + '/icons/wordevo-192.png',
                 tag: `wordevo-${notif.id || 'reminder'}`,
                 renotify: true,
                 vibrate: [200, 100, 200],
@@ -597,11 +594,11 @@ async function showNotificationWithCard(notif) {
         } catch (e) {
             console.error('[Notif] SW showNotification failed:', e);
             if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification(title, { body, icon: './icons/icon-192.png', tag: `wordevo-${notif.id || 'reminder'}` });
+                new Notification(title, { body, icon: window.WORDEVO_ASSET_PATH + '/icons/wordevo-192.png', tag: `wordevo-${notif.id || 'reminder'}` });
             }
         }
     } else if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, { body, icon: './icons/icon-192.png', tag: `wordevo-${notif.id || 'reminder'}` });
+        new Notification(title, { body, icon: window.WORDEVO_ASSET_PATH + '/icons/wordevo-192.png', tag: `wordevo-${notif.id || 'reminder'}` });
     }
 }
 
@@ -610,8 +607,7 @@ async function showNotificationWithCard(notif) {
 async function registerNotificationSW() {
     if (!('serviceWorker' in navigator)) return null;
     try {
-        const swPath = (window.WORDEVO_ASSET_PATH || '.') + '/sw.js';
-        const reg = await navigator.serviceWorker.register(swPath, { updateViaCache: 'none' });
+        const reg = await window.registerWordevoWorker();
         console.log('[SW] Registered, scope:', reg.scope);
         return reg;
     } catch (err) {
