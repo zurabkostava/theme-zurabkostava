@@ -90,7 +90,23 @@ function createSilentAudio(time) {
 
 const backgroundAudio = new Audio(createSilentAudio(10));
 backgroundAudio.loop = true;
+const WORDEVO_PLAYER_ARTWORK = new URL(
+    'icons/player-artwork-512.png',
+    (window.WORDEVO_ASSET_PATH || '.') + '/'
+).href;
+
+function updateWordevoMediaMetadata(word = 'WordEvo', translation = '') {
+    if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+        title: word,
+        artist: translation || 'WordEvo',
+        album: 'WordEvo',
+        artwork: [{ src: WORDEVO_PLAYER_ARTWORK, sizes: '512x512', type: 'image/png' }]
+    });
+}
+
 function startBackgroundAudio() {
+    updateWordevoMediaMetadata();
     backgroundAudio.play().catch(e => console.log('Background audio play failed:', e));
 }
 function stopBackgroundAudio() {
@@ -444,19 +460,7 @@ async function speakPreviewCard(card) {
     const skipExtra = localStorage.getItem('skip_extra_translation') === 'true';
     const extraPart = skipExtra ? '' : (translationEl.querySelector('.extra')?.textContent?.trim() || '');
     
-    // --- NEW: Update Media Session metadata for lock screen ---
-    if ('mediaSession' in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: word,
-            artist: mainPart,
-            album: 'Wordevo',
-            artwork: [
-                { src: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-                { src: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' }
-            ]
-        });
-    }
-    // --- END NEW ---
+    updateWordevoMediaMetadata(word, mainPart);
 
     const en = JSON.parse(card.dataset.english || '[]');
     const ge = JSON.parse(card.dataset.georgian || '[]');
