@@ -171,12 +171,11 @@ function phonemize(text) {
     });
 }
 
-async function synthesize(text) {
+async function synthesize(text, requestId) {
     const phonemeIds = await phonemize(text);
 
     if (!phonemeIds || phonemeIds.length === 0) {
-        self.postMessage({ kind: 'error', message: 'Text could not be converted to phonemes' });
-        return;
+        throw new Error('Text could not be converted to phonemes');
     }
 
     const ids = new BigInt64Array(phonemeIds.map(id => BigInt(id)));
@@ -200,7 +199,7 @@ async function synthesize(text) {
     const pcm = result.output.data;
     const wav = PCM2WAV(pcm, sampleRate);
 
-    self.postMessage({ kind: 'output', wav });
+    self.postMessage({ kind: 'output', requestId, wav });
 }
 
 let queue = [];
@@ -225,9 +224,9 @@ async function processQueue() {
     while(queue.length > 0) {
         const data = queue.shift();
         try {
-            await synthesize(data.text);
+            await synthesize(data.text, data.requestId);
         } catch(e) {
-            self.postMessage({ kind: 'error', message: e.message || String(e) });
+            self.postMessage({ kind: 'error', requestId: data.requestId, message: e.message || String(e) });
         }
     }
     isGenerating = false;

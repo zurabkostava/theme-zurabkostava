@@ -8,6 +8,8 @@ const GEORGIAN_RATE_KEY = 'georgian_voice_rate';
 let selectedVoice = null;
 let selectedGeorgianVoice = null;
 let piperVoicesList = []; // Array of fetched piper voices
+let piperRequestId = 0;
+let ttsGeneration = 0;
 
 // Workers map: we keep up to 2 workers alive (one for lang1, one for lang2)
 let piperWorkers = {
@@ -377,6 +379,7 @@ function initPiperWorker(workerKey, voicePath) {
 
     if (state.worker) {
         state.worker.terminate();
+        state.activePlayback?.stop();
         for (const item of [...state.queue, ...state.pendingCallbacks]) item.reject(new Error('Piper voice changed'));
         state.queue = []; state.pendingCallbacks = [];
         state.worker = null;
@@ -404,7 +407,7 @@ function initPiperWorker(workerKey, voicePath) {
 
     worker.addEventListener('message', (e) => {
         if (state.worker !== worker) return;
-        const { kind, wav, message, info } = e.data;
+        const { kind, wav, message, info, requestId } = e.data;
         if (kind === 'ready') {
             state.ready = true;
             setPiperStatus(workerKey, state.cacheWarning ? 'მზადაა — შენახვა ვერ მოხერხდა; შემდეგ გახსნაზე თავიდან ჩამოიტვირთება.' : 'მზადაა ✓', 100);
@@ -413,15 +416,15 @@ function initPiperWorker(workerKey, voicePath) {
             while (state.queue.length > 0) {
                 const queued = state.queue.shift();
                 state.pendingCallbacks.push(queued);
-                worker.postMessage({ kind: 'synthesize', text: queued.text });
+                worker.postMessage({ kind: 'synthesize', text: queued.text, requestId: queued.requestId });
             }
         } else if (kind === 'output') {
-            if (state.pendingCallbacks.length > 0) {
-                state.pendingCallbacks.shift().resolve(wav);
-            }
+            const index = state.pendingCallbacks.findIndex(item => item.requestId === requestId);
+            if (index !== -1) state.pendingCallbacks.splice(index, 1)[0].resolve(wav);
         } else if (kind === 'error') {
             console.error('[Piper] Error:', message);
-            if (state.pendingCallbacks.length > 0) state.pendingCallbacks.shift().reject(new Error(message));
+            const index = state.pendingCallbacks.findIndex(item => item.requestId === requestId);
+            if (index !== -1) state.pendingCallbacks.splice(index, 1)[0].reject(new Error(message));
             if (!state.ready) {
                 state.initializing = false;
                 setPiperStatus(workerKey, 'ჩატვირთვა ვერ მოხერხდა. აირჩიე ხმა თავიდან.', null, true);
@@ -463,42 +466,69 @@ function initPiperWorker(workerKey, voicePath) {
 function speakWithPiper(text, rate = 1, workerKey) {
     return new Promise((resolve, reject) => {
         const state = piperWorkers[workerKey];
+        const requestId = ++piperRequestId;
         if (!state.voicePath) {
             reject(new Error('No Piper voice selected'));
             return;
         }
 
-        if (state.currentAudio) {
-            state.currentAudio.pause();
-            state.currentAudio = null;
-        }
+        state.activePlayback?.stop();
 
         initPiperWorker(workerKey, state.voicePath);
 
         const onWav = (wav) => {
             const audio = new Audio();
-            audio.src = URL.createObjectURL(wav);
+            const audioUrl = URL.createObjectURL(wav);
+            audio.src = audioUrl;
             audio.playbackRate = Math.max(0.5, Math.min(rate, 2));
             state.currentAudio = audio;
-            audio.onended = () => { state.currentAudio = null; resolve(); };
-            audio.onerror = () => { state.currentAudio = null; reject(new Error('Piper playback failed')); };
-            audio.play().catch(reject);
+            let settled = false;
+            const finish = error => {
+                if (settled) return;
+                settled = true;
+                URL.revokeObjectURL(audioUrl);
+                if (state.currentAudio === audio) state.currentAudio = null;
+                if (state.activePlayback?.audio === audio) state.activePlayback = null;
+                error ? reject(error) : resolve();
+            };
+            state.activePlayback = { audio, stop: () => { audio.pause(); finish(new Error('Piper playback stopped')); } };
+            audio.onended = () => finish();
+            audio.onerror = () => finish(new Error('Piper playback failed'));
+            audio.play().catch(finish);
         };
 
+        const request = { requestId, text, resolve: onWav, reject };
         if (state.ready) {
-            state.pendingCallbacks.push({ resolve: onWav, reject });
-            state.worker.postMessage({ kind: 'synthesize', text });
+            state.pendingCallbacks.push(request);
+            state.worker.postMessage({ kind: 'synthesize', text, requestId });
         } else {
-            state.queue.push({ text, resolve: onWav, reject });
+            state.queue.push(request);
         }
     });
 }
 
-function stopAllTTS() {
-    if (piperWorkers.lang1.currentAudio) piperWorkers.lang1.currentAudio.pause();
-    if (piperWorkers.lang2.currentAudio) piperWorkers.lang2.currentAudio.pause();
-    piperWorkers.lang1.currentAudio = null;
-    piperWorkers.lang2.currentAudio = null;
+function stopAllTTS(hardStop = false) {
+    ttsGeneration++;
+    for (const state of Object.values(piperWorkers)) {
+        state.activePlayback?.stop();
+        state.activePlayback = null;
+        state.currentAudio = null;
+        for (const request of [...state.queue, ...state.pendingCallbacks]) {
+            request.reject(new Error('Piper playback stopped'));
+        }
+        state.queue = [];
+        state.pendingCallbacks = [];
+        if (state.worker) {
+            if (hardStop) {
+                state.worker.terminate();
+                state.worker = null;
+                state.ready = false;
+                state.initializing = false;
+            } else {
+                state.worker.postMessage({ kind: 'clear' });
+            }
+        }
+    }
     if (window.speechSynthesis) speechSynthesis.cancel();
 }
 
@@ -509,7 +539,9 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
     const workerKey = (voiceObj === selectedVoice) ? 'lang1' : 'lang2';
     
     stopAllTTS();
+    const generation = ttsGeneration;
     await delay(100);
+    if (generation !== ttsGeneration) return;
 
     const speak = (txt, el) => {
         return new Promise(resolve => {
@@ -566,7 +598,7 @@ async function speakWithVoice(text, voiceObj, buttonEl = null, extraText = null,
 
     await speak(text, highlightEl);
 
-    if (extraText) {
+    if (extraText && generation === ttsGeneration) {
         await delay(100);
         await speak(extraText, highlightEl);
     }

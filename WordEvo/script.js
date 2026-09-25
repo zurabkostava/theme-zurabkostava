@@ -16,6 +16,7 @@ let currentCardIndex = -1;
 let currentSortMode = 'progress';
 let isPlaying = false;
 let stopRequested = false;
+let autoPlayRunId = 0;
 let shuffleMode = false;
 let playedIndices = [];
 let previewManuallyClosed = false;
@@ -647,10 +648,11 @@ function updateMinimizedDisplay(card) {
 async function startAutoPlay() {
     const cards = getVisibleCards();
     if (cards.length === 0) return;
+    const runId = ++autoPlayRunId;
     isPlaying = true;
     
     stopRequested = false;
-    while (!stopRequested) {
+    while (!stopRequested && runId === autoPlayRunId) {
         if (shuffleMode) {
             if (playedIndices.length >= cards.length) {
                 playedIndices = [];
@@ -682,12 +684,13 @@ async function startAutoPlay() {
         }
         // --- END UPDATE ---
         await delay(300);
-        if (stopRequested) break;
+        if (stopRequested || runId !== autoPlayRunId) break;
         await speakPreviewCard(card);
         await delay(500);
-        if (stopRequested) break;
+        if (stopRequested || runId !== autoPlayRunId) break;
         if (!shuffleMode) currentCardIndex++;
     }
+    if (runId !== autoPlayRunId) return;
     isPlaying = false;
     
     // --- PLAYER LOGIC UPDATED ---
@@ -2169,10 +2172,11 @@ async function deleteCard(card) {
         // --- END NEW LOGIC (FIX) ---
         if (isPlaying) {
             stopRequested = true;
-            speechSynthesis.cancel();
-            setTimeout(() => startAutoPlay(), 300);
+            autoPlayRunId++;
+            stopAllTTS(true);
+            setTimeout(() => { if (isPlaying) startAutoPlay(); }, 300);
         } else {
-            speechSynthesis.cancel();
+            stopAllTTS(true);
         }
     };
     prevBtn.onclick = async () => {
@@ -2201,10 +2205,11 @@ async function deleteCard(card) {
         // --- END NEW LOGIC (FIX) ---
         if (isPlaying) {
             stopRequested = true;
-            speechSynthesis.cancel();
-            setTimeout(() => startAutoPlay(), 300);
+            autoPlayRunId++;
+            stopAllTTS(true);
+            setTimeout(() => { if (isPlaying) startAutoPlay(); }, 300);
         } else {
-            speechSynthesis.cancel();
+            stopAllTTS(true);
         }
     };
     shuffleBtn.onclick = () => {
@@ -2231,6 +2236,7 @@ async function deleteCard(card) {
             playerMinimizedDisplay.style.display = 'none';
             
             stopRequested = true;
+            autoPlayRunId++;
             playBtn.classList.remove('active');
             
             const icon = playBtn.querySelector('i');
@@ -2240,7 +2246,7 @@ async function deleteCard(card) {
             }
             playBtn.title = "Play";
             
-            speechSynthesis.cancel();
+            stopAllTTS(true);
             stopBackgroundAudio();
             
             document.querySelectorAll('.card').forEach(c => c.classList.remove('playing'));
@@ -2276,7 +2282,9 @@ async function deleteCard(card) {
         startBackgroundAudio(); // Start silent keep-alive
         setupMediaSessionHandlers(); // Register lock screen controls
         
+        const startedRunId = autoPlayRunId + 1;
         startAutoPlay().then(() => {
+            if (startedRunId !== autoPlayRunId || isPlaying) return;
             isPlaying = false;
             playBtn.classList.remove('active');
             
