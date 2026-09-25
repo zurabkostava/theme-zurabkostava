@@ -1,13 +1,10 @@
 ﻿// ==== Wordevo Service Worker ====
-const SW_VERSION = 16;
+const SW_VERSION = 17;
 const workerUrl = new URL(self.location.href);
 const requestedApp = new URL(workerUrl.searchParams.get('app') || '/', workerUrl.origin);
 const APP_URL = requestedApp.origin === workerUrl.origin ? requestedApp.href : workerUrl.origin + '/';
-const ICON_URL = new URL('./icons/wordevo-192.png', workerUrl).href;
-// Keep the vocabulary word visible while identifying the app in every title.
-function notificationTitle(title) {
-    return !title || /^wordevo$/i.test(title) ? 'WordEvo' : /^wordevo[ ·:—-]/i.test(title) ? title : 'WordEvo · ' + title;
-}
+const ICON_URL = new URL('./icons/notification-192.png', workerUrl).href;
+const BADGE_URL = new URL('./icons/notification-96.png', workerUrl).href;
 const PUSH_URL = 'https://wdgvxerfxwtmpqztwgtj.supabase.co/functions/v1/get-push-notification';
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -63,11 +60,11 @@ self.addEventListener('push', event => {
             }
         }
 
-        return self.registration.showNotification(notificationTitle(title), {
+        return self.registration.showNotification(title || 'WordEvo', {
             body,
             tag,
             icon: ICON_URL,
-            badge: ICON_URL,
+            badge: BADGE_URL,
             renotify: true,
             vibrate: [200, 100, 200],
             requireInteraction: true,
@@ -79,10 +76,10 @@ self.addEventListener('push', event => {
 self.addEventListener('message', event => {
     const d = event.data;
     if (d?.type === 'SHOW_NOTIFICATION') {
-        event.waitUntil(self.registration.showNotification(notificationTitle(d.title), {
+        event.waitUntil(self.registration.showNotification(d.title || 'WordEvo', {
             body: d.body || '',
             icon: ICON_URL,
-            badge: ICON_URL,
+            badge: BADGE_URL,
             tag: d.tag || 'wordevo-reminder',
             renotify: true,
             vibrate: [200, 100, 200],
