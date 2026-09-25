@@ -1,10 +1,10 @@
 ﻿// ==== Wordevo Service Worker ====
-const SW_VERSION = 17;
+const SW_VERSION = 18;
 const workerUrl = new URL(self.location.href);
 const requestedApp = new URL(workerUrl.searchParams.get('app') || '/', workerUrl.origin);
 const APP_URL = requestedApp.origin === workerUrl.origin ? requestedApp.href : workerUrl.origin + '/';
-const ICON_URL = new URL('./icons/notification-192.png', workerUrl).href;
-const BADGE_URL = new URL('./icons/notification-96.png', workerUrl).href;
+const ICON_URL = new URL('./icons/notification-w-192.png', workerUrl).href;
+const BADGE_URL = new URL('./icons/notification-w-96.png', workerUrl).href;
 const PUSH_URL = 'https://wdgvxerfxwtmpqztwgtj.supabase.co/functions/v1/get-push-notification';
 
 self.addEventListener('install', () => self.skipWaiting());
