@@ -417,7 +417,7 @@ function initPiperWorker(workerKey, voicePath) {
             while (state.queue.length > 0) {
                 const queued = state.queue.shift();
                 state.pendingCallbacks.push(queued);
-                worker.postMessage({ kind: 'synthesize', text: queued.text, requestId: queued.requestId });
+                worker.postMessage({ kind: 'synthesize', text: queued.text, rate: queued.rate, requestId: queued.requestId });
             }
         } else if (kind === 'output') {
             const index = state.pendingCallbacks.findIndex(item => item.requestId === requestId);
@@ -481,7 +481,7 @@ function speakWithPiper(text, rate = 1, workerKey) {
             const audio = new Audio();
             const audioUrl = URL.createObjectURL(wav);
             audio.src = audioUrl;
-            audio.playbackRate = Math.max(0.5, Math.min(rate, 2));
+            audio.playbackRate = 1;
             state.currentAudio = audio;
             let settled = false;
             const finish = error => {
@@ -498,10 +498,10 @@ function speakWithPiper(text, rate = 1, workerKey) {
             audio.play().catch(finish);
         };
 
-        const request = { requestId, text, resolve: onWav, reject };
+        const request = { requestId, text, rate, resolve: onWav, reject };
         if (state.ready) {
             state.pendingCallbacks.push(request);
-            state.worker.postMessage({ kind: 'synthesize', text, requestId });
+            state.worker.postMessage({ kind: 'synthesize', text, rate, requestId });
         } else {
             state.queue.push(request);
         }

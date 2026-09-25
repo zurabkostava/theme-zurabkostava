@@ -2853,7 +2853,7 @@ function buildSpokenSentence(sent, lang) {
     return { text: resultText, raw: resultText + " ", wordRanges: wordRanges, totalChars: resultText.length, speakable: containsSpeakableText(resultText) };
 }
 
-function piperSynthesize(state, text) {
+function piperSynthesize(state, text, rate = 1) {
     return new Promise((resolve, reject) => {
         const hasSpeakable = (() => {
             try { return new RegExp('\\p{L}|\\p{N}', 'u').test(text); } 
@@ -2862,7 +2862,7 @@ function piperSynthesize(state, text) {
         if (!text || !hasSpeakable) { resolve(null); return; }
         if (!state || !state.worker || !state.ready) { reject(new Error('Piper worker not ready')); return; }
         state.pending.push({ resolve: resolve, reject: reject });
-        state.worker.postMessage({ kind: 'synthesize', text: text });
+        state.worker.postMessage({ kind: 'synthesize', text: text, rate: rate });
     });
 }
 
@@ -2880,10 +2880,10 @@ function waitForPiperReady(state, token) {
 
 // A phonemizer crash ("memory access out of bounds") can leave the WASM instance
 // corrupted — rebuild the worker (model reloads from Cache API, so it's fast) and retry once.
-async function synthesizeSentence(langCode, text, token) {
+async function synthesizeSentence(langCode, text, token, rate = 1) {
     let state = piperWorkers[langCode];
     try {
-        return await piperSynthesize(state, text);
+        return await piperSynthesize(state, text, rate);
     } catch (e) {
         console.warn('Piper synth error, rebuilding worker:', e.message);
         const path = state ? state.voicePath : null;
@@ -2893,7 +2893,7 @@ async function synthesizeSentence(langCode, text, token) {
         state = piperWorkers[langCode];
         const ok = await waitForPiperReady(state, token);
         if (!ok) return null;
-        try { return await piperSynthesize(state, text); }
+        try { return await piperSynthesize(state, text, rate); }
         catch (e2) { console.error('Piper synth failed after worker rebuild, skipping sentence:', e2.message); return null; }
     }
 }
@@ -2907,7 +2907,8 @@ function playPiperAudio(state, wavBlob, rate, spoken, token) {
     return new Promise((resolve) => {
         const url = URL.createObjectURL(wavBlob);
         const audio = new Audio(url);
-        audio.playbackRate = Math.max(0.5, Math.min(rate, 4));
+        // Piper handles 0.5–2x inside synthesis; only the excess needs playback stretching.
+        audio.playbackRate = Math.max(1, Math.min(rate / 2, 2));
         state.currentAudio = audio;
         let done = false;
         const finish = () => {
@@ -2963,7 +2964,7 @@ async function playPiperChunk(chunk, rate, token) {
     if (!ready) return false;
 
     const spokenList = chunk.sentences.map(s => buildSpokenSentence(s, chunk.lang));
-    const wavPromises = spokenList.map(spoken => synthesizeSentence(effectiveLang, spoken.text, token));
+    const wavPromises = spokenList.map(spoken => synthesizeSentence(effectiveLang, spoken.text, token, rate));
 
     // Group sentences by pIndex
     const paragraphs = [];

@@ -5,6 +5,27 @@ const fs = require('node:fs');
 const path = require('node:path');
 const source = fs.readFileSync(path.join(__dirname, '../piper-worker.js'), 'utf8');
 
+test('Piper changes model timing instead of stretching generated audio', async () => {
+    const messages = [];
+    const tensors = {};
+    const ctx = vm.createContext({
+        phonemize: async () => [1, 2, 3],
+        modelConfig: { audio: { sample_rate: 22050 }, inference: { noise_scale: 0.667, length_scale: 1, noise_w: 0.8 } },
+        ort: {
+            Tensor: function (type, data) { this.data = data; this.type = type; },
+        },
+        ortSession: { run: async feeds => { Object.assign(tensors, feeds); return { output: { data: new Float32Array([0.1]) } }; } },
+        PCM2WAV: () => ({}),
+        self: { postMessage: message => messages.push(message) }
+    });
+    const start = source.indexOf('async function synthesize(');
+    const end = source.indexOf('let queue =', start);
+    vm.runInContext(source.slice(start, end), ctx);
+    await vm.runInContext("synthesize('გამარჯობა', 7, 1.5)", ctx);
+    assert.ok(Math.abs(tensors.scales.data[1] - 2 / 3) < 0.00001);
+    assert.equal(messages[0].requestId, 7);
+});
+
 test('Piper PCM conversion preserves quiet amplitude without automatic gain', async () => {
     const ctx = vm.createContext({ Blob, self: { addEventListener() {} } });
     vm.runInContext(source, ctx);

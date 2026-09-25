@@ -171,7 +171,7 @@ function phonemize(text) {
     });
 }
 
-async function synthesize(text, requestId) {
+async function synthesize(text, requestId, rate = 1) {
     const phonemeIds = await phonemize(text);
 
     if (!phonemeIds || phonemeIds.length === 0) {
@@ -182,7 +182,10 @@ async function synthesize(text, requestId) {
 
     const sampleRate = modelConfig.audio.sample_rate || 22050;
     const noiseScale = modelConfig.inference?.noise_scale ?? 0.667;
-    const lengthScale = modelConfig.inference?.length_scale ?? 1.0;
+    // Change Piper's phoneme timing at synthesis time. Browser playbackRate
+    // time-stretches completed audio and can make speech sound metallic.
+    const safeRate = Number.isFinite(rate) ? Math.max(0.5, Math.min(rate, 2)) : 1;
+    const lengthScale = (modelConfig.inference?.length_scale ?? 1.0) / safeRate;
     const noiseW = modelConfig.inference?.noise_w ?? 0.8;
 
     const feeds = {
@@ -224,7 +227,7 @@ async function processQueue() {
     while(queue.length > 0) {
         const data = queue.shift();
         try {
-            await synthesize(data.text, data.requestId);
+            await synthesize(data.text, data.requestId, data.rate);
         } catch(e) {
             self.postMessage({ kind: 'error', requestId: data.requestId, message: e.message || String(e) });
         }
