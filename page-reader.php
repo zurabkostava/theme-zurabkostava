@@ -19,8 +19,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 <head>
     <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Neural Reader PRO — Zurab Kostava</title>
-    <meta name="description" content="Neural EPUB & Voice Reader by Zurab Kostava">
+    <title>ReadRoad — Zurab Kostava</title>
+    <meta name="description" content="EPUB and voice reading by Zurab Kostava">
 
     <!-- PWA & Mobile Web App Manifest -->
     <link rel="manifest" href="<?php echo get_template_directory_uri(); ?>/web-reader/manifest.json?v=<?php echo time(); ?>">
@@ -28,8 +28,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Voice Reader">
-    <meta name="application-name" content="Voice Reader">
+    <meta name="apple-mobile-web-app-title" content="ReadRoad">
+    <meta name="application-name" content="ReadRoad">
 
     <!-- App Icons -->
     <link rel="icon" type="image/svg+xml" href="<?php echo get_template_directory_uri(); ?>/web-reader/icons/icon.svg">
@@ -84,8 +84,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
                         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
                     </svg>
-                    <span class="logo-title">Neural Reader</span>
-                    <span class="logo-pro-badge">PRO</span>
+                    <span class="logo-title">ReadRoad</span>
                 </div>
 
                 <div id="book-meta-container" class="book-meta hidden">
@@ -3015,8 +3014,8 @@ window.THEME_URI = '<?php echo get_template_directory_uri(); ?>';
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('<?php echo get_template_directory_uri(); ?>/web-reader/sw.js')
-            .then(reg => console.log('Neural Reader PWA SW registered:', reg.scope))
-            .catch(err => console.log('Neural Reader PWA SW registration note:', err));
+            .then(reg => console.log('ReadRoad PWA SW registered:', reg.scope))
+            .catch(err => console.log('ReadRoad PWA SW registration note:', err));
     });
 }
 </script>

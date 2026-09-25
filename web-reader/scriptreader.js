@@ -171,7 +171,7 @@ function releaseWakeLock() {
 function updateMediaSessionMetadata() {
     if ('mediaSession' in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
-            title: 'Neural Reader Playing',
+            title: 'ReadRoad Playing',
             artist: 'Zurab Kostava',
             album: currentBook ? 'EPUB Book' : 'Reading Session',
             artwork: [
@@ -259,7 +259,7 @@ if (refreshVoicesBtn) refreshVoicesBtn.onclick = async () => {
 function initMediaSession() {
     if ('mediaSession' in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
-            title: 'Neural Reader',
+            title: 'ReadRoad',
             artist: 'Zurab Kostava',
             album: 'EPUB Audiobook',
             artwork: [{ src: 'https://cdn-icons-png.flaticon.com/512/2995/2995101.png', sizes: '512x512', type: 'image/png' }]
@@ -346,7 +346,7 @@ contentArea.addEventListener('drop', (e) => {
 const appLogo = document.querySelector('.logo');
 if (appLogo) {
     appLogo.style.cursor = 'pointer';
-    appLogo.title = 'Neural Reader PRO — Return to Home Hub';
+    appLogo.title = 'ReadRoad — Return to Home Hub';
     appLogo.addEventListener('click', () => {
         if (document.body.classList.contains('is-reading')) {
             if (confirm("Return to home screen?")) {
@@ -4374,7 +4374,7 @@ window.addEventListener('appinstalled', () => {
     pwaDeferredPrompt = null;
     if (pwaHeaderBtn) pwaHeaderBtn.classList.add('hidden');
     if (pwaSettingsBtn) pwaSettingsBtn.classList.add('hidden');
-    console.log('✅ Neural Reader PWA successfully installed!');
+    console.log('✅ ReadRoad PWA successfully installed!');
 });
 
 

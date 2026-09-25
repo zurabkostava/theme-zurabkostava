@@ -1,7 +1,7 @@
 {
-  "name": "Neural Reader PRO",
-  "short_name": "Voice Reader",
-  "description": "Neural EPUB & Voice Reader by Zurab Kostava",
+  "name": "ReadRoad",
+  "short_name": "ReadRoad",
+  "description": "EPUB and voice reading by Zurab Kostava",
   "id": "/projects/reader/",
   "start_url": "/projects/reader/",
   "scope": "/projects/reader",
