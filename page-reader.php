@@ -923,7 +923,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         gap: 8px;
     }
 
-    .big-save-btn {
+    #neural-app-root .big-save-btn {
         display: inline-flex !important;
         align-items: center !important;
         gap: 8px !important;
@@ -940,24 +940,24 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         white-space: nowrap !important;
     }
 
-    .big-save-btn svg {
+    #neural-app-root .big-save-btn svg {
         width: 18px !important;
         height: 18px !important;
         color: #090d16 !important;
     }
 
-    .big-save-btn:hover {
+    #neural-app-root .big-save-btn:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 6px 20px rgba(56, 189, 248, 0.65) !important;
         filter: brightness(1.08) !important;
     }
 
-    .big-save-btn:active {
+    #neural-app-root .big-save-btn:active {
         transform: translateY(0) !important;
         box-shadow: 0 2px 8px rgba(56, 189, 248, 0.4) !important;
     }
 
-    .cancel-edit-btn {
+    #neural-app-root .cancel-edit-btn {
         display: inline-flex !important;
         align-items: center !important;
         gap: 6px !important;
@@ -973,13 +973,13 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         white-space: nowrap !important;
     }
 
-    .cancel-edit-btn svg {
+    #neural-app-root .cancel-edit-btn svg {
         width: 15px !important;
         height: 15px !important;
         color: currentColor !important;
     }
 
-    .cancel-edit-btn:hover {
+    #neural-app-root .cancel-edit-btn:hover {
         background: rgba(239, 68, 68, 0.15) !important;
         border-color: rgba(239, 68, 68, 0.35) !important;
         color: #f87171 !important;
