@@ -13,7 +13,7 @@ test('Stop cancels Piper playback and queued synthesis before it can restart', a
     let canceled = 0;
     let paused = 0;
     class Worker {
-        constructor() { this.handlers = {}; this.messages = []; this.terminated = false; workers.push(this); }
+        constructor(url) { this.url = url; this.handlers = {}; this.messages = []; this.terminated = false; workers.push(this); }
         addEventListener(type, handler) { this.handlers[type] = handler; }
         postMessage(message) { this.messages.push(message); }
         terminate() { this.terminated = true; }
@@ -26,13 +26,14 @@ test('Stop cancels Piper playback and queued synthesis before it can restart', a
     const state = { worker: null, ready: false, initializing: false, queue: [], pendingCallbacks: [], currentAudio: null, voicePath: null };
     const context = vm.createContext({
         Worker, Audio, URL: { createObjectURL: () => 'blob:sample', revokeObjectURL() {} },
-        window: { WORDEVO_ASSET_PATH: '/theme/WordEvo', speechSynthesis: { cancel() { canceled++; } } },
+        window: { WORDEVO_ASSET_PATH: '/theme/WordEvo', WORDEVO_PIPER_WORKER_VERSION: 123, speechSynthesis: { cancel() { canceled++; } } },
         piperWorkers: { lang1: state }, piperRequestId: 0, ttsGeneration: 0,
         speechSynthesis: { cancel() { canceled++; } }, setPiperStatus() {}, console
     });
     vm.runInContext(source.slice(start, end), context);
 
     vm.runInContext("initPiperWorker('lang1', 'voice')", context);
+    assert.equal(workers[0].url, '/theme/WordEvo/piper-worker.js?v=123');
     workers[0].emit({ kind: 'ready' });
     const first = vm.runInContext("speakWithPiper('first', 1, 'lang1')", context);
     workers[0].emit({ kind: 'output', requestId: 1, wav: {} });
@@ -50,6 +51,16 @@ test('Stop cancels Piper playback and queued synthesis before it can restart', a
     assert.equal(workers[0].terminated, true);
     workers[0].emit({ kind: 'output', requestId: 2, wav: {} });
     assert.equal(state.currentAudio, null);
+
+    const resumed = vm.runInContext("speakWithPiper('again', 1, 'lang1')", context);
+    assert.equal(workers.length, 2);
+    workers[1].emit({ kind: 'ready' });
+    const synthesize = workers[1].messages.find(message => message.kind === 'synthesize');
+    assert.equal(synthesize.text, 'again');
+    workers[1].emit({ kind: 'output', requestId: synthesize.requestId, wav: {} });
+    assert.ok(state.currentAudio);
+    state.currentAudio.onended();
+    await resumed;
 });
 
 test('late output from canceled request does not satisfy new playback', async () => {

@@ -57,6 +57,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <script>
         window.WORDEVO_ASSET_PATH = <?php echo wp_json_encode($wordevo_assets); ?>;
         window.WORDEVO_APP_URL = <?php echo wp_json_encode($wordevo_url); ?>;
+        window.WORDEVO_PIPER_WORKER_VERSION = <?php echo wp_json_encode(filemtime(get_template_directory() . '/WordEvo/piper-worker.js')); ?>;
         // Apply dark mode immediately to prevent flash
         if (localStorage.getItem('theme') === 'dark') {
             document.documentElement.classList.add('dark');

@@ -395,7 +395,8 @@ function initPiperWorker(workerKey, voicePath) {
 
     if (typeof showToast === 'function') showToast(`ხმის მოდელი იტვირთება (${workerKey})...`, 'info');
     
-    const workerPath = (window.WORDEVO_ASSET_PATH || '.') + '/piper-worker.js?v=2';
+    const workerPath = (window.WORDEVO_ASSET_PATH || '.') + '/piper-worker.js?v=' +
+        (window.WORDEVO_PIPER_WORKER_VERSION || '3');
     let worker;
     try { worker = new Worker(workerPath); }
     catch (error) {
