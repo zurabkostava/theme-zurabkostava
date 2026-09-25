@@ -1141,15 +1141,25 @@ editBtn.onclick = () => {
         contentArea.contentEditable = "false";
         contentArea.classList.remove('edit-mode-active');
         let paragraphsArray = [];
-        if (contentArea.children.length > 0) {
-            for (let child of contentArea.children) {
-                let txt = child.innerText.trim();
-                if (txt) paragraphsArray.push(txt);
+        let clone = contentArea.cloneNode(true);
+        const formattingSpans = clone.querySelectorAll('span.word, span.sentence, span.hidden-word');
+        formattingSpans.forEach(span => {
+            const parent = span.parentNode;
+            while (span.firstChild) {
+                parent.insertBefore(span.firstChild, span);
+            }
+            parent.removeChild(span);
+        });
+
+        if (clone.children.length > 0) {
+            for (let child of clone.children) {
+                let html = child.innerHTML.trim();
+                if (html) paragraphsArray.push(html);
             }
         }
         if (paragraphsArray.length === 0) {
-            let txt = contentArea.innerText.trim();
-            if (txt) paragraphsArray.push(txt);
+            let html = clone.innerHTML.trim();
+            if (html) paragraphsArray.push(html);
         }
         const updatedText = paragraphsArray.join('\n\n');
         editBtn.innerHTML = `${iconEdit} <span class="action-label">Edit Text</span>`;
@@ -2393,7 +2403,7 @@ function processText(rawHtml) {
     let lastDetectedLang = 'ka';
     
     const tags = [];
-    let textWithPlaceholders = rawHtml.replace(/<\/?(b|strong|img)[^>]*>/gi, (match) => {
+    let textWithPlaceholders = rawHtml.replace(/<\/?([a-z0-9]+)[^>]*>/gi, (match) => {
         const index = tags.length;
         tags.push(match);
         return `___HTML_${index}___`;
@@ -2488,9 +2498,12 @@ function processText(rawHtml) {
                 let tagIdx = openTagsStack[i];
                 let tagStr = tags[tagIdx];
                 let closingTag = '';
-                if (tagStr.toLowerCase().startsWith('<strong')) closingTag = '</strong>';
-                else if (tagStr.toLowerCase().startsWith('<b')) closingTag = '</b>';
-                else if (tagStr.toLowerCase().startsWith('<img')) continue; // img doesn't need closing tag injected
+                let tagMatch = tagStr.match(/^<([a-z0-9]+)/i);
+                if (tagMatch) {
+                    let tagName = tagMatch[1].toLowerCase();
+                    if (['img', 'br', 'hr', 'input'].includes(tagName)) continue;
+                    closingTag = `</${tagName}>`;
+                }
                 
                 let newIdx = tags.length;
                 tags.push(closingTag);
