@@ -1,10 +1,14 @@
 ﻿// ==== Wordevo Service Worker ====
-const SW_VERSION = 19;
+const SW_VERSION = 20;
 const workerUrl = new URL(self.location.href);
 const requestedApp = new URL(workerUrl.searchParams.get('app') || '/', workerUrl.origin);
 const APP_URL = requestedApp.origin === workerUrl.origin ? requestedApp.href : workerUrl.origin + '/';
-const ICON_URL = new URL('./icons/notification-192.png', workerUrl).href;
-const BADGE_URL = new URL('./icons/notification-96.png', workerUrl).href;
+const ICON_URL = new URL('./icons/notification-192.png', workerUrl);
+ICON_URL.searchParams.set('v', SW_VERSION);
+const ICON_URL_STRING = ICON_URL.href;
+const BADGE_URL = new URL('./icons/notification-96.png', workerUrl);
+BADGE_URL.searchParams.set('v', SW_VERSION);
+const BADGE_URL_STRING = BADGE_URL.href;
 const PUSH_URL = 'https://wdgvxerfxwtmpqztwgtj.supabase.co/functions/v1/get-push-notification';
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -63,8 +67,8 @@ self.addEventListener('push', event => {
         return self.registration.showNotification(title || 'WordEvo', {
             body,
             tag,
-            icon: ICON_URL,
-            badge: BADGE_URL,
+            icon: ICON_URL_STRING,
+            badge: BADGE_URL_STRING,
             renotify: true,
             vibrate: [200, 100, 200],
             requireInteraction: true,
@@ -78,8 +82,8 @@ self.addEventListener('message', event => {
     if (d?.type === 'SHOW_NOTIFICATION') {
         event.waitUntil(self.registration.showNotification(d.title || 'WordEvo', {
             body: d.body || '',
-            icon: ICON_URL,
-            badge: BADGE_URL,
+            icon: ICON_URL_STRING,
+            badge: BADGE_URL_STRING,
             tag: d.tag || 'wordevo-reminder',
             renotify: true,
             vibrate: [200, 100, 200],

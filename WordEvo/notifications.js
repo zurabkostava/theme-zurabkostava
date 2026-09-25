@@ -459,8 +459,8 @@ async function initNotificationUI() {
                     const reg = await window.registerWordevoWorker();
                     await reg.showNotification('WordEvo · Test', {
                         body: 'Test notification works!',
-                        icon: window.WORDEVO_ASSET_PATH + '/icons/notification-192.png',
-                        badge: window.WORDEVO_ASSET_PATH + '/icons/notification-96.png',
+                        icon: window.WORDEVO_ASSET_PATH + '/icons/notification-192.png?v=20',
+                        badge: window.WORDEVO_ASSET_PATH + '/icons/notification-96.png?v=20',
                         tag: 'wordevo-test',
                         renotify: true,
                         vibrate: [200, 100, 200],
@@ -471,7 +471,7 @@ async function initNotificationUI() {
                     console.error('[Notif] Test SW showNotification failed:', e);
                     new Notification('WordEvo · Test', {
                         body: 'Test notification works!',
-                        icon: window.WORDEVO_ASSET_PATH + '/icons/notification-192.png'
+                        icon: window.WORDEVO_ASSET_PATH + '/icons/notification-192.png?v=20'
                     });
                     showToast('Test notification sent!', 'success');
                 }
@@ -479,7 +479,7 @@ async function initNotificationUI() {
                 // Fallback
                 new Notification('WordEvo · Test', {
                     body: 'Test notification works!',
-                    icon: window.WORDEVO_ASSET_PATH + '/icons/notification-192.png'
+                    icon: window.WORDEVO_ASSET_PATH + '/icons/notification-192.png?v=20'
                 });
                 showToast('Test notification sent!', 'success');
             }
@@ -587,8 +587,8 @@ async function showNotificationWithCard(notif) {
             const reg = await window.registerWordevoWorker();
             await reg.showNotification(title, {
                 body,
-                icon: window.WORDEVO_ASSET_PATH + '/icons/notification-192.png',
-                badge: window.WORDEVO_ASSET_PATH + '/icons/notification-96.png',
+                icon: window.WORDEVO_ASSET_PATH + '/icons/notification-192.png?v=20',
+                badge: window.WORDEVO_ASSET_PATH + '/icons/notification-96.png?v=20',
                 tag: `wordevo-${notif.id || 'reminder'}`,
                 renotify: true,
                 vibrate: [200, 100, 200],
@@ -597,11 +597,11 @@ async function showNotificationWithCard(notif) {
         } catch (e) {
             console.error('[Notif] SW showNotification failed:', e);
             if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification(title, { body, icon: window.WORDEVO_ASSET_PATH + '/icons/notification-192.png', tag: `wordevo-${notif.id || 'reminder'}` });
+                new Notification(title, { body, icon: window.WORDEVO_ASSET_PATH + '/icons/notification-192.png?v=20', tag: `wordevo-${notif.id || 'reminder'}` });
             }
         }
     } else if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, { body, icon: window.WORDEVO_ASSET_PATH + '/icons/notification-192.png', tag: `wordevo-${notif.id || 'reminder'}` });
+        new Notification(title, { body, icon: window.WORDEVO_ASSET_PATH + '/icons/notification-192.png?v=20', tag: `wordevo-${notif.id || 'reminder'}` });
     }
 }
 

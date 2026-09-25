@@ -7,7 +7,7 @@
             const url = new URL(window.WORDEVO_ASSET_PATH + '/sw.js', location.href);
             url.searchParams.set('app', window.WORDEVO_APP_URL);
             // Stable release key bypasses stale HTTP/CDN content without changing scope.
-            url.searchParams.set('v', '19');
+            url.searchParams.set('v', '20');
             registration = navigator.serviceWorker.register(url.href, { updateViaCache: 'none' })
                 .catch(error => { registration = null; throw error; });
         }
