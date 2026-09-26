@@ -122,44 +122,46 @@ function zk_save_translation_meta_data($post_id) {
 }
 add_action('save_post', 'zk_save_translation_meta_data');
 
-// --- 2. REWRITE RULES FOR /ka/ ---
+// --- 2. EARLY URI REWRITING (FOOLPROOF METHOD) ---
 
-function zk_language_rewrite_rules_array($rules) {
-    $new_rules = array();
+function zk_early_uri_rewrite() {
+    if (is_admin()) return;
     
-    // Create a duplicate of EVERY WordPress rewrite rule, prefixed with ka/
-    foreach ($rules as $key => $rule) {
-        // e.g. rule: index.php?name=$matches[1]
-        $new_rules['ka/' . $key] = $rule . '&lang_prefix=ka';
+    $request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+    $path = parse_url($request_uri, PHP_URL_PATH);
+    
+    if (strpos($path, '/ka/') === 0 || $path === '/ka') {
+        // Strip /ka/ from the URI
+        $new_uri = preg_replace('#^/ka(?=/|$)#', '', $request_uri);
+        if ($new_uri === '') $new_uri = '/';
+        
+        // Rewrite the server variable so WP processes it as the English URL
+        $_SERVER['REQUEST_URI'] = $new_uri;
+        
+        // Set a constant so we know it was originally a Georgian request
+        if (!defined('ZK_IS_GEORGIAN_REQUEST')) {
+            define('ZK_IS_GEORGIAN_REQUEST', true);
+        }
     }
-    
-    // Add rule for the root /ka/ path
-    $new_rules['^ka/?$'] = 'index.php?lang_prefix=ka';
-    
-    // Return our new rules combined with the original ones
-    return $new_rules + $rules;
 }
-add_filter('rewrite_rules_array', 'zk_language_rewrite_rules_array');
+// Hook very early
+add_action('setup_theme', 'zk_early_uri_rewrite', 1);
 
-function zk_language_query_vars($vars) {
-    $vars[] = 'lang_prefix';
-    return $vars;
+function zk_get_current_language() {
+    if (is_admin()) return 'en';
+    if (defined('ZK_IS_GEORGIAN_REQUEST') && ZK_IS_GEORGIAN_REQUEST) {
+        return 'ka';
+    }
+    return 'en';
 }
-add_filter('query_vars', 'zk_language_query_vars');
 
 function zk_disable_canonical_for_ka($redirect_url, $requested_url) {
-    if (get_query_var('lang_prefix') === 'ka') {
+    if (zk_get_current_language() === 'ka') {
         return false;
     }
     return $redirect_url;
 }
 add_filter('redirect_canonical', 'zk_disable_canonical_for_ka', 10, 2);
-
-function zk_get_current_language() {
-    if (is_admin()) return 'en';
-    $lang = get_query_var('lang_prefix');
-    return ($lang === 'ka') ? 'ka' : 'en';
-}
 
 // --- 3. FRONTEND CONTENT REPLACEMENT ---
 
