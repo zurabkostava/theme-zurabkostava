@@ -198,4 +198,41 @@ function zk_translate_content_wrapper($content) {
 }
 add_filter('the_content', 'zk_translate_content_wrapper', 1);
 
-// We purposefully omit the add_filter('post_link', ...) logic in this phase to prevent breaking the SPA routing.
+function zk_filter_permalink_ka($permalink, $post = null) {
+    if (is_admin()) return $permalink;
+    if (zk_get_current_language() === 'ka') {
+        $parsed = parse_url($permalink);
+        $path = isset($parsed['path']) ? $parsed['path'] : '';
+        
+        if (!empty($path) && strpos($path, '/ka/') !== 0 && $path !== '/ka') {
+            $scheme = isset($parsed['scheme']) ? $parsed['scheme'] : 'https';
+            $host   = isset($parsed['host']) ? $parsed['host'] : (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '');
+            $port   = isset($parsed['port']) ? ':' . $parsed['port'] : '';
+            $query  = isset($parsed['query']) ? '?' . $parsed['query'] : '';
+            
+            $new_path = '/ka' . ($path[0] === '/' ? '' : '/') . $path;
+            return $scheme . '://' . $host . $port . $new_path . $query;
+        }
+    }
+    return $permalink;
+}
+add_filter('post_link', 'zk_filter_permalink_ka', 10, 2);
+add_filter('page_link', 'zk_filter_permalink_ka', 10, 2);
+add_filter('post_type_link', 'zk_filter_permalink_ka', 10, 2);
+
+function zk_change_html_lang_ka($output) {
+    if (zk_get_current_language() === 'ka') {
+        return 'lang="ka-GE"';
+    }
+    return $output;
+}
+add_filter('language_attributes', 'zk_change_html_lang_ka');
+
+// Send nocache headers on ka requests to prevent browsers/CDNs from caching old 301 redirects
+function zk_ka_nocache_headers() {
+    if (zk_get_current_language() === 'ka') {
+        nocache_headers();
+    }
+}
+add_action('send_headers', 'zk_ka_nocache_headers');
+
