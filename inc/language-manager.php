@@ -180,12 +180,40 @@ function zk_translate_title($title, $post_id = null) {
 add_filter('the_title', 'zk_translate_title', 10, 2);
 
 function zk_clean_markdown_attributes($content) {
-    if (empty($content)) return $content;
+    if (empty($content) || !is_string($content)) return $content;
     return preg_replace_callback('/\[(https?:\/\/[^\]]+)\](?:\((https?:\/\/[^\)]+)\))?/i', function($m) {
         return !empty($m[2]) ? $m[2] : $m[1];
     }, $content);
 }
 add_filter('the_content', 'zk_clean_markdown_attributes', 999999);
+
+add_filter('wp_calculate_image_srcset', function($sources) {
+    if (is_array($sources)) {
+        foreach ($sources as &$src) {
+            if (isset($src['url'])) {
+                $src['url'] = zk_clean_markdown_attributes($src['url']);
+            }
+        }
+    }
+    return $sources;
+}, 999999);
+
+// Automatically clean and fix malformed markdown link syntax in DB meta on page load
+function zk_auto_clean_db_meta() {
+    if (is_singular()) {
+        $post_id = get_the_ID();
+        if ($post_id) {
+            $raw_ka = get_post_meta($post_id, '_zk_content_ka', true);
+            if (!empty($raw_ka) && (strpos($raw_ka, '[http') !== false || strpos($raw_ka, '](') !== false)) {
+                $cleaned = zk_clean_markdown_attributes($raw_ka);
+                if ($cleaned !== $raw_ka) {
+                    update_post_meta($post_id, '_zk_content_ka', $cleaned);
+                }
+            }
+        }
+    }
+}
+add_action('wp', 'zk_auto_clean_db_meta');
 
 function zk_translate_content_wrapper($content) {
     if (is_admin()) return $content;
