@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once get_template_directory() . '/inc/ui-language.php';
+require_once get_template_directory() . '/inc/language-manager.php';
 
 // 🔴 Load Nuvio Addons
 require_once get_template_directory() . '/nuvio-ge-sub.php';

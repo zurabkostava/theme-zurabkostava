@@ -21,8 +21,13 @@
         'Born:': 'დაბადება:', 'Origin:': 'წარმოშობა:', 'Base:': 'ადგილმდებარეობა:',
         'Studio:': 'სტუდია:', 'Position:': 'პოზიცია:', 'Archetype:': 'შემოქმედებითი პროფილი:'
     };
-    let language = 'en';
-    try { if (localStorage.getItem(storageKey) === 'ka') language = 'ka'; } catch (_) {}
+    let language = document.documentElement.lang || 'en';
+    try { 
+        let stored = localStorage.getItem(storageKey);
+        if (stored === 'ka' || stored === 'en') {
+            localStorage.setItem(storageKey, language);
+        }
+    } catch (_) {}
     const originals = new WeakMap();
     const attributeOriginals = new WeakMap();
     const selector = '[data-zk-ui], #primaryNav a, #primaryNav .dropdown-trigger, #zk-bottom-nav .zk-bottom-nav-item span, .hero-sub, .zk-tags-label, .zk-nav-label, .zk-sort-label, .zk-sort-current, .zk-sort-option, .zk-vital-text strong';
@@ -65,18 +70,29 @@
             button.setAttribute('aria-pressed', String(button.dataset.uiLanguage === language));
         });
     }
-    function setLanguage(value) {
+    function setLanguage(value, redirectUrl = null) {
         if (value !== 'en' && value !== 'ka') return;
+        
+        if (language === value && !redirectUrl) return; 
+
         language = value;
         try { localStorage.setItem(storageKey, language); } catch (_) {}
-        apply();
+        
+        if (redirectUrl) {
+            window.location.href = redirectUrl;
+        } else {
+            apply();
+        }
     }
     window.ZKUI = { t: t, apply: apply, setLanguage: setLanguage };
     document.documentElement.dataset.uiLanguage = language;
     function initialize() {
         document.querySelectorAll('.zk-language-switch').forEach(element => { element.hidden = false; });
         document.querySelectorAll('[data-ui-language]').forEach(button => {
-            button.addEventListener('click', () => setLanguage(button.dataset.uiLanguage));
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                setLanguage(button.dataset.uiLanguage, button.dataset.url);
+            });
         });
         apply();
     }

@@ -13,8 +13,8 @@ add_filter( 'rocket_delay_js_exclusions', function ( $scripts ) {
 function zk_ui_language_switcher() {
     ?>
     <div class="zk-language-switch" role="group" aria-label="Interface language / ინტერფეისის ენა" hidden>
-        <button type="button" data-ui-language="en" lang="en" aria-label="English" aria-pressed="true">EN</button>
-        <button type="button" data-ui-language="ka" lang="ka" aria-label="ქართული" aria-pressed="false">ქარ</button>
+        <button type="button" data-ui-language="en" lang="en" aria-label="English" aria-pressed="true" data-url="<?php echo esc_url(zk_get_translation_url('en')); ?>">EN</button>
+        <button type="button" data-ui-language="ka" lang="ka" aria-label="ქართული" aria-pressed="false" data-url="<?php echo esc_url(zk_get_translation_url('ka')); ?>">ქარ</button>
     </div>
     <?php
 }
