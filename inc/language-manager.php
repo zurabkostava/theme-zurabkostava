@@ -536,5 +536,66 @@ function zk_filter_single_term_title($title) {
 }
 add_filter('single_term_title', 'zk_filter_single_term_title', 10, 1);
 
+// --- 5. LANGUAGE SWITCHER (TOP RIGHT HEADER) ---
+
+function zk_get_language_switcher_urls() {
+    $current_lang = function_exists('zk_get_current_language') ? zk_get_current_language() : 'en';
+    $request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
+    $parsed = parse_url($request_uri);
+    $path = isset($parsed['path']) ? $parsed['path'] : '/';
+    $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
+
+    // Strip leading /ka or /ka/ from path to obtain the pure English path
+    $en_path = preg_replace('#^/ka(?=/|$)#', '', $path);
+    if ($en_path === '') {
+        $en_path = '/';
+    }
+
+    // Ensure leading slash
+    if ($en_path[0] !== '/') {
+        $en_path = '/' . $en_path;
+    }
+
+    // Georgian path is prefixed with /ka
+    $ka_path = ($en_path === '/') ? '/ka/' : '/ka' . $en_path;
+
+    $home_url = untrailingslashit(get_option('home'));
+    if (empty($home_url)) {
+        $home_url = 'https://zurabkostava.com';
+    }
+
+    return array(
+        'current'  => $current_lang,
+        'en_url'   => $home_url . $en_path . $query,
+        'en_route' => $en_path . $query,
+        'ka_url'   => $home_url . $ka_path . $query,
+        'ka_route' => $ka_path . $query,
+    );
+}
+
+function zk_render_language_switcher() {
+    $data = zk_get_language_switcher_urls();
+    $current = $data['current'];
+    ?>
+    <div class="zk-lang-switcher" role="navigation" aria-label="Language selector">
+        <a href="<?php echo esc_url($data['en_url']); ?>" 
+           data-route="<?php echo esc_attr($data['en_route']); ?>"
+           class="zk-lang-btn <?php echo ($current === 'en') ? 'is-active' : ''; ?> no-spa" 
+           aria-label="English language"
+           <?php echo ($current === 'en') ? 'aria-current="true"' : ''; ?>>
+            <span>EN</span>
+        </a>
+        <span class="zk-lang-divider" aria-hidden="true"></span>
+        <a href="<?php echo esc_url($data['ka_url']); ?>" 
+           data-route="<?php echo esc_attr($data['ka_route']); ?>"
+           class="zk-lang-btn <?php echo ($current === 'ka') ? 'is-active' : ''; ?> no-spa" 
+           aria-label="ქართული ენა"
+           <?php echo ($current === 'ka') ? 'aria-current="true"' : ''; ?>>
+            <span>KA</span>
+        </a>
+    </div>
+    <?php
+}
+
 
 

@@ -136,6 +136,26 @@
                 li = li.parentElement && li.parentElement.closest('.has-dropdown, .has-nested-dropdown');
             }
         }
+
+        // Update language switcher URLs dynamically on route changes
+        var switcher = document.querySelector('.zk-lang-switcher');
+        if (switcher) {
+            var path = window.location.pathname;
+            var search = window.location.search;
+            var enPath = path.replace(/^\/ka(?=\/|$)/, '') || '/';
+            if (enPath.charAt(0) !== '/') enPath = '/' + enPath;
+            var kaPath = (enPath === '/') ? '/ka/' : '/ka' .concat(enPath);
+            var enBtn = switcher.querySelector('a[aria-label*="English"]');
+            var kaBtn = switcher.querySelector('a[aria-label*="ქართული"]');
+            if (enBtn) {
+                enBtn.href = window.location.origin + enPath + search;
+                enBtn.setAttribute('data-route', enPath + search);
+            }
+            if (kaBtn) {
+                kaBtn.href = window.location.origin + kaPath + search;
+                kaBtn.setAttribute('data-route', kaPath + search);
+            }
+        }
     }
 
     function scrollTopInstant() {

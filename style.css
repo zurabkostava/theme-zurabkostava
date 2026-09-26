@@ -206,6 +206,98 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 }
 
 /* ============================================================
+   HEADER ACTIONS & LANGUAGE SWITCHER
+   ============================================================ */
+.nav-toggle {
+	display: none;
+}
+
+@media (min-width: 901px) {
+	.primary-nav {
+		margin-left: auto;
+	}
+}
+
+.header-actions {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	position: relative;
+	z-index: 2100;
+}
+
+.zk-lang-switcher {
+	display: inline-flex;
+	align-items: center;
+	padding: 3px;
+	background: rgba(255, 255, 255, 0.05);
+	-webkit-backdrop-filter: blur(16px);
+	backdrop-filter: blur(16px);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 9999px;
+	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+	transition: background 0.3s var(--ease), border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+
+.zk-lang-switcher:hover {
+	background: rgba(255, 255, 255, 0.08);
+	border-color: rgba(255, 255, 255, 0.22);
+	box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.zk-lang-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 4px 10px;
+	border-radius: 9999px;
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.55);
+	line-height: 1;
+	transition: all 0.25s var(--ease);
+	text-decoration: none !important;
+	user-select: none;
+}
+
+.zk-lang-btn span {
+	position: relative;
+	top: 0.5px;
+}
+
+.zk-lang-btn:hover {
+	color: #ffffff;
+	background: rgba(255, 255, 255, 0.09);
+}
+
+.zk-lang-btn.is-active {
+	color: #ffffff;
+	background: rgba(255, 255, 255, 0.18);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+	cursor: default;
+}
+
+.zk-lang-divider {
+	display: inline-block;
+	width: 1px;
+	height: 11px;
+	background: rgba(255, 255, 255, 0.12);
+	margin: 0 1px;
+}
+
+@media (max-width: 900px) {
+	.header-actions {
+		gap: 8px;
+	}
+	.zk-lang-btn {
+		padding: 4px 8px;
+		font-size: 0.68rem;
+	}
+}
+
+/* ============================================================
    RESPONSIVE — MOBILE OVERLAY MENU (≤ 900px)
    ============================================================ */
 @media (max-width: 900px) {
