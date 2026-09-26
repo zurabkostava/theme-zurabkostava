@@ -2537,6 +2537,8 @@ function zk_custom_seo_redirects() {
     }
 
     // 3. GLOBAL /ka/ FALLBACK (Except for books)
+    // Commented out to allow true multilingual routing via language-manager.php
+    /*
     if ( ( strpos( $path, '/ka/' ) === 0 || $path === '/ka' ) && strpos( $path, '/ka/books' ) !== 0 ) {
         // We replace ^/ka at the start of $request_uri so we preserve query params
         $new_uri = preg_replace( '#^/ka(?=/|$)#', '', $request_uri );
@@ -2546,6 +2548,7 @@ function zk_custom_seo_redirects() {
         wp_redirect( home_url( $new_uri ), 301 );
         exit;
     }
+    */
 }
 // Using 'init' instead of 'template_redirect' so it fires before WP query and 404 logic
 add_action( 'init', 'zk_custom_seo_redirects' );
