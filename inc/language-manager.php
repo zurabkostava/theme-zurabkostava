@@ -330,6 +330,9 @@ function zk_filter_permalink_ka($permalink, $post = null) {
 add_filter('post_link', 'zk_filter_permalink_ka', 10, 2);
 add_filter('page_link', 'zk_filter_permalink_ka', 10, 2);
 add_filter('post_type_link', 'zk_filter_permalink_ka', 10, 2);
+add_filter('term_link', 'zk_filter_permalink_ka', 10, 2);
+add_filter('category_link', 'zk_filter_permalink_ka', 10, 2);
+add_filter('tag_link', 'zk_filter_permalink_ka', 10, 2);
 
 function zk_change_html_lang_ka($output) {
     if (zk_get_current_language() === 'ka') {
@@ -365,5 +368,173 @@ function zk_ka_nocache_headers() {
     }
 }
 add_action('send_headers', 'zk_ka_nocache_headers');
+
+// --- 4. TAXONOMY TRANSLATION SUPPORT (CATEGORIES & TAGS) ---
+
+function zk_get_default_term_translation($slug) {
+    static $dict = array(
+        // Categories
+        'news' => 'სიახლეები',
+        'reviews' => 'მიმოხილვები',
+        'raw' => 'RAW',
+        'aubades' => 'დილის სიმღერები',
+        'nocturnes' => 'ნოქტიურნები',
+
+        // Tags
+        'art-tech' => 'არტ ტექნოლოგია',
+        'artificial-intelligence' => 'ხელოვნური ინტელექტი',
+        'artists-struggle' => 'ხელოვანის ბრძოლა',
+        'audio-tech' => 'აუდიო ტექნოლოგია',
+        'authenticity' => 'ავთენტურობა',
+        'behind-the-scenes' => 'კულისებს მიღმა',
+        'cinematic-narrative' => 'კინემატოგრაფიული თხრობა',
+        'creative-identity' => 'შემოქმედებითი იდენტობა',
+        'creative-process' => 'შემოქმედებითი პროცესი',
+        'digital-art' => 'ციფრული ხელოვნება',
+        'digital-manifesto' => 'ციფრული მანიფესტი',
+        'entrepreneurship' => 'ანტრეპრენერობა',
+        'everyday-observations' => 'ყოველდღიური დაკვირვებები',
+        'existentialism' => 'ეგზისტენციალიზმი',
+        'generative-art' => 'გენერაციული ხელოვნება',
+        'georgian-heritage' => 'ქართული მემკვიდრეობა',
+        'human-connection' => 'ადამიანური კავშირი',
+        'humor-and-satire' => 'იუმორი და სატირა',
+        'kostava-creative' => 'Kostava Creative',
+        'making-music' => 'მუსიკის შექმნა',
+        'melancholy-loneliness' => 'მელანქოლია და მარტოობა',
+        'mental-health' => 'მენტალური ჯანმრთელობა',
+        'multimedia' => 'მულტიმედია',
+        'new-beginings' => 'ახალი დასაწყისი',
+        'nostalgia' => 'ნოსტალგია',
+        'parenthood' => 'მშობლობა',
+        'personal-essay' => 'პირადი ესე',
+        'photography-philosophy' => 'ფოტოგრაფიის ფილოსოფია',
+        'reading' => 'კითხვა',
+        'self-discovery' => 'თვითშემეცნება',
+        'simulation-theory' => 'სიმულაციის თეორია',
+        'storytelling' => 'სთორითელინგი',
+        'urban-vignettes' => 'ურბანული ჩანახატები',
+        'vusual-language' => 'ვიზუალური ენა',
+    );
+    return isset($dict[$slug]) ? $dict[$slug] : '';
+}
+
+function zk_get_translated_term_name($term) {
+    if (empty($term)) return '';
+    if (is_numeric($term)) {
+        $term = get_term((int)$term);
+    }
+    if (!is_object($term) || is_wp_error($term)) return '';
+
+    if (function_exists('zk_get_current_language') && zk_get_current_language() === 'ka') {
+        $meta_name = get_term_meta($term->term_id, '_zk_name_ka', true);
+        if (!empty($meta_name)) {
+            return $meta_name;
+        }
+        $default_name = zk_get_default_term_translation($term->slug);
+        if (!empty($default_name)) {
+            return $default_name;
+        }
+    }
+    return $term->name;
+}
+
+function zk_taxonomy_add_custom_fields($taxonomy) {
+    ?>
+    <div class="form-field term-group">
+        <label for="zk_name_ka"><strong>ქართული სახელი (Georgian Name)</strong></label>
+        <input type="text" id="zk_name_ka" name="zk_name_ka" value="" placeholder="მაგ. ხელოვნური ინტელექტი">
+        <p class="description">მიუთითეთ თეგის/კატეგორიის ქართული თარგმანი ქართულენოვანი გვერდებისთვის.</p>
+    </div>
+    <?php
+}
+
+function zk_taxonomy_edit_custom_fields($term, $taxonomy) {
+    $name_ka = get_term_meta($term->term_id, '_zk_name_ka', true);
+    if (empty($name_ka)) {
+        $name_ka = zk_get_default_term_translation($term->slug);
+    }
+    ?>
+    <tr class="form-field term-group-wrap">
+        <th scope="row"><label for="zk_name_ka">ქართული სახელი (Georgian Name)</label></th>
+        <td>
+            <input type="text" id="zk_name_ka" name="zk_name_ka" value="<?php echo esc_attr($name_ka); ?>" style="width: 100%; max-width: 400px; font-size: 15px; padding: 6px 10px;">
+            <p class="description">მიუთითეთ თეგის/კატეგორიის ქართული თარგმანი ქართულენოვანი გვერდებისთვის.</p>
+        </td>
+    </tr>
+    <?php
+}
+
+function zk_save_taxonomy_custom_fields($term_id) {
+    if (isset($_POST['zk_name_ka'])) {
+        update_term_meta($term_id, '_zk_name_ka', sanitize_text_field($_POST['zk_name_ka']));
+    }
+}
+
+function zk_taxonomy_columns($columns) {
+    $columns['zk_name_ka'] = 'ქართული სახელი';
+    return $columns;
+}
+
+function zk_taxonomy_custom_column($content, $column_name, $term_id) {
+    if ($column_name === 'zk_name_ka') {
+        $term = get_term($term_id);
+        $val = get_term_meta($term_id, '_zk_name_ka', true);
+        if (empty($val) && $term && !is_wp_error($term)) {
+            $val = zk_get_default_term_translation($term->slug);
+            if (!empty($val)) {
+                return '<span style="color: #666; font-style: italic;">' . esc_html($val) . ' (default)</span>';
+            }
+        }
+        return $val ? '<strong>' . esc_html($val) . '</strong>' : '<span style="color:#bbb;">—</span>';
+    }
+    return $content;
+}
+
+foreach (array('category', 'post_tag') as $tax) {
+    add_action("{$tax}_add_form_fields", 'zk_taxonomy_add_custom_fields');
+    add_action("{$tax}_edit_form_fields", 'zk_taxonomy_edit_custom_fields', 10, 2);
+    add_action("created_{$tax}", 'zk_save_taxonomy_custom_fields');
+    add_action("edited_{$tax}", 'zk_save_taxonomy_custom_fields');
+    add_filter("manage_edit-{$tax}_columns", 'zk_taxonomy_columns');
+    add_filter("manage_{$tax}_custom_column", 'zk_taxonomy_custom_column', 10, 3);
+}
+
+// Frontend term translation filters
+function zk_filter_get_term($term, $taxonomy = '') {
+    if (is_admin()) return $term;
+    if (function_exists('zk_get_current_language') && zk_get_current_language() === 'ka') {
+        if (is_object($term) && isset($term->term_id)) {
+            $trans = get_term_meta($term->term_id, '_zk_name_ka', true);
+            if (empty($trans) && isset($term->slug)) {
+                $trans = zk_get_default_term_translation($term->slug);
+            }
+            if (!empty($trans)) {
+                $term->name = $trans;
+            }
+        }
+    }
+    return $term;
+}
+add_filter('get_term', 'zk_filter_get_term', 10, 2);
+
+function zk_filter_single_term_title($title) {
+    if (is_admin()) return $title;
+    if (function_exists('zk_get_current_language') && zk_get_current_language() === 'ka') {
+        $obj = get_queried_object();
+        if ($obj && isset($obj->term_id)) {
+            $trans = get_term_meta($obj->term_id, '_zk_name_ka', true);
+            if (empty($trans) && isset($obj->slug)) {
+                $trans = zk_get_default_term_translation($obj->slug);
+            }
+            if (!empty($trans)) {
+                return $trans;
+            }
+        }
+    }
+    return $title;
+}
+add_filter('single_term_title', 'zk_filter_single_term_title', 10, 1);
+
 
 

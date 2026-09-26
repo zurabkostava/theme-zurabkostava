@@ -164,7 +164,7 @@ ob_start(); ?>
     <div class="hero-latest-dock">
         <?php while ( $latest_query->have_posts() ) : $latest_query->the_post(); 
             $categories = get_the_category();
-            $cat_name = ! empty( $categories ) ? esc_html( $categories[0]->name ) : 'Log';
+            $cat_name = ! empty( $categories ) ? esc_html( function_exists( 'zk_get_translated_term_name' ) ? zk_get_translated_term_name( $categories[0] ) : $categories[0]->name ) : 'Log';
             
             $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
             $bg_style = $img_url ? 'style="--dock-bg: url(\'' . esc_url( $img_url ) . '\');"' : '';
@@ -239,14 +239,15 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
         if ( is_single() && $post_tags ) :
             ?>
             <div class="zk-post-tags">
-                <span class="zk-tags-label">Topics:</span>
+                <span class="zk-tags-label"><?php echo ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' ) ? 'თემები:' : 'Topics:'; ?></span>
                 <div class="zk-tags-list">
                     <?php foreach( $post_tags as $tag ) :
                         $tag_link = get_tag_link( $tag->term_id );
                         $tag_path = wp_parse_url( $tag_link, PHP_URL_PATH );
+                        $tag_display_name = function_exists( 'zk_get_translated_term_name' ) ? zk_get_translated_term_name( $tag ) : $tag->name;
                         ?>
                         <a href="<?php echo esc_url( $tag_link ); ?>" data-route="<?php echo esc_attr( $tag_path ); ?>" class="zk-tag">
-                            <?php echo esc_html( $tag->name ); ?>
+                            <?php echo esc_html( $tag_display_name ); ?>
                         </a>
                     <?php endforeach; ?>
                 </div>
@@ -303,15 +304,17 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
     $eyebrow = 'Archive';
     $archive_title = 'Posts';
 
+    $is_ka = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
+
     // ვარკვევთ რის არქივში ვართ
     if ( is_tag() ) {
-        $eyebrow = 'Topic';
+        $eyebrow = $is_ka ? 'თემა' : 'Topic';
         $archive_title = single_tag_title( '', false );
     } elseif ( is_category() ) {
-        $eyebrow = 'Category';
+        $eyebrow = $is_ka ? 'კატეგორია' : 'Category';
         $archive_title = single_cat_title( '', false );
     } elseif ( is_search() ) {
-        $eyebrow = 'Search Results';
+        $eyebrow = $is_ka ? 'ძიების შედეგები' : 'Search Results';
         $archive_title = get_search_query();
     }
 
@@ -330,17 +333,17 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                 <!-- ── გრიდის კონტროლები (Live Search & Sort) ── -->
                 <div class="zk-grid-controls">
                     <div class="zk-search-box">
-                        <input type="text" class="zk-search-input" placeholder="Search in <?php echo esc_attr( $archive_title ); ?>..." aria-label="Search">
+                        <input type="text" class="zk-search-input" placeholder="<?php echo $is_ka ? 'ძიება...' : 'Search in ' . esc_attr( $archive_title ) . '...'; ?>" aria-label="Search">
                         <svg class="zk-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                     </div>
                     <div class="zk-sort-dropdown" id="sortDropdown">
                         <button class="zk-sort-trigger" type="button" aria-expanded="false">
-                            <span class="zk-sort-label">Sort by: </span><span class="zk-sort-current">Newest</span>
+                            <span class="zk-sort-label"><?php echo $is_ka ? 'სორტირება: ' : 'Sort by: '; ?></span><span class="zk-sort-current"><?php echo $is_ka ? 'უახლესი' : 'Newest'; ?></span>
                             <svg class="dropdown-caret" width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
                         <div class="zk-sort-menu">
-                            <button class="zk-sort-option is-selected" type="button" data-sort="desc">Newest</button>
-                            <button class="zk-sort-option" type="button" data-sort="asc">Oldest</button>
+                            <button class="zk-sort-option is-selected" type="button" data-sort="desc"><?php echo $is_ka ? 'უახლესი' : 'Newest'; ?></button>
+                            <button class="zk-sort-option" type="button" data-sort="asc"><?php echo $is_ka ? 'უძველესი' : 'Oldest'; ?></button>
                         </div>
                     </div>
                 </div>
@@ -352,7 +355,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                         $link = get_permalink();
                         $path = wp_parse_url( $link, PHP_URL_PATH );
                         $categories = get_the_category();
-                        $cat_name = ! empty( $categories ) ? esc_html( $categories[0]->name ) : 'Post';
+                        $cat_name = ! empty( $categories ) ? esc_html( function_exists( 'zk_get_translated_term_name' ) ? zk_get_translated_term_name( $categories[0] ) : $categories[0]->name ) : 'Post';
                         $date = get_the_date( 'M j, Y' );
                         $timestamp = get_the_time( 'U' );
                         $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';

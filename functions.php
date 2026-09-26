@@ -380,10 +380,13 @@ function zk_breadcrumbs() {
 
     if ( is_single() ) {
         // --- ლოგიკა ცალკეული პოსტებისთვის (მაგ: Nocturne #50) ---
+        $is_ka = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
+        $blog_label = $is_ka ? 'ბლოგი' : 'Blog';
+        $blog_route = $is_ka ? '/ka/blog' : '/blog';
 
         // ხელით ვამატებთ Blog-ს, რადგან ყველა პოსტი ბლოგის ქვეშაა
         echo '<span class="zk-breadcrumb-separator">/</span>';
-        echo '<a href="' . esc_url( home_url( '/blog/' ) ) . '" data-route="/blog">Blog</a>';
+        echo '<a href="' . esc_url( home_url( '/blog/' ) ) . '" data-route="' . esc_attr( $blog_route ) . '">' . esc_html( $blog_label ) . '</a>';
 
         $categories = get_the_category();
         if ( ! empty( $categories ) ) {
@@ -394,16 +397,20 @@ function zk_breadcrumbs() {
                 $parent_cat = get_category( $cat->parent );
                 $parent_slug = $parent_cat->slug;
                 $parent_path = '/blog/' . $parent_slug;
+                $parent_name = function_exists( 'zk_get_translated_term_name' ) ? zk_get_translated_term_name( $parent_cat ) : $parent_cat->name;
+                $parent_route = $is_ka ? '/ka' . $parent_path : $parent_path;
                 echo '<span class="zk-breadcrumb-separator">/</span>';
-                echo '<a href="' . esc_url( home_url( $parent_path . '/' ) ) . '" data-route="' . esc_attr( $parent_path ) . '">' . esc_html( $parent_cat->name ) . '</a>';
+                echo '<a href="' . esc_url( home_url( $parent_path . '/' ) ) . '" data-route="' . esc_attr( $parent_route ) . '">' . esc_html( $parent_name ) . '</a>';
             }
 
             // უშუალოდ მიმდინარე კატეგორია (მაგ: Nocturnes)
             $parent_prefix = ( $cat->parent != 0 ) ? '/blog/' . get_category( $cat->parent )->slug . '/' : '/blog/';
             $cat_path = $parent_prefix . $cat->slug;
+            $cat_name = function_exists( 'zk_get_translated_term_name' ) ? zk_get_translated_term_name( $cat ) : $cat->name;
+            $cat_route = $is_ka ? '/ka' . $cat_path : $cat_path;
 
             echo '<span class="zk-breadcrumb-separator">/</span>';
-            echo '<a href="' . esc_url( home_url( $cat_path . '/' ) ) . '" data-route="' . esc_attr( $cat_path ) . '">' . esc_html( $cat->name ) . '</a>';
+            echo '<a href="' . esc_url( home_url( $cat_path . '/' ) ) . '" data-route="' . esc_attr( $cat_route ) . '">' . esc_html( $cat_name ) . '</a>';
         }
 
         // უშუალოდ პოსტის სათაური
@@ -431,16 +438,23 @@ function zk_breadcrumbs() {
 
     } elseif ( is_archive() || is_search() ) {
         // --- ლოგიკა არქივებისთვის და თეგებისთვის ---
+        $is_ka = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
+        $blog_label = $is_ka ? 'ბლოგი' : 'Blog';
+        $blog_route = $is_ka ? '/ka/blog' : '/blog';
+
         echo '<span class="zk-breadcrumb-separator">/</span>';
-        echo '<a href="' . esc_url( home_url( '/blog/' ) ) . '" data-route="/blog">Blog</a>';
+        echo '<a href="' . esc_url( home_url( '/blog/' ) ) . '" data-route="' . esc_attr( $blog_route ) . '">' . esc_html( $blog_label ) . '</a>';
 
         echo '<span class="zk-breadcrumb-separator">/</span>';
         if ( is_tag() ) {
-            echo '<span class="zk-breadcrumb-current">Topic: ' . single_tag_title( '', false ) . '</span>';
+            $topic_label = $is_ka ? 'თემა: ' : 'Topic: ';
+            echo '<span class="zk-breadcrumb-current">' . $topic_label . single_tag_title( '', false ) . '</span>';
         } elseif ( is_category() ) {
-            echo '<span class="zk-breadcrumb-current">Category: ' . single_cat_title( '', false ) . '</span>';
+            $cat_label = $is_ka ? 'კატეგორია: ' : 'Category: ';
+            echo '<span class="zk-breadcrumb-current">' . $cat_label . single_cat_title( '', false ) . '</span>';
         } else {
-            echo '<span class="zk-breadcrumb-current">Archive</span>';
+            $arch_label = $is_ka ? 'არქივი' : 'Archive';
+            echo '<span class="zk-breadcrumb-current">' . $arch_label . '</span>';
         }
     }
 
