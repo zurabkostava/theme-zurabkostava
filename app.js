@@ -44,36 +44,42 @@
 
     var bottomNav = document.getElementById('zk-bottom-nav');
 
-    dropdowns.forEach(function(dropdown) {
-        var trigger = dropdown.children[0];
-        if (trigger && trigger.classList.contains('dropdown-trigger')) {
-            trigger.addEventListener('click', function (e) {
-                if (!mq.matches) return;
-                e.preventDefault();
-                e.stopPropagation();
+    function bindDropdownEvents() {
+        dropdowns = [].slice.call(nav.querySelectorAll('.has-dropdown, .has-nested-dropdown'));
+        dropdowns.forEach(function(dropdown) {
+            var trigger = dropdown.children[0];
+            if (trigger && trigger.classList.contains('dropdown-trigger') && !trigger._zkBound) {
+                trigger._zkBound = true;
+                trigger.addEventListener('click', function (e) {
+                    if (!mq.matches) return;
+                    e.preventDefault();
+                    e.stopPropagation();
 
-                var isOpen = dropdown.classList.contains('open');
+                    var isOpen = dropdown.classList.contains('open');
 
-                var siblings = dropdown.parentElement.children;
-                for (var i = 0; i < siblings.length; i++) {
-                    var sib = siblings[i];
-                    if (sib !== dropdown && (sib.classList.contains('has-dropdown') || sib.classList.contains('has-nested-dropdown'))) {
-                        sib.classList.remove('open');
-                        var t = sib.children[0];
-                        if(t && t.classList.contains('dropdown-trigger')) t.setAttribute('aria-expanded', 'false');
+                    var siblings = dropdown.parentElement.children;
+                    for (var i = 0; i < siblings.length; i++) {
+                        var sib = siblings[i];
+                        if (sib !== dropdown && (sib.classList.contains('has-dropdown') || sib.classList.contains('has-nested-dropdown'))) {
+                            sib.classList.remove('open');
+                            var t = sib.children[0];
+                            if (t && t.classList.contains('dropdown-trigger')) t.setAttribute('aria-expanded', 'false');
+                        }
                     }
-                }
 
-                if (!isOpen) {
-                    dropdown.classList.add('open');
-                    trigger.setAttribute('aria-expanded', 'true');
-                } else {
-                    dropdown.classList.remove('open');
-                    trigger.setAttribute('aria-expanded', 'false');
-                }
-            });
-        }
-    });
+                    if (!isOpen) {
+                        dropdown.classList.add('open');
+                        trigger.setAttribute('aria-expanded', 'true');
+                    } else {
+                        dropdown.classList.remove('open');
+                        trigger.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+        });
+    }
+    bindDropdownEvents();
+
     window.addEventListener('resize', function () { if (!mq.matches) setMenu(false); });
 
     /* SPA Router */
@@ -108,7 +114,7 @@
             var elRoute = el.getAttribute('data-route');
             if (elRoute === route) {
                 activeBottom = el;
-            } else if (elRoute !== '/' && route.indexOf(elRoute) === 0) {
+            } else if (elRoute !== '/' && elRoute !== '/ka' && elRoute !== '/ka/' && route.indexOf(elRoute) === 0) {
                 activeBottom = el; // Partial match for sub-pages
             }
         });
@@ -117,7 +123,7 @@
         
         var navEl = document.getElementById('zk-bottom-nav');
         if (navEl) {
-            if (route !== '/') {
+            if (route !== '/' && route !== '/ka' && route !== '/ka/') {
                 navEl.classList.add('is-collapsed');
                 body.classList.add('nav-collapsed');
             } else {
@@ -137,23 +143,39 @@
             }
         }
 
-        // Update language switcher URLs dynamically on route changes
+        // Update language switcher URLs & active classes dynamically on route changes
         var switcher = document.querySelector('.zk-lang-switcher');
         if (switcher) {
             var path = window.location.pathname;
             var search = window.location.search;
+            var isKa = (path.indexOf('/ka') === 0 || path === '/ka');
+
             var enPath = path.replace(/^\/ka(?=\/|$)/, '') || '/';
             if (enPath.charAt(0) !== '/') enPath = '/' + enPath;
             var kaPath = (enPath === '/') ? '/ka/' : '/ka' .concat(enPath);
-            var enBtn = switcher.querySelector('a[aria-label*="English"]');
-            var kaBtn = switcher.querySelector('a[aria-label*="ქართული"]');
+
+            var enBtn = switcher.querySelector('a[aria-label*="English"], .zk-lang-btn:first-child');
+            var kaBtn = switcher.querySelector('a[aria-label*="ქართული"], .zk-lang-btn:last-child');
+
             if (enBtn) {
                 enBtn.href = window.location.origin + enPath + search;
                 enBtn.setAttribute('data-route', enPath + search);
+                enBtn.classList.toggle('is-active', !isKa);
+                if (!isKa) {
+                    enBtn.setAttribute('aria-current', 'true');
+                } else {
+                    enBtn.removeAttribute('aria-current');
+                }
             }
             if (kaBtn) {
                 kaBtn.href = window.location.origin + kaPath + search;
                 kaBtn.setAttribute('data-route', kaPath + search);
+                kaBtn.classList.toggle('is-active', isKa);
+                if (isKa) {
+                    kaBtn.setAttribute('aria-current', 'true');
+                } else {
+                    kaBtn.removeAttribute('aria-current');
+                }
             }
         }
     }
@@ -183,11 +205,19 @@
                 .map(function(el) { return el.outerHTML; })
                 .join('\n');
 
+            var newNav = doc.getElementById('primaryNav');
+            var newLogo = doc.querySelector('.site-header .logo');
+            var newBottomNav = doc.getElementById('zk-bottom-nav');
+
             return {
                 html:  v.innerHTML,
                 route: v.getAttribute('data-route') || toRoute(new URL(href, location.origin).pathname),
                 title: titleEl ? titleEl.textContent : document.title,
-                headTags: newHeadTags
+                headTags: newHeadTags,
+                primaryNavHtml: newNav ? newNav.innerHTML : null,
+                logoRoute: newLogo ? newLogo.getAttribute('data-route') : null,
+                logoHref: newLogo ? newLogo.href : null,
+                bottomNavHtml: newBottomNav ? newBottomNav.innerHTML : null
             };
         });
     }
@@ -221,16 +251,34 @@
                 viewEl.setAttribute('data-route', data.route);
                 document.title = data.title;
 
-                if (data.route && (data.route.indexOf('/ka') === 0 || data.route === '/ka')) {
-                    document.documentElement.lang = 'ka-GE';
-                } else {
-                    document.documentElement.lang = 'en-US';
-                }
+                var isKa = (data.route && (data.route.indexOf('/ka') === 0 || data.route === '/ka'));
+                document.documentElement.lang = isKa ? 'ka-GE' : 'en-US';
                 
                 if (data.headTags !== undefined) {
                     var oldTags = document.head.querySelectorAll('meta[name="description"], meta[name="abstract"], meta[name="robots"], meta[property^="og:"], meta[name^="twitter:"], link[rel="canonical"], link[rel="alternate"][hreflang], script[type="application/ld+json"]');
                     for (var i = 0; i < oldTags.length; i++) oldTags[i].parentNode.removeChild(oldTags[i]);
                     document.head.insertAdjacentHTML('beforeend', data.headTags);
+                }
+
+                if (data.primaryNavHtml) {
+                    var curNav = document.getElementById('primaryNav');
+                    if (curNav) {
+                        curNav.innerHTML = data.primaryNavHtml;
+                        bindDropdownEvents();
+                    }
+                }
+
+                if (data.logoHref) {
+                    var curLogo = document.querySelector('.site-header .logo');
+                    if (curLogo) {
+                        curLogo.href = data.logoHref;
+                        if (data.logoRoute) curLogo.setAttribute('data-route', data.logoRoute);
+                    }
+                }
+
+                if (data.bottomNavHtml) {
+                    var curBottomNav = document.getElementById('zk-bottom-nav');
+                    if (curBottomNav) curBottomNav.innerHTML = data.bottomNavHtml;
                 }
 
                 viewEl.classList.remove('is-loading');
@@ -277,7 +325,9 @@
         try { url = new URL(a.href); } catch (_) { return; }
         if (!isInternal(a, url)) return;
 
-        if (url.pathname === location.pathname && url.search === location.search) {
+        var urlPath = url.pathname.replace(/\/+$/, '') || '/';
+        var locPath = location.pathname.replace(/\/+$/, '') || '/';
+        if (urlPath === locPath && url.search === location.search) {
             if (url.hash) return;
             e.preventDefault();
             setMenu(false);
@@ -289,10 +339,22 @@
 
     window.addEventListener('popstate', function () { navigate(location.href, false); });
 
+    var initialNav = document.getElementById('primaryNav');
+    var initialLogo = document.querySelector('.site-header .logo');
+    var initialBottomNav = document.getElementById('zk-bottom-nav');
+    var initialHeadTags = Array.prototype.slice.call(document.head.querySelectorAll('meta[name="description"], meta[name="abstract"], meta[name="robots"], meta[property^="og:"], meta[name^="twitter:"], link[rel="canonical"], link[rel="alternate"][hreflang], script[type="application/ld+json"]'))
+        .map(function(el) { return el.outerHTML; })
+        .join('\n');
+
     cache[keyOf(location)] = {
         html:  viewEl.innerHTML,
         route: viewEl.getAttribute('data-route') || toRoute(location.pathname),
-        title: document.title
+        title: document.title,
+        headTags: initialHeadTags,
+        primaryNavHtml: initialNav ? initialNav.innerHTML : null,
+        logoRoute: initialLogo ? initialLogo.getAttribute('data-route') : null,
+        logoHref: initialLogo ? initialLogo.href : null,
+        bottomNavHtml: initialBottomNav ? initialBottomNav.innerHTML : null
     };
     var initialRoute = viewEl.getAttribute('data-route') || toRoute(location.pathname);
     updateChrome(initialRoute);

@@ -584,7 +584,7 @@ function zk_render_language_switcher() {
     <div class="zk-lang-switcher" role="navigation" aria-label="Language selector">
         <a href="<?php echo esc_url($data['en_url']); ?>" 
            data-route="<?php echo esc_attr($data['en_route']); ?>"
-           class="zk-lang-btn <?php echo ($current === 'en') ? 'is-active' : ''; ?> no-spa" 
+           class="zk-lang-btn <?php echo ($current === 'en') ? 'is-active' : ''; ?>" 
            aria-label="English language"
            <?php echo ($current === 'en') ? 'aria-current="true"' : ''; ?>>
             <span>EN</span>
@@ -592,7 +592,7 @@ function zk_render_language_switcher() {
         <span class="zk-lang-divider" aria-hidden="true"></span>
         <a href="<?php echo esc_url($data['ka_url']); ?>" 
            data-route="<?php echo esc_attr($data['ka_route']); ?>"
-           class="zk-lang-btn <?php echo ($current === 'ka') ? 'is-active' : ''; ?> no-spa" 
+           class="zk-lang-btn <?php echo ($current === 'ka') ? 'is-active' : ''; ?>" 
            aria-label="ქართული ენა"
            <?php echo ($current === 'ka') ? 'aria-current="true"' : ''; ?>>
             <span>KA</span>

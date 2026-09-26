@@ -193,6 +193,21 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
         $is_current = in_array( 'current-menu-item', $classes ) || in_array( 'current-page-item', $classes );
         if ( $is_current ) $link_class .= ' is-current';
 
+        $item_title = $item->title;
+        if ( function_exists('zk_get_current_language') && zk_get_current_language() === 'ka' && ! empty( $item->object_id ) ) {
+            if ( in_array( $item->type, array( 'post_type', 'post_type_archive' ) ) ) {
+                $ka_title = get_post_meta( $item->object_id, '_zk_title_ka', true );
+                if ( ! empty( $ka_title ) ) {
+                    $item_title = $ka_title;
+                }
+            } elseif ( $item->type === 'taxonomy' ) {
+                $ka_title = get_term_meta( $item->object_id, '_zk_title_ka', true );
+                if ( ! empty( $ka_title ) ) {
+                    $item_title = $ka_title;
+                }
+            }
+        }
+
         $route_attr = $is_external ? '' : ' data-route="' . esc_attr( $path ) . '"';
 
         // ლინკი ჩაშლისთვის (გახდა კლიკებადი)
@@ -200,7 +215,7 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
             $link_class .= ' dropdown-trigger';
             $aria = $is_current ? ' aria-current="page"' : '';
             $output .= '<a class="' . esc_attr( $link_class ) . '"' . $route_attr . ' href="' . esc_url( $url ) . '" aria-haspopup="true" aria-expanded="false"' . $aria . '>';
-            $output .= esc_html( $item->title );
+            $output .= esc_html( $item_title );
 
             // მეორად ჩაშლას ოდნავ სხვა ისარი სჭირდება (მარჯვნივ მიმართული)
             $caret_class = $depth >= 1 ? 'dropdown-caret nested-caret' : 'dropdown-caret';
@@ -215,7 +230,7 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
             $target_html = ! empty( $target_attr ) ? ' target="' . esc_attr( $target_attr ) . '" rel="noopener noreferrer"' : '';
 
             $output .= '<a class="' . esc_attr( $link_class ) . '"' . $route_attr . ' href="' . esc_url( $url ) . '"' . $aria . $target_html . '>';
-            $output .= esc_html( $item->title );
+            $output .= esc_html( $item_title );
 
             // თუ გარე ლინკია ან ახალ ტაბში იხსნება, ვამატებთ მინიმალისტურ ისრის იკონს
             if ( $target_attr === '_blank' ) {
