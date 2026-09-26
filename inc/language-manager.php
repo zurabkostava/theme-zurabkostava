@@ -116,8 +116,9 @@ function zk_save_translation_meta_data($post_id) {
     }
     
     if (isset($_POST['zk_content_ka'])) {
-        // Save unfiltered HTML to preserve Gutenberg comment tags and structures
-        update_post_meta($post_id, '_zk_content_ka', $_POST['zk_content_ka']);
+        // Save unfiltered HTML but clean any malformed markdown links inside src/href attributes
+        $clean_content = zk_clean_markdown_attributes($_POST['zk_content_ka']);
+        update_post_meta($post_id, '_zk_content_ka', $clean_content);
     }
 }
 add_action('save_post', 'zk_save_translation_meta_data');
@@ -178,6 +179,15 @@ function zk_translate_title($title, $post_id = null) {
 }
 add_filter('the_title', 'zk_translate_title', 10, 2);
 
+function zk_clean_markdown_attributes($content) {
+    if (empty($content)) return $content;
+    // Clean src="[url](url)" or href="[url](url)"
+    $content = preg_replace('/(src|href)=["\']\[[^\]]+\]\((https?:\/\/[^"\')\s]+)\)["\']/i', '$1="$2"', $content);
+    // Clean src="[url]" or href="[url]"
+    $content = preg_replace('/(src|href)=["\']\[(https?:\/\/[^"\']+)\]["\']/i', '$1="$2"', $content);
+    return $content;
+}
+
 function zk_translate_content_wrapper($content) {
     if (is_admin()) return $content;
     
@@ -188,6 +198,7 @@ function zk_translate_content_wrapper($content) {
         $post_id = get_the_ID();
         $translated_content = get_post_meta($post_id, '_zk_content_ka', true);
         if (!empty($translated_content)) {
+            $translated_content = zk_clean_markdown_attributes($translated_content);
             $is_filtering = true;
             $filtered = apply_filters('the_content', $translated_content);
             $is_filtering = false;
@@ -197,6 +208,7 @@ function zk_translate_content_wrapper($content) {
     return $content;
 }
 add_filter('the_content', 'zk_translate_content_wrapper', 1);
+
 
 function zk_filter_permalink_ka($permalink, $post = null) {
     if (is_admin()) return $permalink;
