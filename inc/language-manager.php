@@ -142,6 +142,14 @@ function zk_language_query_vars($vars) {
 }
 add_filter('query_vars', 'zk_language_query_vars');
 
+function zk_disable_canonical_for_ka($redirect_url, $requested_url) {
+    if (get_query_var('lang_prefix') === 'ka') {
+        return false;
+    }
+    return $redirect_url;
+}
+add_filter('redirect_canonical', 'zk_disable_canonical_for_ka', 10, 2);
+
 function zk_get_current_language() {
     if (is_admin()) return 'en';
     $lang = get_query_var('lang_prefix');
