@@ -14,6 +14,7 @@
     let animationFrameId;
     let isEntering = false; // For cinematic entrance
     let isRunning = false;
+    let hasEnteredOnce = false; // Persistent across SPA route and language transitions
     let timeMultiplier = 1; // Global speed multiplier from slider
 
     function initGalaxy() {
@@ -35,17 +36,23 @@
         // Camera - huge far plane so large tilted objects don't clip at extreme distances
         camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 1, 50000);
         
-        // Start far away and rotated for cinematic barrel roll entrance
-        camera.position.z = 25000;
-        camera.rotation.z = Math.PI * 0.5;
+        if (!hasEnteredOnce) {
+            // Start far away and rotated for cinematic barrel roll entrance on initial load
+            camera.position.z = 25000;
+            camera.rotation.z = Math.PI * 0.5;
+            container.style.opacity = 0;
+            container.style.transition = 'opacity 3s ease-out';
+        } else {
+            camera.position.z = 1000;
+            camera.rotation.z = 0;
+            isEntering = false;
+            container.style.opacity = 1;
+            container.style.transition = 'opacity 0.4s ease-out';
+        }
 
         renderer = new THREE.WebGLRenderer({ canvas: container, alpha: false, antialias: false, powerPreference: "high-performance", stencil: false, depth: false });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25)); // 🚀 MASSIVE GPU FILL-RATE OPTIMIZATION
         renderer.setSize(rect.width, rect.height);
-        
-        // Hide canvas initially to prevent pop-in
-        container.style.opacity = 0;
-        container.style.transition = 'opacity 3s ease-out';
         
         // Opaque background matching the CSS body background to prevent alpha channel accumulation bug with AdditiveBlending
         renderer.setClearColor(0x020205, 1.0); 
@@ -423,7 +430,10 @@
         loadingManager.onLoad = function() {
             // Trigger cinematic entrance when galaxy texture is fully loaded
             container.style.opacity = 1;
-            isEntering = true;
+            if (!hasEnteredOnce) {
+                isEntering = true;
+                hasEnteredOnce = true;
+            }
         };
         
         const galaxyTexture = new THREE.TextureLoader(loadingManager).load('https://zurabkostava.com/wp-content/uploads/2026/07/Galaxy.webp');
@@ -859,10 +869,9 @@
     function animate(time) {
         if (!isRunning) return;
         
-        if (!document.getElementById('zk-galaxy-canvas')) {
-            isRunning = false;
-            window.removeEventListener('resize', onWindowResize);
-            if (renderer) renderer.dispose();
+        const currentCanvas = document.getElementById('zk-galaxy-canvas');
+        if (!currentCanvas || container !== currentCanvas) {
+            checkGalaxyCanvas();
             return;
         }
 
@@ -988,6 +997,7 @@
                 camera.position.z = 1000;
                 camera.rotation.z = 0;
                 isEntering = false;
+                hasEnteredOnce = true;
             }
         }
 
@@ -1033,22 +1043,62 @@
 
         renderer.render(scene, camera);
     }
-    const observer = new MutationObserver((mutations) => {
-        if (!isRunning && document.getElementById('zk-galaxy-canvas')) {
-            initGalaxy();
-        } else if (isRunning && !document.getElementById('zk-galaxy-canvas')) {
-            isRunning = false;
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
-            if (renderer) renderer.dispose();
+    function checkGalaxyCanvas() {
+        const currentCanvas = document.getElementById('zk-galaxy-canvas');
+        if (!currentCanvas) {
+            if (isRunning) {
+                isRunning = false;
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+                window.removeEventListener('resize', onWindowResize);
+                if (renderer) {
+                    renderer.dispose();
+                    renderer = null;
+                }
+                container = null;
+            }
+            return;
         }
+
+        // If canvas is in DOM, but either not running OR attached to a different canvas element
+        if (!isRunning || container !== currentCanvas) {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            window.removeEventListener('resize', onWindowResize);
+            if (renderer) {
+                renderer.dispose();
+                renderer = null;
+            }
+            isRunning = false;
+            initGalaxy();
+        }
+    }
+
+    const observer = new MutationObserver(() => {
+        checkGalaxyCanvas();
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        initGalaxy();
+    document.addEventListener('zk:viewChange', () => {
+        checkGalaxyCanvas();
+    });
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            checkGalaxyCanvas();
+            const appNode = document.getElementById('app');
+            if (appNode) {
+                observer.observe(appNode, { childList: true, subtree: true });
+            }
+        });
+    } else {
+        checkGalaxyCanvas();
         const appNode = document.getElementById('app');
         if (appNode) {
             observer.observe(appNode, { childList: true, subtree: true });
         }
-
-    });
+    }
 })();
