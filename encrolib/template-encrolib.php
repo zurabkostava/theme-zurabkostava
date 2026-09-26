@@ -486,9 +486,15 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // 🚫 Remove Mobile Bottom
     }
 
     function translateSentenceToColors() {
+        const sentenceInput = document.getElementById('sentenceInput');
+        const sentence = sentenceInput ? sentenceInput.value : '';
         const swatchesContainer = document.getElementById('colorSwatchesContainer');
         const toggleButton = document.getElementById('toggleSwatchesButton');
         const convertButton = document.getElementById('toColorsButton');
+
+        if (!sentence || !sentence.trim()) {
+            return;
+        }
 
         convertButton.disabled = true;
         convertButton.innerHTML = 'Generating...';
