@@ -1970,7 +1970,7 @@ function zk_identity_page_html() {
 
     if (isset($_POST['zk_identity_nonce']) && wp_verify_nonce($_POST['zk_identity_nonce'], 'zk_save_identity')) {
         foreach ($_POST as $key => $value) {
-            if (strpos($key, 'zk_vital_') === 0 || strpos($key, 'zk_social_') === 0 || strpos($key, 'zk_fav_') === 0 || strpos($key, 'zk_desc_') === 0 || strpos($key, 'zk_schema_') === 0 || $key === 'zk_skills' || $key === 'zk_profile_img' || $key === 'zk_monologue_content') {
+            if (strpos($key, 'zk_vital_') === 0 || strpos($key, 'zk_social_') === 0 || strpos($key, 'zk_fav_') === 0 || strpos($key, 'zk_desc_') === 0 || strpos($key, 'zk_schema_') === 0 || strpos($key, 'zk_site_') === 0 || $key === 'zk_skills' || $key === 'zk_profile_img' || $key === 'zk_monologue_content') {
                 update_option($key, wp_unslash($value));
             }
         }
@@ -2004,13 +2004,17 @@ function zk_identity_page_html() {
                 <tr><th>Archetype</th><td><input type="text" name="zk_vital_archetype" value="<?php echo esc_attr(get_option('zk_vital_archetype', 'Composer, Visual Artist, Tech Geek')); ?>" class="large-text" /></td></tr>
             </table>
 
-            <h2 class="title" style="margin-top:30px; border-bottom:1px solid #ccc; padding-bottom:10px;">3. ZK JSON-LD Schema Engine (Google Knowledge Panel)</h2>
+            <h2 class="title" style="margin-top:30px; border-bottom:1px solid #ccc; padding-bottom:10px;">3. ZK JSON-LD Schema & Bilingual SEO Identity</h2>
             <p><strong>Note:</strong> Multiple values should be comma-separated.</p>
             <table class="form-table">
-                <tr><th>Full Name</th><td><input type="text" name="zk_schema_name" value="<?php echo esc_attr(get_option('zk_schema_name', 'Zurab Kostava')); ?>" class="regular-text" /></td></tr>
+                <tr><th>Full Name (EN)</th><td><input type="text" name="zk_schema_name" value="<?php echo esc_attr(get_option('zk_schema_name', 'Zurab Kostava')); ?>" class="regular-text" /></td></tr>
+                <tr><th>Full Name (KA)</th><td><input type="text" name="zk_site_name_ka" value="<?php echo esc_attr(get_option('zk_site_name_ka', 'ზურაბ კოსტავა')); ?>" class="regular-text" /></td></tr>
+                <tr><th>Site Tagline / Desc (KA)</th><td><input type="text" name="zk_site_desc_ka" value="<?php echo esc_attr(get_option('zk_site_desc_ka', 'ქართველი მულტიდისციპლინური ხელოვანი, კომპოზიტორი და დიზაინერი')); ?>" class="large-text" /></td></tr>
                 <tr><th>Alternate Names</th><td><input type="text" name="zk_schema_alternate_names" value="<?php echo esc_attr(get_option('zk_schema_alternate_names', 'ზურაბ კოსტავა, Zurab Kostava, Zurab, Kostava, Zura Kostava')); ?>" class="large-text" /></td></tr>
-                <tr><th>Job Titles</th><td><input type="text" name="zk_schema_job_titles" value="<?php echo esc_attr(get_option('zk_schema_job_titles', 'Artist, Composer, Visual Artist, Designer')); ?>" class="large-text" /></td></tr>
-                <tr><th>Bio / Description</th><td><textarea name="zk_schema_description" class="large-text" rows="3"><?php echo esc_textarea(get_option('zk_schema_description', 'Georgian multidisciplinary artist, composer, and designer. Founder of Nuvio.')); ?></textarea></td></tr>
+                <tr><th>Job Titles (EN)</th><td><input type="text" name="zk_schema_job_titles" value="<?php echo esc_attr(get_option('zk_schema_job_titles', 'Artist, Composer, Visual Artist, Designer')); ?>" class="large-text" /></td></tr>
+                <tr><th>Job Titles (KA)</th><td><input type="text" name="zk_schema_job_titles_ka" value="<?php echo esc_attr(get_option('zk_schema_job_titles_ka', 'ხელოვანი, კომპოზიტორი, ვიზუალური არტისტი, დიზაინერი')); ?>" class="large-text" /></td></tr>
+                <tr><th>Bio / Description (EN)</th><td><textarea name="zk_schema_description" class="large-text" rows="3"><?php echo esc_textarea(get_option('zk_schema_description', 'Georgian multidisciplinary artist, composer, and designer. Founder of Nuvio.')); ?></textarea></td></tr>
+                <tr><th>Bio / Description (KA)</th><td><textarea name="zk_schema_description_ka" class="large-text" rows="3"><?php echo esc_textarea(get_option('zk_schema_description_ka', 'ქართველი მულტიდისციპლინური ხელოვანი, კომპოზიტორი და დიზაინერი. Nuvio-ს დამფუძნებელი.')); ?></textarea></td></tr>
                 <tr><th>Birth Date (YYYY-MM-DD)</th><td><input type="text" name="zk_schema_birth_date" value="<?php echo esc_attr(get_option('zk_schema_birth_date', '1995-02-19')); ?>" class="regular-text" /></td></tr>
                 <tr><th>Gender</th><td><input type="text" name="zk_schema_gender" value="<?php echo esc_attr(get_option('zk_schema_gender', 'Male')); ?>" class="regular-text" /></td></tr>
                 <tr><th>Wikidata URL</th><td><input type="text" name="zk_schema_wikidata" value="<?php echo esc_attr(get_option('zk_schema_wikidata', 'https://www.wikidata.org/wiki/Q138009804')); ?>" class="regular-text" /></td></tr>
@@ -2612,15 +2616,33 @@ add_action( 'add_meta_boxes', 'zk_seo_add_meta_box' );
 
 function zk_seo_meta_box_html( $post ) {
     wp_nonce_field( 'zk_seo_save_meta', 'zk_seo_meta_nonce' );
-    $seo_title = get_post_meta( $post->ID, '_zk_seo_title', true );
-    $seo_desc  = get_post_meta( $post->ID, '_zk_seo_description', true );
+    $seo_title    = get_post_meta( $post->ID, '_zk_seo_title', true );
+    $seo_desc     = get_post_meta( $post->ID, '_zk_seo_description', true );
+    $seo_title_ka = get_post_meta( $post->ID, '_zk_seo_title_ka', true );
+    $seo_desc_ka  = get_post_meta( $post->ID, '_zk_seo_description_ka', true );
     ?>
-    <div style="padding: 10px 0;">
-        <label for="zk_seo_title" style="display:block; font-weight:bold; margin-bottom:5px;">SEO Title</label>
-        <input type="text" id="zk_seo_title" name="zk_seo_title" value="<?php echo esc_attr( $seo_title ); ?>" style="width:100%; max-width:600px; margin-bottom:15px;" placeholder="Leave empty to use post title..." />
-        
-        <label for="zk_seo_description" style="display:block; font-weight:bold; margin-bottom:5px;">SEO Description</label>
-        <textarea id="zk_seo_description" name="zk_seo_description" rows="3" style="width:100%; max-width:600px;" placeholder="Leave empty to use post excerpt or default description..."><?php echo esc_textarea( $seo_desc ); ?></textarea>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 10px 0;">
+        <div style="background: #f8f9fa; border: 1px solid #dcdcde; border-radius: 6px; padding: 15px;">
+            <h4 style="margin: 0 0 12px; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                <span>🇬🇧</span> English SEO Settings
+            </h4>
+            <label for="zk_seo_title" style="display:block; font-weight:600; margin-bottom:5px;">SEO Title (EN)</label>
+            <input type="text" id="zk_seo_title" name="zk_seo_title" value="<?php echo esc_attr( $seo_title ); ?>" style="width:100%; margin-bottom:15px;" placeholder="Leave empty to use post title..." />
+            
+            <label for="zk_seo_description" style="display:block; font-weight:600; margin-bottom:5px;">SEO Description (EN)</label>
+            <textarea id="zk_seo_description" name="zk_seo_description" rows="4" style="width:100%;" placeholder="Leave empty to use post excerpt or default description..."><?php echo esc_textarea( $seo_desc ); ?></textarea>
+        </div>
+
+        <div style="background: #f0f7ff; border: 1px solid #c3daf7; border-radius: 6px; padding: 15px;">
+            <h4 style="margin: 0 0 12px; font-size: 15px; display: flex; align-items: center; gap: 8px; color: #0056b3;">
+                <span>🇬🇪</span> ქართული SEO პარამეტრები (Georgian SEO)
+            </h4>
+            <label for="zk_seo_title_ka" style="display:block; font-weight:600; margin-bottom:5px;">ქართული SEO სათაური (KA)</label>
+            <input type="text" id="zk_seo_title_ka" name="zk_seo_title_ka" value="<?php echo esc_attr( $seo_title_ka ); ?>" style="width:100%; margin-bottom:15px;" placeholder="დატოვეთ ცარიელი ქართული სათაურის გამოსაყენებლად..." />
+            
+            <label for="zk_seo_description_ka" style="display:block; font-weight:600; margin-bottom:5px;">ქართული SEO აღწერა (KA)</label>
+            <textarea id="zk_seo_description_ka" name="zk_seo_description_ka" rows="4" style="width:100%;" placeholder="დატოვეთ ცარიელი ქართული Excerpt-ის ან ტექსტის გამოსაყენებლად..."><?php echo esc_textarea( $seo_desc_ka ); ?></textarea>
+        </div>
     </div>
     <?php
 }
@@ -2637,6 +2659,12 @@ function zk_seo_save_meta( $post_id ) {
     if ( isset( $_POST['zk_seo_description'] ) ) {
         update_post_meta( $post_id, '_zk_seo_description', sanitize_textarea_field( $_POST['zk_seo_description'] ) );
     }
+    if ( isset( $_POST['zk_seo_title_ka'] ) ) {
+        update_post_meta( $post_id, '_zk_seo_title_ka', sanitize_text_field( $_POST['zk_seo_title_ka'] ) );
+    }
+    if ( isset( $_POST['zk_seo_description_ka'] ) ) {
+        update_post_meta( $post_id, '_zk_seo_description_ka', sanitize_textarea_field( $_POST['zk_seo_description_ka'] ) );
+    }
 }
 add_action( 'save_post', 'zk_seo_save_meta' );
 
@@ -2644,14 +2672,24 @@ add_action( 'save_post', 'zk_seo_save_meta' );
 function zk_seo_taxonomy_add_meta_fields() {
     ?>
     <div class="form-field">
-        <label for="zk_seo_title">SEO Title</label>
+        <label for="zk_seo_title">SEO Title (EN)</label>
         <input type="text" name="zk_seo_title" id="zk_seo_title" value="">
         <p class="description">Leave empty to use default generated title.</p>
     </div>
     <div class="form-field">
-        <label for="zk_seo_description">SEO Description</label>
+        <label for="zk_seo_title_ka">ქართული SEO სათაური (KA)</label>
+        <input type="text" name="zk_seo_title_ka" id="zk_seo_title_ka" value="">
+        <p class="description">დატოვეთ ცარიელი ქართული სახელის გამოსაყენებლად.</p>
+    </div>
+    <div class="form-field">
+        <label for="zk_seo_description">SEO Description (EN)</label>
         <textarea name="zk_seo_description" id="zk_seo_description" rows="3"></textarea>
         <p class="description">Leave empty to use default generated description.</p>
+    </div>
+    <div class="form-field">
+        <label for="zk_seo_description_ka">ქართული SEO აღწერა (KA)</label>
+        <textarea name="zk_seo_description_ka" id="zk_seo_description_ka" rows="3"></textarea>
+        <p class="description">დატოვეთ ცარიელი ნაგულისხმევი ქართული აღწერისთვის.</p>
     </div>
     <div class="form-field">
         <label for="zk_seo_image">SEO Image URL</label>
@@ -2674,21 +2712,37 @@ add_action( 'category_add_form_fields', 'zk_seo_taxonomy_add_meta_fields' );
 add_action( 'post_tag_add_form_fields', 'zk_seo_taxonomy_add_meta_fields' );
 
 function zk_seo_taxonomy_edit_meta_fields( $term ) {
-    $seo_title = get_term_meta( $term->term_id, '_zk_seo_title', true );
-    $seo_desc  = get_term_meta( $term->term_id, '_zk_seo_description', true );
+    $seo_title    = get_term_meta( $term->term_id, '_zk_seo_title', true );
+    $seo_title_ka = get_term_meta( $term->term_id, '_zk_seo_title_ka', true );
+    $seo_desc     = get_term_meta( $term->term_id, '_zk_seo_description', true );
+    $seo_desc_ka  = get_term_meta( $term->term_id, '_zk_seo_description_ka', true );
     ?>
     <tr class="form-field">
-        <th scope="row" valign="top"><label for="zk_seo_title">SEO Title</label></th>
+        <th scope="row" valign="top"><label for="zk_seo_title">SEO Title (EN)</label></th>
         <td>
             <input type="text" name="zk_seo_title" id="zk_seo_title" value="<?php echo esc_attr( $seo_title ); ?>">
             <p class="description">Leave empty to use default generated title.</p>
         </td>
     </tr>
     <tr class="form-field">
-        <th scope="row" valign="top"><label for="zk_seo_description">SEO Description</label></th>
+        <th scope="row" valign="top"><label for="zk_seo_title_ka">ქართული SEO სათაური (KA)</label></th>
+        <td>
+            <input type="text" name="zk_seo_title_ka" id="zk_seo_title_ka" value="<?php echo esc_attr( $seo_title_ka ); ?>">
+            <p class="description">დატოვეთ ცარიელი ქართული სახელის გამოსაყენებლად.</p>
+        </td>
+    </tr>
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="zk_seo_description">SEO Description (EN)</label></th>
         <td>
             <textarea name="zk_seo_description" id="zk_seo_description" rows="3"><?php echo esc_textarea( $seo_desc ); ?></textarea>
             <p class="description">Leave empty to use default generated description.</p>
+        </td>
+    </tr>
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="zk_seo_description_ka">ქართული SEO აღწერა (KA)</label></th>
+        <td>
+            <textarea name="zk_seo_description_ka" id="zk_seo_description_ka" rows="3"><?php echo esc_textarea( $seo_desc_ka ); ?></textarea>
+            <p class="description">დატოვეთ ცარიელი ნაგულისხმევი ქართული აღწერისთვის.</p>
         </td>
     </tr>
     <?php
@@ -2731,8 +2785,14 @@ function zk_seo_save_taxonomy_meta( $term_id ) {
     if ( isset( $_POST['zk_seo_title'] ) ) {
         update_term_meta( $term_id, '_zk_seo_title', sanitize_text_field( $_POST['zk_seo_title'] ) );
     }
+    if ( isset( $_POST['zk_seo_title_ka'] ) ) {
+        update_term_meta( $term_id, '_zk_seo_title_ka', sanitize_text_field( $_POST['zk_seo_title_ka'] ) );
+    }
     if ( isset( $_POST['zk_seo_description'] ) ) {
         update_term_meta( $term_id, '_zk_seo_description', sanitize_textarea_field( $_POST['zk_seo_description'] ) );
+    }
+    if ( isset( $_POST['zk_seo_description_ka'] ) ) {
+        update_term_meta( $term_id, '_zk_seo_description_ka', sanitize_textarea_field( $_POST['zk_seo_description_ka'] ) );
     }
     if ( isset( $_POST['zk_seo_image'] ) ) {
         update_term_meta( $term_id, '_zk_seo_image', esc_url_raw( $_POST['zk_seo_image'] ) );
@@ -2769,76 +2829,212 @@ function zk_get_seo_target_id( $default_id ) {
     return $default_id;
 }
 
+function zk_get_clean_bilingual_urls() {
+    $request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
+    $parsed = parse_url($request_uri);
+    $path = isset($parsed['path']) ? $parsed['path'] : '/';
+
+    // If on a singular post or page, get the canonical permalink path
+    if ( is_singular() ) {
+        $clean_permalink = get_permalink();
+        $parsed_perm = parse_url($clean_permalink);
+        if ( ! empty($parsed_perm['path']) ) {
+            $path = $parsed_perm['path'];
+        }
+    } elseif ( is_category() || is_tag() || is_tax() ) {
+        $term_id = get_queried_object_id();
+        $term_link = get_term_link($term_id);
+        if ( ! is_wp_error($term_link) ) {
+            $parsed_term = parse_url($term_link);
+            if ( ! empty($parsed_term['path']) ) {
+                $path = $parsed_term['path'];
+            }
+        }
+    }
+
+    // Strip leading /ka or /ka/ from path to obtain pure English path
+    $en_path = preg_replace('#^/ka(?=/|$)#', '', $path);
+    if ($en_path === '') {
+        $en_path = '/';
+    }
+    if ($en_path[0] !== '/') {
+        $en_path = '/' . $en_path;
+    }
+
+    $ka_path = ($en_path === '/') ? '/ka/' : '/ka' . $en_path;
+
+    $home_url = untrailingslashit(get_option('home'));
+    if (empty($home_url)) {
+        $home_url = 'https://zurabkostava.com';
+    }
+
+    $is_ka = (function_exists('zk_get_current_language') && zk_get_current_language() === 'ka');
+
+    return array(
+        'is_ka'         => $is_ka,
+        'en_url'        => $home_url . $en_path,
+        'ka_url'        => $home_url . $ka_path,
+        'canonical_url' => $home_url . ($is_ka ? $ka_path : $en_path),
+    );
+}
+
 function zk_render_seo_meta() {
+    $seo_urls      = zk_get_clean_bilingual_urls();
+    $is_ka         = $seo_urls['is_ka'];
+    $canonical_url = $seo_urls['canonical_url'];
+    $en_url        = $seo_urls['en_url'];
+    $ka_url        = $seo_urls['ka_url'];
+
     // Determine context
     $is_single = is_single() || is_page();
-    $obj_id = get_queried_object_id();
-    $obj_id = zk_get_seo_target_id( $obj_id );
+    $obj_id    = get_queried_object_id();
+    $obj_id    = zk_get_seo_target_id( $obj_id );
     
     // Default Fallbacks
-    $site_name = get_bloginfo( 'name' );
-    $site_desc = get_bloginfo( 'description' );
-    
-    $title = $site_name . ( $site_desc ? ' — ' . $site_desc : '' );
-    $desc = $site_desc;
-    $url = home_url( $_SERVER['REQUEST_URI'] );
-    $type = 'website';
-    $img = get_option( 'zk_profile_img', '' ); // Default fallback image from Identity Settings
+    $site_name_en = get_bloginfo( 'name' );
+    if ( empty( $site_name_en ) ) {
+        $site_name_en = 'Zurab Kostava';
+    }
+    $site_name_ka = get_option( 'zk_site_name_ka', 'ზურაბ კოსტავა' );
+    $site_name    = $is_ka ? $site_name_ka : $site_name_en;
 
-    // 1. Initialize Custom Meta Variables
+    $site_desc_en = get_bloginfo( 'description' );
+    if ( empty( $site_desc_en ) ) {
+        $site_desc_en = 'Georgian multidisciplinary artist, composer, and designer';
+    }
+    $site_desc_ka = get_option( 'zk_site_desc_ka', 'ქართველი მულტიდისციპლინური ხელოვანი, კომპოზიტორი და დიზაინერი' );
+    $site_desc    = $is_ka ? $site_desc_ka : $site_desc_en;
+
+    $title = $site_name . ( $site_desc ? ' — ' . $site_desc : '' );
+    $desc  = $site_desc;
+    $type  = 'website';
+    $img   = get_option( 'zk_profile_img', '' );
+
+    // Custom overrides
     $custom_title = '';
     $custom_desc  = '';
     $custom_img   = '';
 
-    // Override for single posts/pages
     if ( $is_single ) {
         if ( is_front_page() || is_home() ) {
             $type = 'website';
+            if ( $is_ka ) {
+                $custom_title = get_post_meta( $obj_id, '_zk_seo_title_ka', true );
+                $custom_desc  = get_post_meta( $obj_id, '_zk_seo_description_ka', true );
+                $title = $site_name_ka . ( $site_desc_ka ? ' — ' . $site_desc_ka : '' );
+                $desc  = $site_desc_ka;
+            } else {
+                $custom_title = get_post_meta( $obj_id, '_zk_seo_title', true );
+                $custom_desc  = get_post_meta( $obj_id, '_zk_seo_description', true );
+                $title = $site_name_en . ( $site_desc_en ? ' — ' . $site_desc_en : '' );
+                $desc  = $site_desc_en;
+            }
         } elseif ( get_post_type( $obj_id ) === 'zk_book' ) {
             $type = 'book';
         } else {
             $type = 'article';
         }
-        
-        // Fetch custom SEO meta
-        $custom_title = get_post_meta( $obj_id, '_zk_seo_title', true );
-        $custom_desc  = get_post_meta( $obj_id, '_zk_seo_description', true );
-        
-        // Default Title/Desc logic for single (can be overridden later)
-        $title = get_the_title( $obj_id ) . ' — ' . $site_name;
-        
-        if ( has_excerpt( $obj_id ) ) {
-            $desc = wp_strip_all_tags( get_the_excerpt( $obj_id ) );
-        } else {
-            $post_content = get_post( $obj_id )->post_content;
-            $desc = wp_trim_words( wp_strip_all_tags( $post_content ), 30, '...' );
-        }
-        
-        // Image logic
-        if ( has_post_thumbnail( $obj_id ) ) {
-            $img = get_the_post_thumbnail_url( $obj_id, 'large' );
+
+        if ( ! ( is_front_page() || is_home() ) ) {
+            if ( $is_ka ) {
+                $custom_title = get_post_meta( $obj_id, '_zk_seo_title_ka', true );
+                $custom_desc  = get_post_meta( $obj_id, '_zk_seo_description_ka', true );
+
+                // Post Title
+                $post_title_ka = get_post_meta( $obj_id, '_zk_title_ka', true );
+                if ( empty( $post_title_ka ) ) {
+                    $post_title_ka = get_the_title( $obj_id );
+                }
+                $title = $post_title_ka . ' — ' . $site_name;
+
+                // Description
+                $excerpt_ka = get_post_meta( $obj_id, '_zk_excerpt_ka', true );
+                if ( ! empty( $excerpt_ka ) ) {
+                    $desc = wp_strip_all_tags( $excerpt_ka );
+                } else {
+                    $content_ka = get_post_meta( $obj_id, '_zk_content_ka', true );
+                    if ( ! empty( $content_ka ) ) {
+                        $desc = wp_trim_words( wp_strip_all_tags( $content_ka ), 30, '...' );
+                    } elseif ( has_excerpt( $obj_id ) ) {
+                        $desc = wp_strip_all_tags( get_the_excerpt( $obj_id ) );
+                    } else {
+                        $post_obj = get_post( $obj_id );
+                        $desc = $post_obj ? wp_trim_words( wp_strip_all_tags( $post_obj->post_content ), 30, '...' ) : $site_desc;
+                    }
+                }
+            } else {
+                $custom_title = get_post_meta( $obj_id, '_zk_seo_title', true );
+                $custom_desc  = get_post_meta( $obj_id, '_zk_seo_description', true );
+
+                $title = get_the_title( $obj_id ) . ' — ' . $site_name;
+
+                if ( has_excerpt( $obj_id ) ) {
+                    $desc = wp_strip_all_tags( get_the_excerpt( $obj_id ) );
+                } else {
+                    $post_obj = get_post( $obj_id );
+                    $desc = $post_obj ? wp_trim_words( wp_strip_all_tags( $post_obj->post_content ), 30, '...' ) : $site_desc;
+                }
+            }
+
+            // Image logic
+            if ( has_post_thumbnail( $obj_id ) ) {
+                $img = get_the_post_thumbnail_url( $obj_id, 'large' );
+            }
         }
     } elseif ( is_archive() ) {
-        $term_id = get_queried_object_id();
-        $custom_title = get_term_meta( $term_id, '_zk_seo_title', true );
-        $custom_desc  = get_term_meta( $term_id, '_zk_seo_description', true );
-        $custom_img   = get_term_meta( $term_id, '_zk_seo_image', true );
+        $term_id  = get_queried_object_id();
+        $term_obj = get_queried_object();
+        $custom_img = get_term_meta( $term_id, '_zk_seo_image', true );
 
-        if ( is_category() ) {
-            $title = single_cat_title( '', false ) . ' — ' . $site_name;
-            $desc = wp_strip_all_tags( category_description() ) ?: $desc;
-        } elseif ( is_tag() ) {
-            $title = single_tag_title( '', false ) . ' — ' . $site_name;
-            $desc = wp_strip_all_tags( tag_description() ) ?: $desc;
+        if ( $is_ka ) {
+            $custom_title = get_term_meta( $term_id, '_zk_seo_title_ka', true );
+            $custom_desc  = get_term_meta( $term_id, '_zk_seo_description_ka', true );
+
+            $term_name_ka = function_exists('zk_get_translated_term_name') ? zk_get_translated_term_name( $term_obj ) : '';
+            if ( empty( $term_name_ka ) && $term_obj && isset( $term_obj->name ) ) {
+                $term_name_ka = $term_obj->name;
+            }
+
+            $title = $term_name_ka . ' — ' . $site_name;
+            $term_desc_ka = get_term_meta( $term_id, '_zk_desc_ka', true );
+            if ( ! empty( $term_desc_ka ) ) {
+                $desc = wp_strip_all_tags( $term_desc_ka );
+            } elseif ( is_category() ) {
+                $desc = wp_strip_all_tags( category_description() ) ?: $desc;
+            } elseif ( is_tag() ) {
+                $desc = wp_strip_all_tags( tag_description() ) ?: $desc;
+            }
+        } else {
+            $custom_title = get_term_meta( $term_id, '_zk_seo_title', true );
+            $custom_desc  = get_term_meta( $term_id, '_zk_seo_description', true );
+
+            if ( is_category() ) {
+                $title = single_cat_title( '', false ) . ' — ' . $site_name;
+                $desc  = wp_strip_all_tags( category_description() ) ?: $desc;
+            } elseif ( is_tag() ) {
+                $title = single_tag_title( '', false ) . ' — ' . $site_name;
+                $desc  = wp_strip_all_tags( tag_description() ) ?: $desc;
+            }
         }
     } elseif ( is_search() ) {
-        $title = 'Search Results for "' . get_search_query() . '" — ' . $site_name;
+        if ( $is_ka ) {
+            $title = 'ძიების შედეგები: "' . get_search_query() . '" — ' . $site_name;
+            $desc  = 'ძიების შედეგები მოთხოვნისთვის "' . get_search_query() . '" — ' . $site_name;
+        } else {
+            $title = 'Search Results for "' . get_search_query() . '" — ' . $site_name;
+            $desc  = 'Search results for "' . get_search_query() . '" — ' . $site_name;
+        }
     } elseif ( is_404() ) {
-        $title = '404 Not Found — ' . $site_name;
+        if ( $is_ka ) {
+            $title = '404 გვერდი ვერ მოიძებნა — ' . $site_name;
+            $desc  = 'მოთხოვნილი გვერდი არ არსებობს ან წაშლილია.';
+        } else {
+            $title = '404 Not Found — ' . $site_name;
+            $desc  = 'The requested page was not found.';
+        }
     }
 
     // --- GLOBAL META BOX OVERRIDE (STRICT HIGHEST PRIORITY) ---
-    // Whatever happens above, if you typed it in the meta box, it wins.
     if ( ! empty( $custom_title ) ) {
         $title = $custom_title;
     }
@@ -2851,7 +3047,10 @@ function zk_render_seo_meta() {
 
     // Clean up title and description to prevent HTML breaks
     $title = esc_attr( wp_strip_all_tags( $title ) );
-    $desc = esc_attr( wp_strip_all_tags( $desc ) );
+    $desc  = esc_attr( wp_strip_all_tags( $desc ) );
+
+    $og_locale     = $is_ka ? 'ka_GE' : 'en_US';
+    $og_locale_alt = $is_ka ? 'en_US' : 'ka_GE';
 
     // Output Tags
     echo "\n<!-- ZK Custom SEO Engine -->\n";
@@ -2861,14 +3060,21 @@ function zk_render_seo_meta() {
     }
     
     // Canonical URL
-    echo "<link rel=\"canonical\" href=\"" . esc_url( $url ) . "\" />\n";
+    echo "<link rel=\"canonical\" href=\"" . esc_url( $canonical_url ) . "\" />\n";
+
+    // Multi-Language hreflang alternate links (Crucial for Google Bilingual SEO)
+    echo "<link rel=\"alternate\" hreflang=\"en\" href=\"" . esc_url( $en_url ) . "\" />\n";
+    echo "<link rel=\"alternate\" hreflang=\"ka\" href=\"" . esc_url( $ka_url ) . "\" />\n";
+    echo "<link rel=\"alternate\" hreflang=\"x-default\" href=\"" . esc_url( $en_url ) . "\" />\n";
     
     // Open Graph
     echo "<meta property=\"og:title\" content=\"{$title}\" />\n";
     if ( ! empty( $desc ) ) echo "<meta property=\"og:description\" content=\"{$desc}\" />\n";
-    echo "<meta property=\"og:url\" content=\"" . esc_url( $url ) . "\" />\n";
+    echo "<meta property=\"og:url\" content=\"" . esc_url( $canonical_url ) . "\" />\n";
     echo "<meta property=\"og:site_name\" content=\"" . esc_attr( $site_name ) . "\" />\n";
     echo "<meta property=\"og:type\" content=\"{$type}\" />\n";
+    echo "<meta property=\"og:locale\" content=\"{$og_locale}\" />\n";
+    echo "<meta property=\"og:locale:alternate\" content=\"{$og_locale_alt}\" />\n";
     if ( ! empty( $img ) ) echo "<meta property=\"og:image\" content=\"" . esc_url( $img ) . "\" />\n";
     
     // Twitter Cards
@@ -2882,9 +3088,15 @@ add_action( 'wp_head', 'zk_render_seo_meta', 1 );
 
 // 4. JSON-LD Schema Generator (AI & Google SEO)
 function zk_render_json_ld_schema() {
-    $site_name = get_bloginfo( 'name' );
-    $site_url = home_url( '/' );
-    $logo_url = get_option( 'zk_profile_img', '' );
+    $seo_urls      = zk_get_clean_bilingual_urls();
+    $is_ka         = $seo_urls['is_ka'];
+    $canonical_url = $seo_urls['canonical_url'];
+
+    $site_name_en = get_bloginfo( 'name' ) ?: 'Zurab Kostava';
+    $site_name_ka = get_option( 'zk_site_name_ka', 'ზურაბ კოსტავა' );
+    $site_name    = $is_ka ? $site_name_ka : $site_name_en;
+    $site_url     = home_url( '/' );
+    $logo_url     = get_option( 'zk_profile_img', '' );
     
     // Build Social Links array
     $social_keys = ['zk_social_ig', 'zk_social_fb', 'zk_social_x', 'zk_social_linkedin', 'zk_social_youtube', 'zk_social_spotify', 'zk_social_bandcamp', 'zk_social_medium'];
@@ -2896,10 +3108,16 @@ function zk_render_json_ld_schema() {
         }
     }
 
-    $schema_name = get_option('zk_schema_name', 'Zurab Kostava');
+    $schema_name = $is_ka ? $site_name_ka : get_option('zk_schema_name', 'Zurab Kostava');
     $schema_alternate = array_map('trim', explode(',', get_option('zk_schema_alternate_names', 'ზურაბ კოსტავა, Zurab Kostava, Zurab, Kostava, Zura Kostava')));
-    $schema_job_titles = array_map('trim', explode(',', get_option('zk_schema_job_titles', 'Artist, Composer, Visual Artist, Designer')));
-    $schema_desc = get_option('zk_schema_description', 'Georgian multidisciplinary artist, composer, and designer. Founder of Nuvio.');
+    
+    $default_jobs = $is_ka ? 'ხელოვანი, კომპოზიტორი, ვიზუალური არტისტი, დიზაინერი' : 'Artist, Composer, Visual Artist, Designer';
+    $schema_job_titles_raw = $is_ka ? get_option('zk_schema_job_titles_ka', $default_jobs) : get_option('zk_schema_job_titles', $default_jobs);
+    $schema_job_titles = array_map('trim', explode(',', $schema_job_titles_raw));
+    
+    $default_desc = $is_ka ? 'ქართველი მულტიდისციპლინური ხელოვანი, კომპოზიტორი და დიზაინერი. Nuvio-ს დამფუძნებელი.' : 'Georgian multidisciplinary artist, composer, and designer. Founder of Nuvio.';
+    $schema_desc = $is_ka ? get_option('zk_schema_description_ka', $default_desc) : get_option('zk_schema_description', $default_desc);
+    
     $schema_birth = get_option('zk_schema_birth_date', '1995-02-19');
     $schema_gender = get_option('zk_schema_gender', 'Male');
     $schema_wikidata = get_option('zk_schema_wikidata', 'https://www.wikidata.org/wiki/Q138009804');
@@ -2909,7 +3127,7 @@ function zk_render_json_ld_schema() {
         $same_as[] = trim($schema_wikidata);
     }
 
-    // Base Person Schema (always outputting the author entity)
+    // Base Person Schema
     $person_schema = [
         '@context' => 'https://schema.org',
         '@type' => 'Person',
@@ -2931,15 +3149,19 @@ function zk_render_json_ld_schema() {
     ];
 
     if ( is_page('about') ) {
+        $about_name = $is_ka ? 'ზურაბ კოსტავას შესახებ | იდენტობა, მონოლოგი, გალერეა' : 'About Zurab Kostava | Identity, Monologue, Gallery';
+        $about_desc = $is_ka ? 'გაიცანით ზურაბ კოსტავას იდენტობა. წაიკითხეთ პირადი მონოლოგი, გაეცანით მის ციფრულ ID-ს, მულტიდისციპლინურ უნარებს, კულტურულ გავლენებსა და გალერეას.' : 'Discover the unfiltered identity of Zurab Kostava. Read the personal monologue, explore his digital ID, multidisciplinary skills, cultural influences, and gallery.';
+        
         $schema = [
             "@context" => "https://schema.org",
             "@graph" => [
                 [
                     "@type" => "AboutPage",
-                    "@id" => $site_url . "about/",
-                    "url" => $site_url . "about/",
-                    "name" => "About Zurab Kostava | Identity, Monologue, Gallery",
-                    "description" => "Discover the unfiltered identity of Zurab Kostava. Read the personal monologue, explore his digital ID, multidisciplinary skills, cultural influences, and gallery.",
+                    "@id" => $canonical_url,
+                    "url" => $canonical_url,
+                    "inLanguage" => $is_ka ? 'ka-GE' : 'en-US',
+                    "name" => $about_name,
+                    "description" => $about_desc,
                     "mainEntity" => [
                         "@id" => $site_url . "#person"
                     ]
@@ -2957,36 +3179,45 @@ function zk_render_json_ld_schema() {
     }
 
     $schema = [];
-    
-    // Add Person ID linking for the rest of the pages
     $person_schema['@id'] = $site_url . '#person';
-
-    // Output Person + WebSite on ALL pages to establish the central entity graph
     $schema[] = $person_schema;
     $schema[] = [
         '@context' => 'https://schema.org',
         '@type' => 'WebSite',
-        'name' => 'Zurab Kostava',
-        'alternateName' => $site_name,
-        'url' => $site_url,
+        'name' => $is_ka ? $site_name_ka : 'Zurab Kostava',
+        'alternateName' => $is_ka ? 'Zurab Kostava' : $site_name_ka,
+        'url' => $is_ka ? home_url('/ka/') : $site_url,
+        'inLanguage' => $is_ka ? 'ka-GE' : 'en-US',
         'publisher' => [
             '@id' => $site_url . '#person'
         ]
     ];
-    
+
     $is_book_page = is_page() && get_page_template_slug( get_queried_object_id() ) === 'book-engine/template-book-reader.php';
 
     if ( is_singular( 'post' ) || ( is_page() && ! is_front_page() && ! $is_book_page ) ) {
         global $post;
-        $desc = get_post_meta( $post->ID, '_zk_seo_description', true ) ?: wp_trim_words( wp_strip_all_tags( $post->post_content ), 30, '' );
+        $post_id = $post ? $post->ID : get_queried_object_id();
         
+        if ( $is_ka ) {
+            $headline = get_post_meta( $post_id, '_zk_seo_title_ka', true ) ?: ( get_post_meta( $post_id, '_zk_title_ka', true ) ?: get_the_title( $post_id ) );
+            $desc = get_post_meta( $post_id, '_zk_seo_description_ka', true ) ?: ( get_post_meta( $post_id, '_zk_excerpt_ka', true ) ?: wp_trim_words( wp_strip_all_tags( get_post_meta( $post_id, '_zk_content_ka', true ) ), 30, '' ) );
+            if ( empty($desc) ) {
+                $desc = wp_trim_words( wp_strip_all_tags( $post->post_content ), 30, '' );
+            }
+        } else {
+            $headline = get_post_meta( $post_id, '_zk_seo_title', true ) ?: get_the_title( $post_id );
+            $desc = get_post_meta( $post_id, '_zk_seo_description', true ) ?: wp_trim_words( wp_strip_all_tags( $post->post_content ), 30, '' );
+        }
+
         $article_schema = [
             '@context' => 'https://schema.org',
             '@type' => 'Article',
-            'headline' => get_the_title(),
+            'inLanguage' => $is_ka ? 'ka-GE' : 'en-US',
+            'headline' => $headline,
             'description' => esc_attr( $desc ),
-            'datePublished' => get_the_date( 'c' ),
-            'dateModified' => get_the_modified_date( 'c' ),
+            'datePublished' => get_the_date( 'c', $post_id ),
+            'dateModified' => get_the_modified_date( 'c', $post_id ),
             'author' => [
                 '@id' => $site_url . '#person'
             ],
@@ -2995,7 +3226,7 @@ function zk_render_json_ld_schema() {
             ],
             'mainEntityOfPage' => [
                 '@type' => 'WebPage',
-                '@id' => get_permalink()
+                '@id' => $canonical_url
             ],
             'speakable' => [
                 '@type' => 'SpeakableSpecification',
@@ -3005,20 +3236,24 @@ function zk_render_json_ld_schema() {
 
         // Extract WP Tags and Categories for Keywords
         $keywords = [];
-        $tags = get_the_tags($post->ID);
+        $tags = get_the_tags($post_id);
         if ($tags) {
-            foreach($tags as $tag) { $keywords[] = $tag->name; }
+            foreach($tags as $tag) {
+                $keywords[] = $is_ka && function_exists('zk_get_translated_term_name') ? zk_get_translated_term_name($tag) : $tag->name;
+            }
         }
-        $categories = get_the_category($post->ID);
+        $categories = get_the_category($post_id);
         if ($categories) {
-            foreach($categories as $cat) { $keywords[] = $cat->name; }
+            foreach($categories as $cat) {
+                $keywords[] = $is_ka && function_exists('zk_get_translated_term_name') ? zk_get_translated_term_name($cat) : $cat->name;
+            }
         }
         if (!empty($keywords)) {
-            $article_schema['keywords'] = implode(', ', $keywords);
+            $article_schema['keywords'] = implode(', ', array_unique($keywords));
         }
         
-        if ( has_post_thumbnail() ) {
-            $article_schema['image'] = get_the_post_thumbnail_url( $post->ID, 'full' );
+        if ( has_post_thumbnail( $post_id ) ) {
+            $article_schema['image'] = get_the_post_thumbnail_url( $post_id, 'full' );
         }
         $schema[] = $article_schema;
 
@@ -3026,26 +3261,28 @@ function zk_render_json_ld_schema() {
         $target_id  = function_exists('zk_get_seo_target_id') ? zk_get_seo_target_id( get_queried_object_id() ) : get_queried_object_id();
         $year       = get_post_meta( $target_id, '_zk_book_year', true );
         $genre      = get_post_meta( $target_id, '_zk_book_genre', true );
-        $seo_desc   = get_post_meta( $target_id, '_zk_seo_description', true );
+        $seo_desc   = $is_ka ? ( get_post_meta( $target_id, '_zk_seo_description_ka', true ) ?: get_post_meta( $target_id, '_zk_excerpt_ka', true ) ) : get_post_meta( $target_id, '_zk_seo_description', true );
         $characters = get_post_meta( $target_id, '_zk_book_characters', true );
         $themes     = get_post_meta( $target_id, '_zk_book_themes', true );
-        $language   = get_post_meta( $target_id, '_zk_book_language', true ) ?: 'ka';
+        $language   = get_post_meta( $target_id, '_zk_book_language', true ) ?: ($is_ka ? 'ka' : 'en');
         $pages      = get_post_meta( $target_id, '_zk_book_pages', true );
         $audience   = get_post_meta( $target_id, '_zk_book_audience', true );
         $isbn       = get_post_meta( $target_id, '_zk_book_isbn', true );
         
+        $book_title = $is_ka ? ( get_post_meta( $target_id, '_zk_title_ka', true ) ?: get_the_title( $target_id ) ) : get_the_title( $target_id );
         $desc = !empty($seo_desc) ? $seo_desc : wp_strip_all_tags( get_post($target_id)->post_content );
         
         $book_schema = [
             '@context' => 'https://schema.org',
             '@type' => 'Book',
-            'name' => get_the_title( $target_id ),
+            'inLanguage' => $is_ka ? 'ka-GE' : 'en-US',
+            'name' => $book_title,
             'author' => [ '@id' => $site_url . '#person' ],
             'datePublished' => $year,
             'bookFormat' => 'https://schema.org/EBook',
             'isAccessibleForFree' => true,
             'description' => esc_attr( $desc ),
-            'url' => get_permalink()
+            'url' => $canonical_url
         ];
         
         if ( ! empty( $pages ) ) {
@@ -3057,56 +3294,21 @@ function zk_render_json_ld_schema() {
         if ( ! empty( $isbn ) ) {
             $book_schema['isbn'] = esc_attr( $isbn );
         }
-        
-        if ( ! empty( $language ) ) {
-            $lang_list = array_map('trim', explode(',', $language));
-            $book_schema['inLanguage'] = count($lang_list) > 1 ? $lang_list : $lang_list[0];
-        }
-        
-        if ( ! empty( $characters ) ) {
-            $char_list = array_map('trim', explode(',', $characters));
-            $book_schema['character'] = array_map(function($c) {
-                return [ '@type' => 'Person', 'name' => $c ];
-            }, $char_list);
-        }
-        
-        if ( ! empty( $themes ) ) {
-            $theme_list = array_map('trim', explode(',', $themes));
-            $book_schema['about'] = array_map(function($t) {
-                return [ '@type' => 'Thing', 'name' => $t ];
-            }, $theme_list);
-        }
-        
         if ( ! empty( $genre ) ) {
             $book_schema['genre'] = esc_attr( $genre );
-            $book_schema['keywords'] = esc_attr( $genre ) . ', ' . get_the_title($target_id) . ', Book, Zurab Kostava, ზურაბ კოსტავა';
+            $book_schema['keywords'] = esc_attr( $genre ) . ', ' . $book_title . ', Book, Zurab Kostava, ზურაბ კოსტავა';
         }
         if ( has_post_thumbnail( $target_id ) ) {
             $book_schema['image'] = get_the_post_thumbnail_url( $target_id, 'full' );
         }
         $schema[] = $book_schema;
-
-
-    } elseif ( is_front_page() || is_home() ) {
-        // Do nothing here, Person and WebSite schemas were already added above
-    } else {
-        // Fallback for Archives, Tags, Categories, and Custom Routes (like /music/)
-        $schema[] = $person_schema;
-        $schema[] = [
-            '@context' => 'https://schema.org',
-            '@type' => 'WebPage',
-            'name' => get_the_title() ?: $site_name,
-            'url' => home_url( $_SERVER['REQUEST_URI'] ),
-            'publisher' => [
-                '@id' => $site_url . '#person'
-            ]
-        ];
-        $person_schema['@id'] = $site_url . '#person';
-        $schema[0] = $person_schema;
     }
 
     // Add BreadcrumbList Schema if not on home page
     if ( ! is_front_page() && ! is_home() ) {
+        $home_label = $is_ka ? 'მთავარი' : 'Home';
+        $home_link  = $is_ka ? home_url( '/ka/' ) : $site_url;
+
         $breadcrumbs = [
             '@context' => 'https://schema.org',
             '@type' => 'BreadcrumbList',
@@ -3114,53 +3316,62 @@ function zk_render_json_ld_schema() {
                 [
                     '@type' => 'ListItem',
                     'position' => 1,
-                    'name' => 'Home',
-                    'item' => $site_url
+                    'name' => $home_label,
+                    'item' => $home_link
                 ]
             ]
         ];
 
         if ( is_singular( 'post' ) ) {
+            $blog_label = $is_ka ? 'ბლოგი' : 'Blog';
+            $blog_link  = $is_ka ? home_url( '/ka/blog/' ) : home_url( '/blog/' );
+            $post_title = $is_ka ? ( get_post_meta( get_the_ID(), '_zk_title_ka', true ) ?: get_the_title() ) : get_the_title();
+
             $breadcrumbs['itemListElement'][] = [
                 '@type' => 'ListItem',
                 'position' => 2,
-                'name' => 'Blog',
-                'item' => home_url( '/blog/' )
+                'name' => $blog_label,
+                'item' => $blog_link
             ];
             $breadcrumbs['itemListElement'][] = [
                 '@type' => 'ListItem',
                 'position' => 3,
-                'name' => get_the_title(),
-                'item' => get_permalink()
+                'name' => $post_title,
+                'item' => $canonical_url
             ];
         } elseif ( is_singular( 'zk_book' ) || $is_book_page ) {
-            $target_id = function_exists('zk_get_seo_target_id') ? zk_get_seo_target_id( get_queried_object_id() ) : get_queried_object_id();
+            $target_id   = function_exists('zk_get_seo_target_id') ? zk_get_seo_target_id( get_queried_object_id() ) : get_queried_object_id();
+            $books_label = $is_ka ? 'წიგნები' : 'Books';
+            $books_link  = $is_ka ? home_url( '/ka/books/' ) : home_url( '/books/' );
+            $book_title  = $is_ka ? ( get_post_meta( $target_id, '_zk_title_ka', true ) ?: get_the_title( $target_id ) ) : get_the_title( $target_id );
+
             $breadcrumbs['itemListElement'][] = [
                 '@type' => 'ListItem',
                 'position' => 2,
-                'name' => 'Books',
-                'item' => home_url( '/books/' )
+                'name' => $books_label,
+                'item' => $books_link
             ];
             $breadcrumbs['itemListElement'][] = [
                 '@type' => 'ListItem',
                 'position' => 3,
-                'name' => get_the_title( $target_id ),
-                'item' => get_permalink()
+                'name' => $book_title,
+                'item' => $canonical_url
             ];
         } elseif ( is_page() ) {
+            $page_title = $is_ka ? ( get_post_meta( get_the_ID(), '_zk_title_ka', true ) ?: get_the_title() ) : get_the_title();
             $breadcrumbs['itemListElement'][] = [
                 '@type' => 'ListItem',
                 'position' => 2,
-                'name' => get_the_title(),
-                'item' => get_permalink()
+                'name' => $page_title,
+                'item' => $canonical_url
             ];
         } else {
-            // General archive / custom route
+            $archive_title = $is_ka ? ( function_exists('zk_get_translated_term_name') ? zk_get_translated_term_name( get_queried_object() ) : 'არქივი' ) : ( get_the_title() ?: 'Archive' );
             $breadcrumbs['itemListElement'][] = [
                 '@type' => 'ListItem',
                 'position' => 2,
-                'name' => get_the_title() ?: 'Archive',
-                'item' => home_url( $_SERVER['REQUEST_URI'] )
+                'name' => $archive_title,
+                'item' => $canonical_url
             ];
         }
         $schema[] = $breadcrumbs;
@@ -3200,16 +3411,34 @@ add_filter('wp_sitemaps_enabled', '__return_false');
 // 2. Dynamic SEO File Generators (Bypasses File Permissions and NGINX rewrites)
 function zk_generate_sitemap_string() {
     $sitemap_content = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-    $sitemap_content .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    $sitemap_content .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">' . "\n";
     
     $date = date('c');
     $custom_routes = ['/', '/music/', '/encrolib/', '/contact/'];
     foreach ($custom_routes as $route) {
+        $en_url = esc_url( home_url( $route ) );
+        $ka_route = ($route === '/') ? '/ka/' : '/ka' . $route;
+        $ka_url = esc_url( home_url( $ka_route ) );
+        $priority = ($route === '/' ? '1.0' : '0.8');
+
+        // English entry
         $sitemap_content .= "  <url>\n";
-        $sitemap_content .= "    <loc>" . esc_url(home_url($route)) . "</loc>\n";
+        $sitemap_content .= "    <loc>{$en_url}</loc>\n";
+        $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"en\" href=\"{$en_url}\" />\n";
+        $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"ka\" href=\"{$ka_url}\" />\n";
         $sitemap_content .= "    <lastmod>{$date}</lastmod>\n";
         $sitemap_content .= "    <changefreq>weekly</changefreq>\n";
-        $sitemap_content .= "    <priority>" . ($route === '/' ? '1.0' : '0.8') . "</priority>\n";
+        $sitemap_content .= "    <priority>{$priority}</priority>\n";
+        $sitemap_content .= "  </url>\n";
+
+        // Georgian entry
+        $sitemap_content .= "  <url>\n";
+        $sitemap_content .= "    <loc>{$ka_url}</loc>\n";
+        $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"en\" href=\"{$en_url}\" />\n";
+        $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"ka\" href=\"{$ka_url}\" />\n";
+        $sitemap_content .= "    <lastmod>{$date}</lastmod>\n";
+        $sitemap_content .= "    <changefreq>weekly</changefreq>\n";
+        $sitemap_content .= "    <priority>{$priority}</priority>\n";
         $sitemap_content .= "  </url>\n";
     }
 
@@ -3222,9 +3451,32 @@ function zk_generate_sitemap_string() {
     if ($query->have_posts()) {
         while ($query->have_posts()) {
             $query->the_post();
+            $perm = get_permalink();
+            $parsed = parse_url($perm);
+            $p = isset($parsed['path']) ? $parsed['path'] : '/';
+            $en_p = preg_replace('#^/ka(?=/|$)#', '', $p);
+            $ka_p = ($en_p === '/') ? '/ka/' : '/ka' . $en_p;
+            
+            $en_url = esc_url( home_url( $en_p ) );
+            $ka_url = esc_url( home_url( $ka_p ) );
+            $lastmod = get_the_modified_date('c');
+
+            // English entry
             $sitemap_content .= "  <url>\n";
-            $sitemap_content .= "    <loc>" . esc_url(get_permalink()) . "</loc>\n";
-            $sitemap_content .= "    <lastmod>" . get_the_modified_date('c') . "</lastmod>\n";
+            $sitemap_content .= "    <loc>{$en_url}</loc>\n";
+            $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"en\" href=\"{$en_url}\" />\n";
+            $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"ka\" href=\"{$ka_url}\" />\n";
+            $sitemap_content .= "    <lastmod>{$lastmod}</lastmod>\n";
+            $sitemap_content .= "    <changefreq>monthly</changefreq>\n";
+            $sitemap_content .= "    <priority>0.6</priority>\n";
+            $sitemap_content .= "  </url>\n";
+
+            // Georgian entry
+            $sitemap_content .= "  <url>\n";
+            $sitemap_content .= "    <loc>{$ka_url}</loc>\n";
+            $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"en\" href=\"{$en_url}\" />\n";
+            $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"ka\" href=\"{$ka_url}\" />\n";
+            $sitemap_content .= "    <lastmod>{$lastmod}</lastmod>\n";
             $sitemap_content .= "    <changefreq>monthly</changefreq>\n";
             $sitemap_content .= "    <priority>0.6</priority>\n";
             $sitemap_content .= "  </url>\n";
@@ -3531,15 +3783,10 @@ add_action( 'wp_head', 'zk_inject_faq_schema', 3 );
    ZK CUSTOM SEO ENGINE (Stage 7 - Ultimate Technical & AEO)
    ============================================================ */
 
-// 1. Hreflang Tags (Preparation for multi-language)
+// 1. Hreflang Tags (Integrated cleanly into zk_render_seo_meta)
 function zk_render_hreflang_tags() {
-    if ( is_admin() || is_feed() || is_robots() ) return;
-    $url = is_singular() ? get_permalink() : home_url( $_SERVER['REQUEST_URI'] );
-    echo "\n<!-- ZK Hreflang Engine -->\n";
-    echo '<link rel="alternate" hreflang="en-US" href="' . esc_url( $url ) . '" />' . "\n";
-    echo '<link rel="alternate" hreflang="x-default" href="' . esc_url( $url ) . '" />' . "\n";
+    // Multi-language hreflang tags (en, ka, x-default) are unified in zk_render_seo_meta()
 }
-add_action( 'wp_head', 'zk_render_hreflang_tags', 1 );
 
 // 2. Automated Internal Linking Engine (SEO Powerhouse)
 function zk_auto_internal_linker( $content ) {
