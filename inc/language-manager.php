@@ -124,17 +124,22 @@ add_action('save_post', 'zk_save_translation_meta_data');
 
 // --- 2. REWRITE RULES FOR /ka/ ---
 
-function zk_language_rewrite_rules() {
-    // We add rewrite rules that map /ka/url to the standard index.php?lang_prefix=ka
-    add_rewrite_rule('^ka/?$', 'index.php?lang_prefix=ka', 'top');
-    add_rewrite_rule('^ka/([^/]+)/?$', 'index.php?name=$matches[1]&lang_prefix=ka', 'top');
-    add_rewrite_rule('^ka/category/([^/]+)/?$', 'index.php?category_name=$matches[1]&lang_prefix=ka', 'top');
-    add_rewrite_rule('^ka/page/([0-9]{1,})/?$', 'index.php?paged=$matches[1]&lang_prefix=ka', 'top');
+function zk_language_rewrite_rules_array($rules) {
+    $new_rules = array();
     
-    // Sub-pages or hierarchical custom post types
-    add_rewrite_rule('^ka/(.+?)/([^/]+)/?$', 'index.php?category_name=$matches[1]&name=$matches[2]&lang_prefix=ka', 'top');
+    // Create a duplicate of EVERY WordPress rewrite rule, prefixed with ka/
+    foreach ($rules as $key => $rule) {
+        // e.g. rule: index.php?name=$matches[1]
+        $new_rules['ka/' . $key] = $rule . '&lang_prefix=ka';
+    }
+    
+    // Add rule for the root /ka/ path
+    $new_rules['^ka/?$'] = 'index.php?lang_prefix=ka';
+    
+    // Return our new rules combined with the original ones
+    return $new_rules + $rules;
 }
-add_action('init', 'zk_language_rewrite_rules');
+add_filter('rewrite_rules_array', 'zk_language_rewrite_rules_array');
 
 function zk_language_query_vars($vars) {
     $vars[] = 'lang_prefix';
