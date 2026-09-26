@@ -32,12 +32,62 @@ function zk_render_translation_meta_box($post) {
     
     // Content Editor
     echo '<p><label><strong>ტექსტი (Content)</strong></label></p>';
+    
+    // Copy button
+    echo '<button type="button" class="button button-secondary" id="zk_copy_english_layout" style="margin-bottom: 10px;">📋 Copy Layout & Media from English</button>';
+    echo '<p class="description" style="margin-bottom: 10px;">ამ ღილაკზე დაჭერით, ინგლისური ვერსიის სრული სტრუქტურა და ფოტოები გადმოკოპირდება აქ, რის შემდეგაც უბრალოდ ტექსტებს ჩაანაცვლებ ქართულით.</p>';
+
     wp_editor($content_ka, 'zk_content_ka', array(
         'textarea_name' => 'zk_content_ka',
         'media_buttons' => true,
         'textarea_rows' => 15,
         'teeny'         => false
     ));
+    
+    // JS for copying content
+    ?>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var copyBtn = document.getElementById("zk_copy_english_layout");
+        if(copyBtn) {
+            copyBtn.addEventListener("click", function(e) {
+                e.preventDefault();
+                if(!confirm("ნამდვილად გსურთ ინგლისური ტექსტის გადმოკოპირება? ეს წაშლის აქ არსებულ ტექსტს (ასეთის არსებობის შემთხვევაში).")) {
+                    return;
+                }
+                
+                var englishContent = "";
+                
+                // Try Gutenberg first
+                if (window.wp && wp.data && wp.data.select("core/editor")) {
+                    englishContent = wp.data.select("core/editor").getEditedPostContent();
+                } else {
+                    // Try Classic Editor
+                    if (window.tinyMCE && tinyMCE.get("content")) {
+                        englishContent = tinyMCE.get("content").getContent();
+                    } else {
+                        var contentTextarea = document.getElementById("content");
+                        if (contentTextarea) {
+                            englishContent = contentTextarea.value;
+                        }
+                    }
+                }
+                
+                if (englishContent) {
+                    if (window.tinyMCE && tinyMCE.get("zk_content_ka") && !tinyMCE.get("zk_content_ka").isHidden()) {
+                        tinyMCE.get("zk_content_ka").setContent(englishContent);
+                    } else {
+                        document.getElementById("zk_content_ka").value = englishContent;
+                    }
+                    alert("წარმატებით გადმოკოპირდა! ახლა შეგიძლია ტექსტები თარგმნო.");
+                } else {
+                    alert("ინგლისური ტექსტი ვერ ვიპოვე. გთხოვთ ჯერ დაწეროთ რაიმე მთავარ ველში.");
+                }
+            });
+        }
+    });
+    </script>
+    <?php
 }
 
 function zk_save_translation_meta_data($post_id) {
