@@ -109,8 +109,8 @@ function zk_save_translation_meta_data($post_id) {
     }
     
     if (isset($_POST['zk_content_ka'])) {
-        // We use wp_kses_post to safely save HTML from the editor
-        update_post_meta($post_id, '_zk_content_ka', wp_kses_post($_POST['zk_content_ka']));
+        // Allow unfiltered HTML (like data attributes for scriptreader)
+        update_post_meta($post_id, '_zk_content_ka', $_POST['zk_content_ka']);
     }
 }
 add_action('save_post', 'zk_save_translation_meta_data');
@@ -201,7 +201,7 @@ add_filter('the_content', 'zk_translate_content_wrapper', 1);
 
 
 // Rewrite Permalinks for internal links when viewing Georgian site
-function zk_translate_permalink($url, $post) {
+function zk_translate_permalink($url, $post = null) {
     if (is_admin()) return $url;
     
     $lang = zk_get_current_language();
