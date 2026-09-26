@@ -67,6 +67,8 @@
         <div id="progress-bar"></div>
     </div>
 
+    <div id="reader-stage" class="reader-stage">
+    <div id="reader-column" class="reader-column">
     <div id="content-area" class="content-area">
         <div id="welcome-hub" class="welcome-hub">
             <div class="hub-hero">
@@ -156,6 +158,17 @@
                 <span>Or drag &amp; drop an EPUB file anywhere on this screen</span>
             </div>
         </div>
+    </div>
+    <button id="content-width-handle" class="content-width-handle" type="button" role="slider"
+            aria-orientation="horizontal"
+            aria-label="Resize reading area" aria-valuemin="24" aria-valuemax="100"
+            aria-valuenow="100" title="Drag to resize the reading area. Double-click to reset.">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 7 4 12l5 5M15 7l5 5-5 5M4 12h16"></path>
+        </svg>
+    </button>
+    </div>
     </div>
 
     <!-- Floating Edit Mode Bar with Prominent Save Button -->
@@ -680,9 +693,113 @@
         transition: width 0.3s ease-out;
     }
 
+    .reader-stage {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .reader-column {
+        width: 100%;
+        max-width: 100%;
+        min-width: min(520px, 100%);
+        height: 100%;
+        position: relative;
+        transition: width 180ms ease;
+    }
+
+    .reader-column.is-resizing {
+        transition: none;
+        user-select: none;
+    }
+
+    body:not(.is-reading) .reader-column {
+        width: 100% !important;
+    }
+
+    body:not(.is-reading) #content-width-handle {
+        display: none !important;
+    }
+
+    #neural-app-root .content-width-handle {
+        position: absolute !important;
+        top: 50% !important;
+        right: 7px !important;
+        transform: translateY(-50%) !important;
+        width: 30px !important;
+        min-width: 30px !important;
+        height: 76px !important;
+        min-height: 76px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        border: 1px solid rgba(148, 163, 184, 0.35) !important;
+        border-radius: 999px !important;
+        background: rgba(15, 23, 42, 0.88) !important;
+        color: #cbd5e1 !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(56, 189, 248, 0.06) !important;
+        cursor: ew-resize !important;
+        touch-action: none;
+        opacity: 0.62;
+        z-index: 30;
+        transition: opacity 160ms ease, border-color 160ms ease, color 160ms ease !important;
+    }
+
+    #neural-app-root .content-width-handle:hover,
+    #neural-app-root .content-width-handle:focus-visible,
+    .reader-column.is-resizing #content-width-handle {
+        opacity: 1;
+        color: #f8fafc !important;
+        border-color: rgba(56, 189, 248, 0.72) !important;
+        outline: none;
+    }
+
+    #neural-app-root .content-width-handle svg {
+        width: 18px;
+        height: 18px;
+        pointer-events: none;
+    }
+
+    #neural-app-root .content-width-handle::after {
+        content: attr(data-width);
+        position: absolute;
+        right: 38px;
+        top: 50%;
+        transform: translateY(-50%);
+        padding: 5px 8px;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        border-radius: 7px;
+        background: rgba(9, 9, 11, 0.92);
+        color: #e2e8f0;
+        font-size: 0.72rem;
+        font-weight: 600;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 140ms ease;
+    }
+
+    #neural-app-root .content-width-handle:hover::after,
+    #neural-app-root .content-width-handle:focus-visible::after,
+    .reader-column.is-resizing #content-width-handle::after {
+        opacity: 1;
+    }
+
+    body.reader-width-resizing,
+    body.reader-width-resizing * {
+        cursor: ew-resize !important;
+    }
+
     .content-area {
         flex: 1;
         min-height: 0;
+        width: 100%;
+        height: 100%;
         overflow-y: auto;
         overscroll-behavior: contain;
         padding: 24px;
@@ -2725,6 +2842,15 @@
             padding: 20px 16px 125px 16px !important;
             scroll-padding-top: 25px !important;
             font-size: 1rem;
+        }
+
+        .reader-column {
+            width: 100% !important;
+            min-width: 0;
+        }
+
+        #neural-app-root .content-width-handle {
+            display: none !important;
         }
 
         .edit-mode-floating-bar {

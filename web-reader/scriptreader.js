@@ -232,6 +232,112 @@ function hideEditModeBar() {
     document.body.classList.remove('is-editing-text');
 }
 const contentArea = document.getElementById('content-area');
+const readerStage = document.getElementById('reader-stage');
+const readerColumn = document.getElementById('reader-column');
+const contentWidthHandle = document.getElementById('content-width-handle');
+const READER_WIDTH_STORAGE_KEY = 'readroad_content_width_percent';
+const READER_WIDTH_MIN_PIXELS = 520;
+let readerWidthPercent = 100;
+let renderedReaderWidthPercent = 100;
+let isReaderWidthDragging = false;
+let readerResizeStartX = 0;
+let readerResizeStartPercent = 100;
+
+function getReaderWidthMinimumPercent() {
+    const stageWidth = readerStage?.clientWidth || window.innerWidth || READER_WIDTH_MIN_PIXELS;
+    return Math.min(100, Math.max(24, (READER_WIDTH_MIN_PIXELS / stageWidth) * 100));
+}
+
+function applyReaderWidth(percent, persist = false) {
+    if (!readerColumn || !contentWidthHandle) return;
+
+    const minimum = getReaderWidthMinimumPercent();
+    const requested = Number.isFinite(Number(percent)) ? Number(percent) : 100;
+    readerWidthPercent = Math.min(100, Math.max(24, requested));
+    const compactViewport = window.matchMedia?.('(max-width: 768px)').matches;
+    renderedReaderWidthPercent = compactViewport
+        ? 100
+        : Math.min(100, Math.max(minimum, readerWidthPercent));
+    const rounded = Math.round(renderedReaderWidthPercent);
+
+    readerColumn.style.width = `${renderedReaderWidthPercent}%`;
+    contentWidthHandle.dataset.width = `${rounded}%`;
+    contentWidthHandle.setAttribute('aria-valuemin', String(Math.ceil(minimum)));
+    contentWidthHandle.setAttribute('aria-valuenow', String(rounded));
+    contentWidthHandle.setAttribute('aria-valuetext', `${rounded}% of the screen width`);
+
+    if (persist) {
+        try {
+            localStorage.setItem(READER_WIDTH_STORAGE_KEY, readerWidthPercent.toFixed(2));
+        } catch (error) {
+            console.warn('[ReadRoad] Could not save reading width:', error);
+        }
+    }
+}
+
+function finishReaderWidthResize(event) {
+    if (!isReaderWidthDragging) return;
+    isReaderWidthDragging = false;
+    readerColumn?.classList.remove('is-resizing');
+    document.body.classList.remove('reader-width-resizing');
+    if (event && contentWidthHandle?.hasPointerCapture?.(event.pointerId)) {
+        contentWidthHandle.releasePointerCapture(event.pointerId);
+    }
+    applyReaderWidth(readerWidthPercent, true);
+}
+
+if (readerColumn && readerStage && contentWidthHandle) {
+    let savedWidth = 100;
+    try {
+        const storedWidth = parseFloat(localStorage.getItem(READER_WIDTH_STORAGE_KEY));
+        if (Number.isFinite(storedWidth)) savedWidth = storedWidth;
+    } catch (error) {
+        console.warn('[ReadRoad] Could not restore reading width:', error);
+    }
+    applyReaderWidth(savedWidth);
+
+    contentWidthHandle.addEventListener('pointerdown', (event) => {
+        if (event.pointerType === 'mouse' && event.button !== 0) return;
+        event.preventDefault();
+        isReaderWidthDragging = true;
+        readerResizeStartX = event.clientX;
+        readerResizeStartPercent = renderedReaderWidthPercent;
+        readerColumn.classList.add('is-resizing');
+        document.body.classList.add('reader-width-resizing');
+        contentWidthHandle.setPointerCapture?.(event.pointerId);
+    });
+
+    contentWidthHandle.addEventListener('pointermove', (event) => {
+        if (!isReaderWidthDragging) return;
+        event.preventDefault();
+        const stageWidth = readerStage.getBoundingClientRect().width;
+        if (!stageWidth) return;
+        const deltaPercent = ((event.clientX - readerResizeStartX) * 2 / stageWidth) * 100;
+        applyReaderWidth(readerResizeStartPercent + deltaPercent);
+    });
+
+    contentWidthHandle.addEventListener('pointerup', finishReaderWidthResize);
+    contentWidthHandle.addEventListener('pointercancel', finishReaderWidthResize);
+
+    contentWidthHandle.addEventListener('dblclick', (event) => {
+        event.preventDefault();
+        applyReaderWidth(100, true);
+    });
+
+    contentWidthHandle.addEventListener('keydown', (event) => {
+        let nextWidth = renderedReaderWidthPercent;
+        if (event.key === 'ArrowLeft') nextWidth -= 5;
+        else if (event.key === 'ArrowRight') nextWidth += 5;
+        else if (event.key === 'Home') nextWidth = getReaderWidthMinimumPercent();
+        else if (event.key === 'End') nextWidth = 100;
+        else return;
+
+        event.preventDefault();
+        applyReaderWidth(nextWidth, true);
+    });
+
+    window.addEventListener('resize', () => applyReaderWidth(readerWidthPercent));
+}
 const playBtn = document.getElementById('play-btn');
 const stopBtn = document.getElementById('stop-btn');
 const nextBtn = document.getElementById('next-btn');
