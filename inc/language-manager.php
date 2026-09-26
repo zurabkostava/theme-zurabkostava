@@ -198,10 +198,12 @@ function zk_translate_content_wrapper($content) {
             remove_filter('the_content', 'zk_translate_content_wrapper', 1);
             $filtered = apply_filters('the_content', $clean_ka);
             add_filter('the_content', 'zk_translate_content_wrapper', 1);
-            return zk_clean_markdown_attributes($filtered);
+            return '<!-- ZK_KA_ACTIVE: YES -->' . zk_clean_markdown_attributes($filtered);
+        } else {
+            return '<!-- ZK_KA_ACTIVE: EMPTY_META -->' . $content;
         }
     }
-    return $content;
+    return '<!-- ZK_KA_ACTIVE: NOT_KA -->' . $content;
 }
 add_filter('the_content', 'zk_translate_content_wrapper', 1);
 
