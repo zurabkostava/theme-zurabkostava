@@ -181,11 +181,11 @@ add_filter('the_title', 'zk_translate_title', 10, 2);
 
 function zk_clean_markdown_attributes($content) {
     if (empty($content)) return $content;
-    // Clean src="[url](url)" or href="[url](url)"
-    $content = preg_replace('/(src|href)=["\']\[[^\]]+\]\((https?:\/\/[^"\')\s]+)\)["\']/i', '$1="$2"', $content);
-    // Clean src="[url]" or href="[url]"
-    $content = preg_replace('/(src|href)=["\']\[(https?:\/\/[^"\']+)\]["\']/i', '$1="$2"', $content);
-    return $content;
+    return preg_replace_callback('/(src|href)=["\']\[([^\]]+)\](?:\(([^)]+)\))?["\']/i', function($matches) {
+        $attr = $matches[1];
+        $url = !empty($matches[3]) ? $matches[3] : $matches[2];
+        return $attr . '="' . esc_url($url) . '"';
+    }, $content);
 }
 
 function zk_translate_content_wrapper($content) {
