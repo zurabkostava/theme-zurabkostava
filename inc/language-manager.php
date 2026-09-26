@@ -181,12 +181,16 @@ add_filter('the_title', 'zk_translate_title', 10, 2);
 
 function zk_clean_markdown_attributes($content) {
     if (empty($content)) return $content;
-    return preg_replace_callback('/(src|href)=["\']\[([^\]]+)\](?:\(([^)]+)\))?["\']/i', function($matches) {
+    return preg_replace_callback('/(src|href)=["\'](?:%5B|&#91;|\[)?([^"\'\]\s]+)(?:%5D|&#93;|\])?(?:\(([^"\'\)]+)\))?["\']/i', function($matches) {
         $attr = $matches[1];
-        $url = !empty($matches[3]) ? $matches[3] : $matches[2];
-        return $attr . '="' . esc_url($url) . '"';
+        $url1 = $matches[2];
+        $url2 = !empty($matches[3]) ? $matches[3] : '';
+        $final_url = !empty($url2) ? $url2 : $url1;
+        $final_url = trim($final_url, "[]()");
+        return $attr . '="' . esc_url($final_url) . '"';
     }, $content);
 }
+add_filter('the_content', 'zk_clean_markdown_attributes', 999999);
 
 function zk_translate_content_wrapper($content) {
     if (is_admin()) return $content;
@@ -198,7 +202,6 @@ function zk_translate_content_wrapper($content) {
         $post_id = get_the_ID();
         $translated_content = get_post_meta($post_id, '_zk_content_ka', true);
         if (!empty($translated_content)) {
-            $translated_content = zk_clean_markdown_attributes($translated_content);
             $is_filtering = true;
             $filtered = apply_filters('the_content', $translated_content);
             $is_filtering = false;
