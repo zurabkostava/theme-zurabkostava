@@ -230,7 +230,6 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
             }
         }
         if ( ! empty( $zk_display_excerpt ) || has_excerpt() ) : ?>
-            <!-- ZK_INDEX_EXCERPT_CHECK_v1 -->
             <p class="page__description"><?php echo esc_html( $zk_display_excerpt ); ?></p>
         <?php endif; ?>
         <div class="page__content"><?php the_content(); ?></div>

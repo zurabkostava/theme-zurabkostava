@@ -209,10 +209,6 @@ function zk_translate_excerpt($excerpt, $post = null) {
             if (!empty($excerpt_ka)) {
                 return $excerpt_ka;
             }
-
-            if ($post_id == 10939 || strpos(get_permalink($post_id), 'what-is-encrolib') !== false) {
-                return 'აქციეთ თქვენი უთქმელი სიტყვები, საიდუმლოებები და ისტორიები თვალისმომჭრელ, წაუკითხავ თანამედროვე ხელოვნებად. გაიგეთ, როგორ იყენებს Encrolib v1.0 უნიკალურ ვიზუალურ ენას თქვენი ყველაზე ღრმა ფიქრების ყველას თვალწინ დასამალად.';
-            }
         }
     }
     return $excerpt;
@@ -237,10 +233,6 @@ function zk_translate_has_excerpt($has_excerpt, $post = null) {
         if ($post_id) {
             $excerpt_ka = get_post_meta($post_id, '_zk_excerpt_ka', true);
             if (!empty($excerpt_ka)) {
-                return true;
-            }
-
-            if ($post_id == 10939 || strpos(get_permalink($post_id), 'what-is-encrolib') !== false) {
                 return true;
             }
         }
@@ -291,14 +283,6 @@ function zk_auto_clean_db_meta() {
                 $cleaned = zk_clean_markdown_attributes($raw_ka);
                 if ($cleaned !== $raw_ka) {
                     update_post_meta($post_id, '_zk_content_ka', $cleaned);
-                }
-            }
-
-            // Seed default Georgian excerpt for Encrolib post if empty
-            if ($post_id == 10939 || $post_id == 10819 || strpos(get_permalink($post_id), 'what-is-encrolib') !== false) {
-                $excerpt_ka = get_post_meta($post_id, '_zk_excerpt_ka', true);
-                if (empty($excerpt_ka)) {
-                    update_post_meta($post_id, '_zk_excerpt_ka', 'აქციეთ თქვენი უთქმელი სიტყვები, საიდუმლოებები და ისტორიები თვალისმომჭრელ, წაუკითხავ თანამედროვე ხელოვნებად. გაიგეთ, როგორ იყენებს Encrolib v1.0 უნიკალურ ვიზუალურ ენას თქვენი ყველაზე ღრმა ფიქრების ყველას თვალწინ დასამალად.');
                 }
             }
         }
