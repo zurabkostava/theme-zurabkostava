@@ -190,17 +190,14 @@ add_filter('the_content', 'zk_clean_markdown_attributes', 999999);
 function zk_translate_content_wrapper($content) {
     if (is_admin()) return $content;
     
-    static $is_filtering = false;
-    if ($is_filtering) return $content;
-
     if (zk_get_current_language() === 'ka') {
         $post_id = get_the_ID();
         $translated_content = get_post_meta($post_id, '_zk_content_ka', true);
         if (!empty($translated_content)) {
-            $translated_content = zk_clean_markdown_attributes($translated_content);
-            $is_filtering = true;
-            $filtered = apply_filters('the_content', $translated_content);
-            $is_filtering = false;
+            $clean_ka = zk_clean_markdown_attributes($translated_content);
+            remove_filter('the_content', 'zk_translate_content_wrapper', 1);
+            $filtered = apply_filters('the_content', $clean_ka);
+            add_filter('the_content', 'zk_translate_content_wrapper', 1);
             return zk_clean_markdown_attributes($filtered);
         }
     }
