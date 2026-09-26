@@ -179,7 +179,7 @@
             if (!v) throw new Error('No #view in response');
             var titleEl = doc.querySelector('title');
             
-            var newHeadTags = Array.prototype.slice.call(doc.head.querySelectorAll('meta[name="description"], meta[property^="og:"], meta[name^="twitter:"], link[rel="canonical"], link[rel="alternate"][hreflang], script[type="application/ld+json"]'))
+            var newHeadTags = Array.prototype.slice.call(doc.head.querySelectorAll('meta[name="description"], meta[name="abstract"], meta[name="robots"], meta[property^="og:"], meta[name^="twitter:"], link[rel="canonical"], link[rel="alternate"][hreflang], script[type="application/ld+json"]'))
                 .map(function(el) { return el.outerHTML; })
                 .join('\n');
 
@@ -228,7 +228,7 @@
                 }
                 
                 if (data.headTags !== undefined) {
-                    var oldTags = document.head.querySelectorAll('meta[name="description"], meta[property^="og:"], meta[name^="twitter:"], link[rel="canonical"], link[rel="alternate"][hreflang], script[type="application/ld+json"]');
+                    var oldTags = document.head.querySelectorAll('meta[name="description"], meta[name="abstract"], meta[name="robots"], meta[property^="og:"], meta[name^="twitter:"], link[rel="canonical"], link[rel="alternate"][hreflang], script[type="application/ld+json"]');
                     for (var i = 0; i < oldTags.length; i++) oldTags[i].parentNode.removeChild(oldTags[i]);
                     document.head.insertAdjacentHTML('beforeend', data.headTags);
                 }

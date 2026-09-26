@@ -2697,14 +2697,24 @@ function zk_seo_taxonomy_add_meta_fields() {
         <p class="description">Paste an image URL for social media sharing (Open Graph & Twitter). Leave empty to use site default.</p>
     </div>
     <div class="form-field" style="margin-top:20px; padding-top:15px; border-top:1px solid #ccc;">
-        <label for="zk_geo_ai_summary"><strong>AI Summary (Abstract):</strong></label>
+        <label for="zk_geo_ai_summary"><strong>AI Summary (Abstract - EN):</strong></label>
         <textarea name="zk_geo_ai_summary" id="zk_geo_ai_summary" rows="3"></textarea>
-        <p class="description">Tell ChatGPT exactly how to summarize this page.</p>
+        <p class="description">Tell ChatGPT exactly how to summarize this page in English.</p>
     </div>
     <div class="form-field">
-        <label for="zk_geo_faq"><strong>FAQ Schema Generator:</strong></label>
+        <label for="zk_geo_ai_summary_ka"><strong>ქართული AI შეჯამება (Abstract - KA):</strong></label>
+        <textarea name="zk_geo_ai_summary_ka" id="zk_geo_ai_summary_ka" rows="3"></textarea>
+        <p class="description">უთხარით AI საძიებო სისტემებს, როგორ დაახასიათონ ეს გვერდი ქართულად.</p>
+    </div>
+    <div class="form-field">
+        <label for="zk_geo_faq"><strong>FAQ Schema Generator (EN):</strong></label>
         <textarea name="zk_geo_faq" id="zk_geo_faq" rows="8" style="font-family:monospace;"></textarea>
         <p class="description">Format exactly like this:<br/>Q: What is Beta?<br/>A: It is a book.<br/><br/>Q: Next question?<br/>A: Next answer.</p>
+    </div>
+    <div class="form-field">
+        <label for="zk_geo_faq_ka"><strong>FAQ Schema Generator (KA):</strong></label>
+        <textarea name="zk_geo_faq_ka" id="zk_geo_faq_ka" rows="8" style="font-family:monospace;"></textarea>
+        <p class="description">ფორმატი:<br/>Q: რა არის Beta?<br/>A: ეს არის წიგნი.<br/><br/>Q: შემდეგი კითხვა?<br/>A: შემდეგი პასუხი.</p>
     </div>
     <?php
 }
@@ -2756,24 +2766,40 @@ function zk_seo_taxonomy_edit_meta_fields( $term ) {
         </td>
     </tr>
     <?php
-    $ai_summary = get_term_meta( $term->term_id, '_zk_geo_ai_summary', true );
-    $faq_text   = get_term_meta( $term->term_id, '_zk_geo_faq', true );
+    $ai_summary    = get_term_meta( $term->term_id, '_zk_geo_ai_summary', true );
+    $ai_summary_ka = get_term_meta( $term->term_id, '_zk_geo_ai_summary_ka', true );
+    $faq_text      = get_term_meta( $term->term_id, '_zk_geo_faq', true );
+    $faq_text_ka   = get_term_meta( $term->term_id, '_zk_geo_faq_ka', true );
     ?>
     <tr class="form-field">
         <td colspan="2" style="padding:0;"><hr style="margin:10px 0;"></td>
     </tr>
     <tr class="form-field">
-        <th scope="row" valign="top"><label for="zk_geo_ai_summary"><strong>AI Summary (Abstract):</strong></label></th>
+        <th scope="row" valign="top"><label for="zk_geo_ai_summary"><strong>AI Summary (Abstract - EN):</strong></label></th>
         <td>
             <textarea name="zk_geo_ai_summary" id="zk_geo_ai_summary" rows="3"><?php echo esc_textarea( $ai_summary ); ?></textarea>
-            <p class="description">Tell ChatGPT exactly how to summarize this page.</p>
+            <p class="description">Tell ChatGPT exactly how to summarize this page in English.</p>
         </td>
     </tr>
     <tr class="form-field">
-        <th scope="row" valign="top"><label for="zk_geo_faq"><strong>FAQ Schema Generator:</strong></label></th>
+        <th scope="row" valign="top"><label for="zk_geo_ai_summary_ka"><strong>ქართული AI შეჯამება (Abstract - KA):</strong></label></th>
+        <td>
+            <textarea name="zk_geo_ai_summary_ka" id="zk_geo_ai_summary_ka" rows="3"><?php echo esc_textarea( $ai_summary_ka ); ?></textarea>
+            <p class="description">უთხარით AI საძიებო სისტემებს, როგორ დაახასიათონ ეს გვერდი ქართულად.</p>
+        </td>
+    </tr>
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="zk_geo_faq"><strong>FAQ Schema Generator (EN):</strong></label></th>
         <td>
             <textarea name="zk_geo_faq" id="zk_geo_faq" rows="8" style="font-family:monospace;"><?php echo esc_textarea( $faq_text ); ?></textarea>
             <p class="description">Format exactly like this:<br/>Q: What is Beta?<br/>A: It is a book.<br/><br/>Q: Next question?<br/>A: Next answer.</p>
+        </td>
+    </tr>
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="zk_geo_faq_ka"><strong>FAQ Schema Generator (KA):</strong></label></th>
+        <td>
+            <textarea name="zk_geo_faq_ka" id="zk_geo_faq_ka" rows="8" style="font-family:monospace;"><?php echo esc_textarea( $faq_text_ka ); ?></textarea>
+            <p class="description">ფორმატი:<br/>Q: რა არის Beta?<br/>A: ეს არის წიგნი.<br/><br/>Q: შემდეგი კითხვა?<br/>A: შემდეგი პასუხი.</p>
         </td>
     </tr>
     <?php
@@ -2800,8 +2826,14 @@ function zk_seo_save_taxonomy_meta( $term_id ) {
     if ( isset( $_POST['zk_geo_ai_summary'] ) ) {
         update_term_meta( $term_id, '_zk_geo_ai_summary', sanitize_textarea_field( $_POST['zk_geo_ai_summary'] ) );
     }
+    if ( isset( $_POST['zk_geo_ai_summary_ka'] ) ) {
+        update_term_meta( $term_id, '_zk_geo_ai_summary_ka', sanitize_textarea_field( $_POST['zk_geo_ai_summary_ka'] ) );
+    }
     if ( isset( $_POST['zk_geo_faq'] ) ) {
         update_term_meta( $term_id, '_zk_geo_faq', sanitize_textarea_field( $_POST['zk_geo_faq'] ) );
+    }
+    if ( isset( $_POST['zk_geo_faq_ka'] ) ) {
+        update_term_meta( $term_id, '_zk_geo_faq_ka', sanitize_textarea_field( $_POST['zk_geo_faq_ka'] ) );
     }
 }
 add_action( 'created_category', 'zk_seo_save_taxonomy_meta' );
@@ -3581,16 +3613,35 @@ function zk_render_geo_meta_tags() {
 
     // AI Summary (abstract)
     $ai_summary = '';
+    $is_ka = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
+
     if ( is_singular() ) {
         global $post;
-        $ai_summary = get_post_meta( $post->ID, '_zk_geo_ai_summary', true );
+        $target_id = function_exists('zk_get_seo_target_id') && isset($post->ID) ? zk_get_seo_target_id( $post->ID ) : ( isset($post->ID) ? $post->ID : 0 );
+        if ( $target_id ) {
+            if ( $is_ka ) {
+                $ai_summary = get_post_meta( $target_id, '_zk_geo_ai_summary_ka', true );
+                if ( empty( trim( $ai_summary ) ) ) {
+                    $ai_summary = get_post_meta( $target_id, '_zk_geo_ai_summary', true );
+                }
+            } else {
+                $ai_summary = get_post_meta( $target_id, '_zk_geo_ai_summary', true );
+            }
+        }
     } elseif ( is_archive() && ( is_category() || is_tag() ) ) {
         $term_id = get_queried_object_id();
-        $ai_summary = get_term_meta( $term_id, '_zk_geo_ai_summary', true );
+        if ( $is_ka ) {
+            $ai_summary = get_term_meta( $term_id, '_zk_geo_ai_summary_ka', true );
+            if ( empty( trim( $ai_summary ) ) ) {
+                $ai_summary = get_term_meta( $term_id, '_zk_geo_ai_summary', true );
+            }
+        } else {
+            $ai_summary = get_term_meta( $term_id, '_zk_geo_ai_summary', true );
+        }
     }
 
-    if ( ! empty( $ai_summary ) ) {
-        echo '<meta name="abstract" content="' . esc_attr( $ai_summary ) . '" />' . "\n";
+    if ( ! empty( trim( $ai_summary ) ) ) {
+        echo '<meta name="abstract" content="' . esc_attr( trim( $ai_summary ) ) . '" />' . "\n";
     }
 }
 add_action( 'wp_head', 'zk_render_geo_meta_tags', 1 );
@@ -3651,18 +3702,44 @@ add_action( 'add_meta_boxes', 'zk_add_geo_meta_box' );
 
 function zk_render_geo_meta_box( $post ) {
     wp_nonce_field( 'zk_geo_save_meta_box_data', 'zk_geo_meta_box_nonce' );
-    $ai_summary = get_post_meta( $post->ID, '_zk_geo_ai_summary', true );
-    $faq_text   = get_post_meta( $post->ID, '_zk_geo_faq', true );
+    $ai_summary    = get_post_meta( $post->ID, '_zk_geo_ai_summary', true );
+    $faq_text      = get_post_meta( $post->ID, '_zk_geo_faq', true );
+    $ai_summary_ka = get_post_meta( $post->ID, '_zk_geo_ai_summary_ka', true );
+    $faq_text_ka   = get_post_meta( $post->ID, '_zk_geo_faq_ka', true );
     ?>
-    <p>
-        <label for="zk_geo_ai_summary"><strong>AI Summary (Abstract):</strong> (Tell ChatGPT exactly how to summarize this page)</label><br />
-        <textarea id="zk_geo_ai_summary" name="zk_geo_ai_summary" rows="3" style="width:100%; margin-top:5px;"><?php echo esc_textarea( $ai_summary ); ?></textarea>
-    </p>
-    <p style="margin-top:20px;">
-        <label for="zk_geo_faq"><strong>FAQ Schema Generator:</strong> (For Google "People Also Ask")</label><br />
-        <span class="description" style="display:block; margin-bottom:5px;">Format exactly like this:<br/>Q: What is Beta?<br/>A: It is a book.<br/><br/>Q: Next question?<br/>A: Next answer.</span>
-        <textarea id="zk_geo_faq" name="zk_geo_faq" rows="8" style="width:100%; margin-top:5px; font-family:monospace;"><?php echo esc_textarea( $faq_text ); ?></textarea>
-    </p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; padding: 10px 0;">
+        <div style="background: #f8f9fa; border: 1px solid #dcdcde; border-radius: 6px; padding: 15px;">
+            <h4 style="margin: 0 0 14px; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                <span>🇬🇧</span> English GEO Settings (AI & FAQ)
+            </h4>
+            <p style="margin-bottom: 15px;">
+                <label for="zk_geo_ai_summary" style="display:block; font-weight:600; margin-bottom:5px;">AI Summary (Abstract - EN):</label>
+                <span class="description" style="display:block; margin-bottom:5px;">Tell ChatGPT and AI engines exactly how to summarize this page in English.</span>
+                <textarea id="zk_geo_ai_summary" name="zk_geo_ai_summary" rows="3" style="width:100%;"><?php echo esc_textarea( $ai_summary ); ?></textarea>
+            </p>
+            <p style="margin-top: 15px; margin-bottom: 0;">
+                <label for="zk_geo_faq" style="display:block; font-weight:600; margin-bottom:5px;">FAQ Schema Generator (EN):</label>
+                <span class="description" style="display:block; margin-bottom:5px;">Format exactly like this:<br/>Q: What is Beta?<br/>A: It is a book.<br/><br/>Q: Next question?<br/>A: Next answer.</span>
+                <textarea id="zk_geo_faq" name="zk_geo_faq" rows="8" style="width:100%; font-family:monospace;"><?php echo esc_textarea( $faq_text ); ?></textarea>
+            </p>
+        </div>
+
+        <div style="background: #f0f7ff; border: 1px solid #c3daf7; border-radius: 6px; padding: 15px;">
+            <h4 style="margin: 0 0 14px; font-size: 15px; display: flex; align-items: center; gap: 8px; color: #0056b3;">
+                <span>🇬🇪</span> ქართული GEO პარამეტრები (AI & FAQ)
+            </h4>
+            <p style="margin-bottom: 15px;">
+                <label for="zk_geo_ai_summary_ka" style="display:block; font-weight:600; margin-bottom:5px;">ქართული AI შეჯამება (Abstract - KA):</label>
+                <span class="description" style="display:block; margin-bottom:5px;">უთხარით AI საძიებო სისტემებს (ChatGPT, Perplexity), როგორ დაახასიათონ ეს გვერდი ქართულად.</span>
+                <textarea id="zk_geo_ai_summary_ka" name="zk_geo_ai_summary_ka" rows="3" style="width:100%;"><?php echo esc_textarea( $ai_summary_ka ); ?></textarea>
+            </p>
+            <p style="margin-top: 15px; margin-bottom: 0;">
+                <label for="zk_geo_faq_ka" style="display:block; font-weight:600; margin-bottom:5px;">FAQ Schema Generator (KA):</label>
+                <span class="description" style="display:block; margin-bottom:5px;">ფორმატი:<br/>Q: რა არის Beta?<br/>A: ეს არის წიგნი.<br/><br/>Q: შემდეგი კითხვა?<br/>A: შემდეგი პასუხი.</span>
+                <textarea id="zk_geo_faq_ka" name="zk_geo_faq_ka" rows="8" style="width:100%; font-family:monospace;"><?php echo esc_textarea( $faq_text_ka ); ?></textarea>
+            </p>
+        </div>
+    </div>
     <?php
 }
 
@@ -3674,8 +3751,14 @@ function zk_save_geo_meta_box_data( $post_id ) {
     if ( isset( $_POST['zk_geo_ai_summary'] ) ) {
         update_post_meta( $post_id, '_zk_geo_ai_summary', sanitize_textarea_field( $_POST['zk_geo_ai_summary'] ) );
     }
+    if ( isset( $_POST['zk_geo_ai_summary_ka'] ) ) {
+        update_post_meta( $post_id, '_zk_geo_ai_summary_ka', sanitize_textarea_field( $_POST['zk_geo_ai_summary_ka'] ) );
+    }
     if ( isset( $_POST['zk_geo_faq'] ) ) {
         update_post_meta( $post_id, '_zk_geo_faq', sanitize_textarea_field( $_POST['zk_geo_faq'] ) );
+    }
+    if ( isset( $_POST['zk_geo_faq_ka'] ) ) {
+        update_post_meta( $post_id, '_zk_geo_faq_ka', sanitize_textarea_field( $_POST['zk_geo_faq_ka'] ) );
     }
 }
 add_action( 'save_post', 'zk_save_geo_meta_box_data' );
@@ -3684,41 +3767,58 @@ add_action( 'save_post', 'zk_save_geo_meta_box_data' );
 function zk_inject_faq_schema() {
     if ( ! is_singular() && ! ( is_archive() && ( is_category() || is_tag() ) ) ) return;
     
+    $is_ka = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
     $faq_text = '';
     
     if ( is_singular() ) {
         global $post;
         // Automatically fetch FAQ from the corresponding zk_book if on a book reader page
-        $target_id = function_exists('zk_get_seo_target_id') ? zk_get_seo_target_id( $post->ID ) : $post->ID;
-        $faq_text = get_post_meta( $target_id, '_zk_geo_faq', true );
+        $target_id = function_exists('zk_get_seo_target_id') && isset($post->ID) ? zk_get_seo_target_id( $post->ID ) : ( isset($post->ID) ? $post->ID : 0 );
+        if ( $target_id ) {
+            if ( $is_ka ) {
+                $faq_text = get_post_meta( $target_id, '_zk_geo_faq_ka', true );
+                if ( empty( trim( $faq_text ) ) ) {
+                    $faq_text = get_post_meta( $target_id, '_zk_geo_faq', true );
+                }
+            } else {
+                $faq_text = get_post_meta( $target_id, '_zk_geo_faq', true );
+            }
+        }
     } else {
         $term_id = get_queried_object_id();
-        $faq_text = get_term_meta( $term_id, '_zk_geo_faq', true );
+        if ( $is_ka ) {
+            $faq_text = get_term_meta( $term_id, '_zk_geo_faq_ka', true );
+            if ( empty( trim( $faq_text ) ) ) {
+                $faq_text = get_term_meta( $term_id, '_zk_geo_faq', true );
+            }
+        } else {
+            $faq_text = get_term_meta( $term_id, '_zk_geo_faq', true );
+        }
     }
     
-    if ( empty( trim( $faq_text ) ) ) return;
-
-    $blocks = explode( "\n\n", str_replace( "\r", "", $faq_text ) );
     $mainEntity = [];
 
-    foreach ( $blocks as $block ) {
-        $lines = explode( "\n", trim( $block ) );
-        $q = ''; $a = '';
-        foreach ( $lines as $line ) {
-            if ( str_starts_with( $line, 'Q:' ) ) { $q = trim( substr( $line, 2 ) ); }
-            elseif ( str_starts_with( $line, 'A:' ) ) { $a = trim( substr( $line, 2 ) ); }
-        }
-        if ( ! empty( $q ) && ! empty( $a ) ) {
-            $name_val = is_page('about') ? wp_strip_all_tags( $q ) : esc_attr( $q );
-            $text_val = is_page('about') ? wp_strip_all_tags( $a ) : esc_attr( $a );
-            $mainEntity[] = [
-                '@type' => 'Question',
-                'name' => $name_val,
-                'acceptedAnswer' => [
-                    '@type' => 'Answer',
-                    'text' => $text_val
-                ]
-            ];
+    if ( ! empty( trim( $faq_text ) ) ) {
+        $blocks = explode( "\n\n", str_replace( "\r", "", $faq_text ) );
+        foreach ( $blocks as $block ) {
+            $lines = explode( "\n", trim( $block ) );
+            $q = ''; $a = '';
+            foreach ( $lines as $line ) {
+                if ( str_starts_with( $line, 'Q:' ) ) { $q = trim( substr( $line, 2 ) ); }
+                elseif ( str_starts_with( $line, 'A:' ) ) { $a = trim( substr( $line, 2 ) ); }
+            }
+            if ( ! empty( $q ) && ! empty( $a ) ) {
+                $name_val = is_page('about') ? wp_strip_all_tags( $q ) : esc_attr( $q );
+                $text_val = is_page('about') ? wp_strip_all_tags( $a ) : esc_attr( $a );
+                $mainEntity[] = [
+                    '@type' => 'Question',
+                    'name' => $name_val,
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => $text_val
+                    ]
+                ];
+            }
         }
     }
 
@@ -3727,7 +3827,14 @@ function zk_inject_faq_schema() {
     if ( is_page() && $post_obj && has_shortcode( $post_obj->post_content, 'zk_books' ) ) {
         $books = get_posts( array( 'post_type' => 'zk_book', 'numberposts' => -1 ) );
         foreach ( $books as $book ) {
-            $b_faq = get_post_meta( $book->ID, '_zk_geo_faq', true );
+            if ( $is_ka ) {
+                $b_faq = get_post_meta( $book->ID, '_zk_geo_faq_ka', true );
+                if ( empty( trim( $b_faq ) ) ) {
+                    $b_faq = get_post_meta( $book->ID, '_zk_geo_faq', true );
+                }
+            } else {
+                $b_faq = get_post_meta( $book->ID, '_zk_geo_faq', true );
+            }
             if ( ! empty( trim( $b_faq ) ) ) {
                 $b_blocks = explode( "\n\n", str_replace( "\r", "", $b_faq ) );
                 foreach ( $b_blocks as $block ) {
@@ -3738,17 +3845,17 @@ function zk_inject_faq_schema() {
                         elseif ( str_starts_with( $line, 'A:' ) ) { $a = trim( substr( $line, 2 ) ); }
                     }
                     if ( ! empty( $q ) && ! empty( $a ) ) {
+                        $name_val = is_page('about') ? wp_strip_all_tags( $q ) : esc_attr( $q );
+                        $text_val = is_page('about') ? wp_strip_all_tags( $a ) : esc_attr( $a );
                         // Check for exact duplicates
                         $is_dup = false;
                         foreach($mainEntity as $ex) {
-                            if ($ex['name'] === esc_attr($q)) {
+                            if ($ex['name'] === $name_val) {
                                 $is_dup = true;
                                 break;
                             }
                         }
                         if (!$is_dup) {
-                            $name_val = is_page('about') ? wp_strip_all_tags( $q ) : esc_attr( $q );
-                            $text_val = is_page('about') ? wp_strip_all_tags( $a ) : esc_attr( $a );
                             $mainEntity[] = [
                                 '@type' => 'Question',
                                 'name' => $name_val,
@@ -3766,8 +3873,9 @@ function zk_inject_faq_schema() {
 
     if ( ! empty( $mainEntity ) ) {
         $schema = [
-            '@context' => 'https://schema.org',
-            '@type' => 'FAQPage',
+            '@context'   => 'https://schema.org',
+            '@type'      => 'FAQPage',
+            'inLanguage' => $is_ka ? 'ka-GE' : 'en-US',
             'mainEntity' => $mainEntity
         ];
         echo "\n<!-- ZK FAQ Schema Engine -->\n";
