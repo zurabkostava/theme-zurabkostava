@@ -143,10 +143,6 @@ function zk_early_uri_rewrite() {
             define('ZK_IS_GEORGIAN_REQUEST', true);
         }
     }
-    
-    if (isset($_GET['zk_debug_uri'])) {
-        die("REQUEST_URI is now: " . $_SERVER['REQUEST_URI'] . " | ZK_IS_GEORGIAN_REQUEST: " . (defined('ZK_IS_GEORGIAN_REQUEST') ? 'true' : 'false'));
-    }
 }
 // Hook early in init
 add_action('init', 'zk_early_uri_rewrite', 1);
