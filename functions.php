@@ -173,8 +173,13 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
         $output .= '<li' . $class_names . '>';
 
         $url = ! empty( $item->url ) ? $item->url : '';
-        // ვამოწმებთ, არის თუ არა ლინკი გარე საიტის (არ შეიცავს შენი საიტის მთავარ მისამართს)
-        $is_external = ( strpos( $url, home_url() ) === false && ( strpos( $url, 'http' ) === 0 || strpos( $url, '//' ) === 0 ) );
+        $site_host = parse_url( get_option('home'), PHP_URL_HOST );
+        $url_host  = parse_url( $url, PHP_URL_HOST );
+        $is_external = ( ! empty( $url_host ) && $url_host !== $site_host );
+
+        if ( ! $is_external && function_exists('zk_get_current_language') && zk_get_current_language() === 'ka' && function_exists('zk_filter_permalink_ka') ) {
+            $url = zk_filter_permalink_ka( $url );
+        }
 
         $parsed = wp_parse_url( $url );
         $path = isset( $parsed['path'] ) ? rtrim( $parsed['path'], '/' ) : '/';
@@ -3738,21 +3743,30 @@ function zk_quick_edit_add_tag_js() {
    MOBILE BOTTOM NAVIGATION (App-like UX)
    ============================================================ */
 function zk_mobile_bottom_nav() {
+    $music_url  = home_url('/music/');
+    $visual_url = home_url('/visual/');
+    $books_url  = home_url('/books/');
+    $blog_url   = home_url('/blog/');
+    
+    $music_route  = wp_parse_url($music_url, PHP_URL_PATH);
+    $visual_route = wp_parse_url($visual_url, PHP_URL_PATH);
+    $books_route  = wp_parse_url($books_url, PHP_URL_PATH);
+    $blog_route   = wp_parse_url($blog_url, PHP_URL_PATH);
     ?>
     <nav class="zk-bottom-nav" id="zk-bottom-nav">
-        <a href="<?php echo home_url('/music/'); ?>" class="zk-bottom-nav-item" data-route="/music/">
+        <a href="<?php echo esc_url($music_url); ?>" class="zk-bottom-nav-item" data-route="<?php echo esc_attr($music_route); ?>">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
             <span>Music</span>
         </a>
-        <a href="<?php echo home_url('/visual/'); ?>" class="zk-bottom-nav-item" data-route="/visual/">
+        <a href="<?php echo esc_url($visual_url); ?>" class="zk-bottom-nav-item" data-route="<?php echo esc_attr($visual_route); ?>">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
             <span>Visual</span>
         </a>
-        <a href="<?php echo home_url('/books/'); ?>" class="zk-bottom-nav-item" data-route="/books/">
+        <a href="<?php echo esc_url($books_url); ?>" class="zk-bottom-nav-item" data-route="<?php echo esc_attr($books_route); ?>">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
             <span>Books</span>
         </a>
-        <a href="<?php echo home_url('/blog/'); ?>" class="zk-bottom-nav-item" data-route="/blog/">
+        <a href="<?php echo esc_url($blog_url); ?>" class="zk-bottom-nav-item" data-route="<?php echo esc_attr($blog_route); ?>">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             <span>Blogs</span>
         </a>
