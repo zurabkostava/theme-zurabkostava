@@ -686,13 +686,11 @@
         var LOADED = 'is-loaded';
         function reveal(el) { el.classList.add(LOADED); }
 
-        /* Real <img>: native load/error events (+ cached check). */
         function watchImg(img) {
             if (img.dataset.zkFade) return;
             img.dataset.zkFade = '1';
             
             function triggerReveal() {
-                // Double rAF ensures the browser paints the opacity:0 state before adding .is-loaded
                 requestAnimationFrame(function() {
                     requestAnimationFrame(function() {
                         reveal(img);
@@ -700,7 +698,7 @@
                 });
             }
 
-            if (img.complete && img.naturalWidth > 0) { triggerReveal(); return; }
+            if (img.complete) { triggerReveal(); return; }
             function done() {
                 triggerReveal();
                 img.removeEventListener('load', done);
@@ -708,6 +706,9 @@
             }
             img.addEventListener('load', done);
             img.addEventListener('error', done); // a broken image must not stay hidden
+
+            // Safety fallback: fail open so no image is ever pinned at opacity:0
+            setTimeout(triggerReveal, 500);
         }
 
         function scan(scope) {
