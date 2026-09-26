@@ -1172,11 +1172,11 @@ body.is-navigating #zk-global-loader {
    here (:not) and its thumbnails are force-shown below — otherwise this rule
    would pin them at opacity:0 forever, since they never receive .is-loaded. */
 html.zk-img-js .page__content img:not(.zk-lightbox-img) {
-	opacity: 0;
-	filter: blur(8px);
-	transition: opacity 0.8s var(--ease), filter 0.8s var(--ease);
+	opacity: 1;
+	filter: none;
+	transition: opacity 0.4s var(--ease), filter 0.4s var(--ease);
 }
-html.zk-img-js .page__content img.is-loaded { opacity: 1; filter: blur(0); }
+html.zk-img-js .page__content img.is-loaded { opacity: 1; filter: none; }
 /* id-level specificity, so thumbnails always win over the fade rule above */
 #zkLightboxThumbs .zk-lightbox-thumb-item img { opacity: 1; filter: none; }
 
