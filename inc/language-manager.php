@@ -228,6 +228,25 @@ function zk_change_html_lang_ka($output) {
 }
 add_filter('language_attributes', 'zk_change_html_lang_ka');
 
+function zk_filter_home_url_ka($url, $path = '', $orig_scheme = null, $blog_id = null) {
+    if (is_admin()) return $url;
+    if (zk_get_current_language() === 'ka') {
+        $parsed = parse_url($url);
+        $p = isset($parsed['path']) ? $parsed['path'] : '';
+        if (strpos($p, '/ka') !== 0) {
+            $scheme = isset($parsed['scheme']) ? $parsed['scheme'] : 'https';
+            $host   = isset($parsed['host']) ? $parsed['host'] : (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '');
+            $port   = isset($parsed['port']) ? ':' . $parsed['port'] : '';
+            $query  = isset($parsed['query']) ? '?' . $parsed['query'] : '';
+            
+            $new_path = '/ka' . ($p === '/' || $p === '' ? '/' : ($p[0] === '/' ? $p : '/' . $p));
+            return $scheme . '://' . $host . $port . $new_path . $query;
+        }
+    }
+    return $url;
+}
+add_filter('home_url', 'zk_filter_home_url_ka', 10, 4);
+
 // Send nocache headers on ka requests to prevent browsers/CDNs from caching old 301 redirects
 function zk_ka_nocache_headers() {
     if (zk_get_current_language() === 'ka') {
@@ -235,4 +254,5 @@ function zk_ka_nocache_headers() {
     }
 }
 add_action('send_headers', 'zk_ka_nocache_headers');
+
 
