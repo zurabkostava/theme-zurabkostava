@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // No direct access.
 }
 
+require_once get_template_directory() . '/inc/language-manager.php';
 // 🔴 Load Nuvio Addons
 require_once get_template_directory() . '/nuvio-ge-sub.php';
 require_once get_template_directory() . '/nuvio-movies-addon.php';
