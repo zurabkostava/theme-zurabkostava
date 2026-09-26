@@ -7,6 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // No direct access.
 }
 
+require_once get_template_directory() . '/inc/ui-language.php';
+
 // 🔴 Load Nuvio Addons
 require_once get_template_directory() . '/nuvio-ge-sub.php';
 require_once get_template_directory() . '/nuvio-movies-addon.php';
@@ -236,7 +238,7 @@ function zk_custom_post_grid( $atts ) {
     $query = new WP_Query( $args );
 
     if ( ! $query->have_posts() ) {
-        return '<p class="page__content">No posts found in this category.</p>';
+        return '<p class="page__content" data-zk-ui>No posts found in this category.</p>';
     }
 
     // მთავარი კონტეინერი (Wrapper)

@@ -24,7 +24,7 @@
     function setMenu(open) {
         body.classList.toggle('nav-open', open);
         toggle.setAttribute('aria-expanded', String(open));
-        toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        toggle.setAttribute('aria-label', window.ZKUI ? window.ZKUI.t(open ? 'Close menu' : 'Open menu') : (open ? 'Close menu' : 'Open menu'));
         body.style.overflow = open ? 'hidden' : '';
         if (!open) {
             dropdowns.forEach(function(d) {

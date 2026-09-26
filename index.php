@@ -310,7 +310,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
     ob_start(); ?>
     <div class="page__inner">
         <?php zk_breadcrumbs(); ?>
-        <p class="page__eyebrow"><?php echo esc_html( $eyebrow ); ?></p>
+        <p class="page__eyebrow" data-zk-ui><?php echo esc_html( $eyebrow ); ?></p>
         <h1 class="page__title"><?php echo esc_html( $archive_title ); ?></h1>
 
         <?php if ( get_the_archive_description() ) : ?>
@@ -368,7 +368,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                 </div>
             </div>
         <?php else : ?>
-            <div class="page__content"><p>No posts found for this topic.</p></div>
+            <div class="page__content"><p data-zk-ui>No posts found for this topic.</p></div>
         <?php endif; ?>
     </div>
     <?php
@@ -380,9 +380,9 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
     $zk_current = '/404';
     ob_start(); ?>
     <div class="page__inner">
-        <p class="page__eyebrow">Error 404</p>
-        <h1 class="page__title">Not found</h1>
-        <div class="page__content"><p>This page doesn&rsquo;t exist yet.</p></div>
+        <p class="page__eyebrow" data-zk-ui>Error 404</p>
+        <h1 class="page__title" data-zk-ui>Not found</h1>
+        <div class="page__content"><p data-zk-ui>This page doesn&rsquo;t exist yet.</p></div>
     </div>
     <?php
     $zk_view = ob_get_clean();
@@ -417,6 +417,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
             Zurab<span> Kostava</span>
         </a>
 
+        <?php zk_ui_language_switcher(); ?>
         <button
                 class="nav-toggle"
                 id="navToggle"
