@@ -143,9 +143,13 @@ function zk_early_uri_rewrite() {
             define('ZK_IS_GEORGIAN_REQUEST', true);
         }
     }
+    
+    if (isset($_GET['zk_debug_uri'])) {
+        die("REQUEST_URI is now: " . $_SERVER['REQUEST_URI'] . " | ZK_IS_GEORGIAN_REQUEST: " . (defined('ZK_IS_GEORGIAN_REQUEST') ? 'true' : 'false'));
+    }
 }
-// Hook very early
-add_action('setup_theme', 'zk_early_uri_rewrite', 1);
+// Hook very early, even before setup_theme
+add_action('plugins_loaded', 'zk_early_uri_rewrite', 1);
 
 function zk_get_current_language() {
     if (is_admin()) return 'en';
