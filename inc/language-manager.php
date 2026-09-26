@@ -600,7 +600,6 @@ function zk_render_language_switcher() {
     </div>
     <?php
 }
-add_action('wp_footer', 'zk_render_language_switcher', 20);
 
 
 
