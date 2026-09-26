@@ -8,6 +8,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once get_template_directory() . '/inc/language-manager.php';
+if (isset($_GET['zk_flush'])) {
+    add_action('init', function() {
+        flush_rewrite_rules();
+        die('Rewrite rules flushed successfully!');
+    });
+}
 // 🔴 Load Nuvio Addons
 require_once get_template_directory() . '/nuvio-ge-sub.php';
 require_once get_template_directory() . '/nuvio-movies-addon.php';
