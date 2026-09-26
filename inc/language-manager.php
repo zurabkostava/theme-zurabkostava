@@ -181,9 +181,22 @@ add_filter('the_title', 'zk_translate_title', 10, 2);
 
 function zk_clean_markdown_attributes($content) {
     if (empty($content) || !is_string($content)) return $content;
-    return preg_replace_callback('/\[(https?:\/\/[^\]]+)\](?:\((https?:\/\/[^\)]+)\))?/i', function($m) {
+
+    // 1. Full markdown link format: [url](url) or [url]
+    $content = preg_replace_callback('/\[(https?:\/\/[^\]]+)\](?:\((https?:\/\/[^\)]+)\))?/i', function($m) {
         return !empty($m[2]) ? $m[2] : $m[1];
     }, $content);
+
+    // 2. Trailing markdown link target inside attribute value: ](https://...)
+    $content = preg_replace('/\]\([^"\']+/i', '', $content);
+
+    // 3. Leading bracket inside attribute value: src="[... / href="[...
+    $content = preg_replace('/(\bsrc|\bhref)=(["\'])\[/i', '$1=$2', $content);
+
+    // 4. Trailing parenthesis before closing quote: src="...)"
+    $content = preg_replace('/\)\s*(["\'])/i', '$1', $content);
+
+    return $content;
 }
 add_filter('the_content', 'zk_clean_markdown_attributes', 999999);
 
@@ -204,7 +217,7 @@ function zk_auto_clean_db_meta() {
         $post_id = get_the_ID();
         if ($post_id) {
             $raw_ka = get_post_meta($post_id, '_zk_content_ka', true);
-            if (!empty($raw_ka) && (strpos($raw_ka, '[http') !== false || strpos($raw_ka, '](') !== false)) {
+            if (!empty($raw_ka)) {
                 $cleaned = zk_clean_markdown_attributes($raw_ka);
                 if ($cleaned !== $raw_ka) {
                     update_post_meta($post_id, '_zk_content_ka', $cleaned);
