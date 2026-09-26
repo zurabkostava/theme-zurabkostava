@@ -22,11 +22,19 @@ function zk_render_translation_meta_box($post) {
     wp_nonce_field('zk_save_translation_data', 'zk_translation_nonce');
 
     $title_ka = get_post_meta($post->ID, '_zk_title_ka', true);
+    $excerpt_ka = get_post_meta($post->ID, '_zk_excerpt_ka', true);
     $content_ka = get_post_meta($post->ID, '_zk_content_ka', true);
+    $orig_excerpt = $post->post_excerpt;
 
     echo '<div style="background: #f9f9f9; padding: 15px; border: 1px solid #ccc; margin-bottom: 15px;">';
     echo '<p><label for="zk_title_ka"><strong>სათაური (Title)</strong></label></p>';
     echo '<input type="text" name="zk_title_ka" id="zk_title_ka" value="' . esc_attr($title_ka) . '" style="width: 100%; font-size: 16px; padding: 8px; margin-bottom: 15px;" />';
+
+    echo '<p><label for="zk_excerpt_ka"><strong>მოკლე აღწერა / Excerpt (ქართულად)</strong></label></p>';
+    if (!empty($orig_excerpt)) {
+        echo '<p style="margin: 0 0 5px; color: #666; font-size: 12px; background: #fff; padding: 6px 10px; border: 1px dashed #ccc; border-radius: 4px;"><strong>ორიგინალი (English Excerpt):</strong> ' . esc_html($orig_excerpt) . '</p>';
+    }
+    echo '<textarea name="zk_excerpt_ka" id="zk_excerpt_ka" rows="3" style="width: 100%; font-size: 14px; padding: 8px; margin-bottom: 15px;" placeholder="აქ ჩაწერეთ ქართული მოკლე აღწერა...">' . esc_textarea($excerpt_ka) . '</textarea>';
     
     echo '<p><strong>კონტენტი (Content Raw JSON/HTML)</strong></p>';
     echo '<div style="display: flex; gap: 10px; margin-bottom: 15px;">';
@@ -114,6 +122,10 @@ function zk_save_translation_meta_data($post_id) {
     if (isset($_POST['zk_title_ka'])) {
         update_post_meta($post_id, '_zk_title_ka', sanitize_text_field($_POST['zk_title_ka']));
     }
+
+    if (isset($_POST['zk_excerpt_ka'])) {
+        update_post_meta($post_id, '_zk_excerpt_ka', sanitize_textarea_field($_POST['zk_excerpt_ka']));
+    }
     
     if (isset($_POST['zk_content_ka'])) {
         // Save unfiltered HTML but clean any malformed markdown links inside src/href attributes
@@ -179,6 +191,55 @@ function zk_translate_title($title, $post_id = null) {
 }
 add_filter('the_title', 'zk_translate_title', 10, 2);
 
+function zk_translate_excerpt($excerpt, $post = null) {
+    if (is_admin()) return $excerpt;
+    
+    if (zk_get_current_language() === 'ka') {
+        $post_id = null;
+        if (is_object($post) && isset($post->ID)) {
+            $post_id = $post->ID;
+        } elseif (is_numeric($post) && (int)$post > 0) {
+            $post_id = (int)$post;
+        } else {
+            $post_id = get_the_ID();
+        }
+        
+        if ($post_id) {
+            $excerpt_ka = get_post_meta($post_id, '_zk_excerpt_ka', true);
+            if (!empty($excerpt_ka)) {
+                return $excerpt_ka;
+            }
+        }
+    }
+    return $excerpt;
+}
+add_filter('get_the_excerpt', 'zk_translate_excerpt', 10, 2);
+add_filter('the_excerpt', 'zk_translate_excerpt', 10, 1);
+
+function zk_translate_has_excerpt($has_excerpt, $post = null) {
+    if (is_admin()) return $has_excerpt;
+    
+    if (zk_get_current_language() === 'ka') {
+        $post_id = null;
+        if (is_object($post) && isset($post->ID)) {
+            $post_id = $post->ID;
+        } elseif (is_numeric($post) && (int)$post > 0) {
+            $post_id = (int)$post;
+        } else {
+            $post_id = get_the_ID();
+        }
+        
+        if ($post_id) {
+            $excerpt_ka = get_post_meta($post_id, '_zk_excerpt_ka', true);
+            if (!empty($excerpt_ka)) {
+                return true;
+            }
+        }
+    }
+    return $has_excerpt;
+}
+add_filter('has_excerpt', 'zk_translate_has_excerpt', 10, 2);
+
 function zk_clean_markdown_attributes($content) {
     if (empty($content) || !is_string($content)) return $content;
 
@@ -221,6 +282,14 @@ function zk_auto_clean_db_meta() {
                 $cleaned = zk_clean_markdown_attributes($raw_ka);
                 if ($cleaned !== $raw_ka) {
                     update_post_meta($post_id, '_zk_content_ka', $cleaned);
+                }
+            }
+
+            // Seed default Georgian excerpt for Encrolib post if empty
+            if ($post_id == 10819 || get_post_field('post_name', $post_id) === 'what-is-encrolib') {
+                $excerpt_ka = get_post_meta($post_id, '_zk_excerpt_ka', true);
+                if (empty($excerpt_ka)) {
+                    update_post_meta($post_id, '_zk_excerpt_ka', 'აქციეთ თქვენი უთქმელი სიტყვები, საიდუმლოებები და ისტორიები თვალისმომჭრელ, წაუკითხავ თანამედროვე ხელოვნებად. გაიგეთ, როგორ იყენებს Encrolib v1.0 უნიკალურ ვიზუალურ ენას თქვენი ყველაზე ღრმა ფიქრების ყველას თვალწინ დასამალად.');
                 }
             }
         }
