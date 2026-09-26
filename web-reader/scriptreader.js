@@ -237,11 +237,14 @@ const readerColumn = document.getElementById('reader-column');
 const contentWidthHandle = document.getElementById('content-width-handle');
 const READER_WIDTH_STORAGE_KEY = 'readroad_content_width_percent';
 const READER_WIDTH_MIN_PIXELS = 520;
+const READER_HANDLE_INITIAL_VISIBLE_MS = 7000;
+const READER_HANDLE_IDLE_MS = 3000;
 let readerWidthPercent = 100;
 let renderedReaderWidthPercent = 100;
 let isReaderWidthDragging = false;
 let readerResizeStartX = 0;
 let readerResizeStartPercent = 100;
+let readerHandleHideTimer = null;
 
 function getReaderWidthMinimumPercent() {
     const stageWidth = readerStage?.clientWidth || window.innerWidth || READER_WIDTH_MIN_PIXELS;
@@ -275,6 +278,23 @@ function applyReaderWidth(percent, persist = false) {
     }
 }
 
+function holdReaderWidthHandle() {
+    if (!contentWidthHandle) return;
+    if (readerHandleHideTimer) clearTimeout(readerHandleHideTimer);
+    readerHandleHideTimer = null;
+    contentWidthHandle.classList.remove('is-idle');
+}
+
+function revealReaderWidthHandle(visibleFor = READER_HANDLE_IDLE_MS) {
+    if (!contentWidthHandle || !document.body.classList.contains('is-reading')) return;
+    holdReaderWidthHandle();
+    readerHandleHideTimer = setTimeout(() => {
+        if (isReaderWidthDragging) return;
+        contentWidthHandle.classList.add('is-idle');
+        readerHandleHideTimer = null;
+    }, visibleFor);
+}
+
 function finishReaderWidthResize(event) {
     if (!isReaderWidthDragging) return;
     isReaderWidthDragging = false;
@@ -284,6 +304,7 @@ function finishReaderWidthResize(event) {
         contentWidthHandle.releasePointerCapture(event.pointerId);
     }
     applyReaderWidth(readerWidthPercent, true);
+    revealReaderWidthHandle();
 }
 
 if (readerColumn && readerStage && contentWidthHandle) {
@@ -296,12 +317,37 @@ if (readerColumn && readerStage && contentWidthHandle) {
     }
     applyReaderWidth(savedWidth);
 
+    let wasReading = document.body.classList.contains('is-reading');
+    contentWidthHandle.classList.toggle('is-idle', !wasReading);
+    if (wasReading) revealReaderWidthHandle(READER_HANDLE_INITIAL_VISIBLE_MS);
+
+    new MutationObserver(() => {
+        const isReading = document.body.classList.contains('is-reading');
+        if (isReading && !wasReading) {
+            revealReaderWidthHandle(READER_HANDLE_INITIAL_VISIBLE_MS);
+        } else if (!isReading && wasReading) {
+            if (readerHandleHideTimer) clearTimeout(readerHandleHideTimer);
+            readerHandleHideTimer = null;
+            contentWidthHandle.classList.add('is-idle');
+        }
+        wasReading = isReading;
+    }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+    const revealFromPointer = (event) => {
+        if (event.pointerType !== 'touch' && !isReaderWidthDragging) {
+            revealReaderWidthHandle();
+        }
+    };
+    readerColumn.addEventListener('pointerenter', revealFromPointer);
+    readerColumn.addEventListener('pointermove', revealFromPointer);
+
     contentWidthHandle.addEventListener('pointerdown', (event) => {
         if (event.pointerType === 'mouse' && event.button !== 0) return;
         event.preventDefault();
         isReaderWidthDragging = true;
         readerResizeStartX = event.clientX;
         readerResizeStartPercent = renderedReaderWidthPercent;
+        holdReaderWidthHandle();
         readerColumn.classList.add('is-resizing');
         document.body.classList.add('reader-width-resizing');
         contentWidthHandle.setPointerCapture?.(event.pointerId);
@@ -322,7 +368,11 @@ if (readerColumn && readerStage && contentWidthHandle) {
     contentWidthHandle.addEventListener('dblclick', (event) => {
         event.preventDefault();
         applyReaderWidth(100, true);
+        revealReaderWidthHandle();
     });
+
+    contentWidthHandle.addEventListener('focus', holdReaderWidthHandle);
+    contentWidthHandle.addEventListener('blur', () => revealReaderWidthHandle());
 
     contentWidthHandle.addEventListener('keydown', (event) => {
         let nextWidth = renderedReaderWidthPercent;
@@ -334,6 +384,7 @@ if (readerColumn && readerStage && contentWidthHandle) {
 
         event.preventDefault();
         applyReaderWidth(nextWidth, true);
+        revealReaderWidthHandle();
     });
 
     window.addEventListener('resize', () => applyReaderWidth(readerWidthPercent));

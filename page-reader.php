@@ -825,7 +825,13 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         touch-action: none;
         opacity: 0.62;
         z-index: 30;
-        transition: opacity 160ms ease, border-color 160ms ease, color 160ms ease !important;
+        transition: opacity 220ms ease, transform 220ms ease, border-color 160ms ease, color 160ms ease !important;
+    }
+
+    #neural-app-root .content-width-handle.is-idle {
+        opacity: 0 !important;
+        pointer-events: none;
+        transform: translateY(-50%) translateX(8px) !important;
     }
 
     #neural-app-root .content-width-handle:hover,
