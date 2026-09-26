@@ -449,6 +449,10 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
         </nav>
 
         <div class="header-actions">
+            <?php if ( function_exists( 'zk_render_language_switcher' ) ) : ?>
+                <?php zk_render_language_switcher(); ?>
+            <?php endif; ?>
+
             <button
                     class="nav-toggle"
                     id="navToggle"
@@ -462,10 +466,6 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                     <span class="nav-toggle-line"></span>
                  </span>
             </button>
-
-            <?php if ( function_exists( 'zk_render_language_switcher' ) ) : ?>
-                <?php zk_render_language_switcher(); ?>
-            <?php endif; ?>
         </div>
     </div>
 </header>

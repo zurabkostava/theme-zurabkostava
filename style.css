@@ -213,17 +213,22 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 }
 
 @media (min-width: 901px) {
-	.primary-nav {
-		margin-left: auto;
+	.header-inner {
+		padding-right: calc(var(--gutter) + 84px);
 	}
-}
-
-.header-actions {
-	display: flex;
-	align-items: center;
-	gap: 14px;
-	position: relative;
-	z-index: 2100;
+	.header-actions {
+		position: static;
+	}
+	.zk-lang-switcher {
+		position: absolute;
+		right: clamp(20px, 3vw, 44px);
+		top: 50%;
+		transform: translateY(-50%);
+		z-index: 2500;
+	}
+	.zk-lang-switcher:hover {
+		transform: translateY(calc(-50% - 1px));
+	}
 }
 
 .zk-lang-switcher {
@@ -236,7 +241,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	border: 1px solid rgba(255, 255, 255, 0.12);
 	border-radius: 9999px;
 	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-	transition: background 0.3s var(--ease), border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+	transition: background 0.3s var(--ease), border-color 0.3s var(--ease), box-shadow 0.3s var(--ease), transform 0.3s var(--ease);
 }
 
 .zk-lang-switcher:hover {
@@ -289,11 +294,15 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 
 @media (max-width: 900px) {
 	.header-actions {
+		display: flex;
+		align-items: center;
 		gap: 8px;
-		margin-right: -4px;
+		position: relative;
+		z-index: 2100;
 	}
-	.nav-toggle {
-		margin-right: 0 !important;
+	.zk-lang-switcher {
+		position: static;
+		transform: none;
 	}
 	.zk-lang-btn {
 		padding: 4px 9px;
