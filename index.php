@@ -413,7 +413,11 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
 
 <header class="site-header" id="site-header">
     <div class="header-inner">
-        <a class="logo" data-route="/" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php echo esc_attr( $zk_site ); ?> — home">
+        <?php 
+        $home_href = home_url( '/' );
+        $home_route = wp_parse_url( $home_href, PHP_URL_PATH ) ?: '/';
+        ?>
+        <a class="logo" data-route="<?php echo esc_attr( $home_route ); ?>" href="<?php echo esc_url( $home_href ); ?>" aria-label="<?php echo esc_attr( $zk_site ); ?> — home">
             Zurab<span> Kostava</span>
         </a>
 
@@ -442,7 +446,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                         'walker'         => new ZK_SPA_Walker(),
                 ) );
             } else {
-                echo '<ul class="nav-list"><li class="nav-item"><a class="nav-link" data-route="/" href="' . esc_url( home_url( '/' ) ) . '">Home</a></li></ul>';
+                echo '<ul class="nav-list"><li class="nav-item"><a class="nav-link" data-route="' . esc_attr( $home_route ) . '" href="' . esc_url( $home_href ) . '">Home</a></li></ul>';
             }
             ?>
         </nav>
