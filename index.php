@@ -432,6 +432,20 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
             Zurab<span> Kostava</span>
         </a>
 
+        <button
+                class="nav-toggle"
+                id="navToggle"
+                type="button"
+                aria-label="Open menu"
+                aria-expanded="false"
+                aria-controls="primaryNav">
+             <span class="nav-toggle-box" aria-hidden="true">
+                <span class="nav-toggle-line"></span>
+                <span class="nav-toggle-line"></span>
+                <span class="nav-toggle-line"></span>
+             </span>
+        </button>
+
         <nav class="primary-nav" id="primaryNav" aria-label="Primary">
             <?php
             if ( has_nav_menu( 'primary-menu' ) ) {
@@ -447,26 +461,6 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
             }
             ?>
         </nav>
-
-        <div class="header-actions">
-            <?php if ( function_exists( 'zk_render_language_switcher' ) ) : ?>
-                <?php zk_render_language_switcher(); ?>
-            <?php endif; ?>
-
-            <button
-                    class="nav-toggle"
-                    id="navToggle"
-                    type="button"
-                    aria-label="Open menu"
-                    aria-expanded="false"
-                    aria-controls="primaryNav">
-                 <span class="nav-toggle-box" aria-hidden="true">
-                    <span class="nav-toggle-line"></span>
-                    <span class="nav-toggle-line"></span>
-                    <span class="nav-toggle-line"></span>
-                 </span>
-            </button>
-        </div>
     </div>
 </header>
 

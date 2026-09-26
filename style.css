@@ -206,54 +206,45 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 }
 
 /* ============================================================
-   HEADER ACTIONS & LANGUAGE SWITCHER
+   FLOATING LANGUAGE SWITCHER (BOTTOM RIGHT CORNER)
    ============================================================ */
 .nav-toggle {
 	display: none;
 }
 
-@media (min-width: 901px) {
-	.primary-nav {
-		margin-left: auto;
-	}
-}
-
-.header-actions {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	position: relative;
-	z-index: 2100;
-}
-
 .zk-lang-switcher {
+	position: fixed;
+	bottom: 28px;
+	right: 28px;
+	z-index: 2500;
 	display: inline-flex;
 	align-items: center;
-	padding: 3px;
-	background: rgba(255, 255, 255, 0.05);
-	-webkit-backdrop-filter: blur(16px);
-	backdrop-filter: blur(16px);
+	padding: 4px;
+	background: rgba(14, 14, 18, 0.72);
+	-webkit-backdrop-filter: blur(20px) saturate(180%);
+	backdrop-filter: blur(20px) saturate(180%);
 	border: 1px solid rgba(255, 255, 255, 0.12);
 	border-radius: 9999px;
-	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-	transition: background 0.3s var(--ease), border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+	transition: all 0.35s var(--ease);
 }
 
 .zk-lang-switcher:hover {
-	background: rgba(255, 255, 255, 0.08);
-	border-color: rgba(255, 255, 255, 0.22);
-	box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+	background: rgba(20, 20, 26, 0.88);
+	border-color: rgba(255, 255, 255, 0.24);
+	box-shadow: 0 12px 38px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+	transform: translateY(-2px);
 }
 
 .zk-lang-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	padding: 4px 10px;
+	padding: 6px 13px;
 	border-radius: 9999px;
-	font-size: 0.72rem;
+	font-size: 0.75rem;
 	font-weight: 600;
-	letter-spacing: 0.08em;
+	letter-spacing: 0.09em;
 	text-transform: uppercase;
 	color: rgba(255, 255, 255, 0.55);
 	line-height: 1;
@@ -269,7 +260,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 
 .zk-lang-btn:hover {
 	color: #ffffff;
-	background: rgba(255, 255, 255, 0.09);
+	background: rgba(255, 255, 255, 0.08);
 }
 
 .zk-lang-btn.is-active {
@@ -282,19 +273,32 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .zk-lang-divider {
 	display: inline-block;
 	width: 1px;
-	height: 11px;
+	height: 12px;
 	background: rgba(255, 255, 255, 0.12);
 	margin: 0 1px;
 }
 
-@media (max-width: 900px) {
-	.header-actions {
-		gap: 8px;
+@media (max-width: 768px) {
+	.zk-lang-switcher {
+		bottom: 100px;
+		right: 18px;
+		padding: 3px;
 	}
+
+	body.nav-collapsed .zk-lang-switcher {
+		bottom: 24px;
+	}
+
 	.zk-lang-btn {
-		padding: 4px 8px;
-		font-size: 0.68rem;
+		padding: 5px 10px;
+		font-size: 0.7rem;
 	}
+}
+
+body.is-cinematic-mode .zk-lang-switcher {
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.4s ease;
 }
 
 /* ============================================================

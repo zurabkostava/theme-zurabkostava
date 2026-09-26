@@ -574,6 +574,10 @@ function zk_get_language_switcher_urls() {
 }
 
 function zk_render_language_switcher() {
+    static $rendered = false;
+    if ($rendered) return;
+    $rendered = true;
+
     $data = zk_get_language_switcher_urls();
     $current = $data['current'];
     ?>
@@ -596,6 +600,8 @@ function zk_render_language_switcher() {
     </div>
     <?php
 }
+add_action('wp_footer', 'zk_render_language_switcher', 20);
+
 
 
 
