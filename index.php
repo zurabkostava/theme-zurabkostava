@@ -221,8 +221,16 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
             </div>
         <?php endif; ?>
         <h1 class="page__title"><?php the_title(); ?></h1>
-        <?php if ( has_excerpt() ) : ?>
-            <p class="page__description"><?php echo get_the_excerpt(); ?></p>
+        <?php 
+        $zk_display_excerpt = get_the_excerpt();
+        if ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' ) {
+            $zk_ka_excerpt = get_post_meta( get_the_ID(), '_zk_excerpt_ka', true );
+            if ( ! empty( $zk_ka_excerpt ) ) {
+                $zk_display_excerpt = $zk_ka_excerpt;
+            }
+        }
+        if ( ! empty( $zk_display_excerpt ) || has_excerpt() ) : ?>
+            <p class="page__description"><?php echo esc_html( $zk_display_excerpt ); ?></p>
         <?php endif; ?>
         <div class="page__content"><?php the_content(); ?></div>
         <?php

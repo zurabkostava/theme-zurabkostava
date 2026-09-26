@@ -217,8 +217,9 @@ function zk_translate_excerpt($excerpt, $post = null) {
     }
     return $excerpt;
 }
-add_filter('get_the_excerpt', 'zk_translate_excerpt', 10, 2);
-add_filter('the_excerpt', 'zk_translate_excerpt', 10, 1);
+add_filter('get_the_excerpt', 'zk_translate_excerpt', 999999, 2);
+add_filter('the_excerpt', 'zk_translate_excerpt', 999999, 1);
+add_filter('wp_trim_excerpt', 'zk_translate_excerpt', 999999, 2);
 
 function zk_translate_has_excerpt($has_excerpt, $post = null) {
     if (is_admin()) return $has_excerpt;
@@ -246,7 +247,7 @@ function zk_translate_has_excerpt($has_excerpt, $post = null) {
     }
     return $has_excerpt;
 }
-add_filter('has_excerpt', 'zk_translate_has_excerpt', 10, 2);
+add_filter('has_excerpt', 'zk_translate_has_excerpt', 999999, 2);
 
 function zk_clean_markdown_attributes($content) {
     if (empty($content) || !is_string($content)) return $content;
