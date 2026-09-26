@@ -61,7 +61,7 @@ function zk_assets() {
     wp_enqueue_style( 'zk-fonts', 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap', array(), null );
 
     // CSS-ის მიბმა
-    wp_enqueue_style( 'zk-style', get_stylesheet_uri(), array( 'zk-fonts' ), filemtime( get_stylesheet_directory() . '/style.css' ) );
+    wp_enqueue_style( 'zk-style', get_stylesheet_uri(), array( 'zk-fonts' ), time() );
 
     // Three.js for 3D Galaxy background
     wp_enqueue_script( 'three-js', 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', array(), '128', true );
