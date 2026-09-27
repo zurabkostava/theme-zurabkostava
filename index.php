@@ -531,33 +531,34 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                 var isKa = (document.documentElement.lang && document.documentElement.lang.indexOf('ka') === 0) || (window.location.pathname.indexOf('/ka') === 0);
                 var logoEl = document.querySelector('.site-header .logo');
                 if (logoEl) {
-                    if (isKa) {
-                        logoEl.innerHTML = 'ზურაბ<span> კოსტავა</span>';
-                        logoEl.setAttribute('aria-label', 'ზურაბ კოსტავა — მთავარი');
-                    } else {
-                        logoEl.innerHTML = 'Zurab<span> Kostava</span>';
-                        logoEl.setAttribute('aria-label', 'Zurab Kostava — home');
+                    var wantedLogo = isKa ? 'ზურაბ კოსტავა' : 'Zurab Kostava';
+                    var currentLogo = (logoEl.textContent || '').replace(/\s+/g, ' ').trim();
+                    if (currentLogo !== wantedLogo) {
+                        if (isKa) {
+                            logoEl.innerHTML = 'ზურაბ<span> კოსტავა</span>';
+                            logoEl.setAttribute('aria-label', 'ზურაბ კოსტავა — მთავარი');
+                        } else {
+                            logoEl.innerHTML = 'Zurab<span> Kostava</span>';
+                            logoEl.setAttribute('aria-label', 'Zurab Kostava — home');
+                        }
                     }
                 }
 
                 var base = root || document;
                 var heroTitle = base.querySelector ? base.querySelector('.hero-title') : null;
                 if (heroTitle) {
-                    if (isKa) {
-                        heroTitle.textContent = 'ზურაბ კოსტავა';
-                        heroTitle.setAttribute('data-text', 'ზურაბ კოსტავა');
-                    } else {
-                        heroTitle.textContent = 'Zurab Kostava';
-                        heroTitle.setAttribute('data-text', 'Zurab Kostava');
+                    var wantedTitle = isKa ? 'ზურაბ კოსტავა' : 'Zurab Kostava';
+                    if ((heroTitle.textContent || '').trim() !== wantedTitle) {
+                        heroTitle.textContent = wantedTitle;
+                        heroTitle.setAttribute('data-text', wantedTitle);
                     }
                 }
 
                 var heroSub = base.querySelector ? base.querySelector('.hero-sub') : null;
                 if (heroSub) {
-                    if (isKa) {
-                        heroSub.textContent = 'მულტიდისციპლინური ხელოვანი მზის სისტემიდან';
-                    } else {
-                        heroSub.textContent = 'Multidisciplinary Artist From The Solar System';
+                    var wantedSub = isKa ? 'მულტიდისციპლინური ხელოვანი მზის სისტემიდან' : 'Multidisciplinary Artist From The Solar System';
+                    if ((heroSub.textContent || '').trim() !== wantedSub) {
+                        heroSub.textContent = wantedSub;
                     }
                 }
 
