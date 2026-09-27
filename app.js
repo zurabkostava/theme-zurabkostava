@@ -1264,12 +1264,16 @@
     var musicData = typeof zkDynamicMusicData !== 'undefined' ? zkDynamicMusicData : [];
 
     // ── 2. დარენდერების ძრავა ──
-    // ── 2. დარენდერების ძრავა (SPA Proof) ──
+    // ── 2. დარენდერების ძრავა (SPA Proof & Bilingual) ──
     function renderTimeline() {
         var container = document.getElementById('zkMusicTimeline');
+        if (!container) return;
 
-        // თუ კონტეინერი არ არის, ან უკვე დარენდერებულია — ვჩერდებით
-        if (!container || container.dataset.rendered === 'true') return;
+        var currentLang = container.getAttribute('data-lang') || 
+            (document.documentElement.lang === 'ka' || window.location.pathname.indexOf('/ka/') === 0 || window.location.pathname === '/ka' ? 'ka' : 'en');
+
+        // თუ უკვე ამ ენაზეა დარენდერებული — ვჩერდებით
+        if (container.dataset.rendered === 'true' && container.dataset.renderedLang === currentLang) return;
 
         // ── 1. მონაცემების ამოღება პირდაპირ HTML ატრიბუტიდან ──
         var rawData = container.getAttribute('data-music-payload');
@@ -1283,6 +1287,7 @@
             return;
         }
 
+        var isKa = currentLang === 'ka';
         var html = '<div class="zk-timeline-line"></div>';
 
         musicData.forEach(function(item) {
@@ -1297,7 +1302,9 @@
             var spotifyClass = hasSpotify ? '' : 'is-disabled';
             var spotifyTag = hasSpotify ? 'a' : 'div';
             var spotifyHref = hasSpotify ? `href="${item.spotifyUrl}" target="_blank" rel="noopener noreferrer"` : '';
-            var btnText = hasSpotify ? 'Listen on Spotify' : 'Coming to Spotify';
+            var btnText = hasSpotify 
+                ? (isKa ? 'მოუსმინეთ Spotify-ზე' : 'Listen on Spotify') 
+                : (isKa ? 'მალე Spotify-ზე' : 'Coming to Spotify');
             var equalizer = `<div class="zk-equalizer"><span class="eq-bar eq-1"></span><span class="eq-bar eq-2"></span><span class="eq-bar eq-3"></span></div>`;
 
             var spotifyBtnHtml = `
@@ -1308,9 +1315,10 @@
                 </${spotifyTag}>
             `;
 
+            var moreBtnText = isKa ? 'მეტის ნახვა' : 'See more';
             var moreBtnHtml = item.moreUrl ? `
                 <a href="${item.moreUrl}" target="_blank" rel="noopener noreferrer" class="zk-more-btn">
-                    See more 
+                    ${moreBtnText} 
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
             ` : '';
@@ -1326,16 +1334,18 @@
                 genreHtml = '<div class="zk-timeline-tags-wrapper">' + tagsHtml + '</div>';
             }
 
+            var subtitleHtml = item.subtitle ? `<p class="zk-timeline-subtitle">${item.subtitle}</p>` : '';
+
             html += `
                 <div class="zk-timeline-node">
                     <div class="zk-timeline-point"><div class="zk-point-core"></div></div>
                     <div class="zk-timeline-card">
                         <div class="zk-card-header">
-                            <span class="zk-timeline-date">${item.displayDate}</span>
+                            <span class="zk-timeline-date">${item.displayDate || ''}</span>
                             ${genreHtml}
                         </div>
                         <h3 class="zk-timeline-title">${item.title}</h3>
-                        <p class="zk-timeline-subtitle">${item.subtitle}</p>
+                        ${subtitleHtml}
                         <div class="zk-timeline-body">${item.description}</div>
                         ${embedHtml}
                         <div class="zk-card-actions">
@@ -1349,6 +1359,7 @@
 
         container.innerHTML = html;
         container.dataset.rendered = 'true';
+        container.dataset.renderedLang = currentLang;
     }
 
     renderTimeline();

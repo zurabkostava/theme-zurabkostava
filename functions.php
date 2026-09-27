@@ -926,34 +926,52 @@ add_action( 'init', 'zk_register_music_timeline_cpt' );
 
 // 2. ველების (Meta Boxes) ვიზუალის აწყობა ედიტორში
 function zk_music_add_meta_box() {
-    add_meta_box( 'zk_music_details', 'Release Details', 'zk_music_meta_callback', 'zk_music_release', 'normal', 'high' );
+    add_meta_box( 'zk_music_details', 'Release Details (English & Georgian)', 'zk_music_meta_callback', 'zk_music_release', 'normal', 'high' );
 }
 add_action( 'add_meta_boxes', 'zk_music_add_meta_box' );
 
 function zk_music_meta_callback( $post ) {
     wp_nonce_field( 'zk_music_save_meta_data', 'zk_music_meta_nonce' );
 
-    $subtitle    = get_post_meta( $post->ID, '_zk_subtitle', true );
-    $date        = get_post_meta( $post->ID, '_zk_display_date', true );
-    $genre       = get_post_meta( $post->ID, '_zk_genre', true ); // <--- Theme შეიცვალა Genre-თი
-    $media_type  = get_post_meta( $post->ID, '_zk_media_type', true );
-    $media_id    = get_post_meta( $post->ID, '_zk_media_id', true );
-    $spotify_url = get_post_meta( $post->ID, '_zk_spotify_url', true );
-    $more_url    = get_post_meta( $post->ID, '_zk_more_url', true ); // <--- ახალი ცვლადი
+    $subtitle       = get_post_meta( $post->ID, '_zk_subtitle', true );
+    $subtitle_ka    = get_post_meta( $post->ID, '_zk_subtitle_ka', true );
+    $date           = get_post_meta( $post->ID, '_zk_display_date', true );
+    $date_ka        = get_post_meta( $post->ID, '_zk_display_date_ka', true );
+    $genre          = get_post_meta( $post->ID, '_zk_genre', true );
+    $genre_ka       = get_post_meta( $post->ID, '_zk_genre_ka', true );
+    $media_type     = get_post_meta( $post->ID, '_zk_media_type', true );
+    $media_id       = get_post_meta( $post->ID, '_zk_media_id', true );
+    $spotify_url    = get_post_meta( $post->ID, '_zk_spotify_url', true );
+    $more_url       = get_post_meta( $post->ID, '_zk_more_url', true );
     ?>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
         <div>
-            <label><strong>Display Date</strong> (e.g. 30.03.2026)</label><br>
+            <label><strong>Display Date [EN]</strong> (e.g. 30.03.2026)</label><br>
             <input type="text" name="zk_display_date" value="<?php echo esc_attr( $date ); ?>" style="width:100%; margin-top:5px;" />
         </div>
         <div>
-            <label><strong>Subtitle</strong></label><br>
+            <label><strong>Display Date [KA] (თარიღი ქართულად)</strong> (Optional)</label><br>
+            <input type="text" name="zk_display_date_ka" value="<?php echo esc_attr( $date_ka ); ?>" placeholder="<?php echo esc_attr( $date ? $date : '30.03.2026' ); ?>" style="width:100%; margin-top:5px;" />
+        </div>
+
+        <div>
+            <label><strong>Subtitle [EN]</strong> (e.g. From First Piano Album)</label><br>
             <input type="text" name="zk_subtitle" value="<?php echo esc_attr( $subtitle ); ?>" style="width:100%; margin-top:5px;" />
         </div>
         <div>
-            <label><strong>Genre / Tag</strong> (e.g. Piano, Ambient, Nocturne)</label><br>
+            <label><strong>Subtitle [KA] (ქვესათაური ქართულად)</strong></label><br>
+            <input type="text" name="zk_subtitle_ka" value="<?php echo esc_attr( $subtitle_ka ); ?>" placeholder="მაგ. პირველი საფორტეპიანო ალბომიდან" style="width:100%; margin-top:5px;" />
+        </div>
+
+        <div>
+            <label><strong>Genre / Tag [EN]</strong> (e.g. Piano, Classical)</label><br>
             <input type="text" name="zk_genre" value="<?php echo esc_attr( $genre ); ?>" style="width:100%; margin-top:5px;" />
         </div>
+        <div>
+            <label><strong>Genre / Tag [KA] (ჟანრი / თეგები ქართულად)</strong></label><br>
+            <input type="text" name="zk_genre_ka" value="<?php echo esc_attr( $genre_ka ); ?>" placeholder="მაგ. ფორტეპიანო, კლასიკური" style="width:100%; margin-top:5px;" />
+        </div>
+
         <div>
             <label><strong>Media Type</strong></label><br>
             <select name="zk_media_type" style="width:100%; margin-top:5px;">
@@ -961,22 +979,22 @@ function zk_music_meta_callback( $post ) {
                 <option value="spotify" <?php selected( $media_type, 'spotify' ); ?>>Spotify</option>
                 <option value="none" <?php selected( $media_type, 'none' ); ?>>None</option>
             </select>
-
         </div>
         <div>
             <label><strong>Media ID</strong> (YouTube/Spotify ID)</label><br>
             <input type="text" name="zk_media_id" value="<?php echo esc_attr( $media_id ); ?>" style="width:100%; margin-top:5px;" />
         </div>
+
         <div>
             <label><strong>Spotify Full URL</strong> (Leave empty for disabled button)</label><br>
             <input type="url" name="zk_spotify_url" value="<?php echo esc_url( $spotify_url ); ?>" style="width:100%; margin-top:5px;" />
         </div>
-        <div style="grid-column: 1 / -1;">
+        <div>
             <label><strong>"See More" URL</strong> (Link to a blog post or external source. Leave empty to hide)</label><br>
             <input type="url" name="zk_more_url" value="<?php echo esc_url( $more_url ); ?>" style="width:100%; margin-top:5px;" />
         </div>
     </div>
-    <p style="color: #666; font-size: 13px; margin-top: 15px;"><em>Note: The main title and description of the release should be written in the standard WordPress title and text editor above.</em></p>
+    <p style="color: #666; font-size: 13px; margin-top: 15px;"><em>Note: The English title and description are edited in the standard WordPress title and text editor above. The Georgian title and description are in the "Georgian Translation (ქართული თარგმანი)" box below.</em></p>
     <?php
 }
 
@@ -987,13 +1005,16 @@ function zk_music_save_meta_data( $post_id ) {
     if ( ! current_user_can( 'edit_post', $post_id ) ) return;
 
     $fields = array(
-            'zk_subtitle'     => '_zk_subtitle',
-            'zk_display_date' => '_zk_display_date',
-            'zk_genre'        => '_zk_genre', // <--- Theme შეიცვალა Genre-თი
-            'zk_media_type'   => '_zk_media_type',
-            'zk_media_id'     => '_zk_media_id',
-            'zk_spotify_url'  => '_zk_spotify_url',
-            'zk_more_url'     => '_zk_more_url',
+            'zk_subtitle'        => '_zk_subtitle',
+            'zk_subtitle_ka'     => '_zk_subtitle_ka',
+            'zk_display_date'    => '_zk_display_date',
+            'zk_display_date_ka' => '_zk_display_date_ka',
+            'zk_genre'           => '_zk_genre',
+            'zk_genre_ka'        => '_zk_genre_ka',
+            'zk_media_type'      => '_zk_media_type',
+            'zk_media_id'        => '_zk_media_id',
+            'zk_spotify_url'     => '_zk_spotify_url',
+            'zk_more_url'        => '_zk_more_url',
     );
 
     foreach ( $fields as $post_key => $meta_key ) {
@@ -1004,7 +1025,7 @@ function zk_music_save_meta_data( $post_id ) {
 }
 add_action( 'save_post', 'zk_music_save_meta_data' );
 
-// 4. დინამიური შორთკოდი და JS-თან დაკავშირება
+// 4. დინამიური შორთკოდი და JS-თან დაკავშირება (ორენოვანი მხარდაჭერა)
 function zk_music_timeline_shortcode() {
     $args = array(
             'post_type'      => 'zk_music_release',
@@ -1015,19 +1036,49 @@ function zk_music_timeline_shortcode() {
     );
     $query = new WP_Query( $args );
     $music_data = array();
+    $is_ka = ( function_exists('zk_get_current_language') && zk_get_current_language() === 'ka' );
 
     if ( $query->have_posts() ) {
         while ( $query->have_posts() ) {
             $query->the_post();
             $post_id = get_the_ID();
 
+            $title        = get_the_title();
+            $subtitle     = get_post_meta( $post_id, '_zk_subtitle', true );
+            $genre        = get_post_meta( $post_id, '_zk_genre', true );
+            $display_date = get_post_meta( $post_id, '_zk_display_date', true );
+            $content      = get_the_content();
+
+            if ( $is_ka ) {
+                $title_ka = get_post_meta( $post_id, '_zk_title_ka', true );
+                if ( ! empty( $title_ka ) ) {
+                    $title = $title_ka;
+                }
+                $subtitle_ka = get_post_meta( $post_id, '_zk_subtitle_ka', true );
+                if ( ! empty( $subtitle_ka ) ) {
+                    $subtitle = $subtitle_ka;
+                }
+                $genre_ka = get_post_meta( $post_id, '_zk_genre_ka', true );
+                if ( ! empty( $genre_ka ) ) {
+                    $genre = $genre_ka;
+                }
+                $display_date_ka = get_post_meta( $post_id, '_zk_display_date_ka', true );
+                if ( ! empty( $display_date_ka ) ) {
+                    $display_date = $display_date_ka;
+                }
+                $content_ka = get_post_meta( $post_id, '_zk_content_ka', true );
+                if ( ! empty( $content_ka ) ) {
+                    $content = $content_ka;
+                }
+            }
+
             $music_data[] = array(
                     'id'          => 'release-' . $post_id,
-                    'displayDate' => get_post_meta( $post_id, '_zk_display_date', true ),
-                    'genre'       => get_post_meta( $post_id, '_zk_genre', true ), // <--- აქაც Genre
-                    'title'       => get_the_title(),
-                    'subtitle'    => get_post_meta( $post_id, '_zk_subtitle', true ),
-                    'description' => do_shortcode( wpautop( get_the_content() ) ),
+                    'displayDate' => $display_date,
+                    'genre'       => $genre,
+                    'title'       => $title,
+                    'subtitle'    => $subtitle,
+                    'description' => do_shortcode( wpautop( $content ) ),
                     'mediaType'   => get_post_meta( $post_id, '_zk_media_type', true ),
                     'mediaId'     => get_post_meta( $post_id, '_zk_media_id', true ),
                     'spotifyUrl'  => get_post_meta( $post_id, '_zk_spotify_url', true ),
@@ -1038,14 +1089,54 @@ function zk_music_timeline_shortcode() {
     }
 
     $json_data = wp_json_encode( $music_data );
-    // მონაცემებს ვაქცევთ HTML-ისთვის უსაფრთხო ტექსტად და ვსვამთ პირდაპირ div-ში
     $escaped_json = htmlspecialchars( $json_data, ENT_QUOTES, 'UTF-8' );
 
-    $output = '<div class="zk-timeline-wrapper" id="zkMusicTimeline" data-music-payload="' . $escaped_json . '"></div>';
+    $output = '<div class="zk-timeline-wrapper" id="zkMusicTimeline" data-lang="' . ( $is_ka ? 'ka' : 'en' ) . '" data-music-payload="' . $escaped_json . '"></div>';
 
     return $output;
 }
 add_shortcode( 'zk_music', 'zk_music_timeline_shortcode' );
+
+// 5. პირველი რელიზის (The Last Nocturne) ქართული თარგმანის ავტო-ინიციალიზაცია
+function zk_init_music_ka_translations() {
+    $seeded = get_option( 'zk_music_seeded_ka_release_10689', false );
+    if ( $seeded ) return;
+
+    $releases = get_posts( array(
+        'post_type'      => 'zk_music_release',
+        'posts_per_page' => -1,
+        'post_status'    => 'any',
+    ) );
+
+    if ( ! empty( $releases ) ) {
+        foreach ( $releases as $post ) {
+            $id = $post->ID;
+            if ( ! get_post_meta( $id, '_zk_title_ka', true ) ) {
+                update_post_meta( $id, '_zk_title_ka', $post->post_title );
+            }
+            if ( ! get_post_meta( $id, '_zk_subtitle_ka', true ) ) {
+                $sub = get_post_meta( $id, '_zk_subtitle', true );
+                if ( empty( $sub ) || $sub === 'From First Piano Album' ) {
+                    update_post_meta( $id, '_zk_subtitle_ka', 'პირველი საფორტეპიანო ალბომიდან' );
+                }
+            }
+            if ( ! get_post_meta( $id, '_zk_genre_ka', true ) ) {
+                $g = get_post_meta( $id, '_zk_genre', true );
+                if ( empty( $g ) || strpos( $g, 'Piano' ) !== false ) {
+                    update_post_meta( $id, '_zk_genre_ka', 'ფორტეპიანო, კლასიკური' );
+                }
+            }
+            if ( ! get_post_meta( $id, '_zk_content_ka', true ) ) {
+                $content_ka = '<p>დიდი გადატვირთვის შემდეგ — მას შემდეგ, რაც წავშალე ჩემი ციფრული არსებობა და სიჩუმეში გავუჩინარდი — ვიცოდი, რომ ჩემი დაბრუნება სრულიად გულწრფელი უნდა ყოფილიყო. მე არ ვბრუნდები მასიური, ზედმეტად გადატვირთული ხმოვანი კედლით. ამის ნაცვლად, თავიდან ვიწყებ ყველაზე ექსპრესიული, შიშველი ინსტრუმენტით, რაც კი არსებობს.</p>' . "\n" .
+                              '<p>ეს ჩემი პირველი ახალი მუსიკალური ნამუშევარია: 2-წუთიანი საფორტეპიანო კომპოზიცია, რომელიც ერთ დღეში დაიწერა. ის მცირეა. ის ინტიმურად პირადი და ახლობელია. და ამხელა სიჩუმის შემდეგ, ჩემთვის აბსოლუტურად ყველაფერს ნიშნავს.</p>' . "\n" .
+                              '<p>ჩათვალეთ, რომ ეს ჩემი პირველი საფორტეპიანო ალბომის მშვიდი პროლოგია. ეს მხოლოდ დასაწყისია. წინ კიდევ უფრო მეტი ჟანრი, ვრცელი ხმოვანი სივრცეები და ბევრი ახალი მუსიკა გელით.</p>';
+                update_post_meta( $id, '_zk_content_ka', $content_ka );
+            }
+        }
+        update_option( 'zk_music_seeded_ka_release_10689', true );
+    }
+}
+add_action( 'init', 'zk_init_music_ka_translations' );
 
 /* ============================================================
    ABOUT PAGE - DYNAMIC TABS SHORTCODE
