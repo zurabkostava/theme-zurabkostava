@@ -653,8 +653,15 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                 var base = root || document;
                 if (!base || !base.querySelectorAll) return;
 
-                localizeBreadcrumbs(base);
+                var isKa = (document.documentElement.lang && document.documentElement.lang.indexOf('ka') === 0) || (window.location.pathname.indexOf('/ka') === 0);
+
+                // Always run header/hero localization (has its own isKa checks for SPA switching)
                 localizeHeaderAndHero(base);
+
+                // Georgian-only: breadcrumbs, Mtavruli conversion, date localization
+                if (!isKa) return;
+
+                localizeBreadcrumbs(base);
 
                 var nodes = base.querySelectorAll(UPPER_SEL);
                 for (var i = 0; i < nodes.length; i++) {
