@@ -452,6 +452,47 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                 'december': 'დეკემბერი', 'dec': 'დეკემბერი'
             };
 
+            var EN_CRUMBS = {
+                'blog': 'ᲑᲚᲝᲒᲘ',
+                'raw': 'ᲒᲐᲣᲤᲘᲚᲢᲠᲐᲕᲘ',
+                'news': 'ᲡᲘᲐᲮᲚᲔᲔᲑᲘ',
+                'reviews': 'ᲛᲘᲛᲝᲮᲘᲚᲕᲔᲑᲘ',
+                'aubades': 'ᲓᲘᲚᲘᲡᲞᲘᲠᲣᲚᲔᲑᲘ',
+                'nocturnes': 'ᲫᲘᲚᲘᲡᲞᲘᲠᲣᲚᲔᲑᲘ',
+                'about': 'ᲨᲔᲡᲐᲮᲔᲑ',
+                'projects': 'ᲞᲠᲝᲔᲥᲢᲔᲑᲘ',
+                'music': 'ᲛᲣᲡᲘᲙᲐ',
+                'visual': 'ᲕᲘᲖᲣᲐᲚᲘ',
+                'photography': 'ᲤᲝᲢᲝᲒᲠᲐᲤᲘᲐ',
+                'video': 'ᲕᲘᲓᲔᲝ ᲓᲐ ᲙᲘᲜᲝ',
+                'graphic': 'ᲒᲠᲐᲤᲘᲙᲣᲚᲘ ᲓᲘᲖᲐᲘᲜᲘ',
+                'paint': 'ᲤᲔᲠᲬᲔᲠᲐ ᲓᲐ ᲐᲠᲢᲘ',
+                'books': 'ᲬᲘᲒᲜᲔᲑᲘ',
+                'home': 'ᲛᲗᲐᲕᲐᲠᲘ'
+            };
+
+            function localizeBreadcrumbs(root) {
+                var isKa = (document.documentElement.lang && document.documentElement.lang.indexOf('ka') === 0) || (window.location.pathname.indexOf('/ka') === 0);
+                if (!isKa) return;
+                var base = root || document;
+                var crumbs = base.querySelectorAll ? base.querySelectorAll('.zk-breadcrumbs a, .zk-breadcrumbs span') : [];
+                for (var i = 0; i < crumbs.length; i++) {
+                    var el = crumbs[i];
+                    var txt = (el.textContent || '').trim().toLowerCase();
+                    if (EN_CRUMBS[txt]) {
+                        el.textContent = EN_CRUMBS[txt];
+                    }
+                    if (el.tagName === 'A') {
+                        var route = el.getAttribute('data-route');
+                        if (route && route.indexOf('/ka') !== 0 && route !== '/') {
+                            el.setAttribute('data-route', '/ka' + route);
+                        } else if (route === '/') {
+                            el.setAttribute('data-route', '/ka/');
+                        }
+                    }
+                }
+            }
+
             function localizeDateText(str) {
                 if (!str || typeof str !== 'string') return str;
                 // 1. "Jun 15, 2026" or "Aug 13, 2024" -> "15 ივნისი, 2026"
@@ -519,6 +560,8 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
             window.zkApplyGeorgianUppercase = function(root) {
                 var base = root || document;
                 if (!base || !base.querySelectorAll) return;
+
+                localizeBreadcrumbs(base);
 
                 var nodes = base.querySelectorAll(UPPER_SEL);
                 for (var i = 0; i < nodes.length; i++) {

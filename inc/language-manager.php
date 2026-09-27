@@ -377,11 +377,12 @@ add_action('send_headers', 'zk_ka_nocache_headers');
 function zk_get_default_term_translation($slug) {
     static $dict = array(
         // Categories
+        'blog' => 'ბლოგი',
         'news' => 'სიახლეები',
         'reviews' => 'მიმოხილვები',
-        'raw' => 'RAW',
-        'aubades' => 'დილის სიმღერები',
-        'nocturnes' => 'ნოქტიურნები',
+        'raw' => 'გაუფილტრავი',
+        'aubades' => 'დილისპირულები',
+        'nocturnes' => 'ძილისპირულები',
 
         // Tags
         'art-tech' => 'არტ ტექნოლოგია',

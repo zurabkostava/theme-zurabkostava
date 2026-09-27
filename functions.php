@@ -402,61 +402,183 @@ add_action( 'wp_enqueue_scripts', 'zk_remove_wp_block_library_css', 100 );
 /* ============================================================
    BREADCRUMBS (ნავიგაციის ბილიკი) - SPA & Page Hierarchy თავსებადი
    ============================================================ */
+/**
+ * Helper to get localized and Mtavruli breadcrumb crumb label
+ */
+function zk_get_breadcrumb_crumb_label( $title, $slug = '', $post_id = 0, $is_ka = false ) {
+    if ( ! $is_ka ) {
+        return $title;
+    }
+
+    $slug_clean  = strtolower( trim( (string) $slug ) );
+    $title_clean = strtolower( trim( (string) $title ) );
+
+    // 1. Check post meta if post_id provided
+    if ( $post_id ) {
+        $meta = get_post_meta( $post_id, '_zk_title_ka', true );
+        if ( ! empty( $meta ) ) {
+            return function_exists( 'zk_uppercase_ka' ) ? zk_uppercase_ka( $meta ) : $meta;
+        }
+    }
+
+    // 2. Comprehensive slug and common title dictionary for Georgian site
+    static $dict = array(
+        'blog'         => 'ბლოგი',
+        'raw'          => 'გაუფილტრავი',
+        'news'         => 'სიახლეები',
+        'reviews'      => 'მიმოხილვები',
+        'aubades'      => 'დილისპირულები',
+        'nocturnes'    => 'ძილისპირულები',
+        'about'        => 'შესახებ',
+        'projects'     => 'პროექტები',
+        'music'        => 'მუსიკა',
+        'visual'       => 'ვიზუალი',
+        'photography'  => 'ფოტოგრაფია',
+        'video'        => 'ვიდეო და კინო',
+        'graphic'      => 'გრაფიკული დიზაინი',
+        'paint'        => 'ფერწერა და არტი',
+        'books'        => 'წიგნები',
+        'home'         => 'მთავარი',
+    );
+
+    if ( ! empty( $slug_clean ) && isset( $dict[ $slug_clean ] ) ) {
+        $translated = $dict[ $slug_clean ];
+    } elseif ( ! empty( $title_clean ) && isset( $dict[ $title_clean ] ) ) {
+        $translated = $dict[ $title_clean ];
+    } else {
+        $translated = $title;
+    }
+
+    return function_exists( 'zk_uppercase_ka' ) ? zk_uppercase_ka( $translated ) : $translated;
+}
+
+/**
+ * Helper to get localized and Mtavruli breadcrumb term label
+ */
+function zk_get_breadcrumb_term_label( $term, $is_ka = false ) {
+    if ( empty( $term ) ) {
+        return '';
+    }
+    if ( is_numeric( $term ) ) {
+        $term = get_term( (int) $term );
+    }
+    if ( ! is_object( $term ) || is_wp_error( $term ) ) {
+        return '';
+    }
+
+    if ( ! $is_ka ) {
+        return $term->name;
+    }
+
+    $name       = function_exists( 'zk_get_translated_term_name' ) ? zk_get_translated_term_name( $term ) : $term->name;
+    $slug       = strtolower( trim( (string) $term->slug ) );
+    $name_lower = strtolower( trim( (string) $name ) );
+
+    static $dict = array(
+        'blog'         => 'ბლოგი',
+        'raw'          => 'გაუფილტრავი',
+        'news'         => 'სიახლეები',
+        'reviews'      => 'მიმოხილვები',
+        'aubades'      => 'დილისპირულები',
+        'nocturnes'    => 'ძილისპირულები',
+    );
+
+    if ( isset( $dict[ $slug ] ) && ( empty( $name ) || $name_lower === $slug || $name_lower === strtolower( $term->name ) || $name_lower === 'raw' || $name_lower === 'დილის სიმღერები' || $name_lower === 'ნოქტიურნები' ) ) {
+        $name = $dict[ $slug ];
+    } elseif ( isset( $dict[ $name_lower ] ) ) {
+        $name = $dict[ $name_lower ];
+    }
+
+    return function_exists( 'zk_uppercase_ka' ) ? zk_uppercase_ka( $name ) : $name;
+}
+
 function zk_breadcrumbs() {
     if ( is_front_page() ) {
         return;
     }
 
+    $is_ka      = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
+    $home_route = $is_ka ? '/ka/' : '/';
+    $home_label = $is_ka ? 'მთავარი' : 'Home';
+
     echo '<nav class="zk-breadcrumbs" aria-label="Breadcrumb">';
 
     // 1. Home Link (მინიმალისტური იკონი)
-    echo '<a href="' . esc_url( home_url( '/' ) ) . '" data-route="/" aria-label="Home" class="zk-home-link">';
+    echo '<a href="' . esc_url( home_url( '/' ) ) . '" data-route="' . esc_attr( $home_route ) . '" aria-label="' . esc_attr( $home_label ) . '" class="zk-home-link">';
     echo '<svg class="zk-home-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>';
     echo '</a>';
 
-    if ( is_single() ) {
-        // --- ლოგიკა ცალკეული პოსტებისთვის (მაგ: Nocturne #50) ---
-        $is_ka = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
-        $blog_label = $is_ka ? ( function_exists( 'zk_uppercase_ka' ) ? zk_uppercase_ka( 'ბლოგი' ) : 'ბლოგი' ) : 'Blog';
-        $blog_route = $is_ka ? '/ka/blog' : '/blog';
+    if ( is_singular( 'zk_book' ) ) {
+        // --- ლოგიკა წიგნების პოსტებისთვის ---
+        $books_label = zk_get_breadcrumb_crumb_label( 'Books', 'books', 0, $is_ka );
+        $books_route = $is_ka ? '/ka/books' : '/books';
+        $books_url   = $is_ka ? home_url( '/ka/books/' ) : home_url( '/books/' );
 
-        // ხელით ვამატებთ Blog-ს, რადგან ყველა პოსტი ბლოგის ქვეშაა
         echo '<span class="zk-breadcrumb-separator">/</span>';
-        echo '<a href="' . esc_url( home_url( '/blog/' ) ) . '" data-route="' . esc_attr( $blog_route ) . '">' . esc_html( $blog_label ) . '</a>';
+        echo '<a href="' . esc_url( $books_url ) . '" data-route="' . esc_attr( $books_route ) . '">' . esc_html( $books_label ) . '</a>';
+
+        $book_title = $is_ka ? ( get_post_meta( get_the_ID(), '_zk_title_ka', true ) ?: get_the_title() ) : get_the_title();
+        if ( $is_ka && function_exists( 'zk_uppercase_ka' ) ) {
+            $book_title = zk_uppercase_ka( $book_title );
+        }
+        echo '<span class="zk-breadcrumb-separator">/</span>';
+        echo '<span class="zk-breadcrumb-current">' . esc_html( $book_title ) . '</span>';
+
+    } elseif ( is_singular( 'zk_music_release' ) ) {
+        // --- ლოგიკა მუსიკალური რელიზებისთვის ---
+        $music_label = zk_get_breadcrumb_crumb_label( 'Music', 'music', 0, $is_ka );
+        $music_route = $is_ka ? '/ka/music' : '/music';
+        $music_url   = $is_ka ? home_url( '/ka/music/' ) : home_url( '/music/' );
+
+        echo '<span class="zk-breadcrumb-separator">/</span>';
+        echo '<a href="' . esc_url( $music_url ) . '" data-route="' . esc_attr( $music_route ) . '">' . esc_html( $music_label ) . '</a>';
+
+        $music_title = $is_ka ? ( get_post_meta( get_the_ID(), '_zk_title_ka', true ) ?: get_the_title() ) : get_the_title();
+        if ( $is_ka && function_exists( 'zk_uppercase_ka' ) ) {
+            $music_title = zk_uppercase_ka( $music_title );
+        }
+        echo '<span class="zk-breadcrumb-separator">/</span>';
+        echo '<span class="zk-breadcrumb-current">' . esc_html( $music_title ) . '</span>';
+
+    } elseif ( is_single() ) {
+        // --- ლოგიკა ცალკეული ბლოგ-პოსტებისთვის (მაგ: Nocturne #50) ---
+        $blog_label = zk_get_breadcrumb_crumb_label( 'Blog', 'blog', 0, $is_ka );
+        $blog_route = $is_ka ? '/ka/blog' : '/blog';
+        $blog_url   = $is_ka ? home_url( '/ka/blog/' ) : home_url( '/blog/' );
+
+        echo '<span class="zk-breadcrumb-separator">/</span>';
+        echo '<a href="' . esc_url( $blog_url ) . '" data-route="' . esc_attr( $blog_route ) . '">' . esc_html( $blog_label ) . '</a>';
 
         $categories = get_the_category();
         if ( ! empty( $categories ) ) {
             $cat = $categories[0];
 
-            // თუ კატეგორიას აქვს მშობელი (მაგ: Raw)
+            // თუ კატეგორიას აქვს მშობელი (მაგ: Raw / გაუფილტრავი)
             if ( $cat->parent != 0 ) {
-                $parent_cat = get_category( $cat->parent );
-                $parent_slug = $parent_cat->slug;
-                $parent_path = '/blog/' . $parent_slug;
-                $parent_name = function_exists( 'zk_get_translated_term_name' ) ? zk_get_translated_term_name( $parent_cat ) : $parent_cat->name;
-                if ( $is_ka && function_exists( 'zk_uppercase_ka' ) ) {
-                    $parent_name = zk_uppercase_ka( $parent_name );
-                }
+                $parent_cat   = get_category( $cat->parent );
+                $parent_slug  = $parent_cat->slug;
+                $parent_path  = '/blog/' . $parent_slug;
+                $parent_name  = zk_get_breadcrumb_term_label( $parent_cat, $is_ka );
                 $parent_route = $is_ka ? '/ka' . $parent_path : $parent_path;
+                $parent_url   = $is_ka ? home_url( '/ka' . $parent_path . '/' ) : home_url( $parent_path . '/' );
+
                 echo '<span class="zk-breadcrumb-separator">/</span>';
-                echo '<a href="' . esc_url( home_url( $parent_path . '/' ) ) . '" data-route="' . esc_attr( $parent_route ) . '">' . esc_html( $parent_name ) . '</a>';
+                echo '<a href="' . esc_url( $parent_url ) . '" data-route="' . esc_attr( $parent_route ) . '">' . esc_html( $parent_name ) . '</a>';
             }
 
-            // უშუალოდ მიმდინარე კატეგორია (მაგ: Nocturnes)
+            // უშუალოდ მიმდინარე კატეგორია (მაგ: Nocturnes / ძილისპირულები)
             $parent_prefix = ( $cat->parent != 0 ) ? '/blog/' . get_category( $cat->parent )->slug . '/' : '/blog/';
-            $cat_path = $parent_prefix . $cat->slug;
-            $cat_name = function_exists( 'zk_get_translated_term_name' ) ? zk_get_translated_term_name( $cat ) : $cat->name;
-            if ( $is_ka && function_exists( 'zk_uppercase_ka' ) ) {
-                $cat_name = zk_uppercase_ka( $cat_name );
-            }
-            $cat_route = $is_ka ? '/ka' . $cat_path : $cat_path;
+            $cat_path      = '/' . trim( $parent_prefix . $cat->slug, '/' );
+            $cat_name      = zk_get_breadcrumb_term_label( $cat, $is_ka );
+            $cat_route     = $is_ka ? '/ka' . $cat_path : $cat_path;
+            $cat_url       = $is_ka ? home_url( '/ka' . $cat_path . '/' ) : home_url( $cat_path . '/' );
 
             echo '<span class="zk-breadcrumb-separator">/</span>';
-            echo '<a href="' . esc_url( home_url( $cat_path . '/' ) ) . '" data-route="' . esc_attr( $cat_route ) . '">' . esc_html( $cat_name ) . '</a>';
+            echo '<a href="' . esc_url( $cat_url ) . '" data-route="' . esc_attr( $cat_route ) . '">' . esc_html( $cat_name ) . '</a>';
         }
 
         // უშუალოდ პოსტის სათაური
-        $post_title = get_the_title();
+        $post_title = $is_ka ? ( get_post_meta( get_the_ID(), '_zk_title_ka', true ) ?: get_the_title() ) : get_the_title();
         if ( $is_ka && function_exists( 'zk_uppercase_ka' ) ) {
             $post_title = zk_uppercase_ka( $post_title );
         }
@@ -464,50 +586,53 @@ function zk_breadcrumbs() {
         echo '<span class="zk-breadcrumb-current">' . esc_html( $post_title ) . '</span>';
 
     } elseif ( is_page() ) {
-        // --- ლოგიკა უშუალოდ გვერდებისთვის (მაგ: როცა ხარ Blog/Raw/Nocturnes გვერდზე) ---
+        // --- ლოგიკა უშუალოდ გვერდებისთვის (მაგ: როცა ხარ Blog/Raw/Aubades გვერდზე) ---
         global $post;
-        $is_ka = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
         $ancestors = get_post_ancestors( $post );
 
         if ( $ancestors ) {
             $ancestors = array_reverse( $ancestors ); // ვატრიალებთ, რომ Home-დან დაიწყოს
             foreach ( $ancestors as $ancestor ) {
-                $anc_post = get_post( $ancestor );
-                $anc_path = '/' . get_page_uri( $anc_post );
-                $anc_title = ( $is_ka && function_exists( 'zk_uppercase_ka' ) ) ? zk_uppercase_ka( $anc_post->post_title ) : $anc_post->post_title;
+                $anc_post  = get_post( $ancestor );
+                $anc_slug  = $anc_post->post_name;
+                $anc_path  = '/' . trim( get_page_uri( $anc_post ), '/' );
+                $anc_route = $is_ka ? ( $anc_path === '' ? '/ka/' : '/ka' . $anc_path ) : ( $anc_path === '' ? '/' : $anc_path );
+                $anc_url   = get_permalink( $anc_post );
+                if ( $is_ka && function_exists( 'zk_filter_permalink_ka' ) ) {
+                    $anc_url = zk_filter_permalink_ka( $anc_url );
+                }
+                $anc_title = zk_get_breadcrumb_crumb_label( $anc_post->post_title, $anc_slug, $anc_post->ID, $is_ka );
+
                 echo '<span class="zk-breadcrumb-separator">/</span>';
-                echo '<a href="' . esc_url( get_permalink( $anc_post ) ) . '" data-route="' . esc_attr( $anc_path ) . '">' . esc_html( $anc_title ) . '</a>';
+                echo '<a href="' . esc_url( $anc_url ) . '" data-route="' . esc_attr( $anc_route ) . '">' . esc_html( $anc_title ) . '</a>';
             }
         }
 
         // უშუალოდ მიმდინარე გვერდის სათაური
-        $curr_title = ( $is_ka && function_exists( 'zk_uppercase_ka' ) ) ? zk_uppercase_ka( get_the_title() ) : get_the_title();
+        $curr_slug  = $post->post_name;
+        $curr_title = zk_get_breadcrumb_crumb_label( get_the_title(), $curr_slug, $post->ID, $is_ka );
         echo '<span class="zk-breadcrumb-separator">/</span>';
         echo '<span class="zk-breadcrumb-current">' . esc_html( $curr_title ) . '</span>';
 
     } elseif ( is_archive() || is_search() ) {
         // --- ლოგიკა არქივებისთვის და თეგებისთვის ---
-        $is_ka = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
-        $blog_label = $is_ka ? ( function_exists( 'zk_uppercase_ka' ) ? zk_uppercase_ka( 'ბლოგი' ) : 'ბლოგი' ) : 'Blog';
+        $blog_label = zk_get_breadcrumb_crumb_label( 'Blog', 'blog', 0, $is_ka );
         $blog_route = $is_ka ? '/ka/blog' : '/blog';
+        $blog_url   = $is_ka ? home_url( '/ka/blog/' ) : home_url( '/blog/' );
 
         echo '<span class="zk-breadcrumb-separator">/</span>';
-        echo '<a href="' . esc_url( home_url( '/blog/' ) ) . '" data-route="' . esc_attr( $blog_route ) . '">' . esc_html( $blog_label ) . '</a>';
+        echo '<a href="' . esc_url( $blog_url ) . '" data-route="' . esc_attr( $blog_route ) . '">' . esc_html( $blog_label ) . '</a>';
 
         echo '<span class="zk-breadcrumb-separator">/</span>';
         if ( is_tag() ) {
             $topic_label = $is_ka ? ( function_exists( 'zk_uppercase_ka' ) ? zk_uppercase_ka( 'თემა: ' ) : 'თემა: ' ) : 'Topic: ';
-            $tag_title = single_tag_title( '', false );
-            if ( $is_ka && function_exists( 'zk_uppercase_ka' ) ) {
-                $tag_title = zk_uppercase_ka( $tag_title );
-            }
+            $tag_obj     = get_queried_object();
+            $tag_title   = zk_get_breadcrumb_term_label( $tag_obj, $is_ka );
             echo '<span class="zk-breadcrumb-current">' . esc_html( $topic_label . $tag_title ) . '</span>';
         } elseif ( is_category() ) {
             $cat_label = $is_ka ? ( function_exists( 'zk_uppercase_ka' ) ? zk_uppercase_ka( 'კატეგორია: ' ) : 'კატეგორია: ' ) : 'Category: ';
-            $cat_title = single_cat_title( '', false );
-            if ( $is_ka && function_exists( 'zk_uppercase_ka' ) ) {
-                $cat_title = zk_uppercase_ka( $cat_title );
-            }
+            $cat_obj   = get_queried_object();
+            $cat_title = zk_get_breadcrumb_term_label( $cat_obj, $is_ka );
             echo '<span class="zk-breadcrumb-current">' . esc_html( $cat_label . $cat_title ) . '</span>';
         } else {
             $arch_label = $is_ka ? ( function_exists( 'zk_uppercase_ka' ) ? zk_uppercase_ka( 'არქივი' ) : 'არქივი' ) : 'Archive';
