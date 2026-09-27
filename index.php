@@ -441,6 +441,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                 if (!el || el.nodeType !== 1) return;
                 var tag = el.tagName;
                 if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SVG' || tag === 'NOSCRIPT') return;
+                el.style.setProperty('text-transform', 'none', 'important');
                 var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
                 var textNode;
                 while ((textNode = walker.nextNode())) {
@@ -475,6 +476,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                                 var p = tn.parentElement;
                                 if (p && p.tagName !== 'SCRIPT' && p.tagName !== 'STYLE' && p.tagName !== 'INPUT' && p.tagName !== 'TEXTAREA') {
                                     if (window.getComputedStyle(p).textTransform === 'uppercase') {
+                                        p.style.setProperty('text-transform', 'none', 'important');
                                         tn.nodeValue = window.zkToMtavruli(v);
                                     }
                                 }
@@ -503,6 +505,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                         } else if (m.type === 'characterData') {
                             var p = m.target.parentElement;
                             if (p && p.closest && (p.closest(UPPER_SEL) || (window.getComputedStyle && window.getComputedStyle(p).textTransform === 'uppercase'))) {
+                                p.style.setProperty('text-transform', 'none', 'important');
                                 var cval = m.target.nodeValue;
                                 if (cval && KA_RANGE.test(cval)) {
                                     m.target.nodeValue = window.zkToMtavruli(cval);
