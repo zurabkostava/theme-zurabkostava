@@ -56,6 +56,17 @@ test('language registry preserves English and Georgian while supporting future l
     assert.match(manager, /zk_language_meta_key\( 'content', \$language \)/);
 });
 
+test('photography filters follow the current language without sharing cached markup', () => {
+    const source = read('functions.php');
+
+    assert.match(source, /function zk_gallery_labels/);
+    assert.match(source, /'all'\s*=>\s*'ყველა'/);
+    assert.match(source, /'camera'\s*=>\s*'კამერა'/);
+    assert.match(source, /'mobile'\s*=>\s*'მობილური'/);
+    assert.match(source, /zk_gallery_html_v6_.*sanitize_key\( \$language \)/);
+    assert.match(source, /esc_html\( \$labels\['all'\] \)/);
+});
+
 test('first-party assets use file modification versions instead of request time', () => {
     const sources = [
         read('inc/platform/assets.php'),

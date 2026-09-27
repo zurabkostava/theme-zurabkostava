@@ -696,9 +696,42 @@ function zk_gallery_folders() {
     );
 }
 
+/**
+ * Labels used by the photography gallery controls.
+ *
+ * English is the safe fallback for newly added site languages until their
+ * interface copy is supplied here (or through the filter below).
+ */
+function zk_gallery_labels( $language = '' ) {
+    $language = $language ?: ( function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en' );
+    $labels   = array(
+        'filters_label' => 'Filter photography',
+        'all'           => 'All',
+        'camera'        => 'Camera',
+        'mobile'        => 'Mobile',
+    );
+
+    $translations = array(
+        'ka' => array(
+            'filters_label' => 'ფოტოგრაფიის გაფილტვრა',
+            'all'           => 'ყველა',
+            'camera'        => 'კამერა',
+            'mobile'        => 'მობილური',
+        ),
+    );
+
+    if ( isset( $translations[ $language ] ) ) {
+        $labels = array_merge( $labels, $translations[ $language ] );
+    }
+
+    return apply_filters( 'zk_gallery_labels', $labels, $language );
+}
+
 function zk_cinematic_gallery() {
     // Optional render cache (off by default — see zk_flush_gallery_cache notes).
-    $cache_key = 'zk_gallery_html_v5';
+    $language  = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
+    $labels    = zk_gallery_labels( $language );
+    $cache_key = 'zk_gallery_html_v6_' . sanitize_key( $language );
     $use_cache = (bool) apply_filters( 'zk_gallery_cache_enabled', false );
     if ( $use_cache ) {
         $cached = get_transient( $cache_key );
@@ -820,10 +853,10 @@ function zk_cinematic_gallery() {
         }
         $output .= '<div class="zk-total-views-admin" style="text-align:center; padding: 15px 20px; color: #0ff; font-weight: 600; font-family: monospace; font-size: 15px; letter-spacing: 2px; background: rgba(0,255,255,0.05); border-radius: 8px; margin-bottom: 20px;">TOTAL GALLERY VIEWS: ' . $total_views . '</div>';
     }
-    $output .= '<div class="zk-gallery-filters" role="group" aria-label="Filter photography">';
-    $output .= '<button class="zk-filter-btn is-active" type="button" data-filter="all" aria-pressed="true">All <span class="zk-tab-count">' . $total_photos . '</span></button>';
-    $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-camera" aria-pressed="false">Camera <span class="zk-tab-count">' . $camera_photos . '</span></button>';
-    $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-mobile" aria-pressed="false">Mobile <span class="zk-tab-count">' . $mobile_photos . '</span></button>';
+    $output .= '<div class="zk-gallery-filters" role="group" aria-label="' . esc_attr( $labels['filters_label'] ) . '">';
+    $output .= '<button class="zk-filter-btn is-active" type="button" data-filter="all" aria-pressed="true">' . esc_html( $labels['all'] ) . ' <span class="zk-tab-count">' . $total_photos . '</span></button>';
+    $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-camera" aria-pressed="false">' . esc_html( $labels['camera'] ) . ' <span class="zk-tab-count">' . $camera_photos . '</span></button>';
+    $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-mobile" aria-pressed="false">' . esc_html( $labels['mobile'] ) . ' <span class="zk-tab-count">' . $mobile_photos . '</span></button>';
     $output .= '</div>';
 
     $output .= '<div class="zk-gallery-grid" id="zkGalleryGrid">';
@@ -1065,6 +1098,10 @@ add_shortcode( 'zk_photography', 'zk_cinematic_gallery' );
  */
 function zk_flush_gallery_cache() {
     delete_transient( 'zk_gallery_html_v5' );
+    $languages = function_exists( 'zk_get_languages' ) ? zk_get_languages( false ) : array( 'en' => array(), 'ka' => array() );
+    foreach ( array_keys( $languages ) as $language ) {
+        delete_transient( 'zk_gallery_html_v6_' . sanitize_key( $language ) );
+    }
 }
 add_action( 'add_attachment',    'zk_flush_gallery_cache' );
 add_action( 'edit_attachment',   'zk_flush_gallery_cache' );
