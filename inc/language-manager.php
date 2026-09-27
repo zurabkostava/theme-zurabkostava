@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function zk_add_translation_meta_boxes() {
     $post_types = get_post_types(array('public' => true), 'names');
     $post_types['zk_music_release'] = 'zk_music_release';
+    $post_types['zk_book'] = 'zk_book';
     foreach ($post_types as $post_type) {
         add_meta_box(
             'zk_translation_meta_box',

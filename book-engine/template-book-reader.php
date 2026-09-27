@@ -2,9 +2,12 @@
 /*
 Template Name: Book Reader
 */
+$request_uri    = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+$current_locale = get_locale();
+$is_georgian    = ( strpos( $request_uri, '/ka/' ) !== false || strpos( $request_uri, 'lang=ka' ) !== false || strpos( $current_locale, 'ka' ) === 0 );
 ?>
 <!DOCTYPE html>
-<html lang="ka">
+<html lang="<?php echo $is_georgian ? 'ka' : 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -100,11 +103,11 @@ if ( false === $seo_content ) {
 <?php endif; ?>
 
 <div class="global-header-ui">
-    <button id="theme-toggle-btn" class="lang-portal-btn theme-btn-override" title="Theme">
+    <button id="theme-toggle-btn" class="lang-portal-btn theme-btn-override" title="<?php echo $is_georgian ? 'თემა' : 'Theme'; ?>">
         <span class="material-icons-outlined">light_mode</span>
     </button>
     <button id="lang-switcher-btn" class="lang-portal-btn"></button>
-    <button id="user-auth-btn" class="lang-portal-btn" title="Sign In">
+    <button id="user-auth-btn" class="lang-portal-btn" title="<?php echo $is_georgian ? 'შესვლა' : 'Sign In'; ?>">
         <span class="material-icons-outlined">person</span>
     </button>
 </div>
@@ -124,27 +127,27 @@ if ( false === $seo_content ) {
 
     <nav id="sidebar" class="sidebar">
         <div class="sidebar-header">
-            <h2 id="sidebar-main-title">სარჩევი</h2>
+            <h2 id="sidebar-main-title"><?php echo $is_georgian ? 'სარჩევი' : 'CONTENTS'; ?></h2>
             <button id="toggle-btn" class="toggle-btn"><span>&times;</span></button>
         </div>
         <ul class="chapter-list" id="chapter-list-ui"></ul>
         <div class="sidebar-controls">
             <button class="font-control-btn" id="font-size-minus">−</button>
-            <span class="font-display-label">FONT SIZE</span>
+            <span class="font-display-label"><?php echo $is_georgian ? 'შრიფტის ზომა' : 'FONT SIZE'; ?></span>
             <button class="font-control-btn" id="font-size-plus">+</button>
         </div>
     </nav>
 
     <div class="nav-toolbar">
-        <button id="open-sidebar-btn" class="tool-btn" title="Menu">
+        <button id="open-sidebar-btn" class="tool-btn" title="<?php echo $is_georgian ? 'მენიუ' : 'Menu'; ?>">
             <span class="material-icons-outlined">menu</span>
         </button>
 
-        <button id="open-glossary-btn" class="tool-btn" title="განმარტებები">
+        <button id="open-glossary-btn" class="tool-btn" title="<?php echo $is_georgian ? 'განმარტებები' : 'Glossary'; ?>">
             <span class="material-icons-outlined">auto_stories</span>
         </button>
 
-        <button id="open-desc-btn" class="tool-btn" title="About Book">
+        <button id="open-desc-btn" class="tool-btn" title="<?php echo $is_georgian ? 'წიგნის შესახებ' : 'About Book'; ?>">
             <span class="material-icons-outlined">info</span>
         </button>
 
@@ -172,7 +175,7 @@ if ( false === $seo_content ) {
 </div> <div id="glossary-modal" class="glossary-overlay">
     <div class="glossary-content">
         <div class="glossary-header">
-            <h3>წიგნის განმარტებები</h3>
+            <h3><?php echo $is_georgian ? 'წიგნის განმარტებები' : 'Glossary'; ?></h3>
             <button id="close-glossary-modal" class="glossary-close-btn">&times;</button>
         </div>
         <div id="glossary-list" class="glossary-body"></div>
@@ -182,7 +185,7 @@ if ( false === $seo_content ) {
 <div id="description-modal" class="glossary-overlay">
     <div class="glossary-content desc-modal-content">
         <div class="glossary-header">
-            <h3>სინოპსისი</h3>
+            <h3><?php echo $is_georgian ? 'სინოპსისი' : 'Synopsis'; ?></h3>
             <button id="close-desc-modal" class="glossary-close-btn">&times;</button>
         </div>
         <div id="description-body" class="glossary-body description-text"></div>
@@ -191,35 +194,35 @@ if ( false === $seo_content ) {
 <div id="auth-modal" class="glossary-overlay">
     <div class="glossary-content auth-modal-content notranslate skiptranslate" translate="no" data-no-translation>
         <div class="glossary-header">
-            <h3 id="auth-modal-title">Sign In</h3>
+            <h3 id="auth-modal-title"><?php echo $is_georgian ? 'შესვლა' : 'Sign In'; ?></h3>
             <button id="close-auth-modal" class="glossary-close-btn">&times;</button>
         </div>
         <div class="glossary-body auth-body">
             <div class="form-group" id="auth-name-group" style="display: none !important;">
-                <label id="auth-name-label">Full Name</label>
-                <input type="text" id="auth-name" placeholder="John Doe">
+                <label id="auth-name-label"><?php echo $is_georgian ? 'სრული სახელი' : 'Full Name'; ?></label>
+                <input type="text" id="auth-name" placeholder="<?php echo $is_georgian ? 'ზურაბ კოსტავა' : 'John Doe'; ?>">
             </div>
             <div class="form-group">
-                <label id="auth-email-label">Email Address</label>
+                <label id="auth-email-label"><?php echo $is_georgian ? 'ელ. ფოსტა' : 'Email Address'; ?></label>
                 <input type="email" id="auth-email" placeholder="your@email.com">
             </div>
             <div class="form-group">
-                <label id="auth-pass-label">Password</label>
+                <label id="auth-pass-label"><?php echo $is_georgian ? 'პაროლი' : 'Password'; ?></label>
                 <input type="password" id="auth-password" placeholder="••••••••">
             </div>
             <div id="auth-error" class="auth-error-msg"></div>
 
-            <button id="auth-submit-btn" class="primary-btn auth-submit">Sign In</button>
+            <button id="auth-submit-btn" class="primary-btn auth-submit"><?php echo $is_georgian ? 'შესვლა' : 'Sign In'; ?></button>
 
-            <div class="auth-divider"><span>ან შედიხართ</span></div>
+            <div class="auth-divider"><span><?php echo $is_georgian ? 'ან შედიხართ' : 'or continue with'; ?></span></div>
             <button id="auth-google-btn" class="oauth-btn">
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo">
-                <span id="auth-google-text">Google - ით გაგრძელება</span>
+                <span id="auth-google-text"><?php echo $is_georgian ? 'Google - ით გაგრძელება' : 'Continue with Google'; ?></span>
             </button>
 
             <div class="auth-toggle-wrap">
-                <span id="auth-toggle-text">Don't have an account?</span>
-                <a href="#" id="auth-toggle-link">Register</a>
+                <span id="auth-toggle-text"><?php echo $is_georgian ? 'არ გაქვთ ანგარიში?' : "Don't have an account?"; ?></span>
+                <a href="#" id="auth-toggle-link"><?php echo $is_georgian ? 'რეგისტრაცია' : 'Register'; ?></a>
             </div>
         </div>
     </div>
