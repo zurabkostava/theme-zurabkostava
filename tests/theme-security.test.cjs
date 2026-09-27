@@ -58,6 +58,7 @@ test('language registry preserves English and Georgian while supporting future l
 
 test('photography filters follow the current language without sharing cached markup', () => {
     const source = read('functions.php');
+    const center = read('inc/platform/language-center.php');
 
     assert.match(source, /function zk_gallery_labels/);
     assert.match(source, /'all'\s*=>\s*'ყველა'/);
@@ -65,6 +66,11 @@ test('photography filters follow the current language without sharing cached mar
     assert.match(source, /'mobile'\s*=>\s*'მობილური'/);
     assert.match(source, /zk_gallery_html_v6_.*sanitize_key\( \$language \)/);
     assert.match(source, /esc_html\( \$labels\['all'\] \)/);
+    assert.match(source, /get_option\( 'zk_gallery_labels_v1'/);
+    assert.match(center, /admin_post_zk_save_gallery_labels/);
+    assert.match(center, /check_admin_referer\( 'zk_save_gallery_labels'/);
+    assert.match(center, /Photography filter tabs/);
+    assert.match(center, /zk_flush_gallery_cache\(\)/);
 });
 
 test('first-party assets use file modification versions instead of request time', () => {

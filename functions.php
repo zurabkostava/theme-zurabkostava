@@ -724,6 +724,15 @@ function zk_gallery_labels( $language = '' ) {
         $labels = array_merge( $labels, $translations[ $language ] );
     }
 
+    $saved = get_option( 'zk_gallery_labels_v1', array() );
+    if ( isset( $saved[ $language ] ) && is_array( $saved[ $language ] ) ) {
+        foreach ( array( 'all', 'camera', 'mobile' ) as $key ) {
+            if ( isset( $saved[ $language ][ $key ] ) && '' !== trim( (string) $saved[ $language ][ $key ] ) ) {
+                $labels[ $key ] = (string) $saved[ $language ][ $key ];
+            }
+        }
+    }
+
     return apply_filters( 'zk_gallery_labels', $labels, $language );
 }
 

@@ -61,6 +61,49 @@ function zk_language_center_save_languages() {
 }
 add_action( 'admin_post_zk_save_languages', 'zk_language_center_save_languages' );
 
+function zk_language_center_save_gallery_labels() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_die( esc_html__( 'You do not have permission to manage languages.', 'zurabkostava' ) );
+    }
+
+    check_admin_referer( 'zk_save_gallery_labels', 'zk_gallery_labels_nonce' );
+    $language = isset( $_POST['zk_gallery_language'] ) ? sanitize_key( wp_unslash( $_POST['zk_gallery_language'] ) ) : '';
+    $languages = zk_get_translatable_languages( false );
+    if ( ! $language || ! isset( $languages[ $language ] ) ) {
+        wp_safe_redirect( add_query_arg( array( 'page' => 'zk-language-center' ), admin_url( 'admin.php' ) ) );
+        exit;
+    }
+
+    $submitted = isset( $_POST['zk_gallery_labels'] ) && is_array( $_POST['zk_gallery_labels'] )
+        ? wp_unslash( $_POST['zk_gallery_labels'] )
+        : array();
+    $saved = get_option( 'zk_gallery_labels_v1', array() );
+    if ( ! is_array( $saved ) ) {
+        $saved = array();
+    }
+
+    $saved[ $language ] = array();
+    foreach ( array( 'all', 'camera', 'mobile' ) as $key ) {
+        $value = isset( $submitted[ $key ] ) ? sanitize_text_field( $submitted[ $key ] ) : '';
+        if ( '' !== $value ) {
+            $saved[ $language ][ $key ] = $value;
+        }
+    }
+
+    update_option( 'zk_gallery_labels_v1', $saved, false );
+    if ( function_exists( 'zk_flush_gallery_cache' ) ) {
+        zk_flush_gallery_cache();
+    }
+
+    wp_safe_redirect( add_query_arg( array(
+        'page'           => 'zk-language-center',
+        'language'       => $language,
+        'labels-updated' => '1',
+    ), admin_url( 'admin.php' ) ) );
+    exit;
+}
+add_action( 'admin_post_zk_save_gallery_labels', 'zk_language_center_save_gallery_labels' );
+
 function zk_language_center_post_types() {
     $types = get_post_types( array( 'public' => true ), 'objects' );
     unset( $types['attachment'] );
@@ -166,6 +209,7 @@ function zk_render_language_center() {
         <h1>Language Center</h1>
         <p>Manage site languages and see which public content still needs translation. English is the source language; empty translations safely fall back to English.</p>
         <?php if ( isset( $_GET['updated'] ) ) : ?><div class="notice notice-success is-dismissible"><p>Languages saved.</p></div><?php endif; ?>
+        <?php if ( isset( $_GET['labels-updated'] ) ) : ?><div class="notice notice-success is-dismissible"><p>Photography filter translations saved.</p></div><?php endif; ?>
 
         <style>
             .zk-language-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;max-width:900px;margin:18px 0}.zk-language-card{background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:18px}.zk-language-card strong{display:block;font-size:28px;margin-top:6px}.zk-language-progress{height:12px;background:#dcdcde;border-radius:10px;overflow:hidden;max-width:900px}.zk-language-progress span{display:block;height:100%;background:#2271b1}.zk-status-complete{color:#008a20}.zk-status-partial{color:#b26200}.zk-status-missing{color:#b32d2e}.zk-language-table input[type=text]{width:100%}.zk-language-section{background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:20px;margin-top:22px;max-width:1100px}
@@ -206,6 +250,21 @@ function zk_render_language_center() {
                     <tr><td><?php echo esc_html( $row['title'] ); ?></td><td><?php echo esc_html( $row['taxonomy'] ); ?></td><td class="zk-status-<?php echo esc_attr( $row['status'] ); ?>"><?php echo esc_html( zk_language_center_status_label( $row['status'] ) ); ?></td><td><a class="button" href="<?php echo esc_url( $row['edit_url'] ); ?>">Edit translation</a></td></tr>
                 <?php endforeach; if ( ! $shown ) : ?><tr><td colspan="4">All category and tag translations are complete.</td></tr><?php endif; ?>
             </tbody></table>
+
+            <?php $gallery_labels = function_exists( 'zk_gallery_labels' ) ? zk_gallery_labels( $selected ) : array( 'all' => 'All', 'camera' => 'Camera', 'mobile' => 'Mobile' ); ?>
+            <h3 style="margin-top:24px">Photography filter tabs</h3>
+            <p>Translate the three tabs shown above the photography gallery for <?php echo esc_html( $language['native_name'] ); ?>. Empty fields fall back to English.</p>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                <input type="hidden" name="action" value="zk_save_gallery_labels">
+                <input type="hidden" name="zk_gallery_language" value="<?php echo esc_attr( $selected ); ?>">
+                <?php wp_nonce_field( 'zk_save_gallery_labels', 'zk_gallery_labels_nonce' ); ?>
+                <table class="form-table"><tbody>
+                    <tr><th><label for="zk-gallery-all">All</label></th><td><input class="regular-text" id="zk-gallery-all" name="zk_gallery_labels[all]" type="text" value="<?php echo esc_attr( $gallery_labels['all'] ); ?>" placeholder="All"></td></tr>
+                    <tr><th><label for="zk-gallery-camera">Camera</label></th><td><input class="regular-text" id="zk-gallery-camera" name="zk_gallery_labels[camera]" type="text" value="<?php echo esc_attr( $gallery_labels['camera'] ); ?>" placeholder="Camera"></td></tr>
+                    <tr><th><label for="zk-gallery-mobile">Mobile</label></th><td><input class="regular-text" id="zk-gallery-mobile" name="zk_gallery_labels[mobile]" type="text" value="<?php echo esc_attr( $gallery_labels['mobile'] ); ?>" placeholder="Mobile"></td></tr>
+                </tbody></table>
+                <?php submit_button( 'Save photography translations', 'secondary' ); ?>
+            </form>
         </div>
 
         <div class="zk-language-section">
