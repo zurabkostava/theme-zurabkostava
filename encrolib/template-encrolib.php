@@ -280,9 +280,14 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // 🚫 Remove Mobile Bottom
     <div class="hero-orb hero-orb-2"></div>
 </div>
 
-<a href="<?php echo esc_url(home_url('/')); ?>" class="zk-app-back">
+<?php
+$is_ka_encro = ( strpos( $_SERVER['REQUEST_URI'], '/ka/' ) !== false || ( function_exists('zk_get_current_language') && zk_get_current_language() === 'ka' ) );
+$encro_exit_url = $is_ka_encro ? home_url( '/ka/projects/' ) : home_url( '/projects/' );
+$encro_exit_label = $is_ka_encro ? 'პროექტებში დაბრუნება' : 'Exit App';
+?>
+<a href="<?php echo esc_url( $encro_exit_url ); ?>" class="zk-app-back">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-    Exit App
+    <?php echo esc_html( $encro_exit_label ); ?>
 </a>
 
 <div class="container">

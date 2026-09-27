@@ -262,9 +262,22 @@ function zk_custom_post_grid( $atts ) {
 
     $query = new WP_Query( $args );
 
-    if ( ! $query->have_posts() ) {
-        return '<p class="page__content">No posts found in this category.</p>';
+    $is_ka = function_exists( 'zk_get_current_language' ) ? ( zk_get_current_language() === 'ka' ) : false;
+    if ( ! $is_ka ) {
+        $req_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+        if ( strpos( $req_uri, '/ka/' ) === 0 || strpos( $req_uri, '/ka' ) === 0 ) {
+            $is_ka = true;
+        }
     }
+
+    if ( ! $query->have_posts() ) {
+        return '<p class="page__content">' . ( $is_ka ? 'პოსტები ამ კატეგორიაში არ მოიძებნა.' : 'No posts found in this category.' ) . '</p>';
+    }
+
+    $search_placeholder = $is_ka ? 'ძებნა...' : 'Search projects...';
+    $sort_label         = $is_ka ? 'სორტირება: ' : 'Sort by: ';
+    $newest_text        = $is_ka ? 'უახლესი' : 'Newest';
+    $oldest_text        = $is_ka ? 'უძველესი' : 'Oldest';
 
     // მთავარი კონტეინერი (Wrapper)
     $output = '<div class="zk-grid-wrapper">';
@@ -274,19 +287,19 @@ function zk_custom_post_grid( $atts ) {
 
     // პრემიუმ შიდა ძებნის ინპუტი (Glass Design)
     $output .= '<div class="zk-search-box">';
-    $output .= '<input type="text" class="zk-search-input" placeholder="Search projects..." aria-label="Search">';
+    $output .= '<input type="text" class="zk-search-input" placeholder="' . esc_attr( $search_placeholder ) . '" aria-label="' . esc_attr( $search_placeholder ) . '">';
     $output .= '<svg class="zk-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
     $output .= '</div>';
 
     // სორტირების Custom Dropdown
     $output .= '<div class="zk-sort-dropdown" id="sortDropdown">';
     $output .= '<button class="zk-sort-trigger" type="button" aria-expanded="false">';
-    $output .= '<span class="zk-sort-label">Sort by: </span><span class="zk-sort-current">Newest</span>';
+    $output .= '<span class="zk-sort-label">' . esc_html( $sort_label ) . '</span><span class="zk-sort-current">' . esc_html( $newest_text ) . '</span>';
     $output .= '<svg class="dropdown-caret" width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     $output .= '</button>';
     $output .= '<div class="zk-sort-menu">';
-    $output .= '<button class="zk-sort-option is-selected" type="button" data-sort="desc">Newest</button>';
-    $output .= '<button class="zk-sort-option" type="button" data-sort="asc">Oldest</button>';
+    $output .= '<button class="zk-sort-option is-selected" type="button" data-sort="desc">' . esc_html( $newest_text ) . '</button>';
+    $output .= '<button class="zk-sort-option" type="button" data-sort="asc">' . esc_html( $oldest_text ) . '</button>';
     $output .= '</div>'; // end menu
     $output .= '</div>'; // end dropdown
     $output .= '</div>'; // end controls
@@ -2800,38 +2813,78 @@ function zk_register_tools_cpt() {
 add_action( 'init', 'zk_register_tools_cpt' );
 
 function zk_tool_meta_boxes() {
-    add_meta_box( 'zk_tool_meta', 'Tool Details', 'zk_tool_meta_callback', 'zk_tool', 'normal', 'high' );
+    add_meta_box( 'zk_tool_meta', 'Tool Details (პროექტის დეტალები)', 'zk_tool_meta_callback', 'zk_tool', 'normal', 'high' );
 }
 add_action( 'add_meta_boxes', 'zk_tool_meta_boxes' );
 
 function zk_tool_meta_callback( $post ) {
-    $link   = get_post_meta( $post->ID, '_zk_tool_link', true );
-    $status = get_post_meta( $post->ID, '_zk_tool_status', true );
+    wp_nonce_field( 'zk_tool_save_meta', 'zk_tool_meta_nonce' );
+    $link         = get_post_meta( $post->ID, '_zk_tool_link', true );
+    $link_ka      = get_post_meta( $post->ID, '_zk_tool_link_ka', true );
+    $status       = get_post_meta( $post->ID, '_zk_tool_status', true ) ?: 'Live';
+    $status_ka    = get_post_meta( $post->ID, '_zk_tool_status_ka', true );
+    $btn_label    = get_post_meta( $post->ID, '_zk_tool_btn_label', true ) ?: 'Visit Project';
+    $btn_label_ka = get_post_meta( $post->ID, '_zk_tool_btn_label_ka', true ) ?: 'პროექტის ნახვა';
     ?>
-    <p>
-        <label for="zk_tool_link"><strong>Project Link:</strong></label><br>
-        <input type="text" id="zk_tool_link" name="zk_tool_link" value="<?php echo esc_attr( $link ); ?>" style="width:100%;" placeholder="e.g. https://encrolib.com" />
-    </p>
-    <p>
-        <label for="zk_tool_status"><strong>Status:</strong></label><br>
-        <select id="zk_tool_status" name="zk_tool_status">
-            <option value="Live" <?php selected($status, 'Live'); ?>>Live</option>
-            <option value="Beta" <?php selected($status, 'Beta'); ?>>Beta</option>
-            <option value="WIP" <?php selected($status, 'WIP'); ?>>Work in Progress</option>
-            <option value="Archived" <?php selected($status, 'Archived'); ?>>Archived</option>
-        </select>
-    </p>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
+        <div>
+            <label for="zk_tool_link"><strong>Project Link (EN):</strong></label><br>
+            <input type="text" id="zk_tool_link" name="zk_tool_link" value="<?php echo esc_attr( $link ); ?>" style="width:100%; margin-top:5px;" placeholder="e.g. https://zurabkostava.com/projects/wordevo" />
+        </div>
+        <div>
+            <label for="zk_tool_link_ka"><strong>პროექტის ბმული (KA):</strong></label><br>
+            <input type="text" id="zk_tool_link_ka" name="zk_tool_link_ka" value="<?php echo esc_attr( $link_ka ); ?>" style="width:100%; margin-top:5px;" placeholder="დატოვეთ ცარიელი ავტო /ka/projects/... ბმულისთვის" />
+        </div>
+
+        <div>
+            <label for="zk_tool_status"><strong>Status (EN):</strong></label><br>
+            <select id="zk_tool_status" name="zk_tool_status" style="width:100%; margin-top:5px;">
+                <option value="Live" <?php selected($status, 'Live'); ?>>Live</option>
+                <option value="Beta" <?php selected($status, 'Beta'); ?>>Beta</option>
+                <option value="WIP" <?php selected($status, 'WIP'); ?>>Work in Progress (WIP)</option>
+                <option value="Archived" <?php selected($status, 'Archived'); ?>>Archived</option>
+            </select>
+        </div>
+        <div>
+            <label for="zk_tool_status_ka"><strong>სტატუსი (KA):</strong></label><br>
+            <input type="text" id="zk_tool_status_ka" name="zk_tool_status_ka" value="<?php echo esc_attr( $status_ka ); ?>" style="width:100%; margin-top:5px;" placeholder="მაგ. ბეტა, აქტიური, მუშავდება, არქივი" />
+        </div>
+
+        <div>
+            <label for="zk_tool_btn_label"><strong>Button Text (EN):</strong></label><br>
+            <input type="text" id="zk_tool_btn_label" name="zk_tool_btn_label" value="<?php echo esc_attr( $btn_label ); ?>" style="width:100%; margin-top:5px;" placeholder="Visit Project" />
+        </div>
+        <div>
+            <label for="zk_tool_btn_label_ka"><strong>ღილაკის ტექსტი (KA):</strong></label><br>
+            <input type="text" id="zk_tool_btn_label_ka" name="zk_tool_btn_label_ka" value="<?php echo esc_attr( $btn_label_ka ); ?>" style="width:100%; margin-top:5px;" placeholder="პროექტის ნახვა" />
+        </div>
+    </div>
+    <p style="color: #666; margin-top: 15px;"><em>* ქართული სათაური და აღწერა/სინოპსისი იმართება ქვემოთ "Georgian Translation" მეტაბოქსიდან.</em></p>
     <?php
 }
 
 function zk_tool_save_meta( $post_id ) {
+    if ( ! isset( $_POST['zk_tool_meta_nonce'] ) || ! wp_verify_nonce( $_POST['zk_tool_meta_nonce'], 'zk_tool_save_meta' ) ) return;
     if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
+
     if ( isset( $_POST['zk_tool_link'] ) ) update_post_meta( $post_id, '_zk_tool_link', sanitize_text_field( $_POST['zk_tool_link'] ) );
+    if ( isset( $_POST['zk_tool_link_ka'] ) ) update_post_meta( $post_id, '_zk_tool_link_ka', sanitize_text_field( $_POST['zk_tool_link_ka'] ) );
     if ( isset( $_POST['zk_tool_status'] ) ) update_post_meta( $post_id, '_zk_tool_status', sanitize_text_field( $_POST['zk_tool_status'] ) );
+    if ( isset( $_POST['zk_tool_status_ka'] ) ) update_post_meta( $post_id, '_zk_tool_status_ka', sanitize_text_field( $_POST['zk_tool_status_ka'] ) );
+    if ( isset( $_POST['zk_tool_btn_label'] ) ) update_post_meta( $post_id, '_zk_tool_btn_label', sanitize_text_field( $_POST['zk_tool_btn_label'] ) );
+    if ( isset( $_POST['zk_tool_btn_label_ka'] ) ) update_post_meta( $post_id, '_zk_tool_btn_label_ka', sanitize_text_field( $_POST['zk_tool_btn_label_ka'] ) );
 }
 add_action( 'save_post', 'zk_tool_save_meta' );
 
 function zk_tools_shortcode() {
+    $is_ka = function_exists( 'zk_get_current_language' ) ? ( zk_get_current_language() === 'ka' ) : false;
+    if ( ! $is_ka ) {
+        $req_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+        if ( strpos( $req_uri, '/ka/' ) === 0 || strpos( $req_uri, '/ka' ) === 0 ) {
+            $is_ka = true;
+        }
+    }
+
     $query = new WP_Query( array(
             'post_type'      => 'zk_tool',
             'posts_per_page' => -1,
@@ -2841,23 +2894,107 @@ function zk_tools_shortcode() {
     ) );
 
     if ( ! $query->have_posts() ) {
-        return '<p class="page__content">No tools available yet.</p>';
+        return '<p class="page__content">' . ( $is_ka ? 'პროექტები ჯერ დამატებული არ არის.' : 'No tools available yet.' ) . '</p>';
     }
 
     $output = '<div class="zk-tools-grid">';
+    $schema_items = array();
+    $pos = 1;
 
     while ( $query->have_posts() ) {
         $query->the_post();
         $post_id   = get_the_ID();
-        $title     = get_the_title();
-        $excerpt   = get_the_excerpt();
-        $link      = get_post_meta( $post_id, '_zk_tool_link', true );
-        $status    = get_post_meta( $post_id, '_zk_tool_status', true ) ?: 'Live';
-        $thumb_url = get_the_post_thumbnail_url( $post_id, 'large' );
+        $title_en  = get_the_title();
+        $title_ka  = get_post_meta( $post_id, '_zk_title_ka', true );
+        $title     = ( $is_ka && ! empty( $title_ka ) ) ? $title_ka : $title_en;
+
+        $excerpt_en = get_the_excerpt() ?: wp_trim_words( get_the_content(), 35 );
+        $excerpt_ka = get_post_meta( $post_id, '_zk_excerpt_ka', true ) ?: get_post_meta( $post_id, '_zk_content_ka', true );
         
-        $card_tag = $link ? 'a' : 'div';
-        $href     = $link ? ' href="' . esc_url( $link ) . '" target="_blank" rel="noopener"' : '';
-        $status_class = strtolower(str_replace(' ', '-', $status));
+        // Smart fallbacks for existing projects if KA translation is not yet saved in DB
+        if ( empty( $excerpt_ka ) && $is_ka ) {
+            $t_lower = strtolower( trim( $title_en ) );
+            if ( strpos( $t_lower, 'wordevo' ) !== false ) {
+                $excerpt_ka = 'მრავალმხრივი, მრავალენოვანი სიტყვების შემსწავლელი სისტემა, სადაც შეგიძლიათ შექმნათ პერსონალიზებული სიტყვების ბიბლიოთეკები და პრაქტიკული მეთოდებით დაიმახსოვროთ ისინი. აპლიკაცია აღჭურვილია უნიკალური boost სისტემით, რომელიც ყოველი მცირე ინტერაქციისა და აქტივობისას ზრდის თქვენს პროგრესს.';
+            } elseif ( strpos( $t_lower, 'kostava' ) !== false ) {
+                $excerpt_ka = 'ჩემი და ჩემი ძმის, ჯონ კოსტავას მიერ დაფუძნებული ინიციატივა, რომელიც ეძღვნება უნიკალური ქართული საკრავებისა და პოლიფონიის გაციფრულებას. ჩვენი მიზანია შევქმნათ აუდიო და მულტიმედია კომპანია, რომელიც ნამდვილ შემოქმედებს ახალი თაობის ინსტრუმენტებს შესთავაზებს.';
+            } elseif ( strpos( $t_lower, 'encrolib' ) !== false ) {
+                $excerpt_ka = 'ვიზუალური ენა, სადაც სიტყვები ფერებადაა კოდირებული და თითოეული ფერი შეესაბამება ერთ სიტყვას. პლატფორმა იყენებს Hex ფერთა კოდებს კონკრეტული ფერის შესაბამის სიტყვად და პირიქით შეუფერხებლად გადასათარგმნად.';
+            }
+        }
+        $excerpt   = ( $is_ka && ! empty( $excerpt_ka ) ) ? $excerpt_ka : $excerpt_en;
+
+        $link_en   = get_post_meta( $post_id, '_zk_tool_link', true );
+        $link_ka   = get_post_meta( $post_id, '_zk_tool_link_ka', true );
+        if ( $is_ka ) {
+            if ( ! empty( $link_ka ) ) {
+                $link = $link_ka;
+            } elseif ( ! empty( $link_en ) ) {
+                $parsed = parse_url( $link_en );
+                $path = isset( $parsed['path'] ) ? $parsed['path'] : '';
+                if ( strpos( $path, '/projects/' ) !== false && strpos( $path, '/ka/projects/' ) === false ) {
+                    $ka_path = str_replace( '/projects/', '/ka/projects/', $path );
+                    if ( isset( $parsed['scheme'] ) && isset( $parsed['host'] ) ) {
+                        $link = $parsed['scheme'] . '://' . $parsed['host'] . $ka_path;
+                    } else {
+                        $link = $ka_path;
+                    }
+                } else {
+                    $link = $link_en;
+                }
+            } else {
+                $link = '';
+            }
+        } else {
+            $link = $link_en;
+        }
+
+        $status_en    = get_post_meta( $post_id, '_zk_tool_status', true ) ?: 'Live';
+        $status_ka    = get_post_meta( $post_id, '_zk_tool_status_ka', true );
+        if ( $is_ka ) {
+            if ( ! empty( $status_ka ) ) {
+                $status_display = $status_ka;
+            } else {
+                $status_map = array(
+                    'Live'     => 'აქტიური',
+                    'Beta'     => 'ბეტა',
+                    'WIP'      => 'მუშავდება',
+                    'Archived' => 'არქივი'
+                );
+                $status_display = isset( $status_map[$status_en] ) ? $status_map[$status_en] : $status_en;
+            }
+        } else {
+            $status_display = $status_en;
+        }
+
+        $btn_label_en = get_post_meta( $post_id, '_zk_tool_btn_label', true ) ?: 'Visit Project';
+        $btn_label_ka = get_post_meta( $post_id, '_zk_tool_btn_label_ka', true ) ?: 'პროექტის ნახვა';
+        $btn_label    = $is_ka ? $btn_label_ka : $btn_label_en;
+
+        $thumb_url    = get_the_post_thumbnail_url( $post_id, 'large' );
+        $card_tag     = $link ? 'a' : 'div';
+        $href         = $link ? ' href="' . esc_url( $link ) . '" target="_blank" rel="noopener"' : '';
+        $status_class = strtolower( str_replace( ' ', '-', $status_en ) );
+
+        // Schema item aggregation
+        $schema_items[] = array(
+            '@type' => 'ListItem',
+            'position' => $pos,
+            'item' => array(
+                '@type' => 'SoftwareApplication',
+                'inLanguage' => $is_ka ? 'ka-GE' : 'en-US',
+                'name' => wp_strip_all_tags( $title ),
+                'description' => wp_strip_all_tags( $excerpt ),
+                'url' => $link ? $link : get_permalink( $post_id ),
+                'applicationCategory' => 'UtilitiesApplication',
+                'operatingSystem' => 'Any',
+                'offers' => array(
+                    '@type' => 'Offer',
+                    'price' => '0'
+                )
+            )
+        );
+        $pos++;
 
         $output .= '<' . $card_tag . $href . ' class="zk-tool-card">';
         
@@ -2870,7 +3007,7 @@ function zk_tools_shortcode() {
         $output .= '<div class="zk-tool-content">';
         $output .= '<div class="zk-tool-header">';
         $output .= '<h3 class="zk-tool-title">' . esc_html( $title ) . '</h3>';
-        $output .= '<span class="zk-tool-status status-' . esc_attr( $status_class ) . '">' . esc_html( $status ) . '</span>';
+        $output .= '<span class="zk-tool-status status-' . esc_attr( $status_class ) . '">' . esc_html( $status_display ) . '</span>';
         $output .= '</div>';
         
         if ( $excerpt ) {
@@ -2878,7 +3015,7 @@ function zk_tools_shortcode() {
         }
 
         if ( $link ) {
-            $output .= '<div class="zk-tool-footer"><span class="zk-tool-link-text">Visit Project</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>';
+            $output .= '<div class="zk-tool-footer"><span class="zk-tool-link-text">' . esc_html( $btn_label ) . '</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>';
         }
 
         $output .= '</div>';
@@ -2888,9 +3025,78 @@ function zk_tools_shortcode() {
     wp_reset_postdata();
     $output .= '</div>';
 
+    if ( ! empty( $schema_items ) ) {
+        $graph = array(
+            '@context' => 'https://schema.org',
+            '@type' => 'ItemList',
+            'itemListElement' => $schema_items
+        );
+        $output .= "\n" . '<script type="application/ld+json">' . "\n";
+        $output .= json_encode( $graph, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT );
+        $output .= "\n" . '</script>' . "\n";
+    }
+
     return $output;
 }
 add_shortcode( 'zk_tools', 'zk_tools_shortcode' );
+
+// Auto-seed initial Georgian translations for existing tools (Wordevo, Kostava Creative, Encrolib)
+function zk_init_tools_ka_translations() {
+    $seeded = get_option( 'zk_tools_seeded_ka_v1', false );
+    if ( $seeded ) return;
+
+    $tools = get_posts( array(
+        'post_type'      => 'zk_tool',
+        'posts_per_page' => -1,
+        'post_status'    => 'any',
+    ) );
+
+    if ( ! empty( $tools ) ) {
+        foreach ( $tools as $tool ) {
+            $id = $tool->ID;
+            $t = $tool->post_title;
+            $t_lower = strtolower( trim( $t ) );
+
+            if ( ! get_post_meta( $id, '_zk_tool_btn_label_ka', true ) ) {
+                update_post_meta( $id, '_zk_tool_btn_label_ka', 'პროექტის ნახვა' );
+            }
+
+            if ( strpos( $t_lower, 'wordevo' ) !== false ) {
+                if ( ! get_post_meta( $id, '_zk_title_ka', true ) ) {
+                    update_post_meta( $id, '_zk_title_ka', 'Wordevo' );
+                }
+                if ( ! get_post_meta( $id, '_zk_tool_status_ka', true ) ) {
+                    update_post_meta( $id, '_zk_tool_status_ka', 'ბეტა' );
+                }
+                if ( ! get_post_meta( $id, '_zk_excerpt_ka', true ) ) {
+                    update_post_meta( $id, '_zk_excerpt_ka', 'მრავალმხრივი, მრავალენოვანი სიტყვების შემსწავლელი სისტემა, სადაც შეგიძლიათ შექმნათ პერსონალიზებული სიტყვების ბიბლიოთეკები და პრაქტიკული მეთოდებით დაიმახსოვროთ ისინი. აპლიკაცია აღჭურვილია უნიკალური boost სისტემით, რომელიც ყოველი მცირე ინტერაქციისა და აქტივობისას ზრდის თქვენს პროგრესს.' );
+                }
+            } elseif ( strpos( $t_lower, 'kostava' ) !== false ) {
+                if ( ! get_post_meta( $id, '_zk_title_ka', true ) ) {
+                    update_post_meta( $id, '_zk_title_ka', 'Kostava Creative' );
+                }
+                if ( ! get_post_meta( $id, '_zk_tool_status_ka', true ) ) {
+                    update_post_meta( $id, '_zk_tool_status_ka', 'მუშავდება' );
+                }
+                if ( ! get_post_meta( $id, '_zk_excerpt_ka', true ) ) {
+                    update_post_meta( $id, '_zk_excerpt_ka', 'ჩემი და ჩემი ძმის, ჯონ კოსტავას მიერ დაფუძნებული ინიციატივა, რომელიც ეძღვნება უნიკალური ქართული საკრავებისა და პოლიფონიის გაციფრულებას. ჩვენი მიზანია შევქმნათ აუდიო და მულტიმედია კომპანია, რომელიც ნამდვილ შემოქმედებს ახალი თაობის ინსტრუმენტებს შესთავაზებს.' );
+                }
+            } elseif ( strpos( $t_lower, 'encrolib' ) !== false ) {
+                if ( ! get_post_meta( $id, '_zk_title_ka', true ) ) {
+                    update_post_meta( $id, '_zk_title_ka', 'Encrolib' );
+                }
+                if ( ! get_post_meta( $id, '_zk_tool_status_ka', true ) ) {
+                    update_post_meta( $id, '_zk_tool_status_ka', 'ბეტა' );
+                }
+                if ( ! get_post_meta( $id, '_zk_excerpt_ka', true ) ) {
+                    update_post_meta( $id, '_zk_excerpt_ka', 'ვიზუალური ენა, სადაც სიტყვები ფერებადაა კოდირებული და თითოეული ფერი შეესაბამება ერთ სიტყვას. პლატფორმა იყენებს Hex ფერთა კოდებს კონკრეტული ფერის შესაბამის სიტყვად და პირიქით შეუფერხებლად გადასათარგმნად.' );
+                }
+            }
+        }
+        update_option( 'zk_tools_seeded_ka_v1', true );
+    }
+}
+add_action( 'init', 'zk_init_tools_ka_translations' );
 
 
 /* ============================================================
@@ -3008,11 +3214,11 @@ function zk_custom_seo_redirects() {
 // Using 'init' instead of 'template_redirect' so it fires before WP query and 404 logic
 add_action( 'init', 'zk_custom_seo_redirects' );
 
-// Fix 404 for /ka/books/ by manually setting the pagename
+// Fix 404 for /ka/books/ and /ka/projects/ by manually setting the pagename
 add_action( 'parse_request', function( $wp ) {
     $request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
     $path = parse_url( $request_uri, PHP_URL_PATH );
-    if ( preg_match( '#^/ka/books(/.*)?$#', $path ) ) {
+    if ( preg_match( '#^/ka/(books|projects)(/.*)?$#', $path ) ) {
         // Strip /ka/ to get the real page path
         $real_path = preg_replace( '#^/ka/#', '', $path );
         $real_path = trim( $real_path, '/' );
@@ -3027,7 +3233,7 @@ add_action( 'parse_request', function( $wp ) {
 
 // 1. Add Custom Meta Box
 function zk_seo_add_meta_box() {
-    $screens = array( 'post', 'page', 'zk_book' );
+    $screens = array( 'post', 'page', 'zk_book', 'zk_tool' );
     foreach ( $screens as $screen ) {
         add_meta_box(
             'zk_seo_meta_box',           // Unique ID
