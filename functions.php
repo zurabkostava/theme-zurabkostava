@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once get_template_directory() . '/inc/language-manager.php';
+require_once get_template_directory() . '/inc/visual-hub-admin.php';
 if (isset($_GET['zk_flush'])) {
     add_action('init', function() {
         flush_rewrite_rules();
@@ -3103,45 +3104,128 @@ add_action( 'init', 'zk_init_tools_ka_translations' );
    VISUAL HUB
    ============================================================ */
 function zk_visual_hub_shortcode() {
-    $items = array(
-        array(
-            'title' => 'Photography',
-            'desc'  => 'Capturing moments and light',
-            'link'  => home_url('/photography/'),
-            'class' => 'visual-photo'
-        ),
-        array(
-            'title' => 'Video',
-            'desc'  => 'Motion pictures and edits',
-            'link'  => home_url('/video/'),
-            'class' => 'visual-video'
-        ),
-        array(
-            'title' => 'Graphic Design',
-            'desc'  => 'Visual communication and UI',
-            'link'  => home_url('/graphic/'),
-            'class' => 'visual-graphic'
-        ),
-        array(
-            'title' => 'Paint',
-            'desc'  => 'Digital and traditional art',
-            'link'  => home_url('/paint/'),
-            'class' => 'visual-paint'
-        )
-    );
+    $is_ka    = function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka';
+    $settings = function_exists( 'zk_visual_hub_get_settings' ) ? zk_visual_hub_get_settings() : array();
+    $intro    = isset( $settings['intro'] ) ? $settings['intro'] : array();
+    $cards    = isset( $settings['cards'] ) ? $settings['cards'] : array();
 
-    $output = '<div class="zk-visual-hub">';
-    foreach ( $items as $item ) {
-        $output .= '<a href="' . esc_url( $item['link'] ) . '" class="zk-visual-card ' . esc_attr( $item['class'] ) . '">';
-        $output .= '<div class="zk-visual-bg"></div>';
-        $output .= '<div class="zk-visual-content">';
-        $output .= '<h2 class="zk-visual-title">' . esc_html( $item['title'] ) . '</h2>';
-        $output .= '<p class="zk-visual-desc">' . esc_html( $item['desc'] ) . '</p>';
-        $output .= '<div class="zk-visual-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>';
+    $badge_text = $is_ka ? ( ! empty( $intro['badge_ka'] ) ? $intro['badge_ka'] : ( isset( $intro['badge_en'] ) ? $intro['badge_en'] : '' ) ) : ( isset( $intro['badge_en'] ) ? $intro['badge_en'] : '' );
+    $intro_text = $is_ka ? ( ! empty( $intro['intro_ka'] ) ? $intro['intro_ka'] : ( isset( $intro['intro_en'] ) ? $intro['intro_en'] : '' ) ) : ( isset( $intro['intro_en'] ) ? $intro['intro_en'] : '' );
+
+    $output = '';
+
+    // Optional Intro Lead Header
+    if ( ! empty( $intro_text ) || ! empty( $badge_text ) ) {
+        $output .= '<div class="zk-visual-hub-intro">';
+        if ( ! empty( $badge_text ) ) {
+            $output .= '<span class="zk-visual-hub-badge"><span class="zk-pulse-dot" aria-hidden="true"></span> ' . esc_html( $badge_text ) . '</span>';
+        }
+        if ( ! empty( $intro_text ) ) {
+            $output .= '<p class="zk-visual-hub-lead">' . esc_html( $intro_text ) . '</p>';
+        }
         $output .= '</div>';
-        $output .= '</a>';
     }
-    $output .= '</div>';
+
+    $output .= '<div class="zk-visual-hub" role="region" aria-label="' . esc_attr( $is_ka ? 'ვიზუალური მიმართულებები' : 'Visual Disciplines' ) . '">';
+
+    $schema_items = array();
+    $index = 0;
+
+    foreach ( $cards as $key => $card ) {
+        $index++;
+        $title = $is_ka ? ( ! empty( $card['title_ka'] ) ? $card['title_ka'] : $card['title_en'] ) : $card['title_en'];
+        $badge = $is_ka ? ( ! empty( $card['badge_ka'] ) ? $card['badge_ka'] : $card['badge_en'] ) : $card['badge_en'];
+        $desc  = $is_ka ? ( ! empty( $card['desc_ka'] ) ? $card['desc_ka'] : $card['desc_en'] ) : $card['desc_en'];
+        $link  = $is_ka ? ( ! empty( $card['link_ka'] ) ? $card['link_ka'] : $card['link_en'] ) : $card['link_en'];
+
+        // Normalize full URL
+        if ( strpos( $link, 'http://' ) !== 0 && strpos( $link, 'https://' ) !== 0 ) {
+            $full_url = home_url( '/' . ltrim( $link, '/' ) );
+        } else {
+            $full_url = $link;
+        }
+
+        // SPA route
+        $parsed_route = parse_url( $full_url, PHP_URL_PATH );
+        $spa_route    = ! empty( $parsed_route ) ? $parsed_route : $link;
+
+        $accent_color = ! empty( $card['accent_color'] ) ? $card['accent_color'] : '#ffffff';
+        $image_url    = ! empty( $card['image_url'] ) ? $card['image_url'] : '';
+        $bg_style     = ! empty( $image_url ) ? 'style="background-image: url(\'' . esc_url( $image_url ) . '\');"' : '';
+        $action_label = $is_ka ? 'ნახვა' : 'Explore';
+
+        $output .= '<a href="' . esc_url( $full_url ) . '" ';
+        $output .= 'data-route="' . esc_attr( $spa_route ) . '" ';
+        $output .= 'class="zk-visual-card ' . esc_attr( $card['class'] ) . '" ';
+        $output .= 'style="--card-accent: ' . esc_attr( $accent_color ) . ';" ';
+        $output .= 'aria-label="' . esc_attr( $title . ' — ' . $badge ) . '">';
+
+        // Ambient Aura
+        $output .= '<div class="zk-visual-aura" aria-hidden="true"></div>';
+
+        // Background Image Layer
+        $output .= '<div class="zk-visual-bg" ' . $bg_style . '></div>';
+
+        // Cinematic Scrim
+        $output .= '<div class="zk-visual-scrim" aria-hidden="true"></div>';
+
+        // Inner Content
+        $output .= '<div class="zk-visual-inner">';
+
+        // Top Row (Badge + Index)
+        $output .= '<div class="zk-visual-top">';
+        $output .= '<span class="zk-visual-badge">';
+        $output .= '<span class="zk-visual-dot" style="background-color: ' . esc_attr( $accent_color ) . ';" aria-hidden="true"></span>';
+        $output .= esc_html( $badge );
+        $output .= '</span>';
+        $output .= '<span class="zk-visual-index" aria-hidden="true">' . sprintf( '%02d', $index ) . '</span>';
+        $output .= '</div>';
+
+        // Bottom Row (Title, Desc, Action Button)
+        $output .= '<div class="zk-visual-bottom">';
+        $output .= '<div class="zk-visual-text">';
+        $output .= '<h2 class="zk-visual-title">' . esc_html( $title ) . '</h2>';
+        $output .= '<p class="zk-visual-desc">' . esc_html( $desc ) . '</p>';
+        $output .= '</div>';
+
+        $output .= '<div class="zk-visual-action" aria-hidden="true">';
+        $output .= '<span class="zk-visual-action-label">' . esc_html( $action_label ) . '</span>';
+        $output .= '<span class="zk-visual-arrow">';
+        $output .= '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">';
+        $output .= '<line x1="5" y1="12" x2="19" y2="12"></line>';
+        $output .= '<polyline points="12 5 19 12 12 19"></polyline>';
+        $output .= '</svg>';
+        $output .= '</span>';
+        $output .= '</div>';
+
+        $output .= '</div>'; // .zk-visual-bottom
+        $output .= '</div>'; // .zk-visual-inner
+
+        $output .= '</a>';
+
+        $schema_items[] = array(
+            '@type'       => 'CreativeWork',
+            'position'    => $index,
+            'name'        => $title,
+            'headline'    => $badge,
+            'description' => $desc,
+            'url'         => $full_url,
+            'image'       => $image_url,
+        );
+    }
+
+    $output .= '</div>'; // .zk-visual-hub
+
+    // Structured Data JSON-LD
+    if ( ! empty( $schema_items ) ) {
+        $schema = array(
+            '@context'        => 'https://schema.org',
+            '@type'           => 'ItemList',
+            'name'            => $is_ka ? 'ვიზუალური ხელოვნების მიმართულებები' : 'Visual Disciplines & Portfolio',
+            'itemListElement' => $schema_items,
+        );
+        $output .= '<script type="application/ld+json">' . wp_json_encode( $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . '</script>';
+    }
 
     return $output;
 }
@@ -3214,11 +3298,11 @@ function zk_custom_seo_redirects() {
 // Using 'init' instead of 'template_redirect' so it fires before WP query and 404 logic
 add_action( 'init', 'zk_custom_seo_redirects' );
 
-// Fix 404 for /ka/books/ and /ka/projects/ by manually setting the pagename
+// Fix 404 for /ka/books/, /ka/projects/, and /ka/visual/ by manually setting the pagename
 add_action( 'parse_request', function( $wp ) {
     $request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
     $path = parse_url( $request_uri, PHP_URL_PATH );
-    if ( preg_match( '#^/ka/(books|projects)(/.*)?$#', $path ) ) {
+    if ( preg_match( '#^/ka/(books|projects|visual)(/.*)?$#', $path ) ) {
         // Strip /ka/ to get the real page path
         $real_path = preg_replace( '#^/ka/#', '', $path );
         $real_path = trim( $real_path, '/' );
