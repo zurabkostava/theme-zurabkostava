@@ -234,6 +234,21 @@ function zk_render_language_center() {
                 <div class="zk-language-card">Missing<strong class="zk-status-missing"><?php echo esc_html( $missing ); ?></strong></div>
             </div>
 
+            <?php $gallery_labels = function_exists( 'zk_gallery_labels' ) ? zk_gallery_labels( $selected ) : array( 'all' => 'All', 'camera' => 'Camera', 'mobile' => 'Mobile' ); ?>
+            <h3 style="margin-top:24px">Photography filter tabs</h3>
+            <p>Translate the three tabs shown above the photography gallery for <?php echo esc_html( $language['native_name'] ); ?>. Empty fields fall back to English.</p>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                <input type="hidden" name="action" value="zk_save_gallery_labels">
+                <input type="hidden" name="zk_gallery_language" value="<?php echo esc_attr( $selected ); ?>">
+                <?php wp_nonce_field( 'zk_save_gallery_labels', 'zk_gallery_labels_nonce' ); ?>
+                <table class="form-table"><tbody>
+                    <tr><th><label for="zk-gallery-all">All</label></th><td><input class="regular-text" id="zk-gallery-all" name="zk_gallery_labels[all]" type="text" value="<?php echo esc_attr( $gallery_labels['all'] ); ?>" placeholder="All"></td></tr>
+                    <tr><th><label for="zk-gallery-camera">Camera</label></th><td><input class="regular-text" id="zk-gallery-camera" name="zk_gallery_labels[camera]" type="text" value="<?php echo esc_attr( $gallery_labels['camera'] ); ?>" placeholder="Camera"></td></tr>
+                    <tr><th><label for="zk-gallery-mobile">Mobile</label></th><td><input class="regular-text" id="zk-gallery-mobile" name="zk_gallery_labels[mobile]" type="text" value="<?php echo esc_attr( $gallery_labels['mobile'] ); ?>" placeholder="Mobile"></td></tr>
+                </tbody></table>
+                <?php submit_button( 'Save photography translations', 'secondary' ); ?>
+            </form>
+
             <h3>Content requiring attention</h3>
             <table class="widefat striped">
                 <thead><tr><th>Content</th><th>Type</th><th>Status</th><th>Missing fields</th><th></th></tr></thead>
@@ -251,20 +266,6 @@ function zk_render_language_center() {
                 <?php endforeach; if ( ! $shown ) : ?><tr><td colspan="4">All category and tag translations are complete.</td></tr><?php endif; ?>
             </tbody></table>
 
-            <?php $gallery_labels = function_exists( 'zk_gallery_labels' ) ? zk_gallery_labels( $selected ) : array( 'all' => 'All', 'camera' => 'Camera', 'mobile' => 'Mobile' ); ?>
-            <h3 style="margin-top:24px">Photography filter tabs</h3>
-            <p>Translate the three tabs shown above the photography gallery for <?php echo esc_html( $language['native_name'] ); ?>. Empty fields fall back to English.</p>
-            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-                <input type="hidden" name="action" value="zk_save_gallery_labels">
-                <input type="hidden" name="zk_gallery_language" value="<?php echo esc_attr( $selected ); ?>">
-                <?php wp_nonce_field( 'zk_save_gallery_labels', 'zk_gallery_labels_nonce' ); ?>
-                <table class="form-table"><tbody>
-                    <tr><th><label for="zk-gallery-all">All</label></th><td><input class="regular-text" id="zk-gallery-all" name="zk_gallery_labels[all]" type="text" value="<?php echo esc_attr( $gallery_labels['all'] ); ?>" placeholder="All"></td></tr>
-                    <tr><th><label for="zk-gallery-camera">Camera</label></th><td><input class="regular-text" id="zk-gallery-camera" name="zk_gallery_labels[camera]" type="text" value="<?php echo esc_attr( $gallery_labels['camera'] ); ?>" placeholder="Camera"></td></tr>
-                    <tr><th><label for="zk-gallery-mobile">Mobile</label></th><td><input class="regular-text" id="zk-gallery-mobile" name="zk_gallery_labels[mobile]" type="text" value="<?php echo esc_attr( $gallery_labels['mobile'] ); ?>" placeholder="Mobile"></td></tr>
-                </tbody></table>
-                <?php submit_button( 'Save photography translations', 'secondary' ); ?>
-            </form>
         </div>
 
         <div class="zk-language-section">
