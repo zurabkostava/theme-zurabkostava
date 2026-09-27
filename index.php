@@ -435,7 +435,71 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                 });
             };
 
-            var UPPER_SEL = '.nav-link, .dropdown-link, .dock-meta, .page__eyebrow, .page__meta, .zk-breadcrumbs, .zk-breadcrumbs a, .zk-breadcrumbs span, .zk-nav-label, .zk-tags-label, .zk-card-category, .zk-card-date, .zk-sort-trigger, .zk-sort-label, .zk-sort-current, .zk-sort-option, .zk-gallery-filter, .zk-filter-btn, .zk-filter-pill, .zk-visual-hub-badge, .zk-visual-badge, .zk-visual-action-label, .zk-tool-status, .zk-tool-link-text, .zk-tool-badge, .zk-tab-btn, .zk-read-btn, .zk-more-btn, .zk-spotify-btn, .zk-timeline-tag, .zk-timeline-date, .zk-lightbox-col-title, .zk-lightbox-thumb-group-title, .zk-bento-header h3, .zk-header-title h3, .zk-email-label, .hero-eyebrow, .hero-eyebrow-wrap, .enc-tab-btn, .step-title, .switcher-label, [data-uppercase], [style*="uppercase"]';
+            var UPPER_SEL = '.nav-link, .dropdown-link, .dock-meta, .page__eyebrow, .zk-breadcrumbs, .zk-breadcrumbs a, .zk-breadcrumbs span, .zk-nav-label, .zk-tags-label, .zk-card-category, .zk-sort-trigger, .zk-sort-label, .zk-sort-current, .zk-sort-option, .zk-gallery-filter, .zk-filter-btn, .zk-filter-pill, .zk-visual-hub-badge, .zk-visual-badge, .zk-visual-action-label, .zk-tool-status, .zk-tool-link-text, .zk-tool-badge, .zk-tab-btn, .zk-read-btn, .zk-more-btn, .zk-spotify-btn, .zk-timeline-tag, .zk-lightbox-col-title, .zk-lightbox-thumb-group-title, .zk-bento-header h3, .zk-header-title h3, .zk-email-label, .hero-eyebrow, .hero-eyebrow-wrap, .enc-tab-btn, .step-title, .switcher-label, [data-uppercase], [style*="uppercase"]';
+
+            var EN_MONTHS = {
+                'january': 'იანვარი', 'jan': 'იანვარი',
+                'february': 'თებერვალი', 'feb': 'თებერვალი',
+                'march': 'მარტი', 'mar': 'მარტი',
+                'april': 'აპრილი', 'apr': 'აპრილი',
+                'may': 'მაისი',
+                'june': 'ივნისი', 'jun': 'ივნისი',
+                'july': 'ივლისი', 'jul': 'ივლისი',
+                'august': 'აგვისტო', 'aug': 'აგვისტო',
+                'september': 'სექტემბერი', 'sep': 'სექტემბერი', 'sept': 'სექტემბერი',
+                'october': 'ოქტომბერი', 'oct': 'ოქტომბერი',
+                'november': 'ნოემბერი', 'nov': 'ნოემბერი',
+                'december': 'დეკემბერი', 'dec': 'დეკემბერი'
+            };
+
+            function localizeDateText(str) {
+                if (!str || typeof str !== 'string') return str;
+                // 1. "Jun 15, 2026" or "Aug 13, 2024" -> "15 ივნისი, 2026"
+                str = str.replace(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})\b/gi, function(m, p1, p2, p3) {
+                    var mon = EN_MONTHS[p1.toLowerCase()] || p1;
+                    return p2 + ' ' + mon + ', ' + p3;
+                });
+                // 2. "15 June 2026" -> "15 ივნისი, 2026"
+                str = str.replace(/\b(\d{1,2})(?:st|nd|rd|th)?\s+(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?),?\s+(\d{4})\b/gi, function(m, p1, p2, p3) {
+                    var mon = EN_MONTHS[p2.toLowerCase()] || p2;
+                    return p1 + ' ' + mon + ', ' + p3;
+                });
+                // 3. "October 2024" -> "ოქტომბერი 2024"
+                str = str.replace(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{4})\b/gi, function(m, p1, p2) {
+                    var mon = EN_MONTHS[p1.toLowerCase()] || p1;
+                    return mon + ' ' + p2;
+                });
+                // 4. "06/15/26" -> "15/06/26"
+                str = str.replace(/\b(\d{2})\/(\d{2})\/(\d{2,4})\b/g, function(m, p1, p2, p3) {
+                    var mNum = parseInt(p1, 10);
+                    var dNum = parseInt(p2, 10);
+                    if (mNum >= 1 && mNum <= 12 && dNum >= 1 && dNum <= 31) {
+                        return (dNum < 10 ? '0' + dNum : dNum) + '/' + (mNum < 10 ? '0' + mNum : mNum) + '/' + p3;
+                    }
+                    return m;
+                });
+                return str;
+            }
+
+            window.zkLocalizeDates = function(root) {
+                var isKa = (document.documentElement.lang && document.documentElement.lang.indexOf('ka') === 0) || (window.location.pathname.indexOf('/ka') === 0);
+                if (!isKa) return;
+                var base = root || document;
+                if (!base || !base.querySelectorAll) return;
+                var dateNodes = base.querySelectorAll('.page__date, .zk-card-date, .zk-timeline-date, .dock-meta, [data-date]');
+                for (var i = 0; i < dateNodes.length; i++) {
+                    var node = dateNodes[i];
+                    var walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null, false);
+                    var tn;
+                    while ((tn = walker.nextNode())) {
+                        var v = tn.nodeValue;
+                        if (v && /[a-zA-Z]/.test(v)) {
+                            var trans = localizeDateText(v);
+                            if (trans !== v) tn.nodeValue = trans;
+                        }
+                    }
+                }
+            };
 
             function convertNode(el) {
                 if (!el || el.nodeType !== 1) return;
@@ -484,14 +548,25 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                         }
                     }
                 } catch(e) {}
+
+                if (typeof window.zkLocalizeDates === 'function') {
+                    window.zkLocalizeDates(base);
+                }
             };
 
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', function() { window.zkApplyGeorgianUppercase(document); });
+                document.addEventListener('DOMContentLoaded', function() {
+                    window.zkApplyGeorgianUppercase(document);
+                    window.zkLocalizeDates(document);
+                });
             } else {
                 window.zkApplyGeorgianUppercase(document);
+                window.zkLocalizeDates(document);
             }
-            window.addEventListener('load', function() { window.zkApplyGeorgianUppercase(document); });
+            window.addEventListener('load', function() {
+                window.zkApplyGeorgianUppercase(document);
+                window.zkLocalizeDates(document);
+            });
 
             if (window.MutationObserver) {
                 var obs = new MutationObserver(function(muts) {
@@ -500,7 +575,10 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                         if (m.type === 'childList') {
                             for (var j = 0; j < m.addedNodes.length; j++) {
                                 var n = m.addedNodes[j];
-                                if (n.nodeType === 1) window.zkApplyGeorgianUppercase(n);
+                                if (n.nodeType === 1) {
+                                    window.zkApplyGeorgianUppercase(n);
+                                    window.zkLocalizeDates(n);
+                                }
                             }
                         } else if (m.type === 'characterData') {
                             var p = m.target.parentElement;

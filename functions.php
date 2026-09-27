@@ -1107,6 +1107,8 @@ function zk_music_timeline_shortcode() {
                 $display_date_ka = get_post_meta( $post_id, '_zk_display_date_ka', true );
                 if ( ! empty( $display_date_ka ) ) {
                     $display_date = $display_date_ka;
+                } elseif ( function_exists( 'zk_translate_date_string_ka' ) ) {
+                    $display_date = zk_translate_date_string_ka( $display_date );
                 }
                 $content_ka = get_post_meta( $post_id, '_zk_content_ka', true );
                 if ( ! empty( $content_ka ) ) {

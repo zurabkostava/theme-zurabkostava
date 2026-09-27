@@ -299,6 +299,10 @@
                     var curBNav = document.getElementById('zk-bottom-nav');
                     if (curBNav) window.zkApplyGeorgianUppercase(curBNav);
                 }
+                if (typeof window.zkLocalizeDates === 'function') {
+                    window.zkLocalizeDates(viewEl);
+                    window.zkLocalizeDates(document);
+                }
 
                 viewEl.classList.remove('is-loading');
                 document.body.classList.remove('is-navigating');

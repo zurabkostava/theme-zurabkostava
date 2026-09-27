@@ -634,3 +634,249 @@ if ( ! function_exists( 'zk_uppercase_ka' ) ) {
         return strtoupper( $converted );
     }
 }
+
+/**
+ * Format a timestamp into Georgian date.
+ *
+ * @param int|string $timestamp Unix timestamp or date string
+ * @param string $format PHP date format string
+ * @return string
+ */
+if ( ! function_exists( 'zk_format_date_ka' ) ) {
+    function zk_format_date_ka( $timestamp, $format = 'j F, Y' ) {
+        if ( empty( $timestamp ) ) return '';
+        if ( ! is_numeric( $timestamp ) ) {
+            $timestamp = strtotime( $timestamp );
+        }
+        if ( ! $timestamp ) return '';
+
+        // If format is ISO / machine readable, keep original
+        if ( in_array( $format, array( 'c', 'r', 'U', 'Y-m-d', 'Y-m-d H:i:s' ), true ) ) {
+            return date( $format, $timestamp );
+        }
+
+        static $months_full = array(
+            1 => 'იანვარი',
+            2 => 'თებერვალი',
+            3 => 'მარტი',
+            4 => 'აპრილი',
+            5 => 'მაისი',
+            6 => 'ივნისი',
+            7 => 'ივლისი',
+            8 => 'აგვისტო',
+            9 => 'სექტემბერი',
+            10 => 'ოქტომბერი',
+            11 => 'ნოემბერი',
+            12 => 'დეკემბერი'
+        );
+
+        static $days_full = array(
+            0 => 'კვირა',
+            1 => 'ორშაბათი',
+            2 => 'სამშაბათი',
+            3 => 'ოთხშაბათი',
+            4 => 'ხუთშაბათი',
+            5 => 'პარასკევი',
+            6 => 'შაბათი'
+        );
+
+        static $days_short = array(
+            0 => 'კვ',
+            1 => 'ორშ',
+            2 => 'სამ',
+            3 => 'ოთხ',
+            4 => 'ხუთ',
+            5 => 'პარ',
+            6 => 'შაბ'
+        );
+
+        $m_num = (int) date( 'n', $timestamp );
+        $w_num = (int) date( 'w', $timestamp );
+
+        // If format is American m/d/y -> convert to Georgian d/m/y
+        if ( $format === 'm/d/y' || $format === 'm/d/Y' ) {
+            return date( 'd/m/y', $timestamp );
+        }
+
+        if ( in_array( $format, array( 'M j, Y', 'M j,Y', 'F j, Y', 'F j,Y', 'j F Y', 'j M Y' ), true ) ) {
+            return date( 'j', $timestamp ) . ' ' . $months_full[ $m_num ] . ', ' . date( 'Y', $timestamp );
+        }
+
+        if ( $format === 'M j' || $format === 'F j' || $format === 'j M' || $format === 'j F' ) {
+            return date( 'j', $timestamp ) . ' ' . $months_full[ $m_num ];
+        }
+
+        if ( $format === 'M Y' || $format === 'F Y' ) {
+            return $months_full[ $m_num ] . ' ' . date( 'Y', $timestamp );
+        }
+
+        // General token replacement
+        $chars = str_split( $format );
+        $result = '';
+        $len = count( $chars );
+        for ( $i = 0; $i < $len; $i++ ) {
+            $c = $chars[$i];
+            if ( $c === '\\' && $i + 1 < $len ) {
+                $result .= $chars[++$i];
+                continue;
+            }
+            switch ( $c ) {
+                case 'F':
+                case 'M':
+                    $result .= $months_full[ $m_num ];
+                    break;
+                case 'l':
+                    $result .= $days_full[ $w_num ];
+                    break;
+                case 'D':
+                    $result .= $days_short[ $w_num ];
+                    break;
+                default:
+                    $result .= date( $c, $timestamp );
+                    break;
+            }
+        }
+
+        return $result;
+    }
+}
+
+/**
+ * Translate English month names inside an arbitrary date string to Georgian.
+ */
+if ( ! function_exists( 'zk_translate_date_string_ka' ) ) {
+    function zk_translate_date_string_ka( $date_str ) {
+        if ( empty( $date_str ) || ! is_string( $date_str ) ) return $date_str;
+
+        static $en_to_ka = array(
+            'january'   => 'იანვარი', 'jan'  => 'იანვარი',
+            'february'  => 'თებერვალი', 'feb' => 'თებერვალი',
+            'march'     => 'მარტი', 'mar'    => 'მარტი',
+            'april'     => 'აპრილი', 'apr'   => 'აპრილი',
+            'may'       => 'მაისი',
+            'june'      => 'ივნისი', 'jun'   => 'ივნისი',
+            'july'      => 'ივლისი', 'jul'   => 'ივლისი',
+            'august'    => 'აგვისტო', 'aug'  => 'აგვისტო',
+            'september' => 'სექტემბერი', 'sep' => 'სექტემბერი', 'sept' => 'სექტემბერი',
+            'october'   => 'ოქტომბერი', 'oct' => 'ოქტომბერი',
+            'november'  => 'ნოემბერი', 'nov' => 'ნოემბერი',
+            'december'  => 'დეკემბერი', 'dec' => 'დეკემბერი',
+        );
+
+        // 1. Pattern: "Jun 15, 2026" or "August 13, 2024" -> "15 ივნისი, 2026"
+        $date_str = preg_replace_callback(
+            '/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})\b/i',
+            function( $m ) use ( $en_to_ka ) {
+                $mon = strtolower( $m[1] );
+                $ka_mon = isset( $en_to_ka[ $mon ] ) ? $en_to_ka[ $mon ] : $m[1];
+                return $m[2] . ' ' . $ka_mon . ', ' . $m[3];
+            },
+            $date_str
+        );
+
+        // 2. Pattern: "15 June 2026" -> "15 ივნისი, 2026"
+        $date_str = preg_replace_callback(
+            '/\b(\d{1,2})(?:st|nd|rd|th)?\s+(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?),?\s+(\d{4})\b/i',
+            function( $m ) use ( $en_to_ka ) {
+                $mon = strtolower( $m[2] );
+                $ka_mon = isset( $en_to_ka[ $mon ] ) ? $en_to_ka[ $mon ] : $m[2];
+                return $m[1] . ' ' . $ka_mon . ', ' . $m[3];
+            },
+            $date_str
+        );
+
+        // 3. Pattern: "October 2024" -> "ოქტომბერი 2024"
+        $date_str = preg_replace_callback(
+            '/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{4})\b/i',
+            function( $m ) use ( $en_to_ka ) {
+                $mon = strtolower( $m[1] );
+                $ka_mon = isset( $en_to_ka[ $mon ] ) ? $en_to_ka[ $mon ] : $m[1];
+                return $ka_mon . ' ' . $m[2];
+            },
+            $date_str
+        );
+
+        // 4. Pattern: mm/dd/yy -> dd/mm/yy
+        $date_str = preg_replace_callback(
+            '/\b(\d{2})\/(\d{2})\/(\d{2,4})\b/',
+            function( $m ) {
+                $m_num = (int) $m[1];
+                $d_num = (int) $m[2];
+                if ( $m_num >= 1 && $m_num <= 12 && $d_num >= 1 && $d_num <= 31 ) {
+                    return sprintf( '%02d/%02d/%s', $d_num, $m_num, $m[3] );
+                }
+                return $m[0];
+            },
+            $date_str
+        );
+
+        return $date_str;
+    }
+}
+
+// Hook WordPress date functions for Georgian language
+add_filter( 'get_the_date', function( $the_date, $format = '', $post = null ) {
+    if ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' ) {
+        if ( in_array( $format, array( 'c', 'r', 'U' ), true ) ) {
+            return $the_date;
+        }
+        $timestamp = 0;
+        if ( is_object( $post ) && isset( $post->ID ) ) {
+            $timestamp = get_post_time( 'U', false, $post );
+        } elseif ( is_numeric( $post ) ) {
+            $timestamp = get_post_time( 'U', false, $post );
+        } else {
+            $timestamp = get_the_time( 'U' );
+        }
+        if ( ! $timestamp && ! empty( $the_date ) ) {
+            $timestamp = strtotime( $the_date );
+        }
+        if ( $timestamp ) {
+            if ( empty( $format ) ) {
+                $format = get_option( 'date_format', 'F j, Y' );
+            }
+            return zk_format_date_ka( $timestamp, $format );
+        }
+    }
+    return $the_date;
+}, 10, 3 );
+
+add_filter( 'get_the_modified_date', function( $the_date, $format = '', $post = null ) {
+    if ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' ) {
+        if ( in_array( $format, array( 'c', 'r', 'U' ), true ) ) {
+            return $the_date;
+        }
+        $timestamp = get_post_modified_time( 'U', false, $post );
+        if ( ! $timestamp && ! empty( $the_date ) ) {
+            $timestamp = strtotime( $the_date );
+        }
+        if ( $timestamp ) {
+            if ( empty( $format ) ) {
+                $format = get_option( 'date_format', 'F j, Y' );
+            }
+            return zk_format_date_ka( $timestamp, $format );
+        }
+    }
+    return $the_date;
+}, 10, 3 );
+
+add_filter( 'wp_date', function( $date, $format, $timestamp, $timezone ) {
+    if ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' ) {
+        if ( in_array( $format, array( 'c', 'r', 'U' ), true ) ) {
+            return $date;
+        }
+        return zk_format_date_ka( $timestamp, $format );
+    }
+    return $date;
+}, 10, 4 );
+
+add_filter( 'date_i18n', function( $date, $req_format, $i, $gmt ) {
+    if ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' ) {
+        if ( in_array( $req_format, array( 'c', 'r', 'U' ), true ) ) {
+            return $date;
+        }
+        return zk_format_date_ka( $i, $req_format );
+    }
+    return $date;
+}, 10, 4 );
+
