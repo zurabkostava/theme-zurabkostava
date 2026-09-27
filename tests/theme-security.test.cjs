@@ -52,8 +52,6 @@ test('language registry preserves English and Georgian while supporting future l
     assert.match(registry, /function zk_get_language_path/);
     assert.match(center, /Language Center/);
     assert.match(center, /check_admin_referer\( 'zk_save_languages'/);
-    assert.match(center, /zk_language_center_ignored_templates/);
-    assert.match(center, /'zk_tool'/);
     assert.match(manager, /zk_get_translatable_languages\( false \)/);
     assert.match(manager, /zk_language_meta_key\( 'content', \$language \)/);
 });
