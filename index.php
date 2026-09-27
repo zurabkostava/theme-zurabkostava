@@ -4,8 +4,9 @@
  * Zurab Kostava · ultra-minimalist portfolio
  */
 
+$is_ka     = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
 $zk_routes = zk_routes();
-$zk_site   = get_bloginfo( 'name' );
+$zk_site   = $is_ka ? 'ზურაბ კოსტავა' : get_bloginfo( 'name' );
 
 ob_start(); ?>
 <div class="hero">
@@ -84,11 +85,21 @@ ob_start(); ?>
                 if ( $audio_url ) :
         ?>
         <div class="zk-welcome-music-container" data-phrases="<?php echo $phrases_json; ?>">
-            <?php if ( $tooltip ) : ?>
-                <div class="zk-welcome-tooltip"><?php echo esc_html( $tooltip ); ?></div>
+            <?php if ( $tooltip ) : 
+                $display_tooltip = $tooltip;
+                if ( $is_ka ) {
+                    $tooltip_ka = get_post_meta( get_the_ID(), '_zk_welcome_music_tooltip_ka', true );
+                    if ( ! empty( $tooltip_ka ) ) {
+                        $display_tooltip = $tooltip_ka;
+                    } elseif ( strpos( $tooltip, 'remastering' ) !== false || strpos( $tooltip, 'deleted music' ) !== false ) {
+                        $display_tooltip = 'ვფიქრობდი ჩემი ზოგიერთი ძველი, წაშლილი მუსიკის ალბომისთვის რემასტერინგზე და ერთ-ერთი გამორჩეული სწორედ ეს არის ✨';
+                    }
+                }
+            ?>
+                <div class="zk-welcome-tooltip"><?php echo esc_html( $display_tooltip ); ?></div>
             <?php endif; ?>
             <div class="zk-welcome-music-wrap">
-                <button class="zk-welcome-music-btn <?php echo $artwork_url ? 'has-artwork' : ''; ?>" id="zk-welcome-music-btn" aria-label="Play Welcome Music">
+                <button class="zk-welcome-music-btn <?php echo $artwork_url ? 'has-artwork' : ''; ?>" id="zk-welcome-music-btn" aria-label="<?php echo $is_ka ? 'მისასალმებელი მუსიკის დაკვრა' : 'Play Welcome Music'; ?>">
                 <?php if ( $artwork_url ) : ?>
                     <div class="zk-artwork-layer" style="background-image: url('<?php echo esc_url( $artwork_url ); ?>');"></div>
                 <?php endif; ?>
@@ -97,14 +108,23 @@ ob_start(); ?>
                     <svg class="icon-stop" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:none;"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>
                 </div>
             </button>
-            <span class="zk-welcome-music-title"><?php the_title(); ?></span>
+            <span class="zk-welcome-music-title"><?php 
+                $music_title = get_the_title();
+                if ( $is_ka ) {
+                    $title_ka = get_post_meta( get_the_ID(), '_zk_title_ka', true );
+                    if ( ! empty( $title_ka ) ) {
+                        $music_title = $title_ka;
+                    }
+                }
+                echo esc_html( $music_title ); 
+            ?></span>
             
-            <button id="zk-voiceover-btn" class="zk-voiceover-btn" title="Toggle Voiceover" aria-label="Toggle Voiceover" style="display:none;">
+            <button id="zk-voiceover-btn" class="zk-voiceover-btn" title="<?php echo $is_ka ? 'გახმოვანება' : 'Toggle Voiceover'; ?>" aria-label="<?php echo $is_ka ? 'გახმოვანება' : 'Toggle Voiceover'; ?>" style="display:none;">
                 <svg class="icon-voice-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
                 <svg class="icon-voice-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
             </button>
             
-            <button id="zk-subtitle-btn" class="zk-voiceover-btn" title="Toggle Subtitles" aria-label="Toggle Subtitles" style="display:none;">
+            <button id="zk-subtitle-btn" class="zk-voiceover-btn" title="<?php echo $is_ka ? 'სუბტიტრები' : 'Toggle Subtitles'; ?>" aria-label="<?php echo $is_ka ? 'სუბტიტრები' : 'Toggle Subtitles'; ?>" style="display:none;">
                 <svg class="icon-cc-on" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="9" y1="10" x2="15" y2="10"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
                 <svg class="icon-cc-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
             </button>
@@ -117,12 +137,15 @@ ob_start(); ?>
             endwhile;
             wp_reset_postdata();
         endif;
+
+        $hero_title = $is_ka ? 'ზურაბ კოსტავა' : 'Zurab Kostava';
+        $hero_sub   = $is_ka ? 'მულტიდისციპლინური ხელოვანი მზის სისტემიდან' : 'Multidisciplinary Artist From The Solar System';
         ?>
         <div class="hero-title-wrap">
-            <h1 class="hero-title" data-text="<?php echo esc_attr( $zk_site ); ?>"><?php echo esc_html( $zk_site ); ?></h1>
+            <h1 class="hero-title" data-text="<?php echo esc_attr( $hero_title ); ?>"><?php echo esc_html( $hero_title ); ?></h1>
         </div>
         <div class="hero-sub-wrap">
-            <p class="hero-sub">Multidisciplinary Artist From The Solar System</p>
+            <p class="hero-sub"><?php echo esc_html( $hero_sub ); ?></p>
         </div>
         <div class="hero-social-wrap">
             <a href="<?php echo esc_url( get_option( 'zk_social_ig', '#' ) ); ?>" class="zk-social-link" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
@@ -504,6 +527,63 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                 }
             }
 
+            function localizeHeaderAndHero(root) {
+                var isKa = (document.documentElement.lang && document.documentElement.lang.indexOf('ka') === 0) || (window.location.pathname.indexOf('/ka') === 0);
+                var logoEl = document.querySelector('.site-header .logo');
+                if (logoEl) {
+                    if (isKa) {
+                        logoEl.innerHTML = 'ზურაბ<span> კოსტავა</span>';
+                        logoEl.setAttribute('aria-label', 'ზურაბ კოსტავა — მთავარი');
+                    } else {
+                        logoEl.innerHTML = 'Zurab<span> Kostava</span>';
+                        logoEl.setAttribute('aria-label', 'Zurab Kostava — home');
+                    }
+                }
+
+                var base = root || document;
+                var heroTitle = base.querySelector ? base.querySelector('.hero-title') : null;
+                if (heroTitle) {
+                    if (isKa) {
+                        heroTitle.textContent = 'ზურაბ კოსტავა';
+                        heroTitle.setAttribute('data-text', 'ზურაბ კოსტავა');
+                    } else {
+                        heroTitle.textContent = 'Zurab Kostava';
+                        heroTitle.setAttribute('data-text', 'Zurab Kostava');
+                    }
+                }
+
+                var heroSub = base.querySelector ? base.querySelector('.hero-sub') : null;
+                if (heroSub) {
+                    if (isKa) {
+                        heroSub.textContent = 'მულტიდისციპლინური ხელოვანი მზის სისტემიდან';
+                    } else {
+                        heroSub.textContent = 'Multidisciplinary Artist From The Solar System';
+                    }
+                }
+
+                var musicBtn = base.querySelector ? base.querySelector('#zk-welcome-music-btn') : null;
+                if (musicBtn) {
+                    musicBtn.setAttribute('aria-label', isKa ? 'მისასალმებელი მუსიკის დაკვრა' : 'Play Welcome Music');
+                }
+                var voiceBtn = base.querySelector ? base.querySelector('#zk-voiceover-btn') : null;
+                if (voiceBtn) {
+                    voiceBtn.setAttribute('title', isKa ? 'გახმოვანება' : 'Toggle Voiceover');
+                    voiceBtn.setAttribute('aria-label', isKa ? 'გახმოვანება' : 'Toggle Voiceover');
+                }
+                var subBtn = base.querySelector ? base.querySelector('#zk-subtitle-btn') : null;
+                if (subBtn) {
+                    subBtn.setAttribute('title', isKa ? 'სუბტიტრები' : 'Toggle Subtitles');
+                    subBtn.setAttribute('aria-label', isKa ? 'სუბტიტრები' : 'Toggle Subtitles');
+                }
+                var tooltipEl = base.querySelector ? base.querySelector('.zk-welcome-tooltip') : null;
+                if (tooltipEl && isKa) {
+                    var tt = tooltipEl.textContent || '';
+                    if (tt.indexOf('remastering') !== -1 || tt.indexOf('deleted music') !== -1) {
+                        tooltipEl.textContent = 'ვფიქრობდი ჩემი ზოგიერთი ძველი, წაშლილი მუსიკის ალბომისთვის რემასტერინგზე და ერთ-ერთი გამორჩეული სწორედ ეს არის ✨';
+                    }
+                }
+            }
+
             function localizeDateText(str) {
                 if (!str || typeof str !== 'string') return str;
                 // 1. "Jun 15, 2026" or "Aug 13, 2024" -> "15 ივნისი, 2026"
@@ -573,6 +653,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                 if (!base || !base.querySelectorAll) return;
 
                 localizeBreadcrumbs(base);
+                localizeHeaderAndHero(base);
 
                 var nodes = base.querySelectorAll(UPPER_SEL);
                 for (var i = 0; i < nodes.length; i++) {
@@ -667,11 +748,16 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
 <header class="site-header" id="site-header">
     <div class="header-inner">
         <?php 
-        $home_href = home_url( '/' );
+        $home_href  = home_url( '/' );
         $home_route = wp_parse_url( $home_href, PHP_URL_PATH ) ?: '/';
+        $logo_is_ka = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
         ?>
-        <a class="logo" data-route="<?php echo esc_attr( $home_route ); ?>" href="<?php echo esc_url( $home_href ); ?>" aria-label="<?php echo esc_attr( $zk_site ); ?> — home">
-            Zurab<span> Kostava</span>
+        <a class="logo" data-route="<?php echo esc_attr( $home_route ); ?>" href="<?php echo esc_url( $home_href ); ?>" aria-label="<?php echo $logo_is_ka ? 'ზურაბ კოსტავა — მთავარი' : esc_attr( $zk_site ) . ' — home'; ?>">
+            <?php if ( $logo_is_ka ) : ?>
+                ზურაბ<span> კოსტავა</span>
+            <?php else : ?>
+                Zurab<span> Kostava</span>
+            <?php endif; ?>
         </a>
 
         <nav class="primary-nav" id="primaryNav" aria-label="Primary">

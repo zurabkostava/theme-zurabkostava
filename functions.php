@@ -6010,9 +6010,10 @@ add_action( 'add_meta_boxes', 'zk_welcome_music_add_meta_box' );
 
 function zk_welcome_music_meta_callback( $post ) {
     wp_nonce_field( 'zk_welcome_music_save_meta', 'zk_welcome_music_meta_nonce' );
-    $audio_url = get_post_meta( $post->ID, '_zk_welcome_music_url', true );
-    $tooltip   = get_post_meta( $post->ID, '_zk_welcome_music_tooltip', true );
-    $phrases   = get_post_meta( $post->ID, '_zk_welcome_music_phrases', true );
+    $audio_url   = get_post_meta( $post->ID, '_zk_welcome_music_url', true );
+    $tooltip     = get_post_meta( $post->ID, '_zk_welcome_music_tooltip', true );
+    $tooltip_ka  = get_post_meta( $post->ID, '_zk_welcome_music_tooltip_ka', true );
+    $phrases     = get_post_meta( $post->ID, '_zk_welcome_music_phrases', true );
     ?>
     <style>
         .zk-meta-row { margin-bottom: 15px; }
@@ -6026,6 +6027,10 @@ function zk_welcome_music_meta_callback( $post ) {
     <div class="zk-meta-row">
         <label for="zk_welcome_music_tooltip">Tooltip Text (Optional custom message on hover):</label>
         <input type="text" id="zk_welcome_music_tooltip" name="zk_welcome_music_tooltip" value="<?php echo esc_attr( $tooltip ); ?>" />
+    </div>
+    <div class="zk-meta-row">
+        <label for="zk_welcome_music_tooltip_ka">ქართული Tooltip ტექსტი (Georgian Tooltip Text):</label>
+        <input type="text" id="zk_welcome_music_tooltip_ka" name="zk_welcome_music_tooltip_ka" value="<?php echo esc_attr( $tooltip_ka ); ?>" placeholder="მაგ. ვფიქრობდი ჩემი ზოგიერთი ძველი, წაშლილი მუსიკის..." />
     </div>
     <div class="zk-meta-row">
         <label for="zk_welcome_music_phrases" style="margin-bottom:10px; display:inline-block;">Cinematic Phrases (Synced with audio):</label>
@@ -6057,6 +6062,9 @@ function zk_welcome_music_save_meta( $post_id ) {
     }
     if ( isset( $_POST['zk_welcome_music_tooltip'] ) ) {
         update_post_meta( $post_id, '_zk_welcome_music_tooltip', sanitize_text_field( $_POST['zk_welcome_music_tooltip'] ) );
+    }
+    if ( isset( $_POST['zk_welcome_music_tooltip_ka'] ) ) {
+        update_post_meta( $post_id, '_zk_welcome_music_tooltip_ka', sanitize_text_field( $_POST['zk_welcome_music_tooltip_ka'] ) );
     }
     if ( isset( $_POST['zk_welcome_music_phrases'] ) ) {
         update_post_meta( $post_id, '_zk_welcome_music_phrases', wp_kses_post( $_POST['zk_welcome_music_phrases'] ) );
