@@ -375,8 +375,8 @@ function zk_get_default_term_translation($slug) {
         'news' => 'სიახლეები',
         'reviews' => 'მიმოხილვები',
         'raw' => 'გაუფილტრავი',
-        'aubades' => 'დილისპირულები',
-        'nocturnes' => 'ძილისპირულები',
+        'aubades' => 'გარიჟრაჟები',
+        'nocturnes' => 'ნოქტიურნები',
 
         // Tags
         'art-tech' => 'არტ ტექნოლოგია',
@@ -609,6 +609,37 @@ function zk_sync_term_descriptions_ka() {
     update_option('zk_term_translations_seeded_v1', true, false);
 }
 add_action('init', 'zk_sync_term_descriptions_ka', 20);
+
+// Update only the two legacy series names that were previously seeded. Custom
+// taxonomy translations remain untouched and future edits flow to every UI
+// surface that reads the translated term name, including blog filter pills.
+function zk_migrate_blog_series_names_ka_v2() {
+    if ( get_option( 'zk_blog_series_names_migrated_v2', false ) ) return;
+
+    $renames = array(
+        'aubades' => array(
+            'name'   => 'გარიჟრაჟები',
+            'legacy' => array( '', 'დილისპირულები', 'დილის სიმღერები' ),
+        ),
+        'nocturnes' => array(
+            'name'   => 'ნოქტიურნები',
+            'legacy' => array( '', 'ძილისპირულები' ),
+        ),
+    );
+
+    foreach ( $renames as $slug => $rename ) {
+        $term = get_term_by( 'slug', $slug, 'category' );
+        if ( ! $term || is_wp_error( $term ) ) continue;
+
+        $current = trim( (string) get_term_meta( $term->term_id, '_zk_name_ka', true ) );
+        if ( in_array( $current, $rename['legacy'], true ) ) {
+            update_term_meta( $term->term_id, '_zk_name_ka', $rename['name'] );
+        }
+    }
+
+    update_option( 'zk_blog_series_names_migrated_v2', true, false );
+}
+add_action( 'init', 'zk_migrate_blog_series_names_ka_v2', 21 );
 
 // Frontend term translation filters
 function zk_filter_get_term($term, $taxonomy = '') {

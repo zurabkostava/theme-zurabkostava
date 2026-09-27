@@ -436,8 +436,8 @@ function zk_get_breadcrumb_crumb_label( $title, $slug = '', $post_id = 0, $is_ka
         'raw'          => 'გაუფილტრავი',
         'news'         => 'სიახლეები',
         'reviews'      => 'მიმოხილვები',
-        'aubades'      => 'დილისპირულები',
-        'nocturnes'    => 'ძილისპირულები',
+        'aubades'      => 'გარიჟრაჟები',
+        'nocturnes'    => 'ნოქტიურნები',
         'about'        => 'შესახებ',
         'projects'     => 'პროექტები',
         'music'        => 'მუსიკა',
@@ -488,11 +488,11 @@ function zk_get_breadcrumb_term_label( $term, $is_ka = false ) {
         'raw'          => 'გაუფილტრავი',
         'news'         => 'სიახლეები',
         'reviews'      => 'მიმოხილვები',
-        'aubades'      => 'დილისპირულები',
-        'nocturnes'    => 'ძილისპირულები',
+        'aubades'      => 'გარიჟრაჟები',
+        'nocturnes'    => 'ნოქტიურნები',
     );
 
-    if ( isset( $dict[ $slug ] ) && ( empty( $name ) || $name_lower === $slug || $name_lower === strtolower( $term->name ) || $name_lower === 'raw' || $name_lower === 'დილის სიმღერები' || $name_lower === 'ნოქტიურნები' ) ) {
+    if ( isset( $dict[ $slug ] ) && ( empty( $name ) || $name_lower === $slug || $name_lower === strtolower( $term->name ) || $name_lower === 'raw' || $name_lower === 'დილის სიმღერები' || $name_lower === 'დილისპირულები' || $name_lower === 'ძილისპირულები' ) ) {
         $name = $dict[ $slug ];
     } elseif ( isset( $dict[ $name_lower ] ) ) {
         $name = $dict[ $name_lower ];

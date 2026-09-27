@@ -70,6 +70,21 @@ test('translation coverage ignores shortcode-only content and audits SEO/GEO tra
     assert.match(center, /zk_language_meta_key\( \$field, \$code \)/);
 });
 
+test('renamed Georgian blog series flow from taxonomy translations into filters', () => {
+    const functions = read('functions.php');
+    const manager = read('inc/language-manager.php');
+    const index = read('index.php');
+
+    assert.match(manager, /'aubades'\s*=>\s*'გარიჟრაჟები'/);
+    assert.match(manager, /'nocturnes'\s*=>\s*'ნოქტიურნები'/);
+    assert.match(manager, /function zk_migrate_blog_series_names_ka_v2/);
+    assert.match(manager, /in_array\( \$current, \$rename\['legacy'\], true \)/);
+    assert.match(functions, /'aubades'\s*=>\s*'გარიჟრაჟები'/);
+    assert.match(functions, /'nocturnes'\s*=>\s*'ნოქტიურნები'/);
+    assert.match(index, /'aubades': 'ᲒᲐᲠᲘᲟᲠᲐᲟᲔᲑᲘ'/);
+    assert.match(index, /'nocturnes': 'ᲜᲝᲥᲢᲘᲣᲠᲜᲔᲑᲘ'/);
+});
+
 test('photography filters follow the current language without sharing cached markup', () => {
     const source = read('functions.php');
     const center = read('inc/platform/language-center.php');
