@@ -15,6 +15,17 @@
     var dropdowns = [].slice.call(nav.querySelectorAll('.has-dropdown, .has-nested-dropdown'));
     var cache     = {};
 
+    var KA_RANGE = /[\u10D0-\u10FA]/;
+    var KA_GLOBAL = /[\u10D0-\u10FA]/g;
+    if (!window.zkToMtavruli) {
+        window.zkToMtavruli = function(str) {
+            if (!str || typeof str !== 'string' || !KA_RANGE.test(str)) return str;
+            return str.replace(KA_GLOBAL, function(ch) {
+                return String.fromCharCode(ch.charCodeAt(0) + 0x0BC0);
+            });
+        };
+    }
+
     /* Header Scroll */
     function onScroll() { header.classList.toggle('is-scrolled', window.scrollY > 24); }
     onScroll();
@@ -279,6 +290,14 @@
                 if (data.bottomNavHtml) {
                     var curBottomNav = document.getElementById('zk-bottom-nav');
                     if (curBottomNav) curBottomNav.innerHTML = data.bottomNavHtml;
+                }
+
+                if (typeof window.zkApplyGeorgianUppercase === 'function') {
+                    window.zkApplyGeorgianUppercase(viewEl);
+                    var curPNav = document.getElementById('primaryNav');
+                    if (curPNav) window.zkApplyGeorgianUppercase(curPNav);
+                    var curBNav = document.getElementById('zk-bottom-nav');
+                    if (curBNav) window.zkApplyGeorgianUppercase(curBNav);
                 }
 
                 viewEl.classList.remove('is-loading');
@@ -583,17 +602,23 @@
             var filterContainer = document.createElement('div');
             filterContainer.className = 'zk-category-filters';
 
+            var isKaDoc = (document.documentElement.lang && document.documentElement.lang.indexOf('ka') === 0) || (window.location.pathname.indexOf('/ka') === 0);
+
             var allBtn = document.createElement('button');
             allBtn.className = hasHashMatch ? 'zk-filter-pill' : 'zk-filter-pill is-active';
             allBtn.setAttribute('data-filter', 'all');
-            allBtn.textContent = 'All';
+            var allText = isKaDoc ? 'ყველა' : 'All';
+            if (isKaDoc && window.zkToMtavruli) allText = window.zkToMtavruli(allText);
+            allBtn.textContent = allText;
             filterContainer.appendChild(allBtn);
 
             categories.forEach(function(cat) {
                 var btn = document.createElement('button');
                 btn.className = (hasHashMatch && hash === cat) ? 'zk-filter-pill is-active' : 'zk-filter-pill';
                 btn.setAttribute('data-filter', cat);
-                btn.textContent = catNames[cat] || cat;
+                var catLabel = catNames[cat] || cat;
+                if (window.zkToMtavruli) catLabel = window.zkToMtavruli(catLabel);
+                btn.textContent = catLabel;
                 filterContainer.appendChild(btn);
             });
 

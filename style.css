@@ -50,34 +50,60 @@
 :lang(ka-GE),
 [lang^="ka"],
 html[lang^="ka"],
-html[lang^="ka"] body {
+html[lang^="ka"] body,
+html[lang^="ka"] input,
+html[lang^="ka"] textarea,
+html[lang^="ka"] select,
+html[lang^="ka"] button {
 	font-family: var(--font-ka);
-	font-feature-settings: "case" 1;
 }
 
-/* Ensure all uppercase elements render Georgian Mtavruli */
+/* Ensure all uppercase elements render Georgian Mtavruli with optimal letter spacing */
 .nav-link,
 .dropdown-link,
+.dock-meta,
 .page__eyebrow,
 .page__meta,
 .zk-breadcrumbs,
+.zk-breadcrumbs a,
+.zk-breadcrumbs span,
 .zk-nav-label,
 .zk-tags-label,
 .zk-card-category,
 .zk-card-date,
 .zk-sort-trigger,
+.zk-sort-label,
+.zk-sort-current,
 .zk-sort-option,
 .zk-gallery-filter,
 .zk-filter-btn,
+.zk-filter-pill,
 .zk-visual-hub-badge,
 .zk-visual-badge,
 .zk-visual-action-label,
 .zk-tool-status,
 .zk-tool-link-text,
 .zk-tool-badge,
+.zk-tab-btn,
+.zk-read-btn,
+.zk-more-btn,
+.zk-spotify-btn,
+.zk-timeline-tag,
+.zk-timeline-date,
+.zk-lightbox-col-title,
+.zk-lightbox-thumb-group-title,
+.zk-bento-header h3,
+.zk-header-title h3,
+.zk-email-label,
+.hero-eyebrow,
+.hero-eyebrow-wrap,
+.enc-tab-btn,
+.step-title,
+.switcher-label,
+[data-uppercase],
 [style*="uppercase"] {
 	text-transform: uppercase;
-	font-feature-settings: "case" 1;
+	letter-spacing: 0.05em;
 }
 
 /* ============================================================

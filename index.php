@@ -165,6 +165,9 @@ ob_start(); ?>
         <?php while ( $latest_query->have_posts() ) : $latest_query->the_post(); 
             $categories = get_the_category();
             $cat_name = ! empty( $categories ) ? esc_html( function_exists( 'zk_get_translated_term_name' ) ? zk_get_translated_term_name( $categories[0] ) : $categories[0]->name ) : 'Log';
+            if ( function_exists( 'zk_uppercase_ka' ) && ( ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' ) || preg_match( '/[\x{10D0}-\x{10FA}]/u', $cat_name ) ) ) {
+                $cat_name = zk_uppercase_ka( $cat_name );
+            }
             
             $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
             $bg_style = $img_url ? 'style="--dock-bg: url(\'' . esc_url( $img_url ) . '\');"' : '';
@@ -341,7 +344,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                     </div>
                     <div class="zk-sort-dropdown" id="sortDropdown">
                         <button class="zk-sort-trigger" type="button" aria-expanded="false">
-                            <span class="zk-sort-label"><?php echo $is_ka ? 'სორტირება: ' : 'Sort by: '; ?></span><span class="zk-sort-current"><?php echo $is_ka ? ( function_exists('zk_uppercase_ka') ? zk_uppercase_ka('უახლესი') : 'უახლესი' ) : 'Newest'; ?></span>
+                            <span class="zk-sort-label"><?php echo $is_ka ? ( function_exists('zk_uppercase_ka') ? zk_uppercase_ka('სორტირება: ') : 'სორტირება: ' ) : 'Sort by: '; ?></span><span class="zk-sort-current"><?php echo $is_ka ? ( function_exists('zk_uppercase_ka') ? zk_uppercase_ka('უახლესი') : 'უახლესი' ) : 'Newest'; ?></span>
                             <svg class="dropdown-caret" width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
                         <div class="zk-sort-menu">
@@ -359,6 +362,9 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                         $path = wp_parse_url( $link, PHP_URL_PATH );
                         $categories = get_the_category();
                         $cat_name = ! empty( $categories ) ? esc_html( function_exists( 'zk_get_translated_term_name' ) ? zk_get_translated_term_name( $categories[0] ) : $categories[0]->name ) : 'Post';
+                        if ( function_exists( 'zk_uppercase_ka' ) && ( $is_ka || preg_match( '/[\x{10D0}-\x{10FA}]/u', $cat_name ) ) ) {
+                            $cat_name = zk_uppercase_ka( $cat_name );
+                        }
                         $date = get_the_date( 'M j, Y' );
                         $timestamp = get_the_time( 'U' );
                         $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
@@ -417,6 +423,104 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
         if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
             document.documentElement.classList.add('custom-scroll');
         }
+
+        /* Universal Georgian Mtavruli Uppercase Engine */
+        (function() {
+            var KA_RANGE = /[\u10D0-\u10FA]/;
+            var KA_GLOBAL = /[\u10D0-\u10FA]/g;
+            window.zkToMtavruli = function(str) {
+                if (!str || typeof str !== 'string' || !KA_RANGE.test(str)) return str;
+                return str.replace(KA_GLOBAL, function(ch) {
+                    return String.fromCharCode(ch.charCodeAt(0) + 0x0BC0);
+                });
+            };
+
+            var UPPER_SEL = '.nav-link, .dropdown-link, .dock-meta, .page__eyebrow, .page__meta, .zk-breadcrumbs, .zk-breadcrumbs a, .zk-breadcrumbs span, .zk-nav-label, .zk-tags-label, .zk-card-category, .zk-card-date, .zk-sort-trigger, .zk-sort-label, .zk-sort-current, .zk-sort-option, .zk-gallery-filter, .zk-filter-btn, .zk-filter-pill, .zk-visual-hub-badge, .zk-visual-badge, .zk-visual-action-label, .zk-tool-status, .zk-tool-link-text, .zk-tool-badge, .zk-tab-btn, .zk-read-btn, .zk-more-btn, .zk-spotify-btn, .zk-timeline-tag, .zk-timeline-date, .zk-lightbox-col-title, .zk-lightbox-thumb-group-title, .zk-bento-header h3, .zk-header-title h3, .zk-email-label, .hero-eyebrow, .hero-eyebrow-wrap, .enc-tab-btn, .step-title, .switcher-label, [data-uppercase], [style*="uppercase"]';
+
+            function convertNode(el) {
+                if (!el || el.nodeType !== 1) return;
+                var tag = el.tagName;
+                if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SVG' || tag === 'NOSCRIPT') return;
+                var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+                var textNode;
+                while ((textNode = walker.nextNode())) {
+                    var val = textNode.nodeValue;
+                    if (val && KA_RANGE.test(val)) {
+                        textNode.nodeValue = window.zkToMtavruli(val);
+                    }
+                }
+            }
+
+            window.zkApplyGeorgianUppercase = function(root) {
+                var base = root || document;
+                if (!base || !base.querySelectorAll) return;
+
+                var nodes = base.querySelectorAll(UPPER_SEL);
+                for (var i = 0; i < nodes.length; i++) {
+                    convertNode(nodes[i]);
+                }
+                if (base.matches && base.matches(UPPER_SEL)) {
+                    convertNode(base);
+                }
+
+                // Check computed style textTransform on elements containing Georgian
+                try {
+                    var target = (base === document ? document.body : base);
+                    if (target) {
+                        var walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT, null, false);
+                        var tn;
+                        while ((tn = walker.nextNode())) {
+                            var v = tn.nodeValue;
+                            if (v && KA_RANGE.test(v)) {
+                                var p = tn.parentElement;
+                                if (p && p.tagName !== 'SCRIPT' && p.tagName !== 'STYLE' && p.tagName !== 'INPUT' && p.tagName !== 'TEXTAREA') {
+                                    if (window.getComputedStyle(p).textTransform === 'uppercase') {
+                                        tn.nodeValue = window.zkToMtavruli(v);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch(e) {}
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() { window.zkApplyGeorgianUppercase(document); });
+            } else {
+                window.zkApplyGeorgianUppercase(document);
+            }
+            window.addEventListener('load', function() { window.zkApplyGeorgianUppercase(document); });
+
+            if (window.MutationObserver) {
+                var obs = new MutationObserver(function(muts) {
+                    for (var i = 0; i < muts.length; i++) {
+                        var m = muts[i];
+                        if (m.type === 'childList') {
+                            for (var j = 0; j < m.addedNodes.length; j++) {
+                                var n = m.addedNodes[j];
+                                if (n.nodeType === 1) window.zkApplyGeorgianUppercase(n);
+                            }
+                        } else if (m.type === 'characterData') {
+                            var p = m.target.parentElement;
+                            if (p && p.closest && (p.closest(UPPER_SEL) || (window.getComputedStyle && window.getComputedStyle(p).textTransform === 'uppercase'))) {
+                                var cval = m.target.nodeValue;
+                                if (cval && KA_RANGE.test(cval)) {
+                                    m.target.nodeValue = window.zkToMtavruli(cval);
+                                }
+                            }
+                        }
+                    }
+                });
+                function startObs() {
+                    if (document.body) {
+                        obs.observe(document.body, { childList: true, subtree: true, characterData: true });
+                    } else {
+                        requestAnimationFrame(startObs);
+                    }
+                }
+                startObs();
+            }
+        })();
     </script>
 </head>
 
