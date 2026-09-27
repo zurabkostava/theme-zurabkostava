@@ -443,12 +443,92 @@ function zk_get_translated_term_name($term) {
     return $term->name;
 }
 
+/**
+ * Default term descriptions in Georgian
+ */
+function zk_get_default_term_description($slug) {
+    static $dict = array(
+        // Categories
+        'aubades' => 'განთიადისას დაბადებული გამოცხადებები. ზურაბ კოსტავას პირადი ესეები, რომლებიც იჭერენ იმ სიცხადეს, ფილოსოფიურ ძიებებსა და შემოქმედებით ეპიფანიებს, რაც მხოლოდ ალიონზე მოდის.',
+        'news' => 'ჰორიზონტს მიღმა: უახლესი მეცნიერება, მომავლის განმსაზღვრელი ტექნოლოგიები და ხელოვნების სამყაროს მუდმივად ცვალებადი პულსი. იყავით ინფორმირებული და წინ უსწრებდეთ დროს.',
+        'nocturnes' => 'ჩრდილები, სიჩუმე და ღამისეული ფიქრები. ჩაღრმავება ეგზისტენციალურში, მელანქოლიასა და იმ იდუმალებაში, რომელიც მხოლოდ მაშინ იღვიძებს, როცა სამყარო ჩუმდება.',
+        'raw' => 'გაუფილტრავი აზრების ნაკადი და პირველქმნილი ინტელექტუალური ენერგია. ექსპერიმენტული ძიებებისა და კონცეპტუალური ფიქრების კრებული.',
+        'reviews' => 'კრიტიკული ლაბორატორია ზურაბ კოსტავას ხელმძღვანელობით. გარღვევის მომტანი სამეცნიერო აღმოჩენებიდან თანამედროვე ხელოვნების ნიუანსებამდე — გაუფილტრავი ანალიზი და პირადი ხედვები იმ ნამუშევრებზე, იდეებსა და ფენომენებზე, რომლებიც ჩვენს რეალობას აყალიბებენ.',
+
+        // Tags
+        'art-and-tech' => 'შემოქმედებითი პროცესისა და თანამედროვე ტექნოლოგიების გადაკვეთა. იკვლევს, თუ როგორ აფართოებს ციფრული ხელსაწყოები, პროგრამული უზრუნველყოფა და ინტერაქტიული მედია ტრადიციული ხელოვნების საზღვრებს.',
+        'art-tech' => 'შემოქმედებითი პროცესისა და თანამედროვე ტექნოლოგიების გადაკვეთა. იკვლევს, თუ როგორ აფართოებს ციფრული ხელსაწყოები, პროგრამული უზრუნველყოფა და ინტერაქტიული მედია ტრადიციული ხელოვნების საზღვრებს.',
+        'artificial-intelligence' => 'ურთიერთქმედება ხელოვნურ ინტელექტთან, ციფრული ცნობიერება და ტექნოლოგიის გავლენა კაცობრიობაზე.',
+        'artists-struggle' => 'შემოქმედთა წინაშე არსებული ფიზიკური, მენტალური და შემოქმედებითი დაბრკოლებების კვლევა, და დაუღალავი ბრძოლა ხელოვნების შესაქმნელად ყოველგვარი წინააღმდეგობის მიუხედავად.',
+        'audio-tech' => 'ხედვები ჩვენი განვითარების პროცესზე, ვირტუალური ინსტრუმენტების ტექნოლოგიასა და ციფრული ხმის მომავალზე.',
+        'authenticity' => 'ფიქრები ნამდვილობაზე, ციფრული ნიღბების მიღმა ცხოვრებაზე, პიროვნულ გულწრფელობასა და ალგორითმებისა და სოციალური წნეხისგან დამოუკიდებელი შემოქმედებითი ხმის პოვნაზე.',
+        'behind-the-scenes' => 'მზერა ჩვენს სტუდიაში, კვლევისა და განვითარების (R&D) პროცესსა და პროდუქტების შექმნაზე.',
+        'cinematic-narrative' => 'ამბები, სცენარები და კონცეპტუალური ჩანაწერები კინემატოგრაფიული პერსპექტივით, ღრმა ატმოსფეროზე, ტემპსა და ვიზუალურ-ემოციურ სიღრმეზე ფოკუსირებით.',
+        'creative-identity' => 'ღრმა ფიქრები შექმნის დაუოკებელ სურვილზე, ფსიქოლოგიურ კავშირზე ხელოვანსა და მის მედიუმს შორის, და გაცნობიერებაზე, რომ ხელოვნება ადამიანის არსებობის განუყოფელი ნაწილია.',
+        'creative-process' => 'ხედვები ხელოვანის ბრძოლებსა და გამარჯვებებზე, პროკრასტინაციასთან („პროკისთან“) ჭიდილზე, შთაგონების პოვნასა და შემოქმედების პირველქმნილ რეალობაზე.',
+        'digital-art' => 'ვიზუალური ნამუშევრები, რომლებიც აერთიანებს ტრადიციულ კონცეფციებსა და ციფრულ ხელსაწყოებს.',
+        'digital-manifesto' => 'საჯარო დეკლარაციები, შემოქმედებითი ფილოსოფია და გაუფილტრავი განაცხადები ციფრული არსებობის, თვითგამოხატვისა და პირადი რევოლუციების შესახებ.',
+        'entrepreneurship' => 'კომპანიის შენების გზა — საწყისი ხედვიდან გლობალური მასშტაბირების გამოწვევებამდე.',
+        'everyday-observations' => 'ღრმა არსის, სილამაზის ან იუმორის პოვნა ყოველდღიურ, ერთი შეხედვით ჩვეულებრივ სიტუაციებში, ქუჩის შეხვედრებში, მცირე დეტალებსა და ბუნებაში.',
+        'existentialism' => 'ღრმა ფილოსოფიური ფიქრები სიცოცხლის არსზე, სიკვდილზე, სამყაროზე, სიმულაციის თეორიასა და ჩვენს ადგილზე კოსმოსში.',
+        'generative-art' => 'ხელოვნება, რომელიც სრულად ან ნაწილობრივ შექმნილია ავტონომიური სისტემების მიერ. ის ეყრდნობა ალგორითმებს, კოდსა და მათემატიკას დინამიკური და არაპროგნოზირებადი ვიზუალური ფორმების შესაქმნელად.',
+        'georgian-heritage' => 'ხიდის გადება უძველეს მუსიკალურ ტრადიციებსა და თანამედროვე ციფრულ ინოვაციებს შორის.',
+        'human-connection' => 'დაკვირვებები სიყვარულზე, ემპათიაზე, ურთიერთობებსა და ადამიანური ურთიერთქმედების სირთულეებზე.',
+        'humor-and-satire' => 'თვითირონია, სარკაზმი და ყოველდღიური ცხოვრების აბსურდულად სასაცილო მხარეების აღმოჩენა.',
+        'kostava-creative' => 'ჩვენი აუდიო-ვიზუალური ეკოსისტემის მთავარი სიახლეები, განახლებები და ეტაპები.',
+        'making-music' => 'ჩაღრმავება მუსიკის შექმნის პროცესში — არა მხოლოდ ტექნიკური ასპექტების, არამედ მისი მდიდარი ფილოსოფიური განზომილებების კვლევა.',
+        'melancholy-loneliness' => 'შემოქმედებითი და ფილოსოფიური ნამუშევრები, რომლებიც ასახავს იზოლაციის პირველქმნილ ანატომიას, სამყაროსგან მიტოვებულობასა და ღრმა ემოციურ ნოსტალგიას.',
+        'mental-health' => 'გულწრფელი, გაუფილტრავი საუბრები ზედმეტ ფიქრზე, შფოთვაზე, მარტოობაზე, დეპრესიასა და წერისა თუ იუმორის დამცავ მექანიზმად გამოყენებაზე.',
+        'multimedia' => 'პირდაპირი, გაუფილტრავი კადრები სტუდიიდან და ყოველდღიური შემოქმედებითი რუტინიდან.',
+        'new-beginings' => 'ფიქრები ახალი თავების დაწყებაზე, ცხოვრებისეული გარდამავალი ეტაპების მიღებაზე, პიროვნულ ტრანსფორმაციასა და მომავლისკენ თამამი ნაბიჯების გადადგმაზე.',
+        'new-beginnings' => 'ფიქრები ახალი თავების დაწყებაზე, ცხოვრებისეული გარდამავალი ეტაპების მიღებაზე, პიროვნულ ტრანსფორმაციასა და მომავლისკენ თამამი ნაბიჯების გადადგმაზე.',
+        'nostalgia' => 'ფიქრები წარსულზე, ბავშვობის მოგონებებსა და იმ სევდანარევ კავშირზე, რომელიც გარდასულ ეპოქებსა და აწმყოს რეალობას შორის არსებობს.',
+        'parenthood' => 'ფიქრები მშობლობის გზაზე, ბავშვის ზრდასა და იმ ცხოვრებისეულ გაკვეთილებზე, რომლებიც მამობამ მომიტანა.',
+        'personal-essay' => 'პირდაპირი, გაუფილტრავი, ავტობიოგრაფიული ჩანაწერები, რომლებიც ასახავს ხელოვანის ცხოვრების კონკრეტულ მოვლენებს, ბრძოლებსა და პირად გარდამტეხ მომენტებს.',
+        'photography-philosophy' => 'ღრმა ფიქრები ვიზუალურ ხელოვნებაზე, კადრის დაჭერის ფსიქოლოგიაზე, დროის გაჩერებასა და იმ ემოციურ სიმძიმეზე, რომელიც ობიექტივის მიღმა დგას.',
+        'reading' => 'ფიქრები წაკითხულ წიგნებზე, ლიტერატურულ შთაგონებებსა და ისტორიებზე, რომლებმაც ჩემი მსოფლმხედველობა და პირადი გზა ჩამოაყალიბეს.',
+        'self-discovery' => 'ფიქრები საკუთარი ჭეშმარიტი იდენტობის პოვნაზე, თვითმარქვიას სინდრომის დაძლევაზე, სოციალური ჩარჩოების დამსხვრევასა და პიროვნულ ზრდაზე პირდაპირი ინტროსპექციის გზით.',
+        'simulation-theory' => 'ფილოსოფიური და შემოქმედებითი ძიებები რეალობის, როგორც ციფრული სიმულაციის შესახებ, ნეირონულ ქსელებსა და ზღვარზე ტექნოლოგიასა და ადამიანის ცნობიერებას შორის.',
+        'storytelling' => 'სამყაროების შენების ხელოვნება, თხრობა და აბსტრაქტული ფიქრების სიტყვებად გარდაქმნა.',
+        'urban-vignettes' => 'მოკლე, ცოცხალი და ღრმად დაკვირვებული ისტორიები, დაჭერილი ქალაქის ქაოსში, თანამედროვე რუტინასა და მოულოდნელ ქუჩის შეხვედრებში.',
+        'vusual-language' => 'საკომუნიკაციო სისტემა, რომელიც აზრს გადმოსცემს ვიზუალური ელემენტებით — ფერებით, ფორმებით, ხაზებითა და ტიპოგრაფიით — სიტყვიერ გამოხატვაზე დაყრდნობის გარეშე.',
+        'visual-language' => 'საკომუნიკაციო სისტემა, რომელიც აზრს გადმოსცემს ვიზუალური ელემენტებით — ფერებით, ფორმებით, ხაზებითა და ტიპოგრაფიით — სიტყვიერ გამოხატვაზე დაყრდნობის გარეშე.',
+    );
+    $slug_clean = strtolower(trim((string)$slug));
+    return isset($dict[$slug_clean]) ? $dict[$slug_clean] : '';
+}
+
+function zk_get_translated_term_description($term) {
+    if (empty($term)) return '';
+    if (is_numeric($term)) {
+        $term = get_term((int)$term);
+    }
+    if (!is_object($term) || is_wp_error($term)) return '';
+
+    if (function_exists('zk_get_current_language') && zk_get_current_language() === 'ka') {
+        $meta_desc = get_term_meta($term->term_id, '_zk_description_ka', true);
+        if (!empty($meta_desc)) {
+            return $meta_desc;
+        }
+        $default_desc = zk_get_default_term_description($term->slug);
+        if (!empty($default_desc)) {
+            return $default_desc;
+        }
+    }
+    return $term->description;
+}
+
 function zk_taxonomy_add_custom_fields($taxonomy) {
     ?>
     <div class="form-field term-group">
         <label for="zk_name_ka"><strong>ქართული სახელი (Georgian Name)</strong></label>
         <input type="text" id="zk_name_ka" name="zk_name_ka" value="" placeholder="მაგ. ხელოვნური ინტელექტი">
-        <p class="description">მიუთითეთ თეგის/კატეგორიის ქართული თარგმანი ქართულენოვანი გვერდებისთვის.</p>
+        <p class="description">მიუთითეთ თეგის/კატეგორიის ქართული სახელი ქართულენოვანი გვერდებისთვის.</p>
+    </div>
+    <div class="form-field term-group">
+        <label for="zk_description_ka"><strong>ქართული აღწერა (Georgian Description)</strong></label>
+        <textarea id="zk_description_ka" name="zk_description_ka" rows="5" cols="50" placeholder="მიუთითეთ თეგის/კატეგორიის ქართული აღწერა..."></textarea>
+        <p class="description">მიუთითეთ თეგის/კატეგორიის ქართული აღწერა ქართულენოვანი გვერდებისთვის.</p>
     </div>
     <?php
 }
@@ -458,12 +538,23 @@ function zk_taxonomy_edit_custom_fields($term, $taxonomy) {
     if (empty($name_ka)) {
         $name_ka = zk_get_default_term_translation($term->slug);
     }
+    $desc_ka = get_term_meta($term->term_id, '_zk_description_ka', true);
+    if (empty($desc_ka)) {
+        $desc_ka = zk_get_default_term_description($term->slug);
+    }
     ?>
     <tr class="form-field term-group-wrap">
         <th scope="row"><label for="zk_name_ka">ქართული სახელი (Georgian Name)</label></th>
         <td>
-            <input type="text" id="zk_name_ka" name="zk_name_ka" value="<?php echo esc_attr($name_ka); ?>" style="width: 100%; max-width: 400px; font-size: 15px; padding: 6px 10px;">
-            <p class="description">მიუთითეთ თეგის/კატეგორიის ქართული თარგმანი ქართულენოვანი გვერდებისთვის.</p>
+            <input type="text" id="zk_name_ka" name="zk_name_ka" value="<?php echo esc_attr($name_ka); ?>" style="width: 100%; max-width: 500px; font-size: 15px; padding: 6px 10px;">
+            <p class="description">მიუთითეთ თეგის/კატეგორიის ქართული სახელი ქართულენოვანი გვერდებისთვის.</p>
+        </td>
+    </tr>
+    <tr class="form-field term-group-wrap">
+        <th scope="row"><label for="zk_description_ka">ქართული აღწერა (Georgian Description)</label></th>
+        <td>
+            <textarea id="zk_description_ka" name="zk_description_ka" rows="6" cols="50" style="width: 100%; max-width: 500px; font-size: 14px; padding: 8px 10px; line-height: 1.5;"><?php echo esc_textarea($desc_ka); ?></textarea>
+            <p class="description">მიუთითეთ თეგის/კატეგორიის ქართული აღწერა ქართულენოვანი გვერდებისთვის.</p>
         </td>
     </tr>
     <?php
@@ -473,10 +564,14 @@ function zk_save_taxonomy_custom_fields($term_id) {
     if (isset($_POST['zk_name_ka'])) {
         update_term_meta($term_id, '_zk_name_ka', sanitize_text_field($_POST['zk_name_ka']));
     }
+    if (isset($_POST['zk_description_ka'])) {
+        update_term_meta($term_id, '_zk_description_ka', sanitize_textarea_field($_POST['zk_description_ka']));
+    }
 }
 
 function zk_taxonomy_columns($columns) {
     $columns['zk_name_ka'] = 'ქართული სახელი';
+    $columns['zk_desc_ka'] = 'ქართული აღწერა';
     return $columns;
 }
 
@@ -491,6 +586,16 @@ function zk_taxonomy_custom_column($content, $column_name, $term_id) {
             }
         }
         return $val ? '<strong>' . esc_html($val) . '</strong>' : '<span style="color:#bbb;">—</span>';
+    } elseif ($column_name === 'zk_desc_ka') {
+        $term = get_term($term_id);
+        $val = get_term_meta($term_id, '_zk_description_ka', true);
+        if (empty($val) && $term && !is_wp_error($term)) {
+            $val = zk_get_default_term_description($term->slug);
+            if (!empty($val)) {
+                return '<span style="color: #666; font-style: italic;">' . esc_html(wp_trim_words($val, 10)) . ' (default)</span>';
+            }
+        }
+        return $val ? esc_html(wp_trim_words($val, 10)) : '<span style="color:#bbb;">—</span>';
     }
     return $content;
 }
@@ -504,6 +609,37 @@ foreach (array('category', 'post_tag') as $tax) {
     add_filter("manage_{$tax}_custom_column", 'zk_taxonomy_custom_column', 10, 3);
 }
 
+// Auto-sync terms with default Georgian names and descriptions if not yet saved in DB
+function zk_sync_term_descriptions_ka() {
+    static $synced = false;
+    if ($synced) return;
+    $synced = true;
+
+    $terms = get_terms(array(
+        'taxonomy'   => array('category', 'post_tag'),
+        'hide_empty' => false,
+    ));
+    if (!empty($terms) && !is_wp_error($terms)) {
+        foreach ($terms as $term) {
+            $existing_desc = get_term_meta($term->term_id, '_zk_description_ka', true);
+            if (empty($existing_desc)) {
+                $default_desc = zk_get_default_term_description($term->slug);
+                if (!empty($default_desc)) {
+                    update_term_meta($term->term_id, '_zk_description_ka', $default_desc);
+                }
+            }
+            $existing_name = get_term_meta($term->term_id, '_zk_name_ka', true);
+            if (empty($existing_name)) {
+                $default_name = zk_get_default_term_translation($term->slug);
+                if (!empty($default_name)) {
+                    update_term_meta($term->term_id, '_zk_name_ka', $default_name);
+                }
+            }
+        }
+    }
+}
+add_action('init', 'zk_sync_term_descriptions_ka', 20);
+
 // Frontend term translation filters
 function zk_filter_get_term($term, $taxonomy = '') {
     if (is_admin()) return $term;
@@ -515,6 +651,13 @@ function zk_filter_get_term($term, $taxonomy = '') {
             }
             if (!empty($trans)) {
                 $term->name = $trans;
+            }
+            $desc_trans = get_term_meta($term->term_id, '_zk_description_ka', true);
+            if (empty($desc_trans) && isset($term->slug)) {
+                $desc_trans = zk_get_default_term_description($term->slug);
+            }
+            if (!empty($desc_trans)) {
+                $term->description = $desc_trans;
             }
         }
     }
@@ -539,6 +682,37 @@ function zk_filter_single_term_title($title) {
     return $title;
 }
 add_filter('single_term_title', 'zk_filter_single_term_title', 10, 1);
+
+function zk_filter_archive_description_ka($description) {
+    if (is_admin()) return $description;
+    if (function_exists('zk_get_current_language') && zk_get_current_language() === 'ka') {
+        $term = get_queried_object();
+        if ($term && !is_wp_error($term) && isset($term->term_id)) {
+            $desc_ka = zk_get_translated_term_description($term);
+            if (!empty($desc_ka)) {
+                return wpautop(wptexturize($desc_ka));
+            }
+        }
+    }
+    return $description;
+}
+add_filter('get_the_archive_description', 'zk_filter_archive_description_ka', 20);
+add_filter('the_archive_description', 'zk_filter_archive_description_ka', 20);
+
+function zk_filter_term_description_ka($description, $term_id = 0, $taxonomy = '') {
+    if (is_admin()) return $description;
+    if (function_exists('zk_get_current_language') && zk_get_current_language() === 'ka') {
+        $term = $term_id ? get_term($term_id, $taxonomy) : get_queried_object();
+        if ($term && !is_wp_error($term) && isset($term->term_id)) {
+            $desc_ka = zk_get_translated_term_description($term);
+            if (!empty($desc_ka)) {
+                return $desc_ka;
+            }
+        }
+    }
+    return $description;
+}
+add_filter('term_description', 'zk_filter_term_description_ka', 20, 3);
 
 // --- 5. LANGUAGE SWITCHER (TOP RIGHT HEADER) ---
 

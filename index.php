@@ -330,8 +330,19 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
         <p class="page__eyebrow"><?php echo esc_html( $eyebrow ); ?></p>
         <h1 class="page__title"><?php echo esc_html( $archive_title ); ?></h1>
 
-        <?php if ( get_the_archive_description() ) : ?>
-            <div class="page__description"><?php echo wp_kses_post( get_the_archive_description() ); ?></div>
+        <?php 
+        $archive_desc = get_the_archive_description();
+        if ( empty( $archive_desc ) && $is_ka ) {
+            $queried_obj = get_queried_object();
+            if ( $queried_obj && isset( $queried_obj->slug ) && function_exists( 'zk_get_default_term_description' ) ) {
+                $fallback_desc = zk_get_default_term_description( $queried_obj->slug );
+                if ( ! empty( $fallback_desc ) ) {
+                    $archive_desc = wpautop( wptexturize( $fallback_desc ) );
+                }
+            }
+        }
+        if ( $archive_desc ) : ?>
+            <div class="page__description"><?php echo wp_kses_post( $archive_desc ); ?></div>
         <?php endif; ?>
 
         <?php if ( have_posts() ) : ?>
