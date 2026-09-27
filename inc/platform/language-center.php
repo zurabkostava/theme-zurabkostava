@@ -116,6 +116,21 @@ function zk_language_center_post_types() {
     return $types;
 }
 
+/**
+ * Return true when post content contains human-readable copy after registered
+ * shortcodes and block comments are removed.
+ */
+function zk_language_center_has_translatable_content( $content ) {
+    if ( '' === trim( (string) $content ) ) {
+        return false;
+    }
+
+    $content = strip_shortcodes( (string) $content );
+    $content = preg_replace( '/<!--(?:.|\s)*?-->/', '', $content );
+    $content = str_replace( array( '&nbsp;', '&#160;' ), ' ', $content );
+    return '' !== trim( wp_strip_all_tags( $content ) );
+}
+
 function zk_language_center_audit_posts( $code ) {
     $post_types = array_keys( zk_language_center_post_types() );
     $posts = get_posts( array(
@@ -129,22 +144,44 @@ function zk_language_center_audit_posts( $code ) {
 
     $rows = array();
     foreach ( $posts as $post ) {
-        $required = array( 'title' );
+        $has_translatable_content = zk_language_center_has_translatable_content( $post->post_content );
+        $required = array(
+            'title' => zk_language_meta_key( 'title', $code ),
+        );
+
         if ( '' !== trim( wp_strip_all_tags( $post->post_excerpt ) ) ) {
-            $required[] = 'excerpt';
+            $required['excerpt'] = zk_language_meta_key( 'excerpt', $code );
         }
-        if ( '' !== trim( wp_strip_all_tags( $post->post_content ) ) ) {
-            $required[] = 'content';
+
+        // Shortcode-only pages render their main copy from the owning module,
+        // so only their raw page content is excluded from translation coverage.
+        if ( $has_translatable_content ) {
+            $required['content'] = zk_language_meta_key( 'content', $code );
+        }
+
+        // Require a translated SEO/GEO value only when an English source value
+        // exists. This avoids marking optional, unused metadata as missing.
+        $metadata_fields = array(
+            'SEO title'       => 'seo_title',
+            'SEO description' => 'seo_description',
+            'GEO summary'     => 'geo_ai_summary',
+            'GEO FAQ'         => 'geo_faq',
+        );
+        foreach ( $metadata_fields as $label => $field ) {
+            $source = get_post_meta( $post->ID, '_zk_' . $field, true );
+            if ( '' !== trim( wp_strip_all_tags( (string) $source ) ) ) {
+                $required[ $label ] = zk_language_meta_key( $field, $code );
+            }
         }
 
         $completed = 0;
         $missing   = array();
-        foreach ( $required as $field ) {
-            $value = get_post_meta( $post->ID, zk_language_meta_key( $field, $code ), true );
+        foreach ( $required as $label => $meta_key ) {
+            $value = get_post_meta( $post->ID, $meta_key, true );
             if ( '' !== trim( wp_strip_all_tags( (string) $value ) ) ) {
                 $completed++;
             } else {
-                $missing[] = $field;
+                $missing[] = $label;
             }
         }
 

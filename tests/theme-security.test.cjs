@@ -56,6 +56,20 @@ test('language registry preserves English and Georgian while supporting future l
     assert.match(manager, /zk_language_meta_key\( 'content', \$language \)/);
 });
 
+test('translation coverage ignores shortcode-only content and audits SEO/GEO translations', () => {
+    const center = read('inc/platform/language-center.php');
+
+    assert.match(center, /function zk_language_center_has_translatable_content/);
+    assert.match(center, /strip_shortcodes\( \(string\) \$content \)/);
+    assert.match(center, /\$required\['excerpt'\] = zk_language_meta_key\( 'excerpt', \$code \)/);
+    assert.match(center, /if \( \$has_translatable_content \)/);
+    assert.match(center, /'SEO title'\s*=>\s*'seo_title'/);
+    assert.match(center, /'SEO description'\s*=>\s*'seo_description'/);
+    assert.match(center, /'GEO summary'\s*=>\s*'geo_ai_summary'/);
+    assert.match(center, /'GEO FAQ'\s*=>\s*'geo_faq'/);
+    assert.match(center, /zk_language_meta_key\( \$field, \$code \)/);
+});
+
 test('photography filters follow the current language without sharing cached markup', () => {
     const source = read('functions.php');
     const center = read('inc/platform/language-center.php');
