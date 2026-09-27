@@ -604,6 +604,33 @@ function zk_render_language_switcher() {
     <?php
 }
 
+/**
+ * Convert Georgian text to Mtavruli (uppercase) and Latin to uppercase.
+ * Supports Unicode Mkhedruli (U+10D0..U+10FA) -> Mtavruli (U+1C90..U+1CBA) mapping.
+ *
+ * @param string $text
+ * @return string
+ */
+if ( ! function_exists( 'zk_uppercase_ka' ) ) {
+    function zk_uppercase_ka( $text ) {
+        if ( empty( $text ) || ! is_string( $text ) ) {
+            return $text;
+        }
 
+        static $map = null;
+        if ( null === $map ) {
+            $map = array(
+                'ა' => 'Ა', 'ბ' => 'Ბ', 'გ' => 'Გ', 'დ' => 'Დ', 'ე' => 'Ე',
+                'ვ' => 'Ვ', 'ზ' => 'Ზ', 'თ' => 'Თ', 'ი' => 'Ი', 'კ' => 'Კ',
+                'ლ' => 'Ლ', 'მ' => 'Მ', 'ნ' => 'Ნ', 'ო' => 'Ო', 'პ' => 'Პ',
+                'ჟ' => 'Ჟ', 'რ' => 'Რ', 'ს' => 'Ს', 'ტ' => 'Ტ', 'უ' => 'Უ',
+                'ფ' => 'Ფ', 'ქ' => 'Ქ', 'ღ' => 'Ღ', 'ყ' => 'Ყ', 'შ' => 'Შ',
+                'ჩ' => 'Ჩ', 'ც' => 'Ც', 'ძ' => 'Ძ', 'წ' => 'Წ', 'ჭ' => 'Ჭ',
+                'ხ' => 'Ხ', 'ჯ' => 'Ჯ', 'ჰ' => 'Ჰ'
+            );
+        }
 
-
+        $converted = strtr( $text, $map );
+        return strtoupper( $converted );
+    }
+}

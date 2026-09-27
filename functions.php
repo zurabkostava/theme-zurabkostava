@@ -59,7 +59,7 @@ function zk_resource_hints( $hints, $relation_type ) {
 add_filter( 'wp_resource_hints', 'zk_resource_hints', 10, 2 );
 
 function zk_assets() {
-    wp_enqueue_style( 'zk-fonts', 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap', array(), null );
+    wp_enqueue_style( 'zk-fonts', 'https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Georgian:wght@300;400;500;600;700&display=swap', array(), null );
 
     // CSS-ის მიბმა
     wp_enqueue_style( 'zk-style', get_stylesheet_uri(), array( 'zk-fonts' ), time() );
@@ -207,6 +207,10 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
                     $item_title = $ka_title;
                 }
             }
+        }
+
+        if ( function_exists('zk_get_current_language') && zk_get_current_language() === 'ka' && function_exists('zk_uppercase_ka') ) {
+            $item_title = zk_uppercase_ka( $item_title );
         }
 
         $route_attr = $is_external ? '' : ' data-route="' . esc_attr( $path ) . '"';
@@ -2964,13 +2968,16 @@ function zk_tools_shortcode() {
                 );
                 $status_display = isset( $status_map[$status_en] ) ? $status_map[$status_en] : $status_en;
             }
+            if ( function_exists( 'zk_uppercase_ka' ) ) {
+                $status_display = zk_uppercase_ka( $status_display );
+            }
         } else {
             $status_display = $status_en;
         }
 
         $btn_label_en = get_post_meta( $post_id, '_zk_tool_btn_label', true ) ?: 'Visit Project';
         $btn_label_ka = get_post_meta( $post_id, '_zk_tool_btn_label_ka', true ) ?: 'პროექტის ნახვა';
-        $btn_label    = $is_ka ? $btn_label_ka : $btn_label_en;
+        $btn_label    = $is_ka ? ( function_exists( 'zk_uppercase_ka' ) ? zk_uppercase_ka( $btn_label_ka ) : $btn_label_ka ) : $btn_label_en;
 
         $thumb_url    = get_the_post_thumbnail_url( $post_id, 'large' );
         $card_tag     = $link ? 'a' : 'div';
@@ -3110,6 +3117,9 @@ function zk_visual_hub_shortcode() {
     $cards    = isset( $settings['cards'] ) ? $settings['cards'] : array();
 
     $badge_text = $is_ka ? ( ! empty( $intro['badge_ka'] ) ? $intro['badge_ka'] : ( isset( $intro['badge_en'] ) ? $intro['badge_en'] : '' ) ) : ( isset( $intro['badge_en'] ) ? $intro['badge_en'] : '' );
+    if ( $is_ka && function_exists( 'zk_uppercase_ka' ) && ! empty( $badge_text ) ) {
+        $badge_text = zk_uppercase_ka( $badge_text );
+    }
     $intro_text = $is_ka ? ( ! empty( $intro['intro_ka'] ) ? $intro['intro_ka'] : ( isset( $intro['intro_en'] ) ? $intro['intro_en'] : '' ) ) : ( isset( $intro['intro_en'] ) ? $intro['intro_en'] : '' );
 
     $output = '';
@@ -3269,10 +3279,24 @@ function zk_visual_hub_shortcode() {
 }
 
 /* Arrow & Action */
+.zk-visual-badge,
+.zk-visual-hub-badge {
+    text-transform: uppercase !important;
+    font-feature-settings: "case" 1 !important;
+    letter-spacing: 0.08em !important;
+}
+.zk-visual-title,
+.zk-visual-desc,
+.zk-visual-action-label,
+.zk-visual-badge,
+.zk-visual-hub-badge {
+    font-family: var(--font) !important;
+}
 .zk-visual-action-label {
     font-size: 0.82rem !important;
     font-weight: 600 !important;
     text-transform: uppercase !important;
+    font-feature-settings: "case" 1 !important;
     letter-spacing: 0.08em !important;
     color: rgba(255, 255, 255, 0.6) !important;
     opacity: 0 !important;
@@ -3378,7 +3402,8 @@ function zk_visual_hub_shortcode() {
         $accent_rgb   = function_exists( 'zk_hex2rgb' ) ? zk_hex2rgb( $accent_color ) : '99, 102, 241';
         $image_url    = ! empty( $card['image_url'] ) ? $card['image_url'] : '';
         $bg_style     = ! empty( $image_url ) ? 'style="background-image: url(\'' . esc_url( $image_url ) . '\');"' : '';
-        $action_label = $is_ka ? 'ნახვა' : 'Explore';
+        $action_label = $is_ka ? ( function_exists( 'zk_uppercase_ka' ) ? zk_uppercase_ka( 'ნახვა' ) : 'ნახვა' ) : 'Explore';
+        $badge_display = ( $is_ka && function_exists( 'zk_uppercase_ka' ) ) ? zk_uppercase_ka( $badge ) : $badge;
 
         $output .= '<div class="zk-visual-item" style="--card-accent: ' . esc_attr( $accent_color ) . '; --card-accent-rgb: ' . esc_attr( $accent_rgb ) . ';">';
 
@@ -3406,7 +3431,7 @@ function zk_visual_hub_shortcode() {
         $output .= '<div class="zk-visual-top">';
         $output .= '<span class="zk-visual-badge">';
         $output .= '<span class="zk-visual-dot" style="background-color: ' . esc_attr( $accent_color ) . ';" aria-hidden="true"></span>';
-        $output .= esc_html( $badge );
+        $output .= esc_html( $badge_display );
         $output .= '</span>';
         $output .= '<span class="zk-visual-index" aria-hidden="true">' . sprintf( '%02d', $index ) . '</span>';
         $output .= '</div>';

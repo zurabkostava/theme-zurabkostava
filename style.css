@@ -35,11 +35,49 @@
 	--ease-soft:   cubic-bezier(0.4, 0, 0.2, 1);
 
 	/* Type */
-	--font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+	--font: 'Google Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+	--font-ka: 'Google Sans', 'Noto Sans Georgian', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
 	/* Layers */
 	--z-header:  1000;
 	--z-overlay: 1100;
+}
+
+/* ============================================================
+   GEORGIAN TYPOGRAPHY (GOOGLE SANS & MTAVRULI UPPERCASE)
+   ============================================================ */
+:lang(ka),
+:lang(ka-GE),
+[lang^="ka"],
+html[lang^="ka"],
+html[lang^="ka"] body {
+	font-family: var(--font-ka);
+	font-feature-settings: "case" 1;
+}
+
+/* Ensure all uppercase elements render Georgian Mtavruli */
+.nav-link,
+.dropdown-link,
+.page__eyebrow,
+.page__meta,
+.zk-breadcrumbs,
+.zk-nav-label,
+.zk-tags-label,
+.zk-card-category,
+.zk-card-date,
+.zk-sort-trigger,
+.zk-sort-option,
+.zk-gallery-filter,
+.zk-filter-btn,
+.zk-visual-hub-badge,
+.zk-visual-badge,
+.zk-visual-action-label,
+.zk-tool-status,
+.zk-tool-link-text,
+.zk-tool-badge,
+[style*="uppercase"] {
+	text-transform: uppercase;
+	font-feature-settings: "case" 1;
 }
 
 /* ============================================================

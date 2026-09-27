@@ -239,7 +239,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
         if ( is_single() && $post_tags ) :
             ?>
             <div class="zk-post-tags">
-                <span class="zk-tags-label"><?php echo ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' ) ? 'თემები:' : 'Topics:'; ?></span>
+                <span class="zk-tags-label"><?php echo ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' ) ? ( function_exists( 'zk_uppercase_ka' ) ? zk_uppercase_ka( 'თემები:' ) : 'თემები:' ) : 'Topics:'; ?></span>
                 <div class="zk-tags-list">
                     <?php foreach( $post_tags as $tag ) :
                         $tag_link = get_tag_link( $tag->term_id );
@@ -259,6 +259,9 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
         $next_post = get_next_post();
 
         if ( is_single() && ( $prev_post || $next_post ) ) :
+            $is_ka_nav = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
+            $prev_label = $is_ka_nav ? ( function_exists('zk_uppercase_ka') ? zk_uppercase_ka('წინა') : 'წინა' ) : 'Previous';
+            $next_label = $is_ka_nav ? ( function_exists('zk_uppercase_ka') ? zk_uppercase_ka('შემდეგი') : 'შემდეგი' ) : 'Next';
             ?>
             <nav class="zk-post-nav">
                 <?php if ( $prev_post ) :
@@ -268,7 +271,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                     $prev_style = $prev_img ? 'style="--nav-bg: url(\'' . esc_url( $prev_img ) . '\');"' : '';
                     ?>
                     <a href="<?php echo esc_url( $prev_url ); ?>" data-route="<?php echo esc_attr( $prev_path ); ?>" class="zk-nav-link zk-nav-prev" <?php echo $prev_style; ?>>
-                        <span class="zk-nav-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Previous</span>
+                        <span class="zk-nav-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> <?php echo esc_html( $prev_label ); ?></span>
                         <span class="zk-nav-title"><?php echo esc_html( get_the_title( $prev_post ) ); ?></span>
                     </a>
                 <?php else : ?>
@@ -282,7 +285,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                     $next_style = $next_img ? 'style="--nav-bg: url(\'' . esc_url( $next_img ) . '\');"' : '';
                     ?>
                     <a href="<?php echo esc_url( $next_url ); ?>" data-route="<?php echo esc_attr( $next_path ); ?>" class="zk-nav-link zk-nav-next" <?php echo $next_style; ?>>
-                        <span class="zk-nav-label">Next <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
+                        <span class="zk-nav-label"><?php echo esc_html( $next_label ); ?> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
                         <span class="zk-nav-title"><?php echo esc_html( get_the_title( $next_post ) ); ?></span>
                     </a>
                 <?php else : ?>
@@ -308,13 +311,13 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
 
     // ვარკვევთ რის არქივში ვართ
     if ( is_tag() ) {
-        $eyebrow = $is_ka ? 'თემა' : 'Topic';
+        $eyebrow = $is_ka ? ( function_exists('zk_uppercase_ka') ? zk_uppercase_ka('თემა') : 'თემა' ) : 'Topic';
         $archive_title = single_tag_title( '', false );
     } elseif ( is_category() ) {
-        $eyebrow = $is_ka ? 'კატეგორია' : 'Category';
+        $eyebrow = $is_ka ? ( function_exists('zk_uppercase_ka') ? zk_uppercase_ka('კატეგორია') : 'კატეგორია' ) : 'Category';
         $archive_title = single_cat_title( '', false );
     } elseif ( is_search() ) {
-        $eyebrow = $is_ka ? 'ძიების შედეგები' : 'Search Results';
+        $eyebrow = $is_ka ? ( function_exists('zk_uppercase_ka') ? zk_uppercase_ka('ძიების შედეგები') : 'ძიების შედეგები' ) : 'Search Results';
         $archive_title = get_search_query();
     }
 
@@ -338,12 +341,12 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                     </div>
                     <div class="zk-sort-dropdown" id="sortDropdown">
                         <button class="zk-sort-trigger" type="button" aria-expanded="false">
-                            <span class="zk-sort-label"><?php echo $is_ka ? 'სორტირება: ' : 'Sort by: '; ?></span><span class="zk-sort-current"><?php echo $is_ka ? 'უახლესი' : 'Newest'; ?></span>
+                            <span class="zk-sort-label"><?php echo $is_ka ? 'სორტირება: ' : 'Sort by: '; ?></span><span class="zk-sort-current"><?php echo $is_ka ? ( function_exists('zk_uppercase_ka') ? zk_uppercase_ka('უახლესი') : 'უახლესი' ) : 'Newest'; ?></span>
                             <svg class="dropdown-caret" width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
                         <div class="zk-sort-menu">
-                            <button class="zk-sort-option is-selected" type="button" data-sort="desc"><?php echo $is_ka ? 'უახლესი' : 'Newest'; ?></button>
-                            <button class="zk-sort-option" type="button" data-sort="asc"><?php echo $is_ka ? 'უძველესი' : 'Oldest'; ?></button>
+                            <button class="zk-sort-option is-selected" type="button" data-sort="desc"><?php echo $is_ka ? ( function_exists('zk_uppercase_ka') ? zk_uppercase_ka('უახლესი') : 'უახლესი' ) : 'Newest'; ?></button>
+                            <button class="zk-sort-option" type="button" data-sort="asc"><?php echo $is_ka ? ( function_exists('zk_uppercase_ka') ? zk_uppercase_ka('უძველესი') : 'უძველესი' ) : 'Oldest'; ?></button>
                         </div>
                     </div>
                 </div>
