@@ -3114,6 +3114,231 @@ function zk_visual_hub_shortcode() {
 
     $output = '';
 
+    // Guaranteed inline styles (eliminates any CDN/browser stylesheet caching issues)
+    $output .= '<style id="zk-visual-hub-styles">
+.zk-visual-hub {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 36px !important;
+    margin-top: 1.5rem !important;
+    margin-bottom: 3.5rem !important;
+}
+@media (max-width: 860px) {
+    .zk-visual-hub {
+        grid-template-columns: 1fr !important;
+        gap: 28px !important;
+    }
+}
+.zk-visual-item {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border-radius: 24px !important;
+}
+/* Natural, Organic, Diffused Atmospheric Halo */
+.zk-visual-halo {
+    position: absolute !important;
+    inset: -55px -65px !important;
+    border-radius: 64px !important;
+    background: radial-gradient(
+        ellipse 85% 75% at 50% 50%,
+        rgba(var(--card-accent-rgb, 99, 102, 241), 0.52) 0%,
+        rgba(var(--card-accent-rgb, 99, 102, 241), 0.28) 32%,
+        rgba(var(--card-accent-rgb, 99, 102, 241), 0.10) 58%,
+        rgba(var(--card-accent-rgb, 99, 102, 241), 0.02) 75%,
+        transparent 88%
+    ) !important;
+    filter: blur(65px) !important;
+    -webkit-filter: blur(65px) !important;
+    opacity: 0.2 !important;
+    transform: translate3d(0, 0, 0) scale(0.92) !important;
+    will-change: transform, opacity !important;
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    pointer-events: none !important;
+    z-index: 0 !important;
+}
+.zk-visual-item:hover .zk-visual-halo {
+    opacity: 0.88 !important;
+    transform: translate3d(0, -10px, 0) scale(1.12) !important;
+}
+
+/* Card Container */
+.zk-visual-card {
+    position: relative !important;
+    z-index: 1 !important;
+    width: 100% !important;
+    flex: 1 !important;
+    border-radius: 24px !important;
+    overflow: hidden !important;
+    min-height: 380px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+    text-decoration: none !important;
+    background: #090c13 !important;
+    border: 1px solid rgba(255, 255, 255, 0.09) !important;
+    transform: translate3d(0, 0, 0) !important;
+    will-change: transform, box-shadow, border-color !important;
+    transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.55s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+}
+@media (max-width: 768px) {
+    .zk-visual-card {
+        min-height: 290px !important;
+        border-radius: 20px !important;
+    }
+}
+.zk-visual-item:hover .zk-visual-card,
+.zk-visual-card:hover {
+    transform: translate3d(0, -10px, 0) !important;
+    border-color: rgba(255, 255, 255, 0.28) !important;
+    box-shadow: 0 30px 65px -15px rgba(0, 0, 0, 0.85) !important;
+    transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.55s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Inner Background Image Layer */
+.zk-visual-bg {
+    position: absolute !important;
+    inset: 0 !important;
+    background-size: cover !important;
+    background-position: center !important;
+    transform: scale(1) !important;
+    filter: brightness(0.65) saturate(1.1) !important;
+    will-change: transform, filter !important;
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 0.7s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    z-index: 1 !important;
+}
+.zk-visual-item:hover .zk-visual-bg,
+.zk-visual-card:hover .zk-visual-bg {
+    transform: scale(1.06) !important;
+    filter: brightness(0.85) saturate(1.22) !important;
+}
+
+/* Inner Aura */
+.zk-visual-aura {
+    position: absolute !important;
+    inset: 0 !important;
+    background: radial-gradient(circle at 80% 20%, rgba(var(--card-accent-rgb, 99, 102, 241), 0.35) 0%, transparent 65%) !important;
+    opacity: 0.2 !important;
+    will-change: opacity !important;
+    transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    z-index: 2 !important;
+    pointer-events: none !important;
+}
+.zk-visual-item:hover .zk-visual-aura,
+.zk-visual-card:hover .zk-visual-aura {
+    opacity: 0.52 !important;
+}
+
+/* Typography Hover */
+.zk-visual-title {
+    font-size: clamp(1.65rem, 2.3vw, 2.15rem) !important;
+    font-weight: 600 !important;
+    color: #ffffff !important;
+    margin: 0 0 8px 0 !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.025em !important;
+    transform: translate3d(0, 0, 0) !important;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s ease !important;
+}
+.zk-visual-item:hover .zk-visual-title,
+.zk-visual-card:hover .zk-visual-title {
+    transform: translate3d(0, -2px, 0) !important;
+}
+.zk-visual-desc {
+    font-size: 0.92rem !important;
+    line-height: 1.55 !important;
+    color: rgba(255, 255, 255, 0.72) !important;
+    margin: 0 !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.01em !important;
+    opacity: 1 !important;
+    transform: translate3d(0, 0, 0) !important;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease !important;
+}
+.zk-visual-item:hover .zk-visual-desc,
+.zk-visual-card:hover .zk-visual-desc {
+    transform: translate3d(0, -1px, 0) !important;
+    color: rgba(255, 255, 255, 0.96) !important;
+}
+
+/* Arrow & Action */
+.zk-visual-action-label {
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+    opacity: 0 !important;
+    transform: translate3d(8px, 0, 0) !important;
+    transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.zk-visual-item:hover .zk-visual-action-label,
+.zk-visual-card:hover .zk-visual-action-label {
+    opacity: 1 !important;
+    transform: translate3d(0, 0, 0) !important;
+}
+
+.zk-visual-arrow {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #ffffff !important;
+    transform: scale(1) !important;
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                background 0.4s ease,
+                border-color 0.4s ease,
+                box-shadow 0.4s ease,
+                color 0.4s ease !important;
+}
+.zk-visual-arrow svg {
+    width: 18px !important;
+    height: 18px !important;
+    transform: translate3d(0, 0, 0) !important;
+    transition: transform 0.35s ease !important;
+}
+.zk-visual-item:hover .zk-visual-arrow,
+.zk-visual-card:hover .zk-visual-arrow {
+    background: var(--card-accent, #ffffff) !important;
+    border-color: transparent !important;
+    color: #08090d !important;
+    transform: scale(1.08) !important;
+    box-shadow: 0 0 25px var(--card-accent, rgba(255, 255, 255, 0.45)) !important;
+}
+.zk-visual-item:hover .zk-visual-arrow svg,
+.zk-visual-card:hover .zk-visual-arrow svg {
+    transform: translate3d(2px, 0, 0) !important;
+}
+
+/* Ensure smooth animations even if OS reduced motion is active */
+@media (prefers-reduced-motion: reduce) {
+    .zk-visual-card,
+    .zk-visual-halo,
+    .zk-visual-bg,
+    .zk-visual-aura,
+    .zk-visual-arrow,
+    .zk-visual-title,
+    .zk-visual-desc,
+    .zk-visual-action-label {
+        transition-duration: 0.55s !important;
+    }
+}
+</style>';
+
     // Optional Intro Lead Header
     if ( ! empty( $intro_text ) || ! empty( $badge_text ) ) {
         $output .= '<div class="zk-visual-hub-intro">';
@@ -3149,15 +3374,20 @@ function zk_visual_hub_shortcode() {
         $parsed_route = parse_url( $full_url, PHP_URL_PATH );
         $spa_route    = ! empty( $parsed_route ) ? $parsed_route : $link;
 
-        $accent_color = ! empty( $card['accent_color'] ) ? $card['accent_color'] : '#ffffff';
+        $accent_color = ! empty( $card['accent_color'] ) ? $card['accent_color'] : '#6366f1';
+        $accent_rgb   = function_exists( 'zk_hex2rgb' ) ? zk_hex2rgb( $accent_color ) : '99, 102, 241';
         $image_url    = ! empty( $card['image_url'] ) ? $card['image_url'] : '';
         $bg_style     = ! empty( $image_url ) ? 'style="background-image: url(\'' . esc_url( $image_url ) . '\');"' : '';
         $action_label = $is_ka ? 'ნახვა' : 'Explore';
 
+        $output .= '<div class="zk-visual-item" style="--card-accent: ' . esc_attr( $accent_color ) . '; --card-accent-rgb: ' . esc_attr( $accent_rgb ) . ';">';
+
+        // Natural, Diffused Halo element
+        $output .= '<div class="zk-visual-halo" aria-hidden="true"></div>';
+
         $output .= '<a href="' . esc_url( $full_url ) . '" ';
         $output .= 'data-route="' . esc_attr( $spa_route ) . '" ';
         $output .= 'class="zk-visual-card ' . esc_attr( $card['class'] ) . '" ';
-        $output .= 'style="--card-accent: ' . esc_attr( $accent_color ) . ';" ';
         $output .= 'aria-label="' . esc_attr( $title . ' — ' . $badge ) . '">';
 
         // Ambient Aura
@@ -3202,6 +3432,7 @@ function zk_visual_hub_shortcode() {
         $output .= '</div>'; // .zk-visual-inner
 
         $output .= '</a>';
+        $output .= '</div>'; // .zk-visual-item
 
         $schema_items[] = array(
             '@type'       => 'CreativeWork',

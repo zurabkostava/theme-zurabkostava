@@ -8,6 +8,24 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+if ( ! function_exists( 'zk_hex2rgb' ) ) {
+    function zk_hex2rgb( $hex ) {
+        $hex = trim( $hex, '#' );
+        if ( strlen( $hex ) === 3 ) {
+            $r = hexdec( $hex[0] . $hex[0] );
+            $g = hexdec( $hex[1] . $hex[1] );
+            $b = hexdec( $hex[2] . $hex[2] );
+        } elseif ( strlen( $hex ) === 6 ) {
+            $r = hexdec( substr( $hex, 0, 2 ) );
+            $g = hexdec( substr( $hex, 2, 2 ) );
+            $b = hexdec( substr( $hex, 4, 2 ) );
+        } else {
+            return '99, 102, 241';
+        }
+        return "$r, $g, $b";
+    }
+}
+
 /**
  * Default Cards Configuration
  */
