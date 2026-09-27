@@ -3221,9 +3221,11 @@ body.zk-lb-open { overflow: hidden; }
     text-decoration: none !important;
     background: #090c13;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    transform: translateZ(0);
-    transition: border-color 0.4s var(--ease),
-                box-shadow 0.4s var(--ease);
+    transform: translateY(0);
+    will-change: transform, box-shadow;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 @media (max-width: 768px) {
@@ -3233,8 +3235,9 @@ body.zk-lb-open { overflow: hidden; }
     }
 }
 .zk-visual-card:hover {
+    transform: translateY(-8px);
     border-color: rgba(255, 255, 255, 0.24);
-    box-shadow: 0 18px 45px -10px rgba(0, 0, 0, 0.75),
+    box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.8),
                 0 0 35px -6px var(--card-accent, rgba(255, 255, 255, 0.18));
 }
 
@@ -3376,7 +3379,11 @@ body.zk-lb-open { overflow: hidden; }
     margin: 0 0 8px 0 !important;
     line-height: 1.15 !important;
     letter-spacing: -0.025em !important;
-    transition: color 0.4s var(--ease);
+    transform: translateY(0);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), color 0.4s var(--ease);
+}
+.zk-visual-card:hover .zk-visual-title {
+    transform: translateY(-2px);
 }
 .zk-visual-desc {
     font-size: 0.92rem !important;
@@ -3387,9 +3394,10 @@ body.zk-lb-open { overflow: hidden; }
     letter-spacing: 0.01em !important;
     opacity: 1 !important;
     transform: translateY(0);
-    transition: color 0.3s ease;
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s ease;
 }
 .zk-visual-card:hover .zk-visual-desc {
+    transform: translateY(-1px);
     color: rgba(255, 255, 255, 0.92) !important;
 }
 
