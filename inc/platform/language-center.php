@@ -85,7 +85,23 @@ function zk_language_center_audit_posts( $code ) {
     ) );
 
     $rows = array();
+    $ignored_templates = apply_filters( 'zk_language_center_ignored_templates', array(
+        'page-instavery.php',
+        'page-wordevo.php',
+        'page-reader.php',
+        'template-analytics.php',
+        'book-engine/template-book-manager.php',
+        'book-engine/template-book-reader.php',
+        'encrolib/template-encrolib.php',
+    ) );
+    $ignored_post_types = apply_filters( 'zk_language_center_ignored_post_types', array( 'zk_tool' ) );
     foreach ( $posts as $post ) {
+        if ( in_array( $post->post_type, $ignored_post_types, true ) ) {
+            continue;
+        }
+        if ( 'page' === $post->post_type && in_array( get_page_template_slug( $post->ID ), $ignored_templates, true ) ) {
+            continue;
+        }
         $required = array( 'title' );
         if ( '' !== trim( wp_strip_all_tags( $post->post_excerpt ) ) ) {
             $required[] = 'excerpt';
@@ -164,7 +180,7 @@ function zk_render_language_center() {
     ?>
     <div class="wrap zk-language-center">
         <h1>Language Center</h1>
-        <p>Manage site languages and see which public content still needs translation. English is the source language; empty translations safely fall back to English.</p>
+        <p>Manage site languages and see which public content still needs translation. English is the source language; empty translations safely fall back to English. Test applications and project entries are currently excluded from coverage.</p>
         <?php if ( isset( $_GET['updated'] ) ) : ?><div class="notice notice-success is-dismissible"><p>Languages saved.</p></div><?php endif; ?>
 
         <style>
