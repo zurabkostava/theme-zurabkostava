@@ -262,10 +262,23 @@
                 viewEl.setAttribute('data-route', data.route);
                 document.title = data.title;
 
-                // The Georgian homepage is rendered with data-route="/", so use the
-                // destination URL as the language source of truth during SPA changes.
-                var isKa = (u.pathname === '/ka' || u.pathname.indexOf('/ka/') === 0);
-                document.documentElement.lang = isKa ? 'ka-GE' : 'en-US';
+                // Use the destination URL as the language source of truth during
+                // SPA changes. The registry also supports languages added later.
+                var nextLocale = 'en-US';
+                if (window.ZK && Array.isArray(window.ZK.languages)) {
+                    for (var languageIndex = 0; languageIndex < window.ZK.languages.length; languageIndex++) {
+                        var language = window.ZK.languages[languageIndex];
+                        if (!language.prefix) continue;
+                        var languageRoot = '/' + language.prefix;
+                        if (u.pathname === languageRoot || u.pathname.indexOf(languageRoot + '/') === 0) {
+                            nextLocale = language.locale || language.code;
+                            break;
+                        }
+                    }
+                } else if (u.pathname === '/ka' || u.pathname.indexOf('/ka/') === 0) {
+                    nextLocale = 'ka-GE';
+                }
+                document.documentElement.lang = nextLocale;
                 
                 if (data.headTags !== undefined) {
                     var oldTags = document.head.querySelectorAll('meta[name="description"], meta[name="abstract"], meta[name="robots"], meta[property^="og:"], meta[name^="twitter:"], link[rel="canonical"], link[rel="alternate"][hreflang], script[type="application/ld+json"]');

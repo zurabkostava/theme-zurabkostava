@@ -7,7 +7,9 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // No direct access.
 }
 
+require_once get_template_directory() . '/inc/platform/languages.php';
 require_once get_template_directory() . '/inc/language-manager.php';
+require_once get_template_directory() . '/inc/platform/language-center.php';
 require_once get_template_directory() . '/inc/visual-hub-admin.php';
 require_once get_template_directory() . '/inc/platform/assets.php';
 require_once get_template_directory() . '/inc/platform/security.php';
@@ -69,9 +71,20 @@ function zk_assets() {
     wp_enqueue_script( 'zk-app', get_stylesheet_directory_uri() . '/app.js', array('zk-galaxy-bg', 'zk-analytics'), filemtime( get_stylesheet_directory() . '/app.js' ), true );
 
     // აქ ვაწვდით დინამიურ ლინკებს
+    $language_data = array();
+    if ( function_exists( 'zk_get_languages' ) ) {
+        foreach ( zk_get_languages() as $code => $language ) {
+            $language_data[] = array(
+                'code'   => $code,
+                'locale' => $language['locale'],
+                'prefix' => $language['prefix'],
+            );
+        }
+    }
     wp_localize_script( 'zk-analytics', 'ZK', array(
             'home' => home_url( '/' ),
             'site' => get_bloginfo( 'name' ),
+            'languages' => $language_data,
     ) );
 }
 add_action( 'wp_enqueue_scripts', 'zk_assets' );
@@ -4008,29 +4021,27 @@ function zk_get_clean_bilingual_urls() {
         }
     }
 
-    // Strip leading /ka or /ka/ from path to obtain pure English path
-    $en_path = preg_replace('#^/ka(?=/|$)#', '', $path);
-    if ($en_path === '') {
-        $en_path = '/';
-    }
-    if ($en_path[0] !== '/') {
-        $en_path = '/' . $en_path;
-    }
-
-    $ka_path = ($en_path === '/') ? '/ka/' : '/ka' . $en_path;
+    $en_path = function_exists( 'zk_strip_language_prefix' ) ? zk_strip_language_prefix( $path ) : preg_replace('#^/ka(?=/|$)#', '', $path);
+    if ( ! $en_path ) $en_path = '/';
 
     $home_url = untrailingslashit(get_option('home'));
     if (empty($home_url)) {
         $home_url = 'https://zurabkostava.com';
     }
 
-    $is_ka = (function_exists('zk_get_current_language') && zk_get_current_language() === 'ka');
+    $current = function_exists('zk_get_current_language') ? zk_get_current_language() : 'en';
+    $urls = array();
+    foreach ( zk_get_languages() as $code => $language ) {
+        $urls[ $code ] = $home_url . zk_get_language_path( $en_path, $code );
+    }
 
     return array(
-        'is_ka'         => $is_ka,
-        'en_url'        => $home_url . $en_path,
-        'ka_url'        => $home_url . $ka_path,
-        'canonical_url' => $home_url . ($is_ka ? $ka_path : $en_path),
+        'is_ka'         => 'ka' === $current,
+        'current'       => $current,
+        'urls'          => $urls,
+        'en_url'        => $urls['en'],
+        'ka_url'        => $urls['ka'],
+        'canonical_url' => isset( $urls[ $current ] ) ? $urls[ $current ] : $urls['en'],
     );
 }
 
@@ -4219,8 +4230,9 @@ function zk_render_seo_meta() {
     echo "<link rel=\"canonical\" href=\"" . esc_url( $canonical_url ) . "\" />\n";
 
     // Multi-Language hreflang alternate links (Crucial for Google Bilingual SEO)
-    echo "<link rel=\"alternate\" hreflang=\"en\" href=\"" . esc_url( $en_url ) . "\" />\n";
-    echo "<link rel=\"alternate\" hreflang=\"ka\" href=\"" . esc_url( $ka_url ) . "\" />\n";
+    foreach ( $seo_urls['urls'] as $language_code => $language_url ) {
+        echo "<link rel=\"alternate\" hreflang=\"" . esc_attr( $language_code ) . "\" href=\"" . esc_url( $language_url ) . "\" />\n";
+    }
     echo "<link rel=\"alternate\" hreflang=\"x-default\" href=\"" . esc_url( $en_url ) . "\" />\n";
     
     // Open Graph
@@ -4565,6 +4577,24 @@ add_action('init', 'zk_clean_head');
 add_filter('wp_sitemaps_enabled', '__return_false');
 
 // 2. Dynamic SEO File Generators (Bypasses File Permissions and NGINX rewrites)
+function zk_sitemap_language_entries( $path, $lastmod, $changefreq, $priority ) {
+    $home = untrailingslashit( get_option( 'home', 'https://zurabkostava.com' ) );
+    $urls = array();
+    foreach ( zk_get_languages() as $code => $language ) {
+        $urls[ $code ] = esc_url( $home . zk_get_language_path( $path, $code ) );
+    }
+
+    $xml = '';
+    foreach ( $urls as $url ) {
+        $xml .= "  <url>\n    <loc>{$url}</loc>\n";
+        foreach ( $urls as $code => $alternate ) {
+            $xml .= "    <xhtml:link rel=\"alternate\" hreflang=\"" . esc_attr( $code ) . "\" href=\"{$alternate}\" />\n";
+        }
+        $xml .= "    <lastmod>{$lastmod}</lastmod>\n    <changefreq>{$changefreq}</changefreq>\n    <priority>{$priority}</priority>\n  </url>\n";
+    }
+    return $xml;
+}
+
 function zk_generate_sitemap_string() {
     $sitemap_content = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     $sitemap_content .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">' . "\n";
@@ -4572,30 +4602,8 @@ function zk_generate_sitemap_string() {
     $date = date('c');
     $custom_routes = ['/', '/music/', '/encrolib/', '/contact/'];
     foreach ($custom_routes as $route) {
-        $en_url = esc_url( home_url( $route ) );
-        $ka_route = ($route === '/') ? '/ka/' : '/ka' . $route;
-        $ka_url = esc_url( home_url( $ka_route ) );
         $priority = ($route === '/' ? '1.0' : '0.8');
-
-        // English entry
-        $sitemap_content .= "  <url>\n";
-        $sitemap_content .= "    <loc>{$en_url}</loc>\n";
-        $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"en\" href=\"{$en_url}\" />\n";
-        $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"ka\" href=\"{$ka_url}\" />\n";
-        $sitemap_content .= "    <lastmod>{$date}</lastmod>\n";
-        $sitemap_content .= "    <changefreq>weekly</changefreq>\n";
-        $sitemap_content .= "    <priority>{$priority}</priority>\n";
-        $sitemap_content .= "  </url>\n";
-
-        // Georgian entry
-        $sitemap_content .= "  <url>\n";
-        $sitemap_content .= "    <loc>{$ka_url}</loc>\n";
-        $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"en\" href=\"{$en_url}\" />\n";
-        $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"ka\" href=\"{$ka_url}\" />\n";
-        $sitemap_content .= "    <lastmod>{$date}</lastmod>\n";
-        $sitemap_content .= "    <changefreq>weekly</changefreq>\n";
-        $sitemap_content .= "    <priority>{$priority}</priority>\n";
-        $sitemap_content .= "  </url>\n";
+        $sitemap_content .= zk_sitemap_language_entries( $route, $date, 'weekly', $priority );
     }
 
     $query = new WP_Query([
@@ -4610,32 +4618,9 @@ function zk_generate_sitemap_string() {
             $perm = get_permalink();
             $parsed = parse_url($perm);
             $p = isset($parsed['path']) ? $parsed['path'] : '/';
-            $en_p = preg_replace('#^/ka(?=/|$)#', '', $p);
-            $ka_p = ($en_p === '/') ? '/ka/' : '/ka' . $en_p;
-            
-            $en_url = esc_url( home_url( $en_p ) );
-            $ka_url = esc_url( home_url( $ka_p ) );
+            $en_p = zk_strip_language_prefix( $p );
             $lastmod = get_the_modified_date('c');
-
-            // English entry
-            $sitemap_content .= "  <url>\n";
-            $sitemap_content .= "    <loc>{$en_url}</loc>\n";
-            $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"en\" href=\"{$en_url}\" />\n";
-            $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"ka\" href=\"{$ka_url}\" />\n";
-            $sitemap_content .= "    <lastmod>{$lastmod}</lastmod>\n";
-            $sitemap_content .= "    <changefreq>monthly</changefreq>\n";
-            $sitemap_content .= "    <priority>0.6</priority>\n";
-            $sitemap_content .= "  </url>\n";
-
-            // Georgian entry
-            $sitemap_content .= "  <url>\n";
-            $sitemap_content .= "    <loc>{$ka_url}</loc>\n";
-            $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"en\" href=\"{$en_url}\" />\n";
-            $sitemap_content .= "    <xhtml:link rel=\"alternate\" hreflang=\"ka\" href=\"{$ka_url}\" />\n";
-            $sitemap_content .= "    <lastmod>{$lastmod}</lastmod>\n";
-            $sitemap_content .= "    <changefreq>monthly</changefreq>\n";
-            $sitemap_content .= "    <priority>0.6</priority>\n";
-            $sitemap_content .= "  </url>\n";
+            $sitemap_content .= zk_sitemap_language_entries( $en_p, $lastmod, 'monthly', '0.6' );
         }
         wp_reset_postdata();
     }

@@ -59,6 +59,12 @@ English is the canonical content source. Georgian fields use the existing `_zk_*
 
 Database repair and seed work runs as versioned migrations. Public page requests must remain read-only apart from deliberate analytics and user-owned application state.
 
+### Language Center
+
+`Language Center` is the administrative source of truth for enabled languages and translation coverage. English remains the source language and Georgian keeps its existing `_zk_*_ka` metadata. New languages use the same metadata convention, for example `_zk_title_de`, `_zk_excerpt_de`, and `_zk_content_de`.
+
+New languages are created in a disabled state. Their content can be prepared and audited before they are enabled in the public switcher, alternate-language metadata, and sitemap. Language definitions include a code, locale, native name, and URL prefix. Language definitions are never deleted automatically, so disabling a language preserves its translations.
+
 ## Security rules
 
 - No maintenance script may execute from a public browser request.

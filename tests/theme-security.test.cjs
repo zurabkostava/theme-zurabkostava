@@ -36,10 +36,24 @@ test('analytics mutations are tied to the originating visitor and session', () =
     assert.doesNotMatch(security, /HTTP_CLIENT_IP/);
 });
 
-test('SPA language follows the destination URL, including the Georgian homepage', () => {
+test('SPA language follows the destination URL and the language registry', () => {
     const source = read('app.js');
-    assert.match(source, /u\.pathname === '\/ka'/);
-    assert.match(source, /document\.documentElement\.lang = isKa \? 'ka-GE' : 'en-US'/);
+    assert.match(source, /window\.ZK\.languages/);
+    assert.match(source, /document\.documentElement\.lang = nextLocale/);
+});
+
+test('language registry preserves English and Georgian while supporting future languages', () => {
+    const registry = read('inc/platform/languages.php');
+    const center = read('inc/platform/language-center.php');
+    const manager = read('inc/language-manager.php');
+
+    assert.match(registry, /function zk_get_languages/);
+    assert.match(registry, /function zk_detect_language_from_path/);
+    assert.match(registry, /function zk_get_language_path/);
+    assert.match(center, /Language Center/);
+    assert.match(center, /check_admin_referer\( 'zk_save_languages'/);
+    assert.match(manager, /zk_get_translatable_languages\( false \)/);
+    assert.match(manager, /zk_language_meta_key\( 'content', \$language \)/);
 });
 
 test('first-party assets use file modification versions instead of request time', () => {

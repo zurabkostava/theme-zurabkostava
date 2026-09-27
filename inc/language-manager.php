@@ -11,7 +11,7 @@ function zk_add_translation_meta_boxes() {
     foreach ($post_types as $post_type) {
         add_meta_box(
             'zk_translation_meta_box',
-            'Georgian Translation (ქართული თარგმანი)',
+            'Translations',
             'zk_render_translation_meta_box',
             $post_type,
             'normal',
@@ -23,40 +23,33 @@ add_action('add_meta_boxes', 'zk_add_translation_meta_boxes');
 
 function zk_render_translation_meta_box($post) {
     wp_nonce_field('zk_save_translation_data', 'zk_translation_nonce');
-
-    $title_ka = get_post_meta($post->ID, '_zk_title_ka', true);
-    $excerpt_ka = get_post_meta($post->ID, '_zk_excerpt_ka', true);
-    $content_ka = get_post_meta($post->ID, '_zk_content_ka', true);
     $orig_excerpt = $post->post_excerpt;
 
-    echo '<div style="background: #f9f9f9; padding: 15px; border: 1px solid #ccc; margin-bottom: 15px;">';
-    echo '<p><label for="zk_title_ka"><strong>სათაური (Title)</strong></label></p>';
-    echo '<input type="text" name="zk_title_ka" id="zk_title_ka" value="' . esc_attr($title_ka) . '" style="width: 100%; font-size: 16px; padding: 8px; margin-bottom: 15px;" />';
+    foreach ( zk_get_translatable_languages( false ) as $code => $language ) {
+        $title   = get_post_meta( $post->ID, zk_language_meta_key( 'title', $code ), true );
+        $excerpt = get_post_meta( $post->ID, zk_language_meta_key( 'excerpt', $code ), true );
+        $content = get_post_meta( $post->ID, zk_language_meta_key( 'content', $code ), true );
+        $name    = $language['native_name'] . ' (' . strtoupper( $code ) . ')';
 
-    echo '<p><label for="zk_excerpt_ka"><strong>მოკლე აღწერა / Excerpt (ქართულად)</strong></label></p>';
-    if (!empty($orig_excerpt)) {
-        echo '<p style="margin: 0 0 5px; color: #666; font-size: 12px; background: #fff; padding: 6px 10px; border: 1px dashed #ccc; border-radius: 4px;"><strong>ორიგინალი (English Excerpt):</strong> ' . esc_html($orig_excerpt) . '</p>';
+        echo '<details style="background:#f9f9f9;padding:15px;border:1px solid #ccc;margin-bottom:15px;" ' . ( 'ka' === $code ? 'open' : '' ) . '>';
+        echo '<summary style="cursor:pointer;font-size:16px"><strong>' . esc_html( $name ) . '</strong>' . ( empty( $language['enabled'] ) ? ' — Disabled' : '' ) . '</summary>';
+        echo '<p><label for="zk_title_' . esc_attr( $code ) . '"><strong>Translated title</strong></label></p>';
+        echo '<input type="text" name="zk_title_' . esc_attr( $code ) . '" id="zk_title_' . esc_attr( $code ) . '" value="' . esc_attr( $title ) . '" style="width:100%;font-size:16px;padding:8px;margin-bottom:15px">';
+        echo '<p><label for="zk_excerpt_' . esc_attr( $code ) . '"><strong>Translated excerpt</strong></label></p>';
+        if ( ! empty( $orig_excerpt ) ) {
+            echo '<p style="margin:0 0 5px;color:#666;font-size:12px;background:#fff;padding:6px 10px;border:1px dashed #ccc"><strong>English source:</strong> ' . esc_html( $orig_excerpt ) . '</p>';
+        }
+        echo '<textarea name="zk_excerpt_' . esc_attr( $code ) . '" id="zk_excerpt_' . esc_attr( $code ) . '" rows="3" style="width:100%;font-size:14px;padding:8px;margin-bottom:15px">' . esc_textarea( $excerpt ) . '</textarea>';
+        echo '<p><strong>Translated content (raw blocks/HTML)</strong></p>';
+        echo '<div style="display:flex;gap:10px;margin-bottom:15px"><button type="button" class="button button-primary zk-copy-source" data-target="zk_content_' . esc_attr( $code ) . '">Copy English source</button><button type="button" class="button zk-paste-translation" data-target="zk_content_' . esc_attr( $code ) . '">Paste translation</button></div>';
+        echo '<textarea name="zk_content_' . esc_attr( $code ) . '" id="zk_content_' . esc_attr( $code ) . '" style="width:100%;height:320px;font-family:monospace;padding:10px;font-size:13px">' . esc_textarea( $content ) . '</textarea>';
+        echo '</details>';
     }
-    echo '<textarea name="zk_excerpt_ka" id="zk_excerpt_ka" rows="3" style="width: 100%; font-size: 14px; padding: 8px; margin-bottom: 15px;" placeholder="აქ ჩაწერეთ ქართული მოკლე აღწერა...">' . esc_textarea($excerpt_ka) . '</textarea>';
-    
-    echo '<p><strong>კონტენტი (Content Raw JSON/HTML)</strong></p>';
-    echo '<div style="display: flex; gap: 10px; margin-bottom: 15px;">';
-    echo '<button type="button" class="button button-primary" id="zk_copy_raw_btn">📋 Copy English Source</button>';
-    echo '<button type="button" class="button button-secondary" id="zk_paste_raw_btn">📥 Paste Translated Source</button>';
-    echo '</div>';
-
-    // We will use a standard textarea for the raw source to make it easy to copy/paste JSON/Gutenberg blocks
-    echo '<textarea name="zk_content_ka" id="zk_content_ka" style="width: 100%; height: 400px; font-family: monospace; padding: 10px; font-size: 13px;" placeholder="აქ ჩააკოპირე ნათარგმნი კონტენტი...">' . esc_textarea($content_ka) . '</textarea>';
-    echo '</div>';
 
     ?>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
-        var copyBtn = document.getElementById("zk_copy_raw_btn");
-        var pasteBtn = document.getElementById("zk_paste_raw_btn");
-        var kaTextarea = document.getElementById("zk_content_ka");
-
-        if(copyBtn) {
+        document.querySelectorAll(".zk-copy-source").forEach(function(copyBtn) {
             copyBtn.addEventListener("click", function(e) {
                 e.preventDefault();
                 var englishContent = "";
@@ -78,32 +71,33 @@ function zk_render_translation_meta_box($post) {
                 
                 if (englishContent) {
                     navigator.clipboard.writeText(englishContent).then(function() {
-                        alert("ინგლისური ტექსტი/JSON დაკოპირებულია კლიპბორდში! ახლა შეგიძლია გადათარგმნო.");
+                        alert("English source copied.");
                     }).catch(function(err) {
-                        alert("დაკოპირება ვერ მოხერხდა, გთხოვთ ხელით დააკოპიროთ (Error: " + err + ")");
+                        alert("Copy failed. Please copy the source manually.");
                     });
                 } else {
-                    alert("ინგლისური კონტენტი ცარიელია.");
+                    alert("English content is empty.");
                 }
             });
-        }
+        });
 
-        if (pasteBtn) {
+        document.querySelectorAll(".zk-paste-translation").forEach(function(pasteBtn) {
             pasteBtn.addEventListener("click", async function(e) {
                 e.preventDefault();
                 try {
                     const text = await navigator.clipboard.readText();
                     if (text) {
-                        kaTextarea.value = text;
-                        alert("ტექსტი წარმატებით ჩაისვა!");
+                        var target = document.getElementById(pasteBtn.dataset.target);
+                        if (target) target.value = text;
+                        alert("Translation pasted.");
                     } else {
-                        alert("კლიპბორდი ცარიელია.");
+                        alert("Clipboard is empty.");
                     }
                 } catch (err) {
-                    alert("ტექსტის ჩასმა ვერ მოხერხდა. შესაძლოა ბრაუზერი ბლოკავს კლიპბორდთან წვდომას. გთხოვთ, პირდაპირ ველში გააკეთოთ Paste (Ctrl+V).");
+                    alert("Paste failed. Please use Ctrl+V in the field.");
                 }
             });
-        }
+        });
     });
     </script>
     <?php
@@ -122,18 +116,20 @@ function zk_save_translation_meta_data($post_id) {
         return;
     }
 
-    if (isset($_POST['zk_title_ka'])) {
-        update_post_meta($post_id, '_zk_title_ka', sanitize_text_field($_POST['zk_title_ka']));
-    }
-
-    if (isset($_POST['zk_excerpt_ka'])) {
-        update_post_meta($post_id, '_zk_excerpt_ka', sanitize_textarea_field($_POST['zk_excerpt_ka']));
-    }
-    
-    if (isset($_POST['zk_content_ka'])) {
-        // Save unfiltered HTML but clean any malformed markdown links inside src/href attributes
-        $clean_content = zk_clean_markdown_attributes($_POST['zk_content_ka']);
-        update_post_meta($post_id, '_zk_content_ka', $clean_content);
+    foreach ( zk_get_translatable_languages( false ) as $code => $language ) {
+        $title_key   = 'zk_title_' . $code;
+        $excerpt_key = 'zk_excerpt_' . $code;
+        $content_key = 'zk_content_' . $code;
+        if ( isset( $_POST[ $title_key ] ) ) {
+            update_post_meta( $post_id, zk_language_meta_key( 'title', $code ), sanitize_text_field( wp_unslash( $_POST[ $title_key ] ) ) );
+        }
+        if ( isset( $_POST[ $excerpt_key ] ) ) {
+            update_post_meta( $post_id, zk_language_meta_key( 'excerpt', $code ), sanitize_textarea_field( wp_unslash( $_POST[ $excerpt_key ] ) ) );
+        }
+        if ( isset( $_POST[ $content_key ] ) ) {
+            $clean_content = zk_clean_markdown_attributes( wp_unslash( $_POST[ $content_key ] ) );
+            update_post_meta( $post_id, zk_language_meta_key( 'content', $code ), $clean_content );
+        }
     }
 }
 add_action('save_post', 'zk_save_translation_meta_data');
@@ -146,17 +142,21 @@ function zk_early_uri_rewrite() {
     $request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
     $path = parse_url($request_uri, PHP_URL_PATH);
     
-    if (strpos($path, '/ka/') === 0 || $path === '/ka') {
-        // Strip /ka/ from the URI
-        $new_uri = preg_replace('#^/ka(?=/|$)#', '', $request_uri);
+    $language = zk_detect_language_from_path( $path );
+    if ( 'en' !== $language ) {
+        $parsed = parse_url( $request_uri );
+        $new_path = zk_strip_language_prefix( isset( $parsed['path'] ) ? $parsed['path'] : '/' );
+        $new_uri  = $new_path . ( isset( $parsed['query'] ) ? '?' . $parsed['query'] : '' );
         if ($new_uri === '') $new_uri = '/';
         
         // Rewrite the server variable so WP processes it as the English URL
         $_SERVER['REQUEST_URI'] = $new_uri;
         
-        // Set a constant so we know it was originally a Georgian request
-        if (!defined('ZK_IS_GEORGIAN_REQUEST')) {
-            define('ZK_IS_GEORGIAN_REQUEST', true);
+        if ( ! defined( 'ZK_REQUEST_LANGUAGE' ) ) {
+            define( 'ZK_REQUEST_LANGUAGE', $language );
+        }
+        if ( 'ka' === $language && ! defined( 'ZK_IS_GEORGIAN_REQUEST' ) ) {
+            define( 'ZK_IS_GEORGIAN_REQUEST', true );
         }
     }
 }
@@ -165,14 +165,17 @@ add_action('init', 'zk_early_uri_rewrite', 1);
 
 function zk_get_current_language() {
     if (is_admin()) return 'en';
-    if (defined('ZK_IS_GEORGIAN_REQUEST') && ZK_IS_GEORGIAN_REQUEST) {
-        return 'ka';
+    if ( defined( 'ZK_REQUEST_LANGUAGE' ) ) {
+        return ZK_REQUEST_LANGUAGE;
+    }
+    if ( defined( 'ZK_IS_GEORGIAN_REQUEST' ) && ZK_IS_GEORGIAN_REQUEST ) {
+        return 'ka'; // Backward compatibility for cached/bootstrap integrations.
     }
     return 'en';
 }
 
 function zk_disable_canonical_for_ka($redirect_url, $requested_url) {
-    if (zk_get_current_language() === 'ka') {
+    if (zk_get_current_language() !== 'en') {
         return false;
     }
     return $redirect_url;
@@ -184,8 +187,9 @@ add_filter('redirect_canonical', 'zk_disable_canonical_for_ka', 10, 2);
 function zk_translate_title($title, $post_id = null) {
     if (is_admin() || empty($post_id)) return $title;
     
-    if (zk_get_current_language() === 'ka') {
-        $translated_title = get_post_meta($post_id, '_zk_title_ka', true);
+    $language = zk_get_current_language();
+    if ( 'en' !== $language ) {
+        $translated_title = get_post_meta( $post_id, zk_language_meta_key( 'title', $language ), true );
         if (!empty($translated_title)) {
             return $translated_title;
         }
@@ -197,7 +201,8 @@ add_filter('the_title', 'zk_translate_title', 10, 2);
 function zk_translate_excerpt($excerpt, $post = null) {
     if (is_admin()) return $excerpt;
     
-    if (zk_get_current_language() === 'ka') {
+    $language = zk_get_current_language();
+    if ( 'en' !== $language ) {
         $post_id = null;
         if (is_object($post) && isset($post->ID)) {
             $post_id = $post->ID;
@@ -208,9 +213,9 @@ function zk_translate_excerpt($excerpt, $post = null) {
         }
         
         if ($post_id) {
-            $excerpt_ka = get_post_meta($post_id, '_zk_excerpt_ka', true);
-            if (!empty($excerpt_ka)) {
-                return $excerpt_ka;
+            $translated_excerpt = get_post_meta( $post_id, zk_language_meta_key( 'excerpt', $language ), true );
+            if (!empty($translated_excerpt)) {
+                return $translated_excerpt;
             }
         }
     }
@@ -223,7 +228,8 @@ add_filter('wp_trim_excerpt', 'zk_translate_excerpt', 999999, 2);
 function zk_translate_has_excerpt($has_excerpt, $post = null) {
     if (is_admin()) return $has_excerpt;
     
-    if (zk_get_current_language() === 'ka') {
+    $language = zk_get_current_language();
+    if ( 'en' !== $language ) {
         $post_id = null;
         if (is_object($post) && isset($post->ID)) {
             $post_id = $post->ID;
@@ -234,8 +240,8 @@ function zk_translate_has_excerpt($has_excerpt, $post = null) {
         }
         
         if ($post_id) {
-            $excerpt_ka = get_post_meta($post_id, '_zk_excerpt_ka', true);
-            if (!empty($excerpt_ka)) {
+            $translated_excerpt = get_post_meta( $post_id, zk_language_meta_key( 'excerpt', $language ), true );
+            if (!empty($translated_excerpt)) {
                 return true;
             }
         }
@@ -279,9 +285,10 @@ add_filter('wp_calculate_image_srcset', function($sources) {
 function zk_translate_content_wrapper($content) {
     if (is_admin()) return $content;
     
-    if (zk_get_current_language() === 'ka') {
+    $language = zk_get_current_language();
+    if ( 'en' !== $language ) {
         $post_id = get_the_ID();
-        $translated_content = get_post_meta($post_id, '_zk_content_ka', true);
+        $translated_content = get_post_meta( $post_id, zk_language_meta_key( 'content', $language ), true );
         if (!empty($translated_content)) {
             $clean_ka = zk_clean_markdown_attributes($translated_content);
             remove_filter('the_content', 'zk_translate_content_wrapper', 1);
@@ -297,18 +304,19 @@ add_filter('the_content', 'zk_translate_content_wrapper', 1);
 
 function zk_filter_permalink_ka($permalink, $post = null) {
     if (is_admin()) return $permalink;
-    if (zk_get_current_language() === 'ka') {
+    $language = zk_get_current_language();
+    if ( 'en' !== $language ) {
         $parsed = parse_url($permalink);
         $path = isset($parsed['path']) ? $parsed['path'] : '';
-        
-        if (!empty($path) && strpos($path, '/ka/') !== 0 && $path !== '/ka') {
+
+        $language_path = zk_get_language_path( $path, $language );
+        if ( ! empty( $path ) && $language_path !== $path ) {
             $scheme = isset($parsed['scheme']) ? $parsed['scheme'] : 'https';
             $host   = isset($parsed['host']) ? $parsed['host'] : (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '');
             $port   = isset($parsed['port']) ? ':' . $parsed['port'] : '';
             $query  = isset($parsed['query']) ? '?' . $parsed['query'] : '';
             
-            $new_path = '/ka' . ($path[0] === '/' ? '' : '/') . $path;
-            return $scheme . '://' . $host . $port . $new_path . $query;
+            return $scheme . '://' . $host . $port . $language_path . $query;
         }
     }
     return $permalink;
@@ -321,8 +329,10 @@ add_filter('category_link', 'zk_filter_permalink_ka', 10, 2);
 add_filter('tag_link', 'zk_filter_permalink_ka', 10, 2);
 
 function zk_change_html_lang_ka($output) {
-    if (zk_get_current_language() === 'ka') {
-        return 'lang="ka-GE"';
+    $language = zk_get_current_language();
+    if ( 'en' !== $language ) {
+        $definition = zk_get_language( $language );
+        return 'lang="' . esc_attr( $definition['locale'] ) . '"';
     }
     return $output;
 }
@@ -330,17 +340,18 @@ add_filter('language_attributes', 'zk_change_html_lang_ka');
 
 function zk_filter_home_url_ka($url, $path = '', $orig_scheme = null, $blog_id = null) {
     if (is_admin()) return $url;
-    if (zk_get_current_language() === 'ka') {
+    $language = zk_get_current_language();
+    if ( 'en' !== $language ) {
         $parsed = parse_url($url);
         $p = isset($parsed['path']) ? $parsed['path'] : '';
-        if (strpos($p, '/ka') !== 0) {
+        $language_path = zk_get_language_path( $p ?: '/', $language );
+        if ( $language_path !== $p ) {
             $scheme = isset($parsed['scheme']) ? $parsed['scheme'] : 'https';
             $host   = isset($parsed['host']) ? $parsed['host'] : (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '');
             $port   = isset($parsed['port']) ? ':' . $parsed['port'] : '';
             $query  = isset($parsed['query']) ? '?' . $parsed['query'] : '';
             
-            $new_path = '/ka' . ($p === '/' || $p === '' ? '/' : ($p[0] === '/' ? $p : '/' . $p));
-            return $scheme . '://' . $host . $port . $new_path . $query;
+            return $scheme . '://' . $host . $port . $language_path . $query;
         }
     }
     return $url;
@@ -349,7 +360,7 @@ add_filter('home_url', 'zk_filter_home_url_ka', 10, 4);
 
 // Send nocache headers on ka requests to prevent browsers/CDNs from caching old 301 redirects
 function zk_ka_nocache_headers() {
-    if (zk_get_current_language() === 'ka') {
+    if (zk_get_current_language() !== 'en') {
         nocache_headers();
     }
 }
@@ -502,83 +513,55 @@ function zk_get_translated_term_description($term) {
 }
 
 function zk_taxonomy_add_custom_fields($taxonomy) {
-    ?>
-    <div class="form-field term-group">
-        <label for="zk_name_ka"><strong>ქართული სახელი (Georgian Name)</strong></label>
-        <input type="text" id="zk_name_ka" name="zk_name_ka" value="" placeholder="მაგ. ხელოვნური ინტელექტი">
-        <p class="description">მიუთითეთ თეგის/კატეგორიის ქართული სახელი ქართულენოვანი გვერდებისთვის.</p>
-    </div>
-    <div class="form-field term-group">
-        <label for="zk_description_ka"><strong>ქართული აღწერა (Georgian Description)</strong></label>
-        <textarea id="zk_description_ka" name="zk_description_ka" rows="5" cols="50" placeholder="მიუთითეთ თეგის/კატეგორიის ქართული აღწერა..."></textarea>
-        <p class="description">მიუთითეთ თეგის/კატეგორიის ქართული აღწერა ქართულენოვანი გვერდებისთვის.</p>
-    </div>
-    <?php
+    foreach ( zk_get_translatable_languages( false ) as $code => $language ) {
+        echo '<div class="form-field term-group"><label for="zk_name_' . esc_attr( $code ) . '"><strong>' . esc_html( $language['native_name'] ) . ' name</strong></label><input type="text" id="zk_name_' . esc_attr( $code ) . '" name="zk_name_' . esc_attr( $code ) . '" value=""><p class="description">Translated category/tag name (' . esc_html( strtoupper( $code ) ) . ').</p></div>';
+        echo '<div class="form-field term-group"><label for="zk_description_' . esc_attr( $code ) . '"><strong>' . esc_html( $language['native_name'] ) . ' description</strong></label><textarea id="zk_description_' . esc_attr( $code ) . '" name="zk_description_' . esc_attr( $code ) . '" rows="5" cols="50"></textarea></div>';
+    }
 }
 
 function zk_taxonomy_edit_custom_fields($term, $taxonomy) {
-    $name_ka = get_term_meta($term->term_id, '_zk_name_ka', true);
-    if (empty($name_ka)) {
-        $name_ka = zk_get_default_term_translation($term->slug);
+    foreach ( zk_get_translatable_languages( false ) as $code => $language ) {
+        $name = get_term_meta( $term->term_id, zk_language_meta_key( 'name', $code ), true );
+        $desc = get_term_meta( $term->term_id, zk_language_meta_key( 'description', $code ), true );
+        if ( 'ka' === $code && empty( $name ) ) $name = zk_get_default_term_translation( $term->slug );
+        if ( 'ka' === $code && empty( $desc ) ) $desc = zk_get_default_term_description( $term->slug );
+        echo '<tr class="form-field term-group-wrap"><th scope="row"><label for="zk_name_' . esc_attr( $code ) . '">' . esc_html( $language['native_name'] ) . ' name</label></th><td><input type="text" id="zk_name_' . esc_attr( $code ) . '" name="zk_name_' . esc_attr( $code ) . '" value="' . esc_attr( $name ) . '" style="width:100%;max-width:500px"><p class="description">Translated category/tag name (' . esc_html( strtoupper( $code ) ) . ').</p></td></tr>';
+        echo '<tr class="form-field term-group-wrap"><th scope="row"><label for="zk_description_' . esc_attr( $code ) . '">' . esc_html( $language['native_name'] ) . ' description</label></th><td><textarea id="zk_description_' . esc_attr( $code ) . '" name="zk_description_' . esc_attr( $code ) . '" rows="6" style="width:100%;max-width:500px">' . esc_textarea( $desc ) . '</textarea></td></tr>';
     }
-    $desc_ka = get_term_meta($term->term_id, '_zk_description_ka', true);
-    if (empty($desc_ka)) {
-        $desc_ka = zk_get_default_term_description($term->slug);
-    }
-    ?>
-    <tr class="form-field term-group-wrap">
-        <th scope="row"><label for="zk_name_ka">ქართული სახელი (Georgian Name)</label></th>
-        <td>
-            <input type="text" id="zk_name_ka" name="zk_name_ka" value="<?php echo esc_attr($name_ka); ?>" style="width: 100%; max-width: 500px; font-size: 15px; padding: 6px 10px;">
-            <p class="description">მიუთითეთ თეგის/კატეგორიის ქართული სახელი ქართულენოვანი გვერდებისთვის.</p>
-        </td>
-    </tr>
-    <tr class="form-field term-group-wrap">
-        <th scope="row"><label for="zk_description_ka">ქართული აღწერა (Georgian Description)</label></th>
-        <td>
-            <textarea id="zk_description_ka" name="zk_description_ka" rows="6" cols="50" style="width: 100%; max-width: 500px; font-size: 14px; padding: 8px 10px; line-height: 1.5;"><?php echo esc_textarea($desc_ka); ?></textarea>
-            <p class="description">მიუთითეთ თეგის/კატეგორიის ქართული აღწერა ქართულენოვანი გვერდებისთვის.</p>
-        </td>
-    </tr>
-    <?php
 }
 
 function zk_save_taxonomy_custom_fields($term_id) {
-    if (isset($_POST['zk_name_ka'])) {
-        update_term_meta($term_id, '_zk_name_ka', sanitize_text_field($_POST['zk_name_ka']));
-    }
-    if (isset($_POST['zk_description_ka'])) {
-        update_term_meta($term_id, '_zk_description_ka', sanitize_textarea_field($_POST['zk_description_ka']));
+    foreach ( zk_get_translatable_languages( false ) as $code => $language ) {
+        $name_key = 'zk_name_' . $code;
+        $desc_key = 'zk_description_' . $code;
+        if ( isset( $_POST[ $name_key ] ) ) {
+            update_term_meta( $term_id, zk_language_meta_key( 'name', $code ), sanitize_text_field( wp_unslash( $_POST[ $name_key ] ) ) );
+        }
+        if ( isset( $_POST[ $desc_key ] ) ) {
+            update_term_meta( $term_id, zk_language_meta_key( 'description', $code ), sanitize_textarea_field( wp_unslash( $_POST[ $desc_key ] ) ) );
+        }
     }
 }
 
 function zk_taxonomy_columns($columns) {
-    $columns['zk_name_ka'] = 'ქართული სახელი';
-    $columns['zk_desc_ka'] = 'ქართული აღწერა';
+    foreach ( zk_get_translatable_languages() as $code => $language ) {
+        $columns['zk_name_' . $code] = strtoupper( $code ) . ' name';
+    }
     return $columns;
 }
 
 function zk_taxonomy_custom_column($content, $column_name, $term_id) {
-    if ($column_name === 'zk_name_ka') {
+    if ( 0 === strpos( $column_name, 'zk_name_' ) ) {
+        $code = substr( $column_name, 8 );
         $term = get_term($term_id);
-        $val = get_term_meta($term_id, '_zk_name_ka', true);
-        if (empty($val) && $term && !is_wp_error($term)) {
+        $val = get_term_meta( $term_id, zk_language_meta_key( 'name', $code ), true );
+        if ( 'ka' === $code && empty($val) && $term && !is_wp_error($term)) {
             $val = zk_get_default_term_translation($term->slug);
             if (!empty($val)) {
                 return '<span style="color: #666; font-style: italic;">' . esc_html($val) . ' (default)</span>';
             }
         }
         return $val ? '<strong>' . esc_html($val) . '</strong>' : '<span style="color:#bbb;">—</span>';
-    } elseif ($column_name === 'zk_desc_ka') {
-        $term = get_term($term_id);
-        $val = get_term_meta($term_id, '_zk_description_ka', true);
-        if (empty($val) && $term && !is_wp_error($term)) {
-            $val = zk_get_default_term_description($term->slug);
-            if (!empty($val)) {
-                return '<span style="color: #666; font-style: italic;">' . esc_html(wp_trim_words($val, 10)) . ' (default)</span>';
-            }
-        }
-        return $val ? esc_html(wp_trim_words($val, 10)) : '<span style="color:#bbb;">—</span>';
     }
     return $content;
 }
@@ -630,17 +613,18 @@ add_action('init', 'zk_sync_term_descriptions_ka', 20);
 // Frontend term translation filters
 function zk_filter_get_term($term, $taxonomy = '') {
     if (is_admin()) return $term;
-    if (function_exists('zk_get_current_language') && zk_get_current_language() === 'ka') {
+    $language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
+    if ( 'en' !== $language ) {
         if (is_object($term) && isset($term->term_id)) {
-            $trans = get_term_meta($term->term_id, '_zk_name_ka', true);
-            if (empty($trans) && isset($term->slug)) {
+            $trans = get_term_meta( $term->term_id, zk_language_meta_key( 'name', $language ), true );
+            if ( 'ka' === $language && empty($trans) && isset($term->slug)) {
                 $trans = zk_get_default_term_translation($term->slug);
             }
             if (!empty($trans)) {
                 $term->name = $trans;
             }
-            $desc_trans = get_term_meta($term->term_id, '_zk_description_ka', true);
-            if (empty($desc_trans) && isset($term->slug)) {
+            $desc_trans = get_term_meta( $term->term_id, zk_language_meta_key( 'description', $language ), true );
+            if ( 'ka' === $language && empty($desc_trans) && isset($term->slug)) {
                 $desc_trans = zk_get_default_term_description($term->slug);
             }
             if (!empty($desc_trans)) {
@@ -654,11 +638,12 @@ add_filter('get_term', 'zk_filter_get_term', 10, 2);
 
 function zk_filter_single_term_title($title) {
     if (is_admin()) return $title;
-    if (function_exists('zk_get_current_language') && zk_get_current_language() === 'ka') {
+    $language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
+    if ( 'en' !== $language ) {
         $obj = get_queried_object();
         if ($obj && isset($obj->term_id)) {
-            $trans = get_term_meta($obj->term_id, '_zk_name_ka', true);
-            if (empty($trans) && isset($obj->slug)) {
+            $trans = get_term_meta( $obj->term_id, zk_language_meta_key( 'name', $language ), true );
+            if ( 'ka' === $language && empty($trans) && isset($obj->slug)) {
                 $trans = zk_get_default_term_translation($obj->slug);
             }
             if (!empty($trans)) {
@@ -672,12 +657,14 @@ add_filter('single_term_title', 'zk_filter_single_term_title', 10, 1);
 
 function zk_filter_archive_description_ka($description) {
     if (is_admin()) return $description;
-    if (function_exists('zk_get_current_language') && zk_get_current_language() === 'ka') {
+    $language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
+    if ( 'en' !== $language ) {
         $term = get_queried_object();
         if ($term && !is_wp_error($term) && isset($term->term_id)) {
-            $desc_ka = zk_get_translated_term_description($term);
-            if (!empty($desc_ka)) {
-                return wpautop(wptexturize($desc_ka));
+            $translated = get_term_meta( $term->term_id, zk_language_meta_key( 'description', $language ), true );
+            if ( 'ka' === $language && empty( $translated ) ) $translated = zk_get_default_term_description( $term->slug );
+            if (!empty($translated)) {
+                return wpautop(wptexturize($translated));
             }
         }
     }
@@ -688,12 +675,14 @@ add_filter('the_archive_description', 'zk_filter_archive_description_ka', 20);
 
 function zk_filter_term_description_ka($description, $term_id = 0, $taxonomy = '') {
     if (is_admin()) return $description;
-    if (function_exists('zk_get_current_language') && zk_get_current_language() === 'ka') {
+    $language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
+    if ( 'en' !== $language ) {
         $term = $term_id ? get_term($term_id, $taxonomy) : get_queried_object();
         if ($term && !is_wp_error($term) && isset($term->term_id)) {
-            $desc_ka = zk_get_translated_term_description($term);
-            if (!empty($desc_ka)) {
-                return $desc_ka;
+            $translated = get_term_meta( $term->term_id, zk_language_meta_key( 'description', $language ), true );
+            if ( 'ka' === $language && empty( $translated ) ) $translated = zk_get_default_term_description( $term->slug );
+            if (!empty($translated)) {
+                return $translated;
             }
         }
     }
@@ -710,32 +699,25 @@ function zk_get_language_switcher_urls() {
     $path = isset($parsed['path']) ? $parsed['path'] : '/';
     $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
 
-    // Strip leading /ka or /ka/ from path to obtain the pure English path
-    $en_path = preg_replace('#^/ka(?=/|$)#', '', $path);
-    if ($en_path === '') {
-        $en_path = '/';
-    }
-
-    // Ensure leading slash
-    if ($en_path[0] !== '/') {
-        $en_path = '/' . $en_path;
-    }
-
-    // Georgian path is prefixed with /ka
-    $ka_path = ($en_path === '/') ? '/ka/' : '/ka' . $en_path;
+    $base_path = zk_strip_language_prefix( $path );
 
     $home_url = untrailingslashit(get_option('home'));
     if (empty($home_url)) {
         $home_url = 'https://zurabkostava.com';
     }
 
-    return array(
-        'current'  => $current_lang,
-        'en_url'   => $home_url . $en_path . $query,
-        'en_route' => $en_path . $query,
-        'ka_url'   => $home_url . $ka_path . $query,
-        'ka_route' => $ka_path . $query,
-    );
+    $result = array( 'current' => $current_lang, 'languages' => array() );
+    foreach ( zk_get_languages() as $code => $language ) {
+        $route = zk_get_language_path( $base_path, $code ) . $query;
+        $result['languages'][ $code ] = array_merge( $language, array(
+            'url'   => $home_url . $route,
+            'route' => $route,
+        ) );
+        // Preserve the old array shape for code that still reads EN/KA keys.
+        $result[ $code . '_url' ]   = $home_url . $route;
+        $result[ $code . '_route' ] = $route;
+    }
+    return $result;
 }
 
 function zk_render_language_switcher() {
@@ -747,21 +729,16 @@ function zk_render_language_switcher() {
     $current = $data['current'];
     ?>
     <div class="zk-lang-switcher" role="navigation" aria-label="Language selector">
-        <a href="<?php echo esc_url($data['en_url']); ?>" 
-           data-route="<?php echo esc_attr($data['en_route']); ?>"
-           class="zk-lang-btn <?php echo ($current === 'en') ? 'is-active' : ''; ?>" 
-           aria-label="English language"
-           <?php echo ($current === 'en') ? 'aria-current="true"' : ''; ?>>
-            <span>EN</span>
-        </a>
-        <span class="zk-lang-divider" aria-hidden="true"></span>
-        <a href="<?php echo esc_url($data['ka_url']); ?>" 
-           data-route="<?php echo esc_attr($data['ka_route']); ?>"
-           class="zk-lang-btn <?php echo ($current === 'ka') ? 'is-active' : ''; ?>" 
-           aria-label="ქართული ენა"
-           <?php echo ($current === 'ka') ? 'aria-current="true"' : ''; ?>>
-            <span>KA</span>
-        </a>
+        <?php $index = 0; foreach ( $data['languages'] as $code => $language ) : ?>
+            <?php if ( $index++ ) : ?><span class="zk-lang-divider" aria-hidden="true"></span><?php endif; ?>
+            <a href="<?php echo esc_url( $language['url'] ); ?>"
+               data-route="<?php echo esc_attr( $language['route'] ); ?>"
+               class="zk-lang-btn <?php echo ( $current === $code ) ? 'is-active' : ''; ?>"
+               aria-label="<?php echo esc_attr( $language['native_name'] . ' language' ); ?>"
+               <?php echo ( $current === $code ) ? 'aria-current="true"' : ''; ?>>
+                <span><?php echo esc_html( strtoupper( $code ) ); ?></span>
+            </a>
+        <?php endforeach; ?>
     </div>
     <?php
 }
