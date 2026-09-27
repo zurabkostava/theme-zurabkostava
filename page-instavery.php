@@ -16,13 +16,13 @@ add_action('wp_enqueue_scripts', function() {
     // Enqueue Instavery App Styles
     wp_enqueue_style('instavery-fa', $uri . '/fonts/fontawesome.min.css', array(), null);
     wp_enqueue_style('instavery-font', $uri . '/fonts/montserrat.css', array(), null);
-    wp_enqueue_style('instavery-style', $uri . '/style.css', array(), time());
+    wp_enqueue_style('instavery-style', $uri . '/style.css', array(), zk_asset_version( 'instavery/style.css' ));
 
     // Enqueue Instavery Scripts
     wp_enqueue_script('instavery-mock', $uri . '/chrome-mock.js', array(), null, true);
     wp_enqueue_script('instavery-supabase', $uri . '/supabase.js', array(), null, true);
     wp_enqueue_script('instavery-xlsx', $uri . '/xlsx.full.min.js', array(), null, true);
-    wp_enqueue_script('instavery-app', $uri . '/app.js', array(), time(), true);
+    wp_enqueue_script('instavery-app', $uri . '/app.js', array(), zk_asset_version( 'instavery/app.js' ), true);
 }, 999);
 
 remove_action('wp_head', 'print_emoji_detection_script', 7);

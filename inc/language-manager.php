@@ -276,23 +276,6 @@ add_filter('wp_calculate_image_srcset', function($sources) {
     return $sources;
 }, 999999);
 
-// Automatically clean and fix malformed markdown link syntax in DB meta on page load
-function zk_auto_clean_db_meta() {
-    if (is_singular()) {
-        $post_id = get_the_ID();
-        if ($post_id) {
-            $raw_ka = get_post_meta($post_id, '_zk_content_ka', true);
-            if (!empty($raw_ka)) {
-                $cleaned = zk_clean_markdown_attributes($raw_ka);
-                if ($cleaned !== $raw_ka) {
-                    update_post_meta($post_id, '_zk_content_ka', $cleaned);
-                }
-            }
-        }
-    }
-}
-add_action('wp', 'zk_auto_clean_db_meta');
-
 function zk_translate_content_wrapper($content) {
     if (is_admin()) return $content;
     
@@ -611,6 +594,8 @@ foreach (array('category', 'post_tag') as $tax) {
 
 // Auto-sync terms with default Georgian names and descriptions if not yet saved in DB
 function zk_sync_term_descriptions_ka() {
+    if (get_option('zk_term_translations_seeded_v1', false)) return;
+
     static $synced = false;
     if ($synced) return;
     $synced = true;
@@ -637,6 +622,8 @@ function zk_sync_term_descriptions_ka() {
             }
         }
     }
+
+    update_option('zk_term_translations_seeded_v1', true, false);
 }
 add_action('init', 'zk_sync_term_descriptions_ka', 20);
 

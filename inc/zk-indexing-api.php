@@ -113,6 +113,10 @@ function zk_indexing_menu() {
 function zk_indexing_options_page() {
     if (!current_user_can('manage_options')) return;
 
+    if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+        check_admin_referer( 'zk_indexing_settings', 'zk_indexing_nonce' );
+    }
+
     if (isset($_POST['zk_indexing_json_key'])) {
         update_option('zk_indexing_json_key', stripslashes($_POST['zk_indexing_json_key']));
         echo '<div class="notice notice-success is-dismissible"><p>JSON Key Saved!</p></div>';
@@ -158,6 +162,7 @@ function zk_indexing_options_page() {
         <h1>ZK Instant Indexing Setup (Google Indexing API)</h1>
         
         <form method="post" style="background:#fff; padding:20px; border:1px solid #ccd0d4; margin-top:20px;">
+            <?php wp_nonce_field( 'zk_indexing_settings', 'zk_indexing_nonce' ); ?>
             <h2>1. Service Account JSON Key</h2>
             <p>Paste the contents of your Google Cloud Service Account JSON file below.</p>
             <textarea name="zk_indexing_json_key" rows="12" style="width:100%; max-width:800px; font-family:monospace;"><?php echo esc_textarea($key); ?></textarea>
@@ -165,6 +170,7 @@ function zk_indexing_options_page() {
         </form>
 
         <form method="post" style="background:#fff; padding:20px; border:1px solid #ccd0d4; margin-top:20px;">
+            <?php wp_nonce_field( 'zk_indexing_settings', 'zk_indexing_nonce' ); ?>
             <h2>2. Manual URL Submission (Bulk)</h2>
             <p>Paste one or more URLs below (one per line) to submit to Google. Max 100 per batch recommended.</p>
             <div style="display:flex; flex-direction:column; gap:10px;">

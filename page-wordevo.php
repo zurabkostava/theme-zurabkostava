@@ -30,7 +30,7 @@ add_action('wp_enqueue_scripts', function() {
     wp_dequeue_style('global-styles');
     
     // Enqueue WordEvo App Styles
-    wp_enqueue_style('wordevo-app-style', get_template_directory_uri() . '/WordEvo/style.css', array(), time());
+    wp_enqueue_style('wordevo-app-style', get_template_directory_uri() . '/WordEvo/style.css', array(), zk_asset_version( 'WordEvo/style.css' ));
 }, 999);
 remove_action('wp_head', 'print_emoji_detection_script', 7);
 remove_action('wp_print_styles', 'print_emoji_styles');
@@ -66,20 +66,20 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <script defer src="<?php echo esc_url($wordevo_assets); ?>/pwa.js?v=19"></script>
     <script defer src="<?php echo esc_url($wordevo_assets); ?>/voice-probe.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="console.error('Supabase CDN failed to load')"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/supabase-client.js?v=<?php echo time(); ?>"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/data-access.js?v=<?php echo time(); ?>"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/script.js?v=<?php echo time(); ?>"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/quiz.js?v=<?php echo time(); ?>"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/wordhear.js?v=<?php echo time(); ?>"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/makeword.js?v=<?php echo time(); ?>"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/utils.js?v=<?php echo time(); ?>"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/mix.js?v=<?php echo time(); ?>"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/typegame.js?v=<?php echo time(); ?>"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/sentence.js?v=<?php echo time(); ?>"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/puzzle.js?v=<?php echo time(); ?>"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/games/speakgame.js?v=<?php echo time(); ?>"></script>
-    <script src="<?php echo get_template_directory_uri(); ?>/WordEvo/tts.js?v=<?php echo time(); ?>"></script>
-    <script defer src="<?php echo get_template_directory_uri(); ?>/WordEvo/notifications.js?v=<?php echo time(); ?>"></script>
+    <script defer src="<?php echo esc_url( get_template_directory_uri() . '/WordEvo/supabase-client.js?v=' . zk_asset_version( 'WordEvo/supabase-client.js' ) ); ?>"></script>
+    <script defer src="<?php echo esc_url( get_template_directory_uri() . '/WordEvo/data-access.js?v=' . zk_asset_version( 'WordEvo/data-access.js' ) ); ?>"></script>
+    <script defer src="<?php echo esc_url( get_template_directory_uri() . '/WordEvo/script.js?v=' . zk_asset_version( 'WordEvo/script.js' ) ); ?>"></script>
+    <script defer src="<?php echo esc_url( get_template_directory_uri() . '/WordEvo/games/quiz.js?v=' . zk_asset_version( 'WordEvo/games/quiz.js' ) ); ?>"></script>
+    <script defer src="<?php echo esc_url( get_template_directory_uri() . '/WordEvo/games/wordhear.js?v=' . zk_asset_version( 'WordEvo/games/wordhear.js' ) ); ?>"></script>
+    <script defer src="<?php echo esc_url( get_template_directory_uri() . '/WordEvo/games/makeword.js?v=' . zk_asset_version( 'WordEvo/games/makeword.js' ) ); ?>"></script>
+    <script defer src="<?php echo esc_url( get_template_directory_uri() . '/WordEvo/utils.js?v=' . zk_asset_version( 'WordEvo/utils.js' ) ); ?>"></script>
+    <script defer src="<?php echo esc_url( get_template_directory_uri() . '/WordEvo/games/mix.js?v=' . zk_asset_version( 'WordEvo/games/mix.js' ) ); ?>"></script>
+    <script defer src="<?php echo esc_url( get_template_directory_uri() . '/WordEvo/games/typegame.js?v=' . zk_asset_version( 'WordEvo/games/typegame.js' ) ); ?>"></script>
+    <script defer src="<?php echo esc_url( get_template_directory_uri() . '/WordEvo/games/sentence.js?v=' . zk_asset_version( 'WordEvo/games/sentence.js' ) ); ?>"></script>
+    <script defer src="<?php echo esc_url( get_template_directory_uri() . '/WordEvo/games/puzzle.js?v=' . zk_asset_version( 'WordEvo/games/puzzle.js' ) ); ?>"></script>
+    <script defer src="<?php echo esc_url( get_template_directory_uri() . '/WordEvo/games/speakgame.js?v=' . zk_asset_version( 'WordEvo/games/speakgame.js' ) ); ?>"></script>
+    <script src="<?php echo esc_url( get_template_directory_uri() . '/WordEvo/tts.js?v=' . zk_asset_version( 'WordEvo/tts.js' ) ); ?>"></script>
+    <script defer src="<?php echo esc_url( get_template_directory_uri() . '/WordEvo/notifications.js?v=' . zk_asset_version( 'WordEvo/notifications.js' ) ); ?>"></script>
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet"/>

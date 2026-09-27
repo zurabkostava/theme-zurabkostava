@@ -1,0 +1,57 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const root = path.resolve(__dirname, '..');
+const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+
+test('browser-accessible maintenance backdoors stay disabled', () => {
+    const functions = read('functions.php');
+    assert.doesNotMatch(functions, /\$_GET\s*\[\s*['"]zk_flush['"]\s*\]/);
+
+    for (const file of ['dump_rules.php', 'extract.php']) {
+        const source = read(file);
+        assert.match(source, /PHP_SAPI\s*!==\s*['"]cli['"]/);
+        assert.match(source, /http_response_code\(\s*404\s*\)/);
+    }
+});
+
+test('public OG lookup only fetches approved HTTPS sources safely', () => {
+    const source = read('functions.php');
+    const security = read('inc/platform/security.php');
+    assert.match(security, /function zk_is_allowed_og_source_url/);
+    assert.match(security, /'https'\s*!==\s*\$scheme/);
+    assert.match(source, /wp_safe_remote_get\(\s*\$url/);
+    assert.match(source, /zk_request_within_rate_limit\(\s*'og-image'/);
+    assert.doesNotMatch(source, /wp_ajax_nopriv_zk_cache_og_image/);
+});
+
+test('analytics mutations are tied to the originating visitor and session', () => {
+    const source = read('functions.php');
+    const security = read('inc/platform/security.php');
+    assert.match(source, /array\('id' => \$view_id, 'visitor_id' => \$visitor_id, 'session_id' => \$session_id\)/);
+    assert.match(source, /zk_request_within_rate_limit\(\s*'analytics'/);
+    assert.doesNotMatch(security, /HTTP_X_FORWARDED_FOR/);
+    assert.doesNotMatch(security, /HTTP_CLIENT_IP/);
+});
+
+test('SPA language follows the destination URL, including the Georgian homepage', () => {
+    const source = read('app.js');
+    assert.match(source, /u\.pathname === '\/ka'/);
+    assert.match(source, /document\.documentElement\.lang = isKa \? 'ka-GE' : 'en-US'/);
+});
+
+test('first-party assets use file modification versions instead of request time', () => {
+    const sources = [
+        read('inc/platform/assets.php'),
+        read('functions.php'),
+        read('page-instavery.php'),
+        read('page-reader.php'),
+        read('page-wordevo.php'),
+    ].join('\n');
+
+    assert.match(sources, /function zk_asset_version/);
+    assert.doesNotMatch(sources, /\?v=<\?php echo time\(\)/);
+    assert.doesNotMatch(sources, /wp_enqueue_(?:style|script)\([^\n]+time\(\)/);
+});

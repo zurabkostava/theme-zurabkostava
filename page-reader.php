@@ -23,7 +23,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <meta name="description" content="EPUB and voice reading by Zurab Kostava">
 
     <!-- PWA & Mobile Web App Manifest -->
-    <link rel="manifest" href="<?php echo get_template_directory_uri(); ?>/web-reader/manifest.json?v=<?php echo time(); ?>">
+    <link rel="manifest" href="<?php echo esc_url( get_template_directory_uri() . '/web-reader/manifest.json?v=' . zk_asset_version( 'web-reader/manifest.json' ) ); ?>">
     <meta name="theme-color" content="#090d16">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3151,8 +3151,8 @@ if ('serviceWorker' in navigator) {
     });
 }
 </script>
-<script src="<?php echo get_template_directory_uri(); ?>/web-reader/english-phonetics.js?v=<?php echo time(); ?>"></script>
-<script src="<?php echo get_template_directory_uri(); ?>/web-reader/scriptreader.js?v=<?php echo time(); ?>"></script>
+<script src="<?php echo esc_url( get_template_directory_uri() . '/web-reader/english-phonetics.js?v=' . zk_asset_version( 'web-reader/english-phonetics.js' ) ); ?>"></script>
+<script src="<?php echo esc_url( get_template_directory_uri() . '/web-reader/scriptreader.js?v=' . zk_asset_version( 'web-reader/scriptreader.js' ) ); ?>"></script>
 <?php wp_footer(); ?>
 </body>
 </html>

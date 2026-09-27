@@ -9,12 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once get_template_directory() . '/inc/language-manager.php';
 require_once get_template_directory() . '/inc/visual-hub-admin.php';
-if (isset($_GET['zk_flush'])) {
-    add_action('init', function() {
-        flush_rewrite_rules();
-        die('Rewrite rules flushed successfully!');
-    });
-}
+require_once get_template_directory() . '/inc/platform/assets.php';
+require_once get_template_directory() . '/inc/platform/security.php';
 // 🔴 Load Nuvio Addons
 require_once get_template_directory() . '/nuvio-ge-sub.php';
 require_once get_template_directory() . '/nuvio-movies-addon.php';
@@ -62,7 +58,7 @@ function zk_assets() {
     wp_enqueue_style( 'zk-fonts', 'https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Georgian:wght@300;400;500;600;700&display=swap', array(), null );
 
     // CSS-ის მიბმა
-    wp_enqueue_style( 'zk-style', get_stylesheet_uri(), array( 'zk-fonts' ), time() );
+    wp_enqueue_style( 'zk-style', get_stylesheet_uri(), array( 'zk-fonts' ), zk_asset_version( 'style.css' ) );
 
     // Three.js for 3D Galaxy background
     wp_enqueue_script( 'three-js', 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', array(), '128', true );
@@ -1315,6 +1311,9 @@ function zk_get_og_image( $url, $scrape = true ) {
 
     // Normalize URL to ensure cache keys match between backend rendering and frontend AJAX
     $url = esc_url_raw( $url );
+    if ( ! zk_is_allowed_og_source_url( $url ) ) {
+        return '';
+    }
     
     // Static Pre-cache for specific known items to eliminate load time / scraping overhead
     $static_cache = array(
@@ -1450,7 +1449,7 @@ function zk_get_og_image( $url, $scrape = true ) {
         $user_agent = 'ZurabKostavaThemeBot/1.0 (admin@zurabkostava.com)';
     }
 
-    $response = wp_remote_get( $url, array(
+    $response = wp_safe_remote_get( $url, array(
         'timeout'     => 15,
         'redirection' => 3,
         'user-agent'  => $user_agent
@@ -1537,11 +1536,19 @@ add_action( 'wp_ajax_zk_fetch_og_image', 'zk_fetch_og_image_ajax' );
 add_action( 'wp_ajax_nopriv_zk_fetch_og_image', 'zk_fetch_og_image_ajax' );
 
 function zk_fetch_og_image_ajax() {
+    if ( ! zk_request_within_rate_limit( 'og-image', 60, MINUTE_IN_SECONDS ) ) {
+        wp_send_json_error( 'Too many requests', 429 );
+    }
+
     if ( ! isset( $_POST['url'] ) ) {
         wp_send_json_error( 'No URL provided' );
     }
     
-    $url = esc_url_raw( $_POST['url'] );
+    $url = esc_url_raw( wp_unslash( $_POST['url'] ) );
+    if ( ! zk_is_allowed_og_source_url( $url ) ) {
+        wp_send_json_error( 'URL is not allowed', 400 );
+    }
+
     // Pass scrape=true to explicitly perform the fetch
     $image_url = zk_get_og_image( $url, true );
     
@@ -1679,13 +1686,6 @@ function zk_fav_tooltip_script() {
                         link.setAttribute('data-hover-image', optimizedImg);
                         const img = link.querySelector('.zk-fav-thumb');
                         if (img) img.src = optimizedImg;
-
-                        // Save this success back to our backend cache asynchronously
-                        const cacheData = new FormData();
-                        cacheData.append('action', 'zk_cache_og_image');
-                        cacheData.append('url', scrapeUrl);
-                        cacheData.append('image_url', fastImage);
-                        fetch(ajaxUrl, { method: 'POST', body: cacheData });
 
                         continue; // Success! Skip the slow server fallback
                     }
@@ -5384,7 +5384,11 @@ function zk_track_photo_view( WP_REST_Request $request ) {
     $params = $request->get_json_params();
     $att_id = isset( $params['id'] ) ? intval( $params['id'] ) : 0;
     
-    if ( $att_id > 0 ) {
+    if ( $att_id > 0 && 'attachment' === get_post_type( $att_id ) ) {
+        if ( ! zk_request_within_rate_limit( 'photo-view-' . $att_id, 10, MINUTE_IN_SECONDS ) ) {
+            return new WP_Error( 'rate_limited', 'Too many requests', array( 'status' => 429 ) );
+        }
+
         $views = (int) get_post_meta( $att_id, 'zk_photo_views', true );
         update_post_meta( $att_id, 'zk_photo_views', $views + 1 );
         return new WP_REST_Response( array( 'success' => true, 'views' => $views + 1 ), 200 );
@@ -5397,6 +5401,10 @@ function zk_track_visitor( WP_REST_Request $request ) {
     // Ignore logged in users (admins)
     if ( is_user_logged_in() ) {
         return new WP_REST_Response( array('status' => 'ignored (admin)'), 200 );
+    }
+
+    if ( ! zk_request_within_rate_limit( 'analytics', 120, 10 * MINUTE_IN_SECONDS ) ) {
+        return new WP_Error( 'rate_limited', 'Too many requests', array( 'status' => 429 ) );
     }
 
     $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
@@ -5432,26 +5440,32 @@ function zk_track_visitor( WP_REST_Request $request ) {
             $params = json_decode($body, true);
         }
     }
-    $url = isset($params['url']) ? sanitize_text_field($params['url']) : '/';
-    $country = isset($params['country']) ? sanitize_text_field($params['country']) : '';
-    $city = isset($params['city']) ? sanitize_text_field($params['city']) : '';
-    $visitor_id = isset($params['visitor_id']) ? sanitize_text_field($params['visitor_id']) : '';
-    $session_id = isset($params['session_id']) ? sanitize_text_field($params['session_id']) : '';
-    $referrer = isset($params['referrer']) ? sanitize_text_field($params['referrer']) : '';
+    $url = isset($params['url']) ? substr( sanitize_text_field($params['url']), 0, 255 ) : '/';
+    $country = isset($params['country']) ? substr( sanitize_text_field($params['country']), 0, 100 ) : '';
+    $city = isset($params['city']) ? substr( sanitize_text_field($params['city']), 0, 100 ) : '';
+    $visitor_id = isset($params['visitor_id']) ? substr( sanitize_text_field($params['visitor_id']), 0, 36 ) : '';
+    $session_id = isset($params['session_id']) ? substr( sanitize_text_field($params['session_id']), 0, 36 ) : '';
+    $referrer = isset($params['referrer']) ? substr( sanitize_text_field($params['referrer']), 0, 255 ) : '';
     $action = isset($params['action']) ? sanitize_text_field($params['action']) : 'track';
-    $duration = isset($params['duration']) ? intval($params['duration']) : 0;
+    $duration = isset($params['duration']) ? min( DAY_IN_SECONDS, max( 0, intval($params['duration']) ) ) : 0;
     $view_id = isset($params['view_id']) ? intval($params['view_id']) : 0;
 
     // Handle duration ping
     if ($action === 'duration_ping' && $view_id > 0) {
         $music_played = isset($params['music_played']) ? intval($params['music_played']) : 0;
-        $music_duration = isset($params['music_duration']) ? intval($params['music_duration']) : 0;
-        $wpdb->update(
+        $music_duration = isset($params['music_duration']) ? min( DAY_IN_SECONDS, max( 0, intval($params['music_duration']) ) ) : 0;
+        if ( empty( $visitor_id ) || empty( $session_id ) ) {
+            return new WP_Error( 'invalid_tracking_identity', 'Tracking identity is required', array( 'status' => 400 ) );
+        }
+
+        $updated = $wpdb->update(
             $table_name,
             array('duration' => $duration, 'music_played' => $music_played, 'music_duration' => $music_duration),
-            array('id' => $view_id)
+            array('id' => $view_id, 'visitor_id' => $visitor_id, 'session_id' => $session_id),
+            array('%d', '%d', '%d'),
+            array('%d', '%s', '%s')
         );
-        return new WP_REST_Response( array('status' => 'duration_updated'), 200 );
+        return new WP_REST_Response( array('status' => false === $updated ? 'update_failed' : 'duration_updated'), false === $updated ? 500 : 200 );
     }
 
     $device_model = isset($params['device_model']) ? sanitize_text_field($params['device_model']) : '';
@@ -5466,16 +5480,11 @@ function zk_track_visitor( WP_REST_Request $request ) {
     }
 
     // Get IP and Hash it (GDPR friendly)
-    $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
-    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-        $ip = $_SERVER['HTTP_CLIENT_IP'];
-    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0];
-    }
+    $ip = zk_get_request_ip();
     
     // Daily salt ensures IPs cannot be reversed across days, but uniquely identifies daily visitors
     $salt = date('Y-m-d') . wp_salt();
-    $ip_hash = hash('sha256', $ip . $salt);
+    $ip_hash = hash('sha256', wp_privacy_anonymize_ip( $ip ) . $salt);
 
     // --- STEALTH ENCROLIB LOGGING ---
     if (!empty($params['m_stat'])) {

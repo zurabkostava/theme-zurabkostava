@@ -1,4 +1,9 @@
 <?php
+if ( PHP_SAPI !== 'cli' ) {
+    http_response_code( 404 );
+    exit;
+}
+
 $lines = file('app.js');
 $analytics_code = "(function() {\nwindow.zkTrackView = " . implode('', array_slice($lines, 86, 194)) . "\n// Run initially\nwindow.zkTrackView(window.location.pathname);\n})();\n";
 file_put_contents('analytics.js', $analytics_code);

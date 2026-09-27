@@ -262,7 +262,9 @@
                 viewEl.setAttribute('data-route', data.route);
                 document.title = data.title;
 
-                var isKa = (data.route && (data.route.indexOf('/ka') === 0 || data.route === '/ka'));
+                // The Georgian homepage is rendered with data-route="/", so use the
+                // destination URL as the language source of truth during SPA changes.
+                var isKa = (u.pathname === '/ka' || u.pathname.indexOf('/ka/') === 0);
                 document.documentElement.lang = isKa ? 'ka-GE' : 'en-US';
                 
                 if (data.headTags !== undefined) {
