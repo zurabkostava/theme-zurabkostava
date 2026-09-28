@@ -2384,12 +2384,13 @@ body.zk-lb-open { overflow: hidden; }
 	.zk-tabs-nav {
 		position: relative;
 		display: inline-flex;
-		background: rgba(255, 255, 255, 0.03);
-		border: 1px solid var(--hairline-strong);
+		background: linear-gradient(135deg, rgba(32, 32, 38, 0.58), rgba(12, 12, 16, 0.38));
+		border: 1px solid rgba(255, 255, 255, 0.14);
 		border-radius: 50px;
 		padding: 6px;
-		-webkit-backdrop-filter: blur(20px);
-		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(24px) saturate(165%);
+		backdrop-filter: blur(24px) saturate(165%);
+		box-shadow: 0 14px 38px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 		transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.5s var(--ease), box-shadow 0.5s var(--ease), border-color 0.5s var(--ease);
 	}
 
@@ -2411,9 +2412,9 @@ body.zk-lb-open { overflow: hidden; }
 	/* Sticky Active State (როცა სენსორი ერთვება) */
 	.zk-tabs-nav-container.is-stuck .zk-tabs-nav {
 		transform: scale(0.88);
-		background: rgba(16, 16, 20, 0.85);
-		border-color: var(--hairline);
-		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+		background: linear-gradient(135deg, rgba(28, 28, 34, 0.72), rgba(10, 10, 14, 0.56));
+		border-color: rgba(255, 255, 255, 0.12);
+		box-shadow: 0 12px 34px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 	}
 
 .zk-tab-btn.active {
@@ -2425,7 +2426,9 @@ body.zk-lb-open { overflow: hidden; }
 	position: absolute;
 	top: 6px; left: 6px;
 	height: calc(100% - 12px);
-	background: rgba(255, 255, 255, 0.1);
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.08));
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	box-shadow: 0 5px 16px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 	border-radius: 40px;
 	z-index: 1;
 	transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
@@ -2918,6 +2921,15 @@ body.zk-lb-open { overflow: hidden; }
 
 /* ტაბების ღილაკების დაპატარავება */
 @media (max-width: 768px) {
+	.zk-tabs-nav-container {
+		top: calc(var(--header-h-scrolled) + 32px);
+		margin-top: 12px;
+		margin-bottom: 54px;
+	}
+	.zk-tabs-nav {
+		max-width: calc(100vw - 32px);
+		padding: 5px;
+	}
 	.zk-tab-btn {
 		padding: 10px 16px;
 		font-size: 0.7rem;

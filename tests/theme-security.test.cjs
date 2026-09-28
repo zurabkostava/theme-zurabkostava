@@ -236,6 +236,16 @@ test('galaxy body overlays are removed when SPA navigation leaves home', () => {
     assert.match(galaxy, /if \(!currentCanvas\) \{\s*\/\/[\s\S]*?removeGalaxyPageOverlays\(\)/);
 });
 
+test('about tabs use a mobile-spaced glass treatment', () => {
+    const css = read('style.css');
+
+    assert.match(css, /\.zk-tabs-nav \{[\s\S]*?backdrop-filter: blur\(24px\) saturate\(165%\)/);
+    assert.match(css, /\.zk-tabs-nav \{[\s\S]*?inset 0 1px 0 rgba\(255, 255, 255, 0\.1\)/);
+    assert.match(css, /\.zk-tab-highlight \{[\s\S]*?linear-gradient/);
+    assert.match(css, /@media \(max-width: 768px\) \{[\s\S]*?\.zk-tabs-nav-container \{[\s\S]*?margin-top: 12px/);
+    assert.match(css, /top: calc\(var\(--header-h-scrolled\) \+ 32px\)/);
+});
+
 test('mobile archive filters scroll inside the viewport', () => {
     const css = read('style.css');
     const app = read('app.js');
