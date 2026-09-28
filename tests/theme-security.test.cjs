@@ -103,6 +103,18 @@ test('SEO and GEO fields follow every registered language', () => {
     assert.match(source, /og:locale:alternate/);
 });
 
+test('instant indexing can submit every strictly completed translation', () => {
+    const indexing = read('inc/zk-indexing-api.php');
+
+    assert.match(indexing, /function zk_indexing_translation_is_complete/);
+    assert.match(indexing, /zk_language_translation_post_requirements\( \$post, \$code \)/);
+    assert.match(indexing, /function zk_indexing_completed_translation_urls/);
+    assert.match(indexing, /zk_get_translatable_languages\(\)/);
+    assert.match(indexing, /zk_get_language_path\( \$path, \$code \)/);
+    assert.match(indexing, /name="zk_submit_completed_translations"/);
+    assert.match(indexing, /Submit all completed translations/);
+});
+
 test('renamed Georgian blog series flow from taxonomy translations into filters', () => {
     const functions = read('functions.php');
     const manager = read('inc/language-manager.php');

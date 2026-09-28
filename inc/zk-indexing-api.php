@@ -81,6 +81,70 @@ function zk_notify_google_indexing($url, $type = 'URL_UPDATED') {
     return $response;
 }
 
+/**
+ * Check translation completeness without the legacy EN/KA indexing exception.
+ * The bulk submitter must follow the Language Center's actual field coverage.
+ */
+function zk_indexing_translation_is_complete( $post, $code ) {
+    $post = get_post( $post );
+    if ( ! $post || 'en' === $code || 'publish' !== $post->post_status ) {
+        return false;
+    }
+
+    if ( ! function_exists( 'zk_language_translation_post_requirements' ) ) {
+        return false;
+    }
+
+    foreach ( zk_language_translation_post_requirements( $post, $code ) as $meta_key ) {
+        $value = get_post_meta( $post->ID, $meta_key, true );
+        if ( '' === trim( wp_strip_all_tags( (string) $value ) ) ) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Collect every completed translation URL for enabled non-source languages.
+ */
+function zk_indexing_completed_translation_urls() {
+    if ( ! function_exists( 'zk_get_translatable_languages' ) || ! function_exists( 'zk_get_language_path' ) ) {
+        return array();
+    }
+
+    $post_types = function_exists( 'zk_language_center_post_types' )
+        ? array_keys( zk_language_center_post_types() )
+        : array( 'post', 'page', 'books' );
+    $posts = get_posts( array(
+        'post_type'        => $post_types,
+        'post_status'      => 'publish',
+        'numberposts'      => -1,
+        'orderby'          => 'ID',
+        'order'            => 'ASC',
+        'suppress_filters' => true,
+    ) );
+
+    $urls = array();
+    foreach ( zk_get_translatable_languages() as $code => $language ) {
+        foreach ( $posts as $post ) {
+            if ( ! zk_indexing_translation_is_complete( $post, $code ) ) {
+                continue;
+            }
+
+            $permalink = get_permalink( $post );
+            $path      = wp_parse_url( $permalink, PHP_URL_PATH );
+            if ( ! $path ) {
+                continue;
+            }
+
+            $urls[] = home_url( zk_get_language_path( $path, $code ) );
+        }
+    }
+
+    return array_values( array_unique( $urls ) );
+}
+
 // 4. Hook on Post Save / Delete
 add_action('save_post', 'zk_instant_indexing_on_save', 10, 3);
 function zk_instant_indexing_on_save($post_id, $post, $update) {
@@ -122,12 +186,23 @@ function zk_indexing_options_page() {
         echo '<div class="notice notice-success is-dismissible"><p>JSON Key Saved!</p></div>';
     }
     
-    if (isset($_POST['zk_manual_url'])) {
+    if (isset($_POST['zk_manual_url']) || isset($_POST['zk_submit_completed_translations'])) {
         $type = sanitize_text_field($_POST['zk_manual_type']);
-        $urls_raw = stripslashes($_POST['zk_manual_url']);
+        $urls_raw = isset( $_POST['zk_manual_url'] ) ? stripslashes( $_POST['zk_manual_url'] ) : '';
         $urls = array_filter(array_map('trim', explode("\n", $urls_raw)));
+        $completed_count = 0;
+        if ( ! empty( $_POST['zk_submit_completed_translations'] ) ) {
+            $completed_urls  = zk_indexing_completed_translation_urls();
+            $completed_count = count( $completed_urls );
+            $urls            = array_merge( $urls, $completed_urls );
+        }
+        $urls = array_values( array_unique( $urls ) );
         $success_count = 0;
         $errors = [];
+
+        if ( empty( $urls ) ) {
+            $errors[] = 'Add at least one URL or select Submit all completed translations.';
+        }
         
         foreach ($urls as $u) {
             $u = esc_url_raw($u);
@@ -149,7 +224,8 @@ function zk_indexing_options_page() {
         }
         
         if ($success_count > 0) {
-            echo '<div class="notice notice-success is-dismissible"><p>Successfully submitted ' . $success_count . ' URLs to Google.</p></div>';
+            $completed_note = $completed_count ? ' This included ' . $completed_count . ' completed translations.' : '';
+            echo '<div class="notice notice-success is-dismissible"><p>Successfully submitted ' . $success_count . ' URLs to Google.' . esc_html( $completed_note ) . '</p></div>';
         }
         if (!empty($errors)) {
             echo '<div class="notice notice-error is-dismissible"><p>Errors:<br>' . implode('<br>', $errors) . '</p></div>';
@@ -174,7 +250,12 @@ function zk_indexing_options_page() {
             <h2>2. Manual URL Submission (Bulk)</h2>
             <p>Paste one or more URLs below (one per line) to submit to Google. Max 100 per batch recommended.</p>
             <div style="display:flex; flex-direction:column; gap:10px;">
-                <textarea name="zk_manual_url" rows="5" style="width:100%; max-width:800px;" placeholder="https://zurabkostava.com/nocturne-1&#10;https://zurabkostava.com/nocturne-2" required></textarea>
+                <textarea name="zk_manual_url" rows="5" style="width:100%; max-width:800px;" placeholder="https://zurabkostava.com/nocturne-1&#10;https://zurabkostava.com/nocturne-2"></textarea>
+                <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
+                    <input type="checkbox" name="zk_submit_completed_translations" value="1">
+                    Submit all completed translations
+                </label>
+                <p class="description" style="margin:0;max-width:800px;">Adds every published translation marked Complete in Language Center for all enabled languages. A successful submission requests a crawl; it does not guarantee indexing.</p>
                 <div style="display:flex; gap:10px; align-items:center;">
                     <select name="zk_manual_type">
                         <option value="URL_UPDATED">Publish / Update</option>
