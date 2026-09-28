@@ -2782,7 +2782,8 @@ function zk_book_save_meta( $post_id ) {
 add_action( 'save_post', 'zk_book_save_meta' );
 
 function zk_books_shortcode() {
-    $is_ka = function_exists( 'zk_get_current_language' ) ? ( zk_get_current_language() === 'ka' ) : false;
+    $current_language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
+    $is_ka = 'ka' === $current_language;
     if ( ! $is_ka ) {
         $req_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
         if ( strpos( $req_uri, '/ka/' ) === 0 || strpos( $req_uri, '/ka' ) === 0 ) {
@@ -2870,8 +2871,11 @@ function zk_books_shortcode() {
         $btn_label_ka = get_post_meta( $id, '_zk_book_btn_label_ka', true ) ?: 'წაიკითხეთ ექსპერიმენტი';
         $btn_label    = $is_ka ? $btn_label_ka : $btn_label_en;
         
-        $ai_summary   = get_post_meta( $id, '_zk_geo_ai_summary', true );
-        $seo_desc     = $is_ka ? ( get_post_meta( $id, '_zk_seo_description_ka', true ) ?: get_post_meta( $id, '_zk_excerpt_ka', true ) ) : get_post_meta( $id, '_zk_seo_description', true );
+        $ai_summary   = zk_get_localized_post_meta( $id, 'geo_ai_summary', $current_language, true );
+        $seo_desc     = zk_get_localized_post_meta( $id, 'seo_description', $current_language );
+        if ( ! $seo_desc && 'en' !== $current_language ) {
+            $seo_desc = get_post_meta( $id, zk_language_meta_key( 'excerpt', $current_language ), true );
+        }
 
         $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( $id, 'large' ) : 'https://via.placeholder.com/400x600?text=No+Cover';
         
@@ -2882,7 +2886,7 @@ function zk_books_shortcode() {
             'position' => $position,
             'item' => array(
                 '@type' => 'Book',
-                'inLanguage' => $is_ka ? 'ka-GE' : 'en-US',
+                'inLanguage' => zk_get_language( $current_language )['locale'],
                 'url' => $link ? $link : get_permalink($id),
                 'name' => wp_strip_all_tags( $title ),
                 'author' => array(
@@ -3781,6 +3785,28 @@ add_action( 'parse_request', function( $wp ) {
    ZK CUSTOM SEO ENGINE (Stage 1)
    ============================================================ */
 
+function zk_localized_meta_key( $field, $language = 'en' ) {
+    return 'en' === $language ? '_zk_' . sanitize_key( $field ) : zk_language_meta_key( $field, $language );
+}
+
+function zk_get_localized_post_meta( $post_id, $field, $language = '', $fallback_to_english = false ) {
+    $language = $language ?: ( function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en' );
+    $value = get_post_meta( $post_id, zk_localized_meta_key( $field, $language ), true );
+    if ( $fallback_to_english && 'en' !== $language && '' === trim( (string) $value ) ) {
+        $value = get_post_meta( $post_id, zk_localized_meta_key( $field, 'en' ), true );
+    }
+    return $value;
+}
+
+function zk_get_localized_term_meta( $term_id, $field, $language = '', $fallback_to_english = false ) {
+    $language = $language ?: ( function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en' );
+    $value = get_term_meta( $term_id, zk_localized_meta_key( $field, $language ), true );
+    if ( $fallback_to_english && 'en' !== $language && '' === trim( (string) $value ) ) {
+        $value = get_term_meta( $term_id, zk_localized_meta_key( $field, 'en' ), true );
+    }
+    return $value;
+}
+
 // 1. Add Custom Meta Box
 function zk_seo_add_meta_box() {
     $screens = array( 'post', 'page', 'zk_book', 'zk_tool' );
@@ -3799,33 +3825,27 @@ add_action( 'add_meta_boxes', 'zk_seo_add_meta_box' );
 
 function zk_seo_meta_box_html( $post ) {
     wp_nonce_field( 'zk_seo_save_meta', 'zk_seo_meta_nonce' );
-    $seo_title    = get_post_meta( $post->ID, '_zk_seo_title', true );
-    $seo_desc     = get_post_meta( $post->ID, '_zk_seo_description', true );
-    $seo_title_ka = get_post_meta( $post->ID, '_zk_seo_title_ka', true );
-    $seo_desc_ka  = get_post_meta( $post->ID, '_zk_seo_description_ka', true );
     ?>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 10px 0;">
+        <?php
+        $languages = zk_get_languages( false );
+        foreach ( $languages as $code => $language ) :
+            $seo_title = zk_get_localized_post_meta( $post->ID, 'seo_title', $code );
+            $seo_desc  = zk_get_localized_post_meta( $post->ID, 'seo_description', $code );
+            $is_source = 'en' === $code;
+            $field_suffix = $is_source ? '' : '_' . $code;
+        ?>
         <div style="background: #f8f9fa; border: 1px solid #dcdcde; border-radius: 6px; padding: 15px;">
             <h4 style="margin: 0 0 12px; font-size: 15px; display: flex; align-items: center; gap: 8px;">
-                <span>🇬🇧</span> English SEO Settings
+                <?php echo esc_html( $language['native_name'] . ' SEO Settings (' . strtoupper( $code ) . ')' ); ?>
             </h4>
-            <label for="zk_seo_title" style="display:block; font-weight:600; margin-bottom:5px;">SEO Title (EN)</label>
-            <input type="text" id="zk_seo_title" name="zk_seo_title" value="<?php echo esc_attr( $seo_title ); ?>" style="width:100%; margin-bottom:15px;" placeholder="Leave empty to use post title..." />
+            <label for="zk_seo_title<?php echo esc_attr( $field_suffix ); ?>" style="display:block; font-weight:600; margin-bottom:5px;">SEO Title (<?php echo esc_html( strtoupper( $code ) ); ?>)</label>
+            <input type="text" id="zk_seo_title<?php echo esc_attr( $field_suffix ); ?>" name="zk_seo_title<?php echo esc_attr( $field_suffix ); ?>" value="<?php echo esc_attr( $seo_title ); ?>" style="width:100%; margin-bottom:15px;" placeholder="Leave empty to use the translated page title..." />
             
-            <label for="zk_seo_description" style="display:block; font-weight:600; margin-bottom:5px;">SEO Description (EN)</label>
-            <textarea id="zk_seo_description" name="zk_seo_description" rows="4" style="width:100%;" placeholder="Leave empty to use post excerpt or default description..."><?php echo esc_textarea( $seo_desc ); ?></textarea>
+            <label for="zk_seo_description<?php echo esc_attr( $field_suffix ); ?>" style="display:block; font-weight:600; margin-bottom:5px;">SEO Description (<?php echo esc_html( strtoupper( $code ) ); ?>)</label>
+            <textarea id="zk_seo_description<?php echo esc_attr( $field_suffix ); ?>" name="zk_seo_description<?php echo esc_attr( $field_suffix ); ?>" rows="4" style="width:100%;" placeholder="Leave empty to use the translated excerpt or default description..."><?php echo esc_textarea( $seo_desc ); ?></textarea>
         </div>
-
-        <div style="background: #f0f7ff; border: 1px solid #c3daf7; border-radius: 6px; padding: 15px;">
-            <h4 style="margin: 0 0 12px; font-size: 15px; display: flex; align-items: center; gap: 8px; color: #0056b3;">
-                <span>🇬🇪</span> ქართული SEO პარამეტრები (Georgian SEO)
-            </h4>
-            <label for="zk_seo_title_ka" style="display:block; font-weight:600; margin-bottom:5px;">ქართული SEO სათაური (KA)</label>
-            <input type="text" id="zk_seo_title_ka" name="zk_seo_title_ka" value="<?php echo esc_attr( $seo_title_ka ); ?>" style="width:100%; margin-bottom:15px;" placeholder="დატოვეთ ცარიელი ქართული სათაურის გამოსაყენებლად..." />
-            
-            <label for="zk_seo_description_ka" style="display:block; font-weight:600; margin-bottom:5px;">ქართული SEO აღწერა (KA)</label>
-            <textarea id="zk_seo_description_ka" name="zk_seo_description_ka" rows="4" style="width:100%;" placeholder="დატოვეთ ცარიელი ქართული Excerpt-ის ან ტექსტის გამოსაყენებლად..."><?php echo esc_textarea( $seo_desc_ka ); ?></textarea>
-        </div>
+        <?php endforeach; ?>
     </div>
     <?php
 }
@@ -3836,68 +3856,49 @@ function zk_seo_save_meta( $post_id ) {
     if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
     if ( ! current_user_can( 'edit_post', $post_id ) ) return;
 
-    if ( isset( $_POST['zk_seo_title'] ) ) {
-        update_post_meta( $post_id, '_zk_seo_title', sanitize_text_field( $_POST['zk_seo_title'] ) );
-    }
-    if ( isset( $_POST['zk_seo_description'] ) ) {
-        update_post_meta( $post_id, '_zk_seo_description', sanitize_textarea_field( $_POST['zk_seo_description'] ) );
-    }
-    if ( isset( $_POST['zk_seo_title_ka'] ) ) {
-        update_post_meta( $post_id, '_zk_seo_title_ka', sanitize_text_field( $_POST['zk_seo_title_ka'] ) );
-    }
-    if ( isset( $_POST['zk_seo_description_ka'] ) ) {
-        update_post_meta( $post_id, '_zk_seo_description_ka', sanitize_textarea_field( $_POST['zk_seo_description_ka'] ) );
+    foreach ( zk_get_languages( false ) as $code => $language ) {
+        $suffix = 'en' === $code ? '' : '_' . $code;
+        $title_field = 'zk_seo_title' . $suffix;
+        $desc_field  = 'zk_seo_description' . $suffix;
+        if ( isset( $_POST[ $title_field ] ) ) {
+            update_post_meta( $post_id, zk_localized_meta_key( 'seo_title', $code ), sanitize_text_field( wp_unslash( $_POST[ $title_field ] ) ) );
+        }
+        if ( isset( $_POST[ $desc_field ] ) ) {
+            update_post_meta( $post_id, zk_localized_meta_key( 'seo_description', $code ), sanitize_textarea_field( wp_unslash( $_POST[ $desc_field ] ) ) );
+        }
     }
 }
 add_action( 'save_post', 'zk_seo_save_meta' );
 
 // 2.1 Add Meta Fields to Taxonomies (Tags & Categories)
 function zk_seo_taxonomy_add_meta_fields() {
+    foreach ( zk_get_languages( false ) as $code => $language ) {
+        $suffix = 'en' === $code ? '' : '_' . $code;
+        ?>
+        <div class="form-field">
+            <label for="zk_seo_title<?php echo esc_attr( $suffix ); ?>"><?php echo esc_html( $language['native_name'] ); ?> SEO Title (<?php echo esc_html( strtoupper( $code ) ); ?>)</label>
+            <input type="text" name="zk_seo_title<?php echo esc_attr( $suffix ); ?>" id="zk_seo_title<?php echo esc_attr( $suffix ); ?>" value="">
+        </div>
+        <div class="form-field">
+            <label for="zk_seo_description<?php echo esc_attr( $suffix ); ?>"><?php echo esc_html( $language['native_name'] ); ?> SEO Description (<?php echo esc_html( strtoupper( $code ) ); ?>)</label>
+            <textarea name="zk_seo_description<?php echo esc_attr( $suffix ); ?>" id="zk_seo_description<?php echo esc_attr( $suffix ); ?>" rows="3"></textarea>
+        </div>
+        <div class="form-field">
+            <label for="zk_geo_ai_summary<?php echo esc_attr( $suffix ); ?>"><strong><?php echo esc_html( $language['native_name'] ); ?> AI Summary (<?php echo esc_html( strtoupper( $code ) ); ?>)</strong></label>
+            <textarea name="zk_geo_ai_summary<?php echo esc_attr( $suffix ); ?>" id="zk_geo_ai_summary<?php echo esc_attr( $suffix ); ?>" rows="3"></textarea>
+        </div>
+        <div class="form-field">
+            <label for="zk_geo_faq<?php echo esc_attr( $suffix ); ?>"><strong><?php echo esc_html( $language['native_name'] ); ?> FAQ Schema (<?php echo esc_html( strtoupper( $code ) ); ?>)</strong></label>
+            <textarea name="zk_geo_faq<?php echo esc_attr( $suffix ); ?>" id="zk_geo_faq<?php echo esc_attr( $suffix ); ?>" rows="8" style="font-family:monospace;"></textarea>
+            <p class="description">Q: Question?<br>A: Answer.</p>
+        </div>
+        <?php
+    }
     ?>
-    <div class="form-field">
-        <label for="zk_seo_title">SEO Title (EN)</label>
-        <input type="text" name="zk_seo_title" id="zk_seo_title" value="">
-        <p class="description">Leave empty to use default generated title.</p>
-    </div>
-    <div class="form-field">
-        <label for="zk_seo_title_ka">ქართული SEO სათაური (KA)</label>
-        <input type="text" name="zk_seo_title_ka" id="zk_seo_title_ka" value="">
-        <p class="description">დატოვეთ ცარიელი ქართული სახელის გამოსაყენებლად.</p>
-    </div>
-    <div class="form-field">
-        <label for="zk_seo_description">SEO Description (EN)</label>
-        <textarea name="zk_seo_description" id="zk_seo_description" rows="3"></textarea>
-        <p class="description">Leave empty to use default generated description.</p>
-    </div>
-    <div class="form-field">
-        <label for="zk_seo_description_ka">ქართული SEO აღწერა (KA)</label>
-        <textarea name="zk_seo_description_ka" id="zk_seo_description_ka" rows="3"></textarea>
-        <p class="description">დატოვეთ ცარიელი ნაგულისხმევი ქართული აღწერისთვის.</p>
-    </div>
     <div class="form-field">
         <label for="zk_seo_image">SEO Image URL</label>
         <input type="text" name="zk_seo_image" id="zk_seo_image" value="">
         <p class="description">Paste an image URL for social media sharing (Open Graph & Twitter). Leave empty to use site default.</p>
-    </div>
-    <div class="form-field" style="margin-top:20px; padding-top:15px; border-top:1px solid #ccc;">
-        <label for="zk_geo_ai_summary"><strong>AI Summary (Abstract - EN):</strong></label>
-        <textarea name="zk_geo_ai_summary" id="zk_geo_ai_summary" rows="3"></textarea>
-        <p class="description">Tell ChatGPT exactly how to summarize this page in English.</p>
-    </div>
-    <div class="form-field">
-        <label for="zk_geo_ai_summary_ka"><strong>ქართული AI შეჯამება (Abstract - KA):</strong></label>
-        <textarea name="zk_geo_ai_summary_ka" id="zk_geo_ai_summary_ka" rows="3"></textarea>
-        <p class="description">უთხარით AI საძიებო სისტემებს, როგორ დაახასიათონ ეს გვერდი ქართულად.</p>
-    </div>
-    <div class="form-field">
-        <label for="zk_geo_faq"><strong>FAQ Schema Generator (EN):</strong></label>
-        <textarea name="zk_geo_faq" id="zk_geo_faq" rows="8" style="font-family:monospace;"></textarea>
-        <p class="description">Format exactly like this:<br/>Q: What is Beta?<br/>A: It is a book.<br/><br/>Q: Next question?<br/>A: Next answer.</p>
-    </div>
-    <div class="form-field">
-        <label for="zk_geo_faq_ka"><strong>FAQ Schema Generator (KA):</strong></label>
-        <textarea name="zk_geo_faq_ka" id="zk_geo_faq_ka" rows="8" style="font-family:monospace;"></textarea>
-        <p class="description">ფორმატი:<br/>Q: რა არის Beta?<br/>A: ეს არის წიგნი.<br/><br/>Q: შემდეგი კითხვა?<br/>A: შემდეგი პასუხი.</p>
     </div>
     <?php
 }
@@ -3905,40 +3906,24 @@ add_action( 'category_add_form_fields', 'zk_seo_taxonomy_add_meta_fields' );
 add_action( 'post_tag_add_form_fields', 'zk_seo_taxonomy_add_meta_fields' );
 
 function zk_seo_taxonomy_edit_meta_fields( $term ) {
-    $seo_title    = get_term_meta( $term->term_id, '_zk_seo_title', true );
-    $seo_title_ka = get_term_meta( $term->term_id, '_zk_seo_title_ka', true );
-    $seo_desc     = get_term_meta( $term->term_id, '_zk_seo_description', true );
-    $seo_desc_ka  = get_term_meta( $term->term_id, '_zk_seo_description_ka', true );
-    ?>
-    <tr class="form-field">
-        <th scope="row" valign="top"><label for="zk_seo_title">SEO Title (EN)</label></th>
-        <td>
-            <input type="text" name="zk_seo_title" id="zk_seo_title" value="<?php echo esc_attr( $seo_title ); ?>">
-            <p class="description">Leave empty to use default generated title.</p>
-        </td>
-    </tr>
-    <tr class="form-field">
-        <th scope="row" valign="top"><label for="zk_seo_title_ka">ქართული SEO სათაური (KA)</label></th>
-        <td>
-            <input type="text" name="zk_seo_title_ka" id="zk_seo_title_ka" value="<?php echo esc_attr( $seo_title_ka ); ?>">
-            <p class="description">დატოვეთ ცარიელი ქართული სახელის გამოსაყენებლად.</p>
-        </td>
-    </tr>
-    <tr class="form-field">
-        <th scope="row" valign="top"><label for="zk_seo_description">SEO Description (EN)</label></th>
-        <td>
-            <textarea name="zk_seo_description" id="zk_seo_description" rows="3"><?php echo esc_textarea( $seo_desc ); ?></textarea>
-            <p class="description">Leave empty to use default generated description.</p>
-        </td>
-    </tr>
-    <tr class="form-field">
-        <th scope="row" valign="top"><label for="zk_seo_description_ka">ქართული SEO აღწერა (KA)</label></th>
-        <td>
-            <textarea name="zk_seo_description_ka" id="zk_seo_description_ka" rows="3"><?php echo esc_textarea( $seo_desc_ka ); ?></textarea>
-            <p class="description">დატოვეთ ცარიელი ნაგულისხმევი ქართული აღწერისთვის.</p>
-        </td>
-    </tr>
-    <?php
+    foreach ( zk_get_languages( false ) as $code => $language ) {
+        $suffix = 'en' === $code ? '' : '_' . $code;
+        foreach ( array( 'seo_title' => array( 'SEO Title', 0 ), 'seo_description' => array( 'SEO Description', 3 ), 'geo_ai_summary' => array( 'AI Summary', 3 ), 'geo_faq' => array( 'FAQ Schema', 8 ) ) as $field => $config ) {
+            $value = zk_get_localized_term_meta( $term->term_id, $field, $code );
+            ?>
+            <tr class="form-field">
+                <th scope="row"><label for="zk_<?php echo esc_attr( $field . $suffix ); ?>"><?php echo esc_html( $language['native_name'] . ' ' . $config[0] . ' (' . strtoupper( $code ) . ')' ); ?></label></th>
+                <td>
+                    <?php if ( 0 === $config[1] ) : ?>
+                        <input type="text" name="zk_<?php echo esc_attr( $field . $suffix ); ?>" id="zk_<?php echo esc_attr( $field . $suffix ); ?>" value="<?php echo esc_attr( $value ); ?>">
+                    <?php else : ?>
+                        <textarea name="zk_<?php echo esc_attr( $field . $suffix ); ?>" id="zk_<?php echo esc_attr( $field . $suffix ); ?>" rows="<?php echo esc_attr( $config[1] ); ?>"<?php echo 'geo_faq' === $field ? ' style="font-family:monospace;"' : ''; ?>><?php echo esc_textarea( $value ); ?></textarea>
+                    <?php endif; ?>
+                </td>
+            </tr>
+            <?php
+        }
+    }
     $seo_img = get_term_meta( $term->term_id, '_zk_seo_image', true );
     ?>
     <tr class="form-field">
@@ -3949,74 +3934,24 @@ function zk_seo_taxonomy_edit_meta_fields( $term ) {
         </td>
     </tr>
     <?php
-    $ai_summary    = get_term_meta( $term->term_id, '_zk_geo_ai_summary', true );
-    $ai_summary_ka = get_term_meta( $term->term_id, '_zk_geo_ai_summary_ka', true );
-    $faq_text      = get_term_meta( $term->term_id, '_zk_geo_faq', true );
-    $faq_text_ka   = get_term_meta( $term->term_id, '_zk_geo_faq_ka', true );
-    ?>
-    <tr class="form-field">
-        <td colspan="2" style="padding:0;"><hr style="margin:10px 0;"></td>
-    </tr>
-    <tr class="form-field">
-        <th scope="row" valign="top"><label for="zk_geo_ai_summary"><strong>AI Summary (Abstract - EN):</strong></label></th>
-        <td>
-            <textarea name="zk_geo_ai_summary" id="zk_geo_ai_summary" rows="3"><?php echo esc_textarea( $ai_summary ); ?></textarea>
-            <p class="description">Tell ChatGPT exactly how to summarize this page in English.</p>
-        </td>
-    </tr>
-    <tr class="form-field">
-        <th scope="row" valign="top"><label for="zk_geo_ai_summary_ka"><strong>ქართული AI შეჯამება (Abstract - KA):</strong></label></th>
-        <td>
-            <textarea name="zk_geo_ai_summary_ka" id="zk_geo_ai_summary_ka" rows="3"><?php echo esc_textarea( $ai_summary_ka ); ?></textarea>
-            <p class="description">უთხარით AI საძიებო სისტემებს, როგორ დაახასიათონ ეს გვერდი ქართულად.</p>
-        </td>
-    </tr>
-    <tr class="form-field">
-        <th scope="row" valign="top"><label for="zk_geo_faq"><strong>FAQ Schema Generator (EN):</strong></label></th>
-        <td>
-            <textarea name="zk_geo_faq" id="zk_geo_faq" rows="8" style="font-family:monospace;"><?php echo esc_textarea( $faq_text ); ?></textarea>
-            <p class="description">Format exactly like this:<br/>Q: What is Beta?<br/>A: It is a book.<br/><br/>Q: Next question?<br/>A: Next answer.</p>
-        </td>
-    </tr>
-    <tr class="form-field">
-        <th scope="row" valign="top"><label for="zk_geo_faq_ka"><strong>FAQ Schema Generator (KA):</strong></label></th>
-        <td>
-            <textarea name="zk_geo_faq_ka" id="zk_geo_faq_ka" rows="8" style="font-family:monospace;"><?php echo esc_textarea( $faq_text_ka ); ?></textarea>
-            <p class="description">ფორმატი:<br/>Q: რა არის Beta?<br/>A: ეს არის წიგნი.<br/><br/>Q: შემდეგი კითხვა?<br/>A: შემდეგი პასუხი.</p>
-        </td>
-    </tr>
-    <?php
 }
 add_action( 'category_edit_form_fields', 'zk_seo_taxonomy_edit_meta_fields' );
 add_action( 'post_tag_edit_form_fields', 'zk_seo_taxonomy_edit_meta_fields' );
 
 function zk_seo_save_taxonomy_meta( $term_id ) {
-    if ( isset( $_POST['zk_seo_title'] ) ) {
-        update_term_meta( $term_id, '_zk_seo_title', sanitize_text_field( $_POST['zk_seo_title'] ) );
-    }
-    if ( isset( $_POST['zk_seo_title_ka'] ) ) {
-        update_term_meta( $term_id, '_zk_seo_title_ka', sanitize_text_field( $_POST['zk_seo_title_ka'] ) );
-    }
-    if ( isset( $_POST['zk_seo_description'] ) ) {
-        update_term_meta( $term_id, '_zk_seo_description', sanitize_textarea_field( $_POST['zk_seo_description'] ) );
-    }
-    if ( isset( $_POST['zk_seo_description_ka'] ) ) {
-        update_term_meta( $term_id, '_zk_seo_description_ka', sanitize_textarea_field( $_POST['zk_seo_description_ka'] ) );
+    foreach ( zk_get_languages( false ) as $code => $language ) {
+        $suffix = 'en' === $code ? '' : '_' . $code;
+        foreach ( array( 'seo_title', 'seo_description', 'geo_ai_summary', 'geo_faq' ) as $field ) {
+            $input = 'zk_' . $field . $suffix;
+            if ( isset( $_POST[ $input ] ) ) {
+                $value = wp_unslash( $_POST[ $input ] );
+                $value = 'seo_title' === $field ? sanitize_text_field( $value ) : sanitize_textarea_field( $value );
+                update_term_meta( $term_id, zk_localized_meta_key( $field, $code ), $value );
+            }
+        }
     }
     if ( isset( $_POST['zk_seo_image'] ) ) {
         update_term_meta( $term_id, '_zk_seo_image', esc_url_raw( $_POST['zk_seo_image'] ) );
-    }
-    if ( isset( $_POST['zk_geo_ai_summary'] ) ) {
-        update_term_meta( $term_id, '_zk_geo_ai_summary', sanitize_textarea_field( $_POST['zk_geo_ai_summary'] ) );
-    }
-    if ( isset( $_POST['zk_geo_ai_summary_ka'] ) ) {
-        update_term_meta( $term_id, '_zk_geo_ai_summary_ka', sanitize_textarea_field( $_POST['zk_geo_ai_summary_ka'] ) );
-    }
-    if ( isset( $_POST['zk_geo_faq'] ) ) {
-        update_term_meta( $term_id, '_zk_geo_faq', sanitize_textarea_field( $_POST['zk_geo_faq'] ) );
-    }
-    if ( isset( $_POST['zk_geo_faq_ka'] ) ) {
-        update_term_meta( $term_id, '_zk_geo_faq_ka', sanitize_textarea_field( $_POST['zk_geo_faq_ka'] ) );
     }
 }
 add_action( 'created_category', 'zk_seo_save_taxonomy_meta' );
@@ -4093,10 +4028,11 @@ function zk_get_clean_bilingual_urls() {
 
 function zk_render_seo_meta() {
     $seo_urls      = zk_get_clean_bilingual_urls();
-    $is_ka         = $seo_urls['is_ka'];
+    $language      = $seo_urls['current'];
+    $is_ka         = 'ka' === $language;
     $canonical_url = $seo_urls['canonical_url'];
     $en_url        = $seo_urls['en_url'];
-    $ka_url        = $seo_urls['ka_url'];
+    $language_info = zk_get_language( $language );
 
     // Determine context
     $is_single = is_single() || is_page();
@@ -4131,17 +4067,8 @@ function zk_render_seo_meta() {
     if ( $is_single ) {
         if ( is_front_page() || is_home() ) {
             $type = 'website';
-            if ( $is_ka ) {
-                $custom_title = get_post_meta( $obj_id, '_zk_seo_title_ka', true );
-                $custom_desc  = get_post_meta( $obj_id, '_zk_seo_description_ka', true );
-                $title = $site_name_ka . ( $site_desc_ka ? ' — ' . $site_desc_ka : '' );
-                $desc  = $site_desc_ka;
-            } else {
-                $custom_title = get_post_meta( $obj_id, '_zk_seo_title', true );
-                $custom_desc  = get_post_meta( $obj_id, '_zk_seo_description', true );
-                $title = $site_name_en . ( $site_desc_en ? ' — ' . $site_desc_en : '' );
-                $desc  = $site_desc_en;
-            }
+            $custom_title = zk_get_localized_post_meta( $obj_id, 'seo_title', $language );
+            $custom_desc  = zk_get_localized_post_meta( $obj_id, 'seo_description', $language );
         } elseif ( get_post_type( $obj_id ) === 'zk_book' ) {
             $type = 'book';
         } else {
@@ -4149,44 +4076,21 @@ function zk_render_seo_meta() {
         }
 
         if ( ! ( is_front_page() || is_home() ) ) {
-            if ( $is_ka ) {
-                $custom_title = get_post_meta( $obj_id, '_zk_seo_title_ka', true );
-                $custom_desc  = get_post_meta( $obj_id, '_zk_seo_description_ka', true );
-
-                // Post Title
-                $post_title_ka = get_post_meta( $obj_id, '_zk_title_ka', true );
-                if ( empty( $post_title_ka ) ) {
-                    $post_title_ka = get_the_title( $obj_id );
-                }
-                $title = $post_title_ka . ' — ' . $site_name;
-
-                // Description
-                $excerpt_ka = get_post_meta( $obj_id, '_zk_excerpt_ka', true );
-                if ( ! empty( $excerpt_ka ) ) {
-                    $desc = wp_strip_all_tags( $excerpt_ka );
-                } else {
-                    $content_ka = get_post_meta( $obj_id, '_zk_content_ka', true );
-                    if ( ! empty( $content_ka ) ) {
-                        $desc = wp_trim_words( wp_strip_all_tags( $content_ka ), 30, '...' );
-                    } elseif ( has_excerpt( $obj_id ) ) {
-                        $desc = wp_strip_all_tags( get_the_excerpt( $obj_id ) );
-                    } else {
-                        $post_obj = get_post( $obj_id );
-                        $desc = $post_obj ? wp_trim_words( wp_strip_all_tags( $post_obj->post_content ), 30, '...' ) : $site_desc;
-                    }
-                }
+            $custom_title = zk_get_localized_post_meta( $obj_id, 'seo_title', $language );
+            $custom_desc  = zk_get_localized_post_meta( $obj_id, 'seo_description', $language );
+            $translated_title = 'en' === $language ? '' : get_post_meta( $obj_id, zk_language_meta_key( 'title', $language ), true );
+            $title = ( $translated_title ?: get_the_title( $obj_id ) ) . ' — ' . $site_name;
+            $translated_excerpt = 'en' === $language ? '' : get_post_meta( $obj_id, zk_language_meta_key( 'excerpt', $language ), true );
+            $translated_content = 'en' === $language ? '' : get_post_meta( $obj_id, zk_language_meta_key( 'content', $language ), true );
+            if ( $translated_excerpt ) {
+                $desc = wp_strip_all_tags( $translated_excerpt );
+            } elseif ( $translated_content ) {
+                $desc = wp_trim_words( wp_strip_all_tags( $translated_content ), 30, '...' );
+            } elseif ( has_excerpt( $obj_id ) ) {
+                $desc = wp_strip_all_tags( get_the_excerpt( $obj_id ) );
             } else {
-                $custom_title = get_post_meta( $obj_id, '_zk_seo_title', true );
-                $custom_desc  = get_post_meta( $obj_id, '_zk_seo_description', true );
-
-                $title = get_the_title( $obj_id ) . ' — ' . $site_name;
-
-                if ( has_excerpt( $obj_id ) ) {
-                    $desc = wp_strip_all_tags( get_the_excerpt( $obj_id ) );
-                } else {
-                    $post_obj = get_post( $obj_id );
-                    $desc = $post_obj ? wp_trim_words( wp_strip_all_tags( $post_obj->post_content ), 30, '...' ) : $site_desc;
-                }
+                $post_obj = get_post( $obj_id );
+                $desc = $post_obj ? wp_trim_words( wp_strip_all_tags( $post_obj->post_content ), 30, '...' ) : $site_desc;
             }
 
             // Image logic
@@ -4199,35 +4103,18 @@ function zk_render_seo_meta() {
         $term_obj = get_queried_object();
         $custom_img = get_term_meta( $term_id, '_zk_seo_image', true );
 
-        if ( $is_ka ) {
-            $custom_title = get_term_meta( $term_id, '_zk_seo_title_ka', true );
-            $custom_desc  = get_term_meta( $term_id, '_zk_seo_description_ka', true );
-
-            $term_name_ka = function_exists('zk_get_translated_term_name') ? zk_get_translated_term_name( $term_obj ) : '';
-            if ( empty( $term_name_ka ) && $term_obj && isset( $term_obj->name ) ) {
-                $term_name_ka = $term_obj->name;
-            }
-
-            $title = $term_name_ka . ' — ' . $site_name;
-            $term_desc_ka = get_term_meta( $term_id, '_zk_desc_ka', true );
-            if ( ! empty( $term_desc_ka ) ) {
-                $desc = wp_strip_all_tags( $term_desc_ka );
-            } elseif ( is_category() ) {
-                $desc = wp_strip_all_tags( category_description() ) ?: $desc;
-            } elseif ( is_tag() ) {
-                $desc = wp_strip_all_tags( tag_description() ) ?: $desc;
-            }
-        } else {
-            $custom_title = get_term_meta( $term_id, '_zk_seo_title', true );
-            $custom_desc  = get_term_meta( $term_id, '_zk_seo_description', true );
-
-            if ( is_category() ) {
-                $title = single_cat_title( '', false ) . ' — ' . $site_name;
-                $desc  = wp_strip_all_tags( category_description() ) ?: $desc;
-            } elseif ( is_tag() ) {
-                $title = single_tag_title( '', false ) . ' — ' . $site_name;
-                $desc  = wp_strip_all_tags( tag_description() ) ?: $desc;
-            }
+        $custom_title = zk_get_localized_term_meta( $term_id, 'seo_title', $language );
+        $custom_desc  = zk_get_localized_term_meta( $term_id, 'seo_description', $language );
+        $term_name = function_exists( 'zk_get_translated_term_name' ) ? zk_get_translated_term_name( $term_obj ) : '';
+        if ( ! $term_name && $term_obj && isset( $term_obj->name ) ) $term_name = $term_obj->name;
+        $title = $term_name . ' — ' . $site_name;
+        $term_desc = 'en' === $language ? '' : get_term_meta( $term_id, zk_language_meta_key( 'description', $language ), true );
+        if ( $term_desc ) {
+            $desc = wp_strip_all_tags( $term_desc );
+        } elseif ( is_category() ) {
+            $desc = wp_strip_all_tags( category_description() ) ?: $desc;
+        } elseif ( is_tag() ) {
+            $desc = wp_strip_all_tags( tag_description() ) ?: $desc;
         }
     } elseif ( is_search() ) {
         if ( $is_ka ) {
@@ -4262,8 +4149,7 @@ function zk_render_seo_meta() {
     $title = esc_attr( wp_strip_all_tags( $title ) );
     $desc  = esc_attr( wp_strip_all_tags( $desc ) );
 
-    $og_locale     = $is_ka ? 'ka_GE' : 'en_US';
-    $og_locale_alt = $is_ka ? 'en_US' : 'ka_GE';
+    $og_locale = str_replace( '-', '_', $language_info['locale'] );
 
     // Output Tags
     echo "\n<!-- ZK Custom SEO Engine -->\n";
@@ -4288,7 +4174,11 @@ function zk_render_seo_meta() {
     echo "<meta property=\"og:site_name\" content=\"" . esc_attr( $site_name ) . "\" />\n";
     echo "<meta property=\"og:type\" content=\"{$type}\" />\n";
     echo "<meta property=\"og:locale\" content=\"{$og_locale}\" />\n";
-    echo "<meta property=\"og:locale:alternate\" content=\"{$og_locale_alt}\" />\n";
+    foreach ( zk_get_languages() as $code => $alternate_language ) {
+        if ( $code !== $language ) {
+            echo '<meta property="og:locale:alternate" content="' . esc_attr( str_replace( '-', '_', $alternate_language['locale'] ) ) . '" />' . "\n";
+        }
+    }
     if ( ! empty( $img ) ) echo "<meta property=\"og:image\" content=\"" . esc_url( $img ) . "\" />\n";
     
     // Twitter Cards
@@ -4303,7 +4193,10 @@ add_action( 'wp_head', 'zk_render_seo_meta', 1 );
 // 4. JSON-LD Schema Generator (AI & Google SEO)
 function zk_render_json_ld_schema() {
     $seo_urls      = zk_get_clean_bilingual_urls();
-    $is_ka         = $seo_urls['is_ka'];
+    $current_language = $seo_urls['current'];
+    $is_ka         = 'ka' === $current_language;
+    $language_info = zk_get_language( $current_language );
+    $content_locale = $language_info['locale'];
     $canonical_url = $seo_urls['canonical_url'];
 
     $site_name_en = get_bloginfo( 'name' ) ?: 'Zurab Kostava';
@@ -4373,7 +4266,7 @@ function zk_render_json_ld_schema() {
                     "@type" => "AboutPage",
                     "@id" => $canonical_url,
                     "url" => $canonical_url,
-                    "inLanguage" => $is_ka ? 'ka-GE' : 'en-US',
+                    "inLanguage" => $content_locale,
                     "name" => $about_name,
                     "description" => $about_desc,
                     "mainEntity" => [
@@ -4400,8 +4293,8 @@ function zk_render_json_ld_schema() {
         '@type' => 'WebSite',
         'name' => $is_ka ? $site_name_ka : 'Zurab Kostava',
         'alternateName' => $is_ka ? 'Zurab Kostava' : $site_name_ka,
-        'url' => $is_ka ? home_url('/ka/') : $site_url,
-        'inLanguage' => $is_ka ? 'ka-GE' : 'en-US',
+        'url' => isset( $seo_urls['urls'][ $current_language ] ) ? $seo_urls['urls'][ $current_language ] : $site_url,
+        'inLanguage' => $content_locale,
         'publisher' => [
             '@id' => $site_url . '#person'
         ]
@@ -4413,21 +4306,16 @@ function zk_render_json_ld_schema() {
         global $post;
         $post_id = $post ? $post->ID : get_queried_object_id();
         
-        if ( $is_ka ) {
-            $headline = get_post_meta( $post_id, '_zk_seo_title_ka', true ) ?: ( get_post_meta( $post_id, '_zk_title_ka', true ) ?: get_the_title( $post_id ) );
-            $desc = get_post_meta( $post_id, '_zk_seo_description_ka', true ) ?: ( get_post_meta( $post_id, '_zk_excerpt_ka', true ) ?: wp_trim_words( wp_strip_all_tags( get_post_meta( $post_id, '_zk_content_ka', true ) ), 30, '' ) );
-            if ( empty($desc) ) {
-                $desc = wp_trim_words( wp_strip_all_tags( $post->post_content ), 30, '' );
-            }
-        } else {
-            $headline = get_post_meta( $post_id, '_zk_seo_title', true ) ?: get_the_title( $post_id );
-            $desc = get_post_meta( $post_id, '_zk_seo_description', true ) ?: wp_trim_words( wp_strip_all_tags( $post->post_content ), 30, '' );
-        }
+        $translated_title = 'en' === $current_language ? '' : get_post_meta( $post_id, zk_language_meta_key( 'title', $current_language ), true );
+        $translated_excerpt = 'en' === $current_language ? '' : get_post_meta( $post_id, zk_language_meta_key( 'excerpt', $current_language ), true );
+        $translated_content = 'en' === $current_language ? '' : get_post_meta( $post_id, zk_language_meta_key( 'content', $current_language ), true );
+        $headline = zk_get_localized_post_meta( $post_id, 'seo_title', $current_language ) ?: ( $translated_title ?: get_the_title( $post_id ) );
+        $desc = zk_get_localized_post_meta( $post_id, 'seo_description', $current_language ) ?: ( $translated_excerpt ?: wp_trim_words( wp_strip_all_tags( $translated_content ?: $post->post_content ), 30, '' ) );
 
         $article_schema = [
             '@context' => 'https://schema.org',
             '@type' => 'Article',
-            'inLanguage' => $is_ka ? 'ka-GE' : 'en-US',
+            'inLanguage' => $content_locale,
             'headline' => $headline,
             'description' => esc_attr( $desc ),
             'datePublished' => get_the_date( 'c', $post_id ),
@@ -4453,13 +4341,13 @@ function zk_render_json_ld_schema() {
         $tags = get_the_tags($post_id);
         if ($tags) {
             foreach($tags as $tag) {
-                $keywords[] = $is_ka && function_exists('zk_get_translated_term_name') ? zk_get_translated_term_name($tag) : $tag->name;
+                $keywords[] = 'en' !== $current_language && function_exists('zk_get_translated_term_name') ? zk_get_translated_term_name($tag) : $tag->name;
             }
         }
         $categories = get_the_category($post_id);
         if ($categories) {
             foreach($categories as $cat) {
-                $keywords[] = $is_ka && function_exists('zk_get_translated_term_name') ? zk_get_translated_term_name($cat) : $cat->name;
+                $keywords[] = 'en' !== $current_language && function_exists('zk_get_translated_term_name') ? zk_get_translated_term_name($cat) : $cat->name;
             }
         }
         if (!empty($keywords)) {
@@ -4475,21 +4363,21 @@ function zk_render_json_ld_schema() {
         $target_id  = function_exists('zk_get_seo_target_id') ? zk_get_seo_target_id( get_queried_object_id() ) : get_queried_object_id();
         $year       = get_post_meta( $target_id, '_zk_book_year', true );
         $genre      = get_post_meta( $target_id, '_zk_book_genre', true );
-        $seo_desc   = $is_ka ? ( get_post_meta( $target_id, '_zk_seo_description_ka', true ) ?: get_post_meta( $target_id, '_zk_excerpt_ka', true ) ) : get_post_meta( $target_id, '_zk_seo_description', true );
+        $seo_desc   = zk_get_localized_post_meta( $target_id, 'seo_description', $current_language );
         $characters = get_post_meta( $target_id, '_zk_book_characters', true );
         $themes     = get_post_meta( $target_id, '_zk_book_themes', true );
-        $language   = get_post_meta( $target_id, '_zk_book_language', true ) ?: ($is_ka ? 'ka' : 'en');
+        $language   = get_post_meta( $target_id, '_zk_book_language', true ) ?: $current_language;
         $pages      = get_post_meta( $target_id, '_zk_book_pages', true );
         $audience   = get_post_meta( $target_id, '_zk_book_audience', true );
         $isbn       = get_post_meta( $target_id, '_zk_book_isbn', true );
         
-        $book_title = $is_ka ? ( get_post_meta( $target_id, '_zk_title_ka', true ) ?: get_the_title( $target_id ) ) : get_the_title( $target_id );
+        $book_title = 'en' === $current_language ? get_the_title( $target_id ) : ( get_post_meta( $target_id, zk_language_meta_key( 'title', $current_language ), true ) ?: get_the_title( $target_id ) );
         $desc = !empty($seo_desc) ? $seo_desc : wp_strip_all_tags( get_post($target_id)->post_content );
         
         $book_schema = [
             '@context' => 'https://schema.org',
             '@type' => 'Book',
-            'inLanguage' => $is_ka ? 'ka-GE' : 'en-US',
+            'inLanguage' => $content_locale,
             'name' => $book_title,
             'author' => [ '@id' => $site_url . '#person' ],
             'datePublished' => $year,
@@ -4768,31 +4656,17 @@ function zk_render_geo_meta_tags() {
 
     // AI Summary (abstract)
     $ai_summary = '';
-    $is_ka = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
+    $language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
 
     if ( is_singular() ) {
         global $post;
         $target_id = function_exists('zk_get_seo_target_id') && isset($post->ID) ? zk_get_seo_target_id( $post->ID ) : ( isset($post->ID) ? $post->ID : 0 );
         if ( $target_id ) {
-            if ( $is_ka ) {
-                $ai_summary = get_post_meta( $target_id, '_zk_geo_ai_summary_ka', true );
-                if ( empty( trim( $ai_summary ) ) ) {
-                    $ai_summary = get_post_meta( $target_id, '_zk_geo_ai_summary', true );
-                }
-            } else {
-                $ai_summary = get_post_meta( $target_id, '_zk_geo_ai_summary', true );
-            }
+            $ai_summary = zk_get_localized_post_meta( $target_id, 'geo_ai_summary', $language, true );
         }
     } elseif ( is_archive() && ( is_category() || is_tag() ) ) {
         $term_id = get_queried_object_id();
-        if ( $is_ka ) {
-            $ai_summary = get_term_meta( $term_id, '_zk_geo_ai_summary_ka', true );
-            if ( empty( trim( $ai_summary ) ) ) {
-                $ai_summary = get_term_meta( $term_id, '_zk_geo_ai_summary', true );
-            }
-        } else {
-            $ai_summary = get_term_meta( $term_id, '_zk_geo_ai_summary', true );
-        }
+        $ai_summary = zk_get_localized_term_meta( $term_id, 'geo_ai_summary', $language, true );
     }
 
     if ( ! empty( trim( $ai_summary ) ) ) {
@@ -4857,43 +4731,29 @@ add_action( 'add_meta_boxes', 'zk_add_geo_meta_box' );
 
 function zk_render_geo_meta_box( $post ) {
     wp_nonce_field( 'zk_geo_save_meta_box_data', 'zk_geo_meta_box_nonce' );
-    $ai_summary    = get_post_meta( $post->ID, '_zk_geo_ai_summary', true );
-    $faq_text      = get_post_meta( $post->ID, '_zk_geo_faq', true );
-    $ai_summary_ka = get_post_meta( $post->ID, '_zk_geo_ai_summary_ka', true );
-    $faq_text_ka   = get_post_meta( $post->ID, '_zk_geo_faq_ka', true );
     ?>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; padding: 10px 0;">
+        <?php foreach ( zk_get_languages( false ) as $code => $language ) :
+            $suffix = 'en' === $code ? '' : '_' . $code;
+            $ai_summary = zk_get_localized_post_meta( $post->ID, 'geo_ai_summary', $code );
+            $faq_text = zk_get_localized_post_meta( $post->ID, 'geo_faq', $code );
+        ?>
         <div style="background: #f8f9fa; border: 1px solid #dcdcde; border-radius: 6px; padding: 15px;">
             <h4 style="margin: 0 0 14px; font-size: 15px; display: flex; align-items: center; gap: 8px;">
-                <span>🇬🇧</span> English GEO Settings (AI & FAQ)
+                <?php echo esc_html( $language['native_name'] . ' GEO Settings (' . strtoupper( $code ) . ')' ); ?>
             </h4>
             <p style="margin-bottom: 15px;">
-                <label for="zk_geo_ai_summary" style="display:block; font-weight:600; margin-bottom:5px;">AI Summary (Abstract - EN):</label>
-                <span class="description" style="display:block; margin-bottom:5px;">Tell ChatGPT and AI engines exactly how to summarize this page in English.</span>
-                <textarea id="zk_geo_ai_summary" name="zk_geo_ai_summary" rows="3" style="width:100%;"><?php echo esc_textarea( $ai_summary ); ?></textarea>
+                <label for="zk_geo_ai_summary<?php echo esc_attr( $suffix ); ?>" style="display:block; font-weight:600; margin-bottom:5px;">AI Summary (<?php echo esc_html( strtoupper( $code ) ); ?>)</label>
+                <span class="description" style="display:block; margin-bottom:5px;">Tell AI search engines how to summarize this page in this language.</span>
+                <textarea id="zk_geo_ai_summary<?php echo esc_attr( $suffix ); ?>" name="zk_geo_ai_summary<?php echo esc_attr( $suffix ); ?>" rows="3" style="width:100%;"><?php echo esc_textarea( $ai_summary ); ?></textarea>
             </p>
             <p style="margin-top: 15px; margin-bottom: 0;">
-                <label for="zk_geo_faq" style="display:block; font-weight:600; margin-bottom:5px;">FAQ Schema Generator (EN):</label>
-                <span class="description" style="display:block; margin-bottom:5px;">Format exactly like this:<br/>Q: What is Beta?<br/>A: It is a book.<br/><br/>Q: Next question?<br/>A: Next answer.</span>
-                <textarea id="zk_geo_faq" name="zk_geo_faq" rows="8" style="width:100%; font-family:monospace;"><?php echo esc_textarea( $faq_text ); ?></textarea>
+                <label for="zk_geo_faq<?php echo esc_attr( $suffix ); ?>" style="display:block; font-weight:600; margin-bottom:5px;">FAQ Schema (<?php echo esc_html( strtoupper( $code ) ); ?>)</label>
+                <span class="description" style="display:block; margin-bottom:5px;">Q: Question?<br>A: Answer.</span>
+                <textarea id="zk_geo_faq<?php echo esc_attr( $suffix ); ?>" name="zk_geo_faq<?php echo esc_attr( $suffix ); ?>" rows="8" style="width:100%; font-family:monospace;"><?php echo esc_textarea( $faq_text ); ?></textarea>
             </p>
         </div>
-
-        <div style="background: #f0f7ff; border: 1px solid #c3daf7; border-radius: 6px; padding: 15px;">
-            <h4 style="margin: 0 0 14px; font-size: 15px; display: flex; align-items: center; gap: 8px; color: #0056b3;">
-                <span>🇬🇪</span> ქართული GEO პარამეტრები (AI & FAQ)
-            </h4>
-            <p style="margin-bottom: 15px;">
-                <label for="zk_geo_ai_summary_ka" style="display:block; font-weight:600; margin-bottom:5px;">ქართული AI შეჯამება (Abstract - KA):</label>
-                <span class="description" style="display:block; margin-bottom:5px;">უთხარით AI საძიებო სისტემებს (ChatGPT, Perplexity), როგორ დაახასიათონ ეს გვერდი ქართულად.</span>
-                <textarea id="zk_geo_ai_summary_ka" name="zk_geo_ai_summary_ka" rows="3" style="width:100%;"><?php echo esc_textarea( $ai_summary_ka ); ?></textarea>
-            </p>
-            <p style="margin-top: 15px; margin-bottom: 0;">
-                <label for="zk_geo_faq_ka" style="display:block; font-weight:600; margin-bottom:5px;">FAQ Schema Generator (KA):</label>
-                <span class="description" style="display:block; margin-bottom:5px;">ფორმატი:<br/>Q: რა არის Beta?<br/>A: ეს არის წიგნი.<br/><br/>Q: შემდეგი კითხვა?<br/>A: შემდეგი პასუხი.</span>
-                <textarea id="zk_geo_faq_ka" name="zk_geo_faq_ka" rows="8" style="width:100%; font-family:monospace;"><?php echo esc_textarea( $faq_text_ka ); ?></textarea>
-            </p>
-        </div>
+        <?php endforeach; ?>
     </div>
     <?php
 }
@@ -4903,17 +4763,14 @@ function zk_save_geo_meta_box_data( $post_id ) {
     if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
     if ( ! current_user_can( 'edit_post', $post_id ) ) return;
 
-    if ( isset( $_POST['zk_geo_ai_summary'] ) ) {
-        update_post_meta( $post_id, '_zk_geo_ai_summary', sanitize_textarea_field( $_POST['zk_geo_ai_summary'] ) );
-    }
-    if ( isset( $_POST['zk_geo_ai_summary_ka'] ) ) {
-        update_post_meta( $post_id, '_zk_geo_ai_summary_ka', sanitize_textarea_field( $_POST['zk_geo_ai_summary_ka'] ) );
-    }
-    if ( isset( $_POST['zk_geo_faq'] ) ) {
-        update_post_meta( $post_id, '_zk_geo_faq', sanitize_textarea_field( $_POST['zk_geo_faq'] ) );
-    }
-    if ( isset( $_POST['zk_geo_faq_ka'] ) ) {
-        update_post_meta( $post_id, '_zk_geo_faq_ka', sanitize_textarea_field( $_POST['zk_geo_faq_ka'] ) );
+    foreach ( zk_get_languages( false ) as $code => $language ) {
+        $suffix = 'en' === $code ? '' : '_' . $code;
+        foreach ( array( 'geo_ai_summary', 'geo_faq' ) as $field ) {
+            $input = 'zk_' . $field . $suffix;
+            if ( isset( $_POST[ $input ] ) ) {
+                update_post_meta( $post_id, zk_localized_meta_key( $field, $code ), sanitize_textarea_field( wp_unslash( $_POST[ $input ] ) ) );
+            }
+        }
     }
 }
 add_action( 'save_post', 'zk_save_geo_meta_box_data' );
@@ -4922,7 +4779,8 @@ add_action( 'save_post', 'zk_save_geo_meta_box_data' );
 function zk_inject_faq_schema() {
     if ( ! is_singular() && ! ( is_archive() && ( is_category() || is_tag() ) ) ) return;
     
-    $is_ka = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
+    $language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
+    $language_info = zk_get_language( $language );
     $faq_text = '';
     
     if ( is_singular() ) {
@@ -4930,25 +4788,11 @@ function zk_inject_faq_schema() {
         // Automatically fetch FAQ from the corresponding zk_book if on a book reader page
         $target_id = function_exists('zk_get_seo_target_id') && isset($post->ID) ? zk_get_seo_target_id( $post->ID ) : ( isset($post->ID) ? $post->ID : 0 );
         if ( $target_id ) {
-            if ( $is_ka ) {
-                $faq_text = get_post_meta( $target_id, '_zk_geo_faq_ka', true );
-                if ( empty( trim( $faq_text ) ) ) {
-                    $faq_text = get_post_meta( $target_id, '_zk_geo_faq', true );
-                }
-            } else {
-                $faq_text = get_post_meta( $target_id, '_zk_geo_faq', true );
-            }
+            $faq_text = zk_get_localized_post_meta( $target_id, 'geo_faq', $language, true );
         }
     } else {
         $term_id = get_queried_object_id();
-        if ( $is_ka ) {
-            $faq_text = get_term_meta( $term_id, '_zk_geo_faq_ka', true );
-            if ( empty( trim( $faq_text ) ) ) {
-                $faq_text = get_term_meta( $term_id, '_zk_geo_faq', true );
-            }
-        } else {
-            $faq_text = get_term_meta( $term_id, '_zk_geo_faq', true );
-        }
+        $faq_text = zk_get_localized_term_meta( $term_id, 'geo_faq', $language, true );
     }
     
     $mainEntity = [];
@@ -4982,14 +4826,7 @@ function zk_inject_faq_schema() {
     if ( is_page() && $post_obj && has_shortcode( $post_obj->post_content, 'zk_books' ) ) {
         $books = get_posts( array( 'post_type' => 'zk_book', 'numberposts' => -1 ) );
         foreach ( $books as $book ) {
-            if ( $is_ka ) {
-                $b_faq = get_post_meta( $book->ID, '_zk_geo_faq_ka', true );
-                if ( empty( trim( $b_faq ) ) ) {
-                    $b_faq = get_post_meta( $book->ID, '_zk_geo_faq', true );
-                }
-            } else {
-                $b_faq = get_post_meta( $book->ID, '_zk_geo_faq', true );
-            }
+            $b_faq = zk_get_localized_post_meta( $book->ID, 'geo_faq', $language, true );
             if ( ! empty( trim( $b_faq ) ) ) {
                 $b_blocks = explode( "\n\n", str_replace( "\r", "", $b_faq ) );
                 foreach ( $b_blocks as $block ) {
@@ -5030,7 +4867,7 @@ function zk_inject_faq_schema() {
         $schema = [
             '@context'   => 'https://schema.org',
             '@type'      => 'FAQPage',
-            'inLanguage' => $is_ka ? 'ka-GE' : 'en-US',
+            'inLanguage' => $language_info['locale'],
             'mainEntity' => $mainEntity
         ];
         echo "\n<!-- ZK FAQ Schema Engine -->\n";

@@ -70,6 +70,21 @@ test('translation coverage ignores shortcode-only content and audits SEO/GEO tra
     assert.match(center, /zk_language_meta_key\( \$field, \$code \)/);
 });
 
+test('SEO and GEO fields follow every registered language', () => {
+    const source = read('functions.php');
+
+    assert.match(source, /function zk_localized_meta_key/);
+    assert.match(source, /function zk_get_localized_post_meta/);
+    assert.match(source, /function zk_get_localized_term_meta/);
+    assert.match(source, /foreach \( zk_get_languages\( false \) as \$code => \$language \)/);
+    assert.match(source, /zk_localized_meta_key\( 'seo_title', \$code \)/);
+    assert.match(source, /zk_localized_meta_key\( \$field, \$code \)/);
+    assert.match(source, /zk_get_localized_post_meta\( \$target_id, 'geo_ai_summary', \$language, true \)/);
+    assert.match(source, /zk_get_localized_post_meta\( \$target_id, 'geo_faq', \$language, true \)/);
+    assert.match(source, /str_replace\( '-', '_', \$language_info\['locale'\] \)/);
+    assert.match(source, /og:locale:alternate/);
+});
+
 test('renamed Georgian blog series flow from taxonomy translations into filters', () => {
     const functions = read('functions.php');
     const manager = read('inc/language-manager.php');
