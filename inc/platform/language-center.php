@@ -104,6 +104,45 @@ function zk_language_center_save_gallery_labels() {
 }
 add_action( 'admin_post_zk_save_gallery_labels', 'zk_language_center_save_gallery_labels' );
 
+function zk_language_center_save_mobile_nav_labels() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_die( esc_html__( 'You do not have permission to manage languages.', 'zurabkostava' ) );
+    }
+
+    check_admin_referer( 'zk_save_mobile_nav_labels', 'zk_mobile_nav_labels_nonce' );
+    $language = isset( $_POST['zk_mobile_nav_language'] ) ? sanitize_key( wp_unslash( $_POST['zk_mobile_nav_language'] ) ) : '';
+    $languages = zk_get_translatable_languages( false );
+    if ( ! $language || ! isset( $languages[ $language ] ) ) {
+        wp_safe_redirect( add_query_arg( array( 'page' => 'zk-language-center' ), admin_url( 'admin.php' ) ) );
+        exit;
+    }
+
+    $submitted = isset( $_POST['zk_mobile_nav_labels'] ) && is_array( $_POST['zk_mobile_nav_labels'] )
+        ? wp_unslash( $_POST['zk_mobile_nav_labels'] )
+        : array();
+    $saved = get_option( 'zk_mobile_nav_labels_v1', array() );
+    if ( ! is_array( $saved ) ) {
+        $saved = array();
+    }
+
+    $saved[ $language ] = array();
+    foreach ( array( 'music', 'visual', 'books', 'blog', 'more', 'open_menu', 'close_menu', 'aria_label' ) as $key ) {
+        $value = isset( $submitted[ $key ] ) ? sanitize_text_field( $submitted[ $key ] ) : '';
+        if ( '' !== $value ) {
+            $saved[ $language ][ $key ] = $value;
+        }
+    }
+
+    update_option( 'zk_mobile_nav_labels_v1', $saved, false );
+    wp_safe_redirect( add_query_arg( array(
+        'page'               => 'zk-language-center',
+        'language'           => $language,
+        'nav-labels-updated' => '1',
+    ), admin_url( 'admin.php' ) ) );
+    exit;
+}
+add_action( 'admin_post_zk_save_mobile_nav_labels', 'zk_language_center_save_mobile_nav_labels' );
+
 function zk_language_center_post_types() {
     $types = get_post_types( array( 'public' => true ), 'objects' );
     unset( $types['attachment'] );
@@ -299,6 +338,7 @@ function zk_render_language_center() {
         <p>Manage site languages and see which public content still needs translation. English is the source language; empty translations safely fall back to English.</p>
         <?php if ( isset( $_GET['updated'] ) ) : ?><div class="notice notice-success is-dismissible"><p>Languages saved.</p></div><?php endif; ?>
         <?php if ( isset( $_GET['labels-updated'] ) ) : ?><div class="notice notice-success is-dismissible"><p>Photography filter translations saved.</p></div><?php endif; ?>
+        <?php if ( isset( $_GET['nav-labels-updated'] ) ) : ?><div class="notice notice-success is-dismissible"><p>Mobile navigation translations saved.</p></div><?php endif; ?>
 
         <style>
             .zk-language-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;max-width:900px;margin:18px 0}.zk-language-card{background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:18px}.zk-language-card strong{display:block;font-size:28px;margin-top:6px}.zk-language-progress{height:12px;background:#dcdcde;border-radius:10px;overflow:hidden;max-width:900px}.zk-language-progress span{display:block;height:100%;background:#2271b1}.zk-status-complete{color:#008a20}.zk-status-partial{color:#b26200}.zk-status-missing{color:#b32d2e}.zk-language-table input[type=text]{width:100%}.zk-language-section{background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:20px;margin-top:22px;max-width:1100px}
@@ -336,6 +376,34 @@ function zk_render_language_center() {
                     <tr><th><label for="zk-gallery-mobile">Mobile</label></th><td><input class="regular-text" id="zk-gallery-mobile" name="zk_gallery_labels[mobile]" type="text" value="<?php echo esc_attr( $gallery_labels['mobile'] ); ?>" placeholder="Mobile"></td></tr>
                 </tbody></table>
                 <?php submit_button( 'Save photography translations', 'secondary' ); ?>
+            </form>
+
+            <?php $mobile_nav_labels = function_exists( 'zk_mobile_nav_labels' ) ? zk_mobile_nav_labels( $selected ) : array(); ?>
+            <h3 style="margin-top:24px">Mobile navigation</h3>
+            <p>Translate the fixed navigation shown at the bottom of phones for <?php echo esc_html( $language['native_name'] ); ?>. These fields are created automatically for every added language.</p>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                <input type="hidden" name="action" value="zk_save_mobile_nav_labels">
+                <input type="hidden" name="zk_mobile_nav_language" value="<?php echo esc_attr( $selected ); ?>">
+                <?php wp_nonce_field( 'zk_save_mobile_nav_labels', 'zk_mobile_nav_labels_nonce' ); ?>
+                <table class="form-table"><tbody>
+                    <?php
+                    $mobile_nav_fields = array(
+                        'music'      => 'Music',
+                        'visual'     => 'Visual',
+                        'books'      => 'Books',
+                        'blog'       => 'Blog',
+                        'more'       => 'More',
+                        'open_menu'  => 'Open menu',
+                        'close_menu' => 'Close menu',
+                        'aria_label' => 'Navigation accessibility label',
+                    );
+                    foreach ( $mobile_nav_fields as $key => $field_label ) :
+                        $field_id = 'zk-mobile-nav-' . str_replace( '_', '-', $key );
+                    ?>
+                        <tr><th><label for="<?php echo esc_attr( $field_id ); ?>"><?php echo esc_html( $field_label ); ?></label></th><td><input class="regular-text" id="<?php echo esc_attr( $field_id ); ?>" name="zk_mobile_nav_labels[<?php echo esc_attr( $key ); ?>]" type="text" value="<?php echo esc_attr( isset( $mobile_nav_labels[ $key ] ) ? $mobile_nav_labels[ $key ] : '' ); ?>" placeholder="<?php echo esc_attr( $field_label ); ?>"></td></tr>
+                    <?php endforeach; ?>
+                </tbody></table>
+                <?php submit_button( 'Save mobile navigation translations', 'secondary' ); ?>
             </form>
 
             <h3>Content requiring attention</h3>

@@ -34,8 +34,15 @@
     /* Mobile Menu & Multiple Dropdowns */
     function setMenu(open) {
         body.classList.toggle('nav-open', open);
+        var bottomMenuTrigger = document.getElementById('zk-mobile-menu-trigger');
+        var openLabel = bottomMenuTrigger ? bottomMenuTrigger.getAttribute('data-open-label') : 'Open menu';
+        var closeLabel = bottomMenuTrigger ? bottomMenuTrigger.getAttribute('data-close-label') : 'Close menu';
         toggle.setAttribute('aria-expanded', String(open));
-        toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        toggle.setAttribute('aria-label', open ? closeLabel : openLabel);
+        if (bottomMenuTrigger) {
+            bottomMenuTrigger.setAttribute('aria-expanded', String(open));
+            bottomMenuTrigger.setAttribute('aria-label', open ? closeLabel : openLabel);
+        }
         body.style.overflow = open ? 'hidden' : '';
         if (!open) {
             dropdowns.forEach(function(d) {
@@ -48,10 +55,15 @@
     toggle.addEventListener('click', function () { setMenu(!body.classList.contains('nav-open')); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setMenu(false); });
 
-    var mobileMenuTrigger = document.getElementById('zk-mobile-menu-trigger');
-    if (mobileMenuTrigger) {
-        mobileMenuTrigger.addEventListener('click', function() { setMenu(!body.classList.contains('nav-open')); });
-    }
+    // The SPA replaces the bottom navigation markup after route and language
+    // changes. Delegation keeps More functional for every replacement button.
+    document.addEventListener('click', function (e) {
+        var mobileMenuTrigger = e.target.closest && e.target.closest('#zk-mobile-menu-trigger');
+        if (!mobileMenuTrigger) return;
+        e.preventDefault();
+        e.stopPropagation();
+        setMenu(!body.classList.contains('nav-open'));
+    });
 
     var bottomNav = document.getElementById('zk-bottom-nav');
 

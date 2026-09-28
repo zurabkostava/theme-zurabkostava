@@ -5262,37 +5262,85 @@ function zk_quick_edit_add_tag_js() {
 /* ============================================================
    MOBILE BOTTOM NAVIGATION (App-like UX)
    ============================================================ */
+function zk_mobile_nav_labels( $language = '' ) {
+    $language = $language ?: ( function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en' );
+    $labels = array(
+        'music'      => 'Music',
+        'visual'     => 'Visual',
+        'books'      => 'Books',
+        'blog'       => 'Blogs',
+        'more'       => 'More',
+        'open_menu'  => 'Open menu',
+        'close_menu' => 'Close menu',
+        'aria_label' => 'Mobile navigation',
+    );
+
+    $translations = array(
+        'ka' => array(
+            'music'      => 'მუსიკა',
+            'visual'     => 'ვიზუალი',
+            'books'      => 'წიგნები',
+            'blog'       => 'ბლოგი',
+            'more'       => 'მეტი',
+            'open_menu'  => 'მენიუს გახსნა',
+            'close_menu' => 'მენიუს დახურვა',
+            'aria_label' => 'მობილური ნავიგაცია',
+        ),
+    );
+
+    if ( isset( $translations[ $language ] ) ) {
+        $labels = array_merge( $labels, $translations[ $language ] );
+    }
+
+    $saved = get_option( 'zk_mobile_nav_labels_v1', array() );
+    if ( isset( $saved[ $language ] ) && is_array( $saved[ $language ] ) ) {
+        foreach ( array_keys( $labels ) as $key ) {
+            if ( isset( $saved[ $language ][ $key ] ) && '' !== trim( (string) $saved[ $language ][ $key ] ) ) {
+                $labels[ $key ] = (string) $saved[ $language ][ $key ];
+            }
+        }
+    }
+
+    return apply_filters( 'zk_mobile_nav_labels', $labels, $language );
+}
+
 function zk_mobile_bottom_nav() {
-    $music_url  = home_url('/music/');
-    $visual_url = home_url('/visual/');
-    $books_url  = home_url('/books/');
-    $blog_url   = home_url('/blog/');
+    $language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
+    $labels   = zk_mobile_nav_labels( $language );
+    $language_path = function( $path ) use ( $language ) {
+        return function_exists( 'zk_get_language_path' ) ? zk_get_language_path( $path, $language ) : $path;
+    };
+
+    $music_url  = home_url( $language_path( '/music/' ) );
+    $visual_url = home_url( $language_path( '/visual/' ) );
+    $books_url  = home_url( $language_path( '/books/' ) );
+    $blog_url   = home_url( $language_path( '/blog/' ) );
     
-    $music_route  = wp_parse_url($music_url, PHP_URL_PATH);
-    $visual_route = wp_parse_url($visual_url, PHP_URL_PATH);
-    $books_route  = wp_parse_url($books_url, PHP_URL_PATH);
-    $blog_route   = wp_parse_url($blog_url, PHP_URL_PATH);
+    $music_route  = untrailingslashit( wp_parse_url( $music_url, PHP_URL_PATH ) );
+    $visual_route = untrailingslashit( wp_parse_url( $visual_url, PHP_URL_PATH ) );
+    $books_route  = untrailingslashit( wp_parse_url( $books_url, PHP_URL_PATH ) );
+    $blog_route   = untrailingslashit( wp_parse_url( $blog_url, PHP_URL_PATH ) );
     ?>
-    <nav class="zk-bottom-nav" id="zk-bottom-nav">
+    <nav class="zk-bottom-nav" id="zk-bottom-nav" aria-label="<?php echo esc_attr( $labels['aria_label'] ); ?>">
         <a href="<?php echo esc_url($music_url); ?>" class="zk-bottom-nav-item" data-route="<?php echo esc_attr($music_route); ?>">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-            <span>Music</span>
+            <span><?php echo esc_html( $labels['music'] ); ?></span>
         </a>
         <a href="<?php echo esc_url($visual_url); ?>" class="zk-bottom-nav-item" data-route="<?php echo esc_attr($visual_route); ?>">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-            <span>Visual</span>
+            <span><?php echo esc_html( $labels['visual'] ); ?></span>
         </a>
         <a href="<?php echo esc_url($books_url); ?>" class="zk-bottom-nav-item" data-route="<?php echo esc_attr($books_route); ?>">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-            <span>Books</span>
+            <span><?php echo esc_html( $labels['books'] ); ?></span>
         </a>
         <a href="<?php echo esc_url($blog_url); ?>" class="zk-bottom-nav-item" data-route="<?php echo esc_attr($blog_route); ?>">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            <span>Blogs</span>
+            <span><?php echo esc_html( $labels['blog'] ); ?></span>
         </a>
-        <button id="zk-mobile-menu-trigger" class="zk-bottom-nav-item" aria-label="Open Menu">
+        <button id="zk-mobile-menu-trigger" class="zk-bottom-nav-item" type="button" aria-expanded="false" aria-label="<?php echo esc_attr( $labels['open_menu'] ); ?>" data-open-label="<?php echo esc_attr( $labels['open_menu'] ); ?>" data-close-label="<?php echo esc_attr( $labels['close_menu'] ); ?>">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            <span>More</span>
+            <span><?php echo esc_html( $labels['more'] ); ?></span>
         </button>
     </nav>
     <?php
