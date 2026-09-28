@@ -14,16 +14,35 @@
     let animationFrameId;
     let isEntering = false; // For cinematic entrance
     let isRunning = false;
+    let isInitializing = false;
+    let needsGalaxyCheck = false;
     let hasEnteredOnce = false; // Persistent across SPA route and language transitions
     let timeMultiplier = 1; // Global speed multiplier from slider
 
-    function initGalaxy() {
+    // Keep the exact visual density while yielding between small batches so the
+    // browser can paint the page and remain responsive during construction.
+    async function fillInResponsiveChunks(total, chunkSize, fillItem) {
+        for (let start = 0; start < total; start += chunkSize) {
+            const end = Math.min(start + chunkSize, total);
+            for (let i = start; i < end; i++) fillItem(i);
+
+            if (end < total) {
+                await new Promise(resolve => setTimeout(resolve, 0));
+                if (!container || container !== document.getElementById('zk-galaxy-canvas')) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    async function initGalaxy() {
         container = document.getElementById('zk-galaxy-canvas');
         if (!container) return;
         
         // Wait for Three.js to be loaded
         if (typeof THREE === 'undefined') {
-            setTimeout(initGalaxy, 100);
+            setTimeout(checkGalaxyCanvas, 100);
             return;
         }
 
@@ -99,7 +118,7 @@
             });
         }
 
-        for (let i = 0; i < starCount; i++) {
+        const starsReady = await fillInResponsiveChunks(starCount, 2500, (i) => {
             let x, y, z;
             
             if (Math.random() < 0.75) {
@@ -133,7 +152,8 @@
             colors[i * 3 + 2] = color.b;
             
             sizes[i] = Math.random() * 1.5 + 1.2;
-        }
+        });
+        if (!starsReady) return;
 
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
@@ -354,7 +374,7 @@
             });
         }
 
-        for (let i = 0; i < giantNebulaStarCount; i++) {
+        const nebulaReady = await fillInResponsiveChunks(giantNebulaStarCount, 1000, (i) => {
             const sub = giantNebulaSubClusters[Math.floor(Math.random() * giantNebulaSubClusters.length)];
             
             const theta = Math.random() * Math.PI * 2;
@@ -377,7 +397,8 @@
             
             // Massive particles to overlap and create a continuous volumetric gas cloud effect rather than individual stars
             giantNebulaSizes[i] = Math.random() * 200 + 50; 
-        }
+        });
+        if (!nebulaReady) return;
 
         giantNebulaGeometry.setAttribute('position', new THREE.BufferAttribute(giantNebulaPositions, 3));
         giantNebulaGeometry.setAttribute('color', new THREE.BufferAttribute(giantNebulaColors, 3));
@@ -865,6 +886,8 @@
 
     let smoothMusicMultiplier = 0;
     let lastTime = 0;
+    let lastStarDrawCount = -1;
+    let lastHeroDrawCount = -1;
 
     function animate(time) {
         if (!isRunning) return;
@@ -876,6 +899,10 @@
         }
 
         animationFrameId = requestAnimationFrame(animate);
+
+        // Preserve the full scene but avoid spending GPU/CPU time while the tab
+        // is not visible. Rendering resumes automatically on the next frame.
+        if (document.hidden) return;
 
         // Frame-rate independence
         if (!time) time = performance.now();
@@ -1021,14 +1048,22 @@
 
             // Apply the factor using setDrawRange (highly performant GPU trick)
             const baseCount = starSystem.geometry.attributes.position.count;
-            starSystem.geometry.setDrawRange(0, Math.floor(baseCount * starFactor));
-            starSystem2.geometry.setDrawRange(0, Math.floor(baseCount * starFactor));
-            starSystem3.geometry.setDrawRange(0, Math.floor(baseCount * starFactor));
+            const starDrawCount = Math.floor(baseCount * starFactor);
+            if (starDrawCount !== lastStarDrawCount) {
+                starSystem.geometry.setDrawRange(0, starDrawCount);
+                starSystem2.geometry.setDrawRange(0, starDrawCount);
+                starSystem3.geometry.setDrawRange(0, starDrawCount);
+                lastStarDrawCount = starDrawCount;
+            }
             
             const heroCount = heroSystem.geometry.attributes.position.count;
-            heroSystem.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
-            heroSystem2.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
-            heroSystem3.geometry.setDrawRange(0, Math.floor(heroCount * starFactor));
+            const heroDrawCount = Math.floor(heroCount * starFactor);
+            if (heroDrawCount !== lastHeroDrawCount) {
+                heroSystem.geometry.setDrawRange(0, heroDrawCount);
+                heroSystem2.geometry.setDrawRange(0, heroDrawCount);
+                heroSystem3.geometry.setDrawRange(0, heroDrawCount);
+                lastHeroDrawCount = heroDrawCount;
+            }
             
             // Warp Speed Visual Effects (Camera Shake)
             if (timeMultiplier > 10) {
@@ -1064,6 +1099,10 @@
 
         // If canvas is in DOM, but either not running OR attached to a different canvas element
         if (!isRunning || container !== currentCanvas) {
+            if (isInitializing) {
+                needsGalaxyCheck = true;
+                return;
+            }
             if (animationFrameId) {
                 cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
@@ -1074,7 +1113,16 @@
                 renderer = null;
             }
             isRunning = false;
-            initGalaxy();
+            isInitializing = true;
+            initGalaxy().catch((error) => {
+                console.error('Galaxy initialization failed:', error);
+            }).finally(() => {
+                isInitializing = false;
+                if (needsGalaxyCheck) {
+                    needsGalaxyCheck = false;
+                    checkGalaxyCanvas();
+                }
+            });
         }
     }
 

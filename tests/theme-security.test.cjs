@@ -162,3 +162,15 @@ test('first-party assets use file modification versions instead of request time'
     assert.doesNotMatch(sources, /\?v=<\?php echo time\(\)/);
     assert.doesNotMatch(sources, /wp_enqueue_(?:style|script)\([^\n]+time\(\)/);
 });
+
+test('galaxy optimization preserves the complete visual density', () => {
+    const galaxy = read('galaxy-bg.js');
+
+    assert.match(galaxy, /const starCount = 400000/);
+    assert.match(galaxy, /const giantNebulaStarCount = 80000/);
+    assert.match(galaxy, /starSystem3 = new THREE\.Points/);
+    assert.match(galaxy, /heroSystem3 = new THREE\.Points/);
+    assert.match(galaxy, /fillInResponsiveChunks\(starCount, 2500/);
+    assert.match(galaxy, /fillInResponsiveChunks\(giantNebulaStarCount, 1000/);
+    assert.match(galaxy, /if \(document\.hidden\) return/);
+});
