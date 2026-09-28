@@ -251,3 +251,15 @@ test('opened gallery photos support deliberate mobile swipe navigation', () => {
     assert.match(css, /\.zk-lightbox \{[\s\S]*?touch-action: pan-y pinch-zoom;/);
     assert.match(css, /\.zk-lightbox-thumbs \{[\s\S]*?touch-action: pan-x;/);
 });
+
+test('SPA navigation carries WordPress block layout styles before rendering content', () => {
+    const app = read('app.js');
+
+    assert.match(app, /style\[id\^="wp-block-"\]\[id\$="-inline-css"\]/);
+    assert.match(app, /style#core-block-supports-inline-css/);
+    assert.match(app, /function collectBlockStyles\(doc\)/);
+    assert.match(app, /function syncBlockStyles\(styles\)/);
+    assert.match(app, /blockStyles: blockStyles/);
+    assert.match(app, /blockStyles: initialBlockStyles/);
+    assert.match(app, /syncBlockStyles\(data\.blockStyles\);\s*viewEl\.innerHTML = data\.html;/);
+});

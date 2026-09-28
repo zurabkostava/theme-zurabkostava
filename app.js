@@ -198,6 +198,43 @@
         d.style.scrollBehavior = prev;
     }
 
+    /* WordPress generates page-specific inline CSS for blocks and their layout
+       support classes. SPA navigation must carry those rules with the new view;
+       otherwise flex/grid groups render as full-width blocks until a refresh. */
+    var blockStyleSelector = [
+        'style[id^="wp-block-"][id$="-inline-css"]',
+        'style#global-styles-inline-css',
+        'style#core-block-supports-inline-css',
+        'style#classic-theme-styles-inline-css'
+    ].join(',');
+
+    function collectBlockStyles(doc) {
+        var themeStyle = doc.getElementById('zk-style-css');
+        var beforeTheme = [];
+        var afterTheme = [];
+        Array.prototype.slice.call(doc.head.querySelectorAll(blockStyleSelector)).forEach(function (style) {
+            var bucket = themeStyle && (style.compareDocumentPosition(themeStyle) & Node.DOCUMENT_POSITION_FOLLOWING)
+                ? beforeTheme
+                : afterTheme;
+            bucket.push(style.outerHTML);
+        });
+        return { beforeTheme: beforeTheme.join('\n'), afterTheme: afterTheme.join('\n') };
+    }
+
+    function syncBlockStyles(styles) {
+        if (!styles) return;
+        Array.prototype.slice.call(document.head.querySelectorAll(blockStyleSelector)).forEach(function (style) {
+            style.parentNode.removeChild(style);
+        });
+
+        var themeStyle = document.getElementById('zk-style-css');
+        if (styles.beforeTheme) {
+            if (themeStyle) themeStyle.insertAdjacentHTML('beforebegin', styles.beforeTheme);
+            else document.head.insertAdjacentHTML('beforeend', styles.beforeTheme);
+        }
+        if (styles.afterTheme) document.head.insertAdjacentHTML('beforeend', styles.afterTheme);
+    }
+
     function fetchView(href) {
         return fetch(href, {
             credentials: 'same-origin',
@@ -219,6 +256,7 @@
             var newNav = doc.getElementById('primaryNav');
             var newLogo = doc.querySelector('.site-header .logo');
             var newBottomNav = doc.getElementById('zk-bottom-nav');
+            var blockStyles = collectBlockStyles(doc);
 
             return {
                 html:  v.innerHTML,
@@ -228,7 +266,8 @@
                 primaryNavHtml: newNav ? newNav.innerHTML : null,
                 logoRoute: newLogo ? newLogo.getAttribute('data-route') : null,
                 logoHref: newLogo ? newLogo.href : null,
-                bottomNavHtml: newBottomNav ? newBottomNav.innerHTML : null
+                bottomNavHtml: newBottomNav ? newBottomNav.innerHTML : null,
+                blockStyles: blockStyles
             };
         });
     }
@@ -262,6 +301,9 @@
                 // galaxy canvas. Keep that exact canvas (and its WebGL context)
                 // across SPA/language changes instead of rebuilding 480k stars.
                 var persistentGalaxyCanvas = document.getElementById('zk-galaxy-canvas');
+                // Apply the destination's block rules before inserting its markup,
+                // so flex/grid groups are correct on their very first painted frame.
+                syncBlockStyles(data.blockStyles);
                 viewEl.innerHTML = data.html;
                 if (persistentGalaxyCanvas) {
                     var replacementGalaxyCanvas = viewEl.querySelector('#zk-galaxy-canvas');
@@ -390,6 +432,7 @@
     var initialNav = document.getElementById('primaryNav');
     var initialLogo = document.querySelector('.site-header .logo');
     var initialBottomNav = document.getElementById('zk-bottom-nav');
+    var initialBlockStyles = collectBlockStyles(document);
     var initialHeadTags = Array.prototype.slice.call(document.head.querySelectorAll('meta[name="description"], meta[name="abstract"], meta[name="robots"], meta[property^="og:"], meta[name^="twitter:"], link[rel="canonical"], link[rel="alternate"][hreflang], script[type="application/ld+json"]'))
         .map(function(el) { return el.outerHTML; })
         .join('\n');
@@ -402,7 +445,8 @@
         primaryNavHtml: initialNav ? initialNav.innerHTML : null,
         logoRoute: initialLogo ? initialLogo.getAttribute('data-route') : null,
         logoHref: initialLogo ? initialLogo.href : null,
-        bottomNavHtml: initialBottomNav ? initialBottomNav.innerHTML : null
+        bottomNavHtml: initialBottomNav ? initialBottomNav.innerHTML : null,
+        blockStyles: initialBlockStyles
     };
     var initialRoute = viewEl.getAttribute('data-route') || toRoute(location.pathname);
     updateChrome(initialRoute);
