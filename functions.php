@@ -70,6 +70,13 @@ function zk_assets() {
     wp_enqueue_script( 'zk-analytics', get_stylesheet_directory_uri() . '/analytics.js', array(), filemtime( get_stylesheet_directory() . '/analytics.js' ), true );
     wp_enqueue_script( 'zk-app', get_stylesheet_directory_uri() . '/app.js', array('zk-galaxy-bg', 'zk-analytics'), filemtime( get_stylesheet_directory() . '/app.js' ), true );
 
+    // Download the interactive layer while HTML is still being parsed, but keep
+    // dependency order intact. This lets the first page content paint without
+    // waiting for Three.js and the full galaxy program to execute.
+    foreach ( array( 'three-js', 'zk-galaxy-bg', 'zk-analytics', 'zk-app' ) as $deferred_handle ) {
+        wp_script_add_data( $deferred_handle, 'strategy', 'defer' );
+    }
+
     // აქ ვაწვდით დინამიურ ლინკებს
     $language_data = array();
     if ( function_exists( 'zk_get_languages' ) ) {
@@ -99,9 +106,39 @@ add_filter( 'rocket_delay_js_exclusions', function( $exclusions ) {
 // 🔴 Bypass WP Rocket Delay JS for app.js so tracking fires immediately
 add_filter( 'script_loader_tag', function( $tag, $handle ) {
     if ( in_array( $handle, array( 'zk-app', 'zk-analytics', 'three-js', 'zk-galaxy-bg' ), true ) ) {
-        return str_replace( '<script ', '<script data-no-optimize="1" ', $tag );
+        $attributes = 'data-no-optimize="1" ';
+        if ( false === strpos( $tag, ' defer' ) ) {
+            $attributes .= 'defer ';
+        }
+        return str_replace( '<script ', '<script ' . $attributes, $tag );
     }
     return $tag;
+}, 10, 2 );
+
+// Google Fonts use font-display:swap, so their stylesheet does not need to
+// block the first paint. The same fonts and weights still replace the fallback
+// as soon as the stylesheet is ready; noscript preserves the no-JS fallback.
+add_filter( 'style_loader_tag', function( $html, $handle ) {
+    if ( 'zk-fonts' !== $handle ) {
+        return $html;
+    }
+
+    $non_blocking = preg_replace(
+        '/media=([\'\"])all\\1/',
+        'media=$1print$1 onload="this.media=\'all\'"',
+        $html,
+        1
+    );
+
+    if ( ! is_string( $non_blocking ) || $non_blocking === $html ) {
+        $non_blocking = str_replace(
+            '<link ',
+            '<link media="print" onload="this.media=\'all\'" ',
+            $html
+        );
+    }
+
+    return $non_blocking . '<noscript>' . $html . '</noscript>';
 }, 10, 2 );
 
 function zk_register_menus() {

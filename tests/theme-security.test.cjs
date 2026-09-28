@@ -174,3 +174,14 @@ test('galaxy optimization preserves the complete visual density', () => {
     assert.match(galaxy, /fillInResponsiveChunks\(giantNebulaStarCount, 1000/);
     assert.match(galaxy, /if \(document\.hidden\) return/);
 });
+
+test('heavy visual assets do not block the first page paint', () => {
+    const source = read('functions.php');
+
+    assert.match(source, /foreach \( array\( 'three-js', 'zk-galaxy-bg', 'zk-analytics', 'zk-app' \) as \$deferred_handle \)/);
+    assert.match(source, /wp_script_add_data\( \$deferred_handle, 'strategy', 'defer' \)/);
+    assert.match(source, /\$attributes \.= 'defer '/);
+    assert.match(source, /if \( 'zk-fonts' !== \$handle \)/);
+    assert.match(source, /media=\$1print\$1 onload=/);
+    assert.match(source, /<noscript>/);
+});
