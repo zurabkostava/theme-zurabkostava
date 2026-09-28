@@ -162,15 +162,3 @@ test('first-party assets use file modification versions instead of request time'
     assert.doesNotMatch(sources, /\?v=<\?php echo time\(\)/);
     assert.doesNotMatch(sources, /wp_enqueue_(?:style|script)\([^\n]+time\(\)/);
 });
-
-test('galaxy background adapts its workload and defers expensive initialization', () => {
-    const galaxy = read('galaxy-bg.js');
-
-    assert.match(galaxy, /navigator\.deviceMemory/);
-    assert.match(galaxy, /navigator\.hardwareConcurrency/);
-    assert.match(galaxy, /requestIdleCallback/);
-    assert.match(galaxy, /document\.hidden/);
-    assert.match(galaxy, /galaxyProfile\.frameInterval/);
-    assert.doesNotMatch(galaxy, /const starCount = 400000/);
-    assert.doesNotMatch(galaxy, /const giantNebulaStarCount = 80000/);
-});

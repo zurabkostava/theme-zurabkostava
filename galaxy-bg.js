@@ -16,21 +16,6 @@
     let isRunning = false;
     let hasEnteredOnce = false; // Persistent across SPA route and language transitions
     let timeMultiplier = 1; // Global speed multiplier from slider
-    let scheduledInit = null;
-
-    const deviceMemory = Number(navigator.deviceMemory || 8);
-    const cpuThreads = Number(navigator.hardwareConcurrency || 8);
-    const mobileProfile = window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const constrainedProfile = mobileProfile || deviceMemory <= 4 || cpuThreads <= 4;
-    const galaxyProfile = {
-        stars: reducedMotion ? 8000 : (mobileProfile ? 18000 : (constrainedProfile ? 45000 : 90000)),
-        nebulaStars: reducedMotion ? 2000 : (mobileProfile ? 5000 : (constrainedProfile ? 12000 : 24000)),
-        clusters: mobileProfile ? 80 : (constrainedProfile ? 120 : 180),
-        cloudPlanes: mobileProfile ? 8 : (constrainedProfile ? 12 : 16),
-        pixelRatio: mobileProfile ? 1 : Math.min(window.devicePixelRatio || 1, 1.15),
-        frameInterval: constrainedProfile || reducedMotion ? (1000 / 30) : (1000 / 60)
-    };
 
     function initGalaxy() {
         container = document.getElementById('zk-galaxy-canvas');
@@ -66,14 +51,14 @@
         }
 
         renderer = new THREE.WebGLRenderer({ canvas: container, alpha: false, antialias: false, powerPreference: "high-performance", stencil: false, depth: false });
-        renderer.setPixelRatio(galaxyProfile.pixelRatio);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25)); // 🚀 MASSIVE GPU FILL-RATE OPTIMIZATION
         renderer.setSize(rect.width, rect.height);
         
         // Opaque background matching the CSS body background to prevent alpha channel accumulation bug with AdditiveBlending
         renderer.setClearColor(0x020205, 1.0); 
 
         // Generate stars
-        const starCount = galaxyProfile.stars;
+        const starCount = 400000; // 400k per block (800k total). Zero CPU overhead now!
         const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(starCount * 3);
         const colors = new Float32Array(starCount * 3);
@@ -89,7 +74,7 @@
         ];
 
         // Create cluster centers for nebula-like structures and voids
-        const numClusters = galaxyProfile.clusters;
+        const numClusters = 250; 
         const clusters = [];
         
         for (let c = 0; c < numClusters; c++) {
@@ -198,7 +183,7 @@
         scene.add(starSystem3);
 
         // 🌟 NEW: Giant Stars (0.2% of stars, 8-pointed flares, with companions)
-        const giantBaseCount = Math.max(80, Math.round(starCount * 0.002));
+        const giantBaseCount = 800; // 0.2% of 400,000
         const giantMaxCount = giantBaseCount * 3; // Buffer for companions
         const heroGeometry = new THREE.BufferGeometry();
         const heroPositions = new Float32Array(giantMaxCount * 3);
@@ -339,7 +324,7 @@
         scene.add(heroSystem3);
 
         // 🌌 NEW: Giant Colorful Nebula Cluster (Appears from the very beginning, reached at 500x speed)
-        const giantNebulaStarCount = galaxyProfile.nebulaStars;
+        const giantNebulaStarCount = 80000;
         const giantNebulaGeometry = new THREE.BufferGeometry();
         const giantNebulaPositions = new Float32Array(giantNebulaStarCount * 3);
         const giantNebulaColors = new Float32Array(giantNebulaStarCount * 3);
@@ -600,10 +585,10 @@
             opacity: 0.05 // Much fainter, more map-like
         });
         
-        // Use fewer overlapping planes on constrained devices.
+        // Add 20 overlapping soft planes to form an irregular nebula cloud
         // Subtler, desaturated cosmic colors for a faint galactic band
         const nebColors = [0x221144, 0x112244, 0x331133, 0x1a1a3a]; 
-        for (let i = 0; i < galaxyProfile.cloudPlanes; i++) {
+        for (let i = 0; i < 20; i++) {
             const size = 30000 + Math.random() * 20000; // Even larger clouds
             const planeMat = nebulaMaterial.clone();
             planeMat.color.setHex(nebColors[Math.floor(Math.random() * nebColors.length)]);
@@ -880,7 +865,6 @@
 
     let smoothMusicMultiplier = 0;
     let lastTime = 0;
-    let lastRenderedTime = 0;
 
     function animate(time) {
         if (!isRunning) return;
@@ -893,14 +877,8 @@
 
         animationFrameId = requestAnimationFrame(animate);
 
-        // Do no rendering work in background tabs and cap constrained devices
-        // at 30 FPS. The next animation frame resumes automatically.
-        if (document.hidden) return;
-        if (!time) time = performance.now();
-        if (lastRenderedTime && time - lastRenderedTime < galaxyProfile.frameInterval) return;
-        lastRenderedTime = time;
-
         // Frame-rate independence
+        if (!time) time = performance.now();
         if (!lastTime) lastTime = time;
         let delta = (time - lastTime) / (1000 / 60); // Normalizes to 60 FPS
         lastTime = time;
@@ -1100,43 +1078,24 @@
         }
     }
 
-    function scheduleGalaxyCanvas() {
-        const currentCanvas = document.getElementById('zk-galaxy-canvas');
-        if (!currentCanvas) {
-            checkGalaxyCanvas();
-            return;
-        }
-        if ((isRunning && container === currentCanvas) || scheduledInit) return;
-
-        const run = () => {
-            scheduledInit = null;
-            checkGalaxyCanvas();
-        };
-        if ('requestIdleCallback' in window) {
-            scheduledInit = window.requestIdleCallback(run, { timeout: 1200 });
-        } else {
-            scheduledInit = window.setTimeout(run, 150);
-        }
-    }
-
     const observer = new MutationObserver(() => {
-        scheduleGalaxyCanvas();
+        checkGalaxyCanvas();
     });
 
     document.addEventListener('zk:viewChange', () => {
-        scheduleGalaxyCanvas();
+        checkGalaxyCanvas();
     });
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            scheduleGalaxyCanvas();
+            checkGalaxyCanvas();
             const appNode = document.getElementById('app');
             if (appNode) {
                 observer.observe(appNode, { childList: true, subtree: true });
             }
         });
     } else {
-        scheduleGalaxyCanvas();
+        checkGalaxyCanvas();
         const appNode = document.getElementById('app');
         if (appNode) {
             observer.observe(appNode, { childList: true, subtree: true });
