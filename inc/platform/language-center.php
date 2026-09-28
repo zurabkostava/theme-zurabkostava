@@ -164,7 +164,9 @@ function zk_language_translation_post_requirements( $post, $code ) {
 }
 
 function zk_is_post_translation_complete( $post, $code ) {
-    if ( 'en' === $code ) return true;
+    // Preserve the already-established English and Georgian index. Languages
+    // added later are held back until every required translation is ready.
+    if ( in_array( $code, array( 'en', 'ka' ), true ) ) return true;
     $post = get_post( $post );
     if ( ! $post ) return false;
     foreach ( zk_language_translation_post_requirements( $post, $code ) as $meta_key ) {
@@ -197,7 +199,7 @@ function zk_language_translation_term_requirements( $term, $code ) {
 }
 
 function zk_is_term_translation_complete( $term, $code ) {
-    if ( 'en' === $code ) return true;
+    if ( in_array( $code, array( 'en', 'ka' ), true ) ) return true;
     $term = get_term( $term );
     if ( ! $term || is_wp_error( $term ) ) return false;
     foreach ( zk_language_translation_term_requirements( $term, $code ) as $meta_key ) {

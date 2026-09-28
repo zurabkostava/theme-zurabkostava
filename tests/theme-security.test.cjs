@@ -76,6 +76,7 @@ test('multilingual sitemap only advertises complete translations', () => {
 
     assert.match(center, /function zk_is_post_translation_complete/);
     assert.match(center, /function zk_is_term_translation_complete/);
+    assert.match(center, /in_array\( \$code, array\( 'en', 'ka' \), true \)/);
     assert.match(source, /function zk_is_language_version_indexable/);
     assert.match(source, /if \( ! zk_is_language_version_indexable\( \$code \) \) continue/);
     assert.match(source, /zk_is_post_translation_complete\( \$post_id, \$code \)/);
