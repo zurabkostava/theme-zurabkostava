@@ -889,6 +889,13 @@
         renderer.setSize(rect.width, rect.height);
     }
 
+    function removeGalaxyPageOverlays() {
+        ['zk-special-star-glow', 'zk-warp-speedometer'].forEach((id) => {
+            const element = document.getElementById(id);
+            if (element) element.remove();
+        });
+    }
+
     let smoothMusicMultiplier = 0;
     let lastTime = 0;
     let lastStarDrawCount = -1;
@@ -1086,6 +1093,10 @@
     function checkGalaxyCanvas() {
         const currentCanvas = document.getElementById('zk-galaxy-canvas');
         if (!currentCanvas) {
+            // These HUD/glow layers live directly under <body>, outside #view.
+            // Remove them whenever SPA navigation leaves the homepage so no
+            // galaxy halo can bleed into an article or inner page.
+            removeGalaxyPageOverlays();
             if (isRunning) {
                 isRunning = false;
                 if (animationFrameId) {

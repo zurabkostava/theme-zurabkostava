@@ -228,6 +228,14 @@ test('logo navigation reveals a ready galaxy from the logo position', () => {
     assert.match(css, /animation: zkGalaxyLogoReveal 1\.55s/);
 });
 
+test('galaxy body overlays are removed when SPA navigation leaves home', () => {
+    const galaxy = read('galaxy-bg.js');
+
+    assert.match(galaxy, /function removeGalaxyPageOverlays\(\)/);
+    assert.match(galaxy, /'zk-special-star-glow', 'zk-warp-speedometer'/);
+    assert.match(galaxy, /if \(!currentCanvas\) \{\s*\/\/[\s\S]*?removeGalaxyPageOverlays\(\)/);
+});
+
 test('mobile archive filters scroll inside the viewport', () => {
     const css = read('style.css');
     const app = read('app.js');
