@@ -115,6 +115,9 @@ test('person identity stays canonical and unambiguous across languages', () => {
     assert.match(source, /'givenName'/);
     assert.match(source, /'familyName'/);
     assert.match(source, /\$ambiguous_aliases = \[ 'zurab', 'kostava', 'ზურაბ', 'კოსტავა' \]/);
+    assert.match(source, /zk_social_behance/);
+    assert.match(source, /zk_social_musicbrainz/);
+    assert.match(source, /musicbrainz\.org\/artist\/61081717-65c9-4717-9683-9ca286ae30e7/);
 });
 
 test('instant indexing can submit every strictly completed translation', () => {

@@ -2539,6 +2539,8 @@ function zk_identity_page_html() {
                 <tr><th>Spotify URL</th><td><input type="url" name="zk_social_spotify" value="<?php echo esc_url(get_option('zk_social_spotify', '#')); ?>" class="regular-text" /></td></tr>
                 <tr><th>Bandcamp URL</th><td><input type="url" name="zk_social_bandcamp" value="<?php echo esc_url(get_option('zk_social_bandcamp', '#')); ?>" class="regular-text" /></td></tr>
                 <tr><th>Medium URL</th><td><input type="url" name="zk_social_medium" value="<?php echo esc_url(get_option('zk_social_medium', '#')); ?>" class="regular-text" /></td></tr>
+                <tr><th>Behance URL</th><td><input type="url" name="zk_social_behance" value="<?php echo esc_url(get_option('zk_social_behance', 'https://www.behance.net/zurabkostava')); ?>" class="regular-text" /></td></tr>
+                <tr><th>MusicBrainz URL</th><td><input type="url" name="zk_social_musicbrainz" value="<?php echo esc_url(get_option('zk_social_musicbrainz', 'https://musicbrainz.org/artist/61081717-65c9-4717-9683-9ca286ae30e7')); ?>" class="regular-text" /></td></tr>
             </table>
 
             <h2 class="title" style="margin-top:30px; border-bottom:1px solid #ccc; padding-bottom:10px;">5. Skills (მძიმით გამოყოფილი)</h2>
@@ -4263,10 +4265,14 @@ function zk_render_json_ld_schema() {
     $logo_url     = get_option( 'zk_profile_img', '' );
     
     // Build Social Links array
-    $social_keys = ['zk_social_ig', 'zk_social_fb', 'zk_social_x', 'zk_social_linkedin', 'zk_social_youtube', 'zk_social_spotify', 'zk_social_bandcamp', 'zk_social_medium'];
+    $social_keys = ['zk_social_ig', 'zk_social_fb', 'zk_social_x', 'zk_social_linkedin', 'zk_social_youtube', 'zk_social_spotify', 'zk_social_bandcamp', 'zk_social_medium', 'zk_social_behance', 'zk_social_musicbrainz'];
+    $social_defaults = [
+        'zk_social_behance' => 'https://www.behance.net/zurabkostava',
+        'zk_social_musicbrainz' => 'https://musicbrainz.org/artist/61081717-65c9-4717-9683-9ca286ae30e7',
+    ];
     $same_as = [];
     foreach ($social_keys as $key) {
-        $url = esc_url(get_option($key, ''));
+        $url = esc_url(get_option($key, $social_defaults[$key] ?? ''));
         if (!empty($url) && $url !== '#' && $url !== 'http://#' && $url !== 'https://#') {
             $same_as[] = $url;
         }
@@ -4692,9 +4698,13 @@ function zk_generate_aitxt_string() {
     $ai_content .= "## About\n$about\n\n";
     
     $ai_content .= "## Links\n";
-    $social_keys = ['zk_social_ig', 'zk_social_fb', 'zk_social_x', 'zk_social_linkedin', 'zk_social_youtube', 'zk_social_spotify', 'zk_social_bandcamp', 'zk_social_medium'];
+    $social_keys = ['zk_social_ig', 'zk_social_fb', 'zk_social_x', 'zk_social_linkedin', 'zk_social_youtube', 'zk_social_spotify', 'zk_social_bandcamp', 'zk_social_medium', 'zk_social_behance', 'zk_social_musicbrainz'];
+    $social_defaults = [
+        'zk_social_behance' => 'https://www.behance.net/zurabkostava',
+        'zk_social_musicbrainz' => 'https://musicbrainz.org/artist/61081717-65c9-4717-9683-9ca286ae30e7',
+    ];
     foreach ($social_keys as $key) {
-        $url = esc_url(get_option($key, ''));
+        $url = esc_url(get_option($key, $social_defaults[$key] ?? ''));
         if (!empty($url) && $url !== '#' && strpos($url, 'http') === 0) {
             $ai_content .= "- $url\n";
         }
