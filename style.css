@@ -1219,12 +1219,16 @@ body.is-navigating #zk-global-loader {
 /* ============================================================
    GRID CONTROLS & DROPDOWN SORT
    ============================================================ */
-.zk-grid-controls { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 32px; width: 100%; flex-wrap: nowrap; position: relative; }
+.zk-grid-wrapper { width: 100%; max-width: 100%; min-width: 0; }
+.zk-grid-controls { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 32px; width: 100%; max-width: 100%; min-width: 0; flex-wrap: nowrap; position: relative; }
 
 .zk-category-filters-wrapper {
     position: relative;
-    flex: 1;
+    flex: 1 1 0;
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
+    overflow: hidden;
     display: flex;
     align-items: center;
     -webkit-mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent);
@@ -1236,6 +1240,11 @@ body.is-navigating #zk-global-loader {
     gap: 8px;
     align-items: center;
     overflow-x: auto;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
     -ms-overflow-style: none;
     scrollbar-width: none;
     max-width: 100%;
@@ -1256,6 +1265,7 @@ body.is-navigating #zk-global-loader {
     font-weight: 500;
     font-family: inherit;
     white-space: nowrap;
+    flex: 0 0 auto;
     cursor: pointer;
     transition: all 0.3s var(--ease);
 }
@@ -1271,7 +1281,10 @@ body.is-navigating #zk-global-loader {
     border-color: var(--text-color);
 }
 
-@media (max-width: 600px) { .zk-grid-controls { flex-direction: column-reverse; align-items: stretch; gap: 14px; } }
+@media (max-width: 600px) {
+    .zk-grid-controls { flex-direction: column-reverse; align-items: stretch; gap: 14px; }
+    .zk-category-filters-wrapper { flex: 0 0 auto; }
+}
 .zk-search-box { position: relative; display: flex; align-items: center; flex: 1; max-width: 280px; }
 @media (max-width: 600px) { .zk-search-box { max-width: 100%; } }
 .zk-search-input { width: 100%; font-family: var(--font); font-size: 0.76rem; font-weight: 400; letter-spacing: 0.04em; color: #fff; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--hairline); padding: 9px 12px 9px 34px; border-radius: 8px; outline: none; transition: border-color 0.35s var(--ease), background-color 0.35s var(--ease), box-shadow 0.35s var(--ease); }

@@ -193,3 +193,14 @@ test('SPA language changes preserve the running galaxy canvas', () => {
     assert.match(app, /var replacementGalaxyCanvas = viewEl\.querySelector\('#zk-galaxy-canvas'\)/);
     assert.match(app, /replacementGalaxyCanvas\.replaceWith\(persistentGalaxyCanvas\)/);
 });
+
+test('mobile archive filters scroll inside the viewport', () => {
+    const css = read('style.css');
+    const app = read('app.js');
+
+    assert.match(css, /\.zk-grid-wrapper \{ width: 100%; max-width: 100%; min-width: 0; \}/);
+    assert.match(css, /\.zk-category-filters-wrapper[\s\S]*?max-width: 100%;[\s\S]*?overflow: hidden;/);
+    assert.match(css, /\.zk-category-filters[\s\S]*?overflow-x: auto;[\s\S]*?width: 100%;[\s\S]*?min-width: 0;/);
+    assert.match(css, /\.zk-filter-pill[\s\S]*?flex: 0 0 auto;/);
+    assert.doesNotMatch(app, /controls\.style\.flexWrap/);
+});

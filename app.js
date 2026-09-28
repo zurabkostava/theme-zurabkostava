@@ -618,10 +618,6 @@
             var controls = wrapper.querySelector('.zk-grid-controls');
             if (!controls) return;
             
-            // Layout fixes for controls wrapper
-            controls.style.flexWrap = window.innerWidth <= 768 ? 'wrap' : 'nowrap';
-            window.addEventListener('resize', function() { controls.style.flexWrap = window.innerWidth <= 768 ? 'wrap' : 'nowrap'; });
-
             var hash = window.location.hash.replace('#', '').toLowerCase();
             var hasHashMatch = categories.has(hash);
 
