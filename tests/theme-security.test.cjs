@@ -221,3 +221,19 @@ test('mobile archive filters scroll inside the viewport', () => {
     assert.match(css, /\.zk-filter-pill[\s\S]*?flex: 0 0 auto;/);
     assert.doesNotMatch(app, /controls\.style\.flexWrap/);
 });
+
+test('shared cinematic gallery preloads responsive decoded neighbor images', () => {
+    const functions = read('functions.php');
+    const app = read('app.js');
+
+    assert.match(functions, /function zk_gallery_lightbox_source_attributes/);
+    assert.match(functions, /'data-full-srcset'/);
+    assert.match(functions, /'data-full-sizes'\s*=>\s*'90vw'/);
+    assert.match(app, /var imageCache = new Map\(\)/);
+    assert.match(app, /function preloadImage\(img, priority\)/);
+    assert.match(app, /preloader\.decode/);
+    assert.match(app, /function warmAround\(position, includeCurrent\)/);
+    assert.match(app, /grid\.addEventListener\('pointerover'/);
+    assert.match(app, /rootMargin: '350px 0px'/);
+    assert.match(app, /warmAround\(index, false\)/);
+});

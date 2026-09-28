@@ -734,6 +734,20 @@ function zk_gallery_folders() {
 }
 
 /**
+ * Responsive source data shared by every gallery using the cinematic lightbox.
+ * The grid stays lightweight while the viewer can request the best image for
+ * the actual screen instead of always downloading the original upload.
+ */
+function zk_gallery_lightbox_source_attributes( $attachment_id ) {
+    $srcset = wp_get_attachment_image_srcset( $attachment_id, 'full' );
+
+    return array(
+        'data-full-srcset' => $srcset ? esc_attr( $srcset ) : '',
+        'data-full-sizes'  => '90vw',
+    );
+}
+
+/**
  * Labels used by the photography gallery controls.
  *
  * English is the safe fallback for newly added site languages until their
@@ -963,6 +977,7 @@ function zk_cinematic_gallery() {
                     'alt'              => esc_attr( $alt_text ),
                     'sizes'            => '(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw'
             );
+            $img_attributes = array_merge( $img_attributes, zk_gallery_lightbox_source_attributes( $image_id ) );
             
             if ( current_user_can('administrator') ) {
                 $img_attributes['data-views'] = (int) get_post_meta( $image_id, 'zk_photo_views', true );
@@ -1042,6 +1057,7 @@ function zk_cinematic_gallery() {
                             'decoding'         => 'async',
                             'sizes'            => '1vw' // Minimize browser effort
                     );
+                    $c_img_attributes = array_merge( $c_img_attributes, zk_gallery_lightbox_source_attributes( $c_att ) );
                     
                     if ( current_user_can('administrator') ) {
                         $c_img_attributes['data-views'] = (int) get_post_meta( $c_att, 'zk_photo_views', true );
@@ -1084,6 +1100,7 @@ function zk_cinematic_gallery() {
                     'alt'              => esc_attr( $alt_text ),
                     'sizes'            => '(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw'
             );
+            $img_attributes = array_merge( $img_attributes, zk_gallery_lightbox_source_attributes( $image_id ) );
             
             if ( current_user_can('administrator') ) {
                 $img_attributes['data-views'] = (int) get_post_meta( $image_id, 'zk_photo_views', true );
@@ -2246,6 +2263,7 @@ function zk_get_filebird_gallery( $folder_id ) {
                     'alt'              => esc_attr( $alt_text ),
                     'sizes'            => '(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw'
             );
+            $img_attributes = array_merge( $img_attributes, zk_gallery_lightbox_source_attributes( $id ) );
             
             if ( current_user_can('administrator') ) {
                 $img_attributes['data-views'] = (int) get_post_meta( $id, 'zk_photo_views', true );
@@ -2315,6 +2333,7 @@ function zk_get_filebird_gallery( $folder_id ) {
                             'decoding'         => 'async',
                             'sizes'            => '1vw'
                     );
+                    $c_img_attributes = array_merge( $c_img_attributes, zk_gallery_lightbox_source_attributes( $c_att ) );
                     
                     if ( current_user_can('administrator') ) {
                         $c_img_attributes['data-views'] = (int) get_post_meta( $c_att, 'zk_photo_views', true );
@@ -2361,6 +2380,7 @@ function zk_get_filebird_gallery( $folder_id ) {
                     'alt'              => esc_attr( $alt_text ),
                     'sizes'            => '(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw'
             );
+            $img_attributes = array_merge( $img_attributes, zk_gallery_lightbox_source_attributes( $id ) );
             
             if ( current_user_can('administrator') ) {
                 $img_attributes['data-views'] = (int) get_post_meta( $id, 'zk_photo_views', true );
