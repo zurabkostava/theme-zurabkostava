@@ -185,3 +185,11 @@ test('heavy visual assets do not block the first page paint', () => {
     assert.match(source, /media=\$1print\$1 onload=/);
     assert.match(source, /<noscript>/);
 });
+
+test('SPA language changes preserve the running galaxy canvas', () => {
+    const app = read('app.js');
+
+    assert.match(app, /var persistentGalaxyCanvas = document\.getElementById\('zk-galaxy-canvas'\)/);
+    assert.match(app, /var replacementGalaxyCanvas = viewEl\.querySelector\('#zk-galaxy-canvas'\)/);
+    assert.match(app, /replacementGalaxyCanvas\.replaceWith\(persistentGalaxyCanvas\)/);
+});

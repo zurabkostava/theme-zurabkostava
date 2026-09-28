@@ -258,7 +258,17 @@
             if (push) history.pushState({ url: u.href }, '', u.href);
 
             function render() {
+                // The English and translated homepages contain the same live
+                // galaxy canvas. Keep that exact canvas (and its WebGL context)
+                // across SPA/language changes instead of rebuilding 480k stars.
+                var persistentGalaxyCanvas = document.getElementById('zk-galaxy-canvas');
                 viewEl.innerHTML = data.html;
+                if (persistentGalaxyCanvas) {
+                    var replacementGalaxyCanvas = viewEl.querySelector('#zk-galaxy-canvas');
+                    if (replacementGalaxyCanvas) {
+                        replacementGalaxyCanvas.replaceWith(persistentGalaxyCanvas);
+                    }
+                }
                 viewEl.setAttribute('data-route', data.route);
                 document.title = data.title;
 
