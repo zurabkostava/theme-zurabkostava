@@ -1485,7 +1485,7 @@ html.zk-img-js .zk-book-img.is-loaded { opacity: 1; }
 /* ── 1. Apple-style Segmented Filters (Sticky Glass Capsule) ── */
 .zk-gallery-filters {
 	display: flex; align-items: center; justify-content: center; flex-wrap: nowrap; /* nowrap რომ არ გადავიდეს */
-	gap: 8px; margin-bottom: 40px;
+	gap: 0; margin-bottom: 40px;
 
 	/* ── Sticky & Sizing ── */
 	position: sticky;
@@ -1497,44 +1497,59 @@ html.zk-img-js .zk-book-img.is-loaded { opacity: 1; }
 	margin-left: auto;
 	margin-right: auto;
 
-	padding: 6px 8px;
-	border-radius: 40px;
-	border: 1px solid transparent;
+	padding: 6px;
+	border-radius: 50px;
+	background: linear-gradient(135deg, rgba(32, 32, 38, 0.58), rgba(12, 12, 16, 0.38));
+	border: 1px solid rgba(255, 255, 255, 0.14);
+	-webkit-backdrop-filter: blur(24px) saturate(165%);
+	backdrop-filter: blur(24px) saturate(165%);
+	box-shadow: 0 14px 38px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 
 	/* ანიმაციური გარდასახვა */
-	transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+	transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.5s var(--ease), box-shadow 0.5s var(--ease), border-color 0.5s var(--ease);
 }
 
 /* ── მინის ეფექტი ჩასქროლვისას (გარდასახვა) ── */
 .zk-gallery-filters.is-stuck {
-	background-color: rgba(16, 16, 20, 0.75);
-	-webkit-backdrop-filter: blur(24px) saturate(160%);
-	backdrop-filter: blur(24px) saturate(160%);
-	border-color: var(--hairline);
-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+	background: linear-gradient(135deg, rgba(28, 28, 34, 0.72), rgba(10, 10, 14, 0.56));
+	border-color: rgba(255, 255, 255, 0.12);
+	box-shadow: 0 12px 34px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
 	/* ოდნავ დაპატარავება სქროლვისას უფრო ელეგანტურია */
-	transform: translateY(-72px) scale(0.95);
-	padding: 4px 6px;
+	transform: translateY(-72px) scale(0.88);
 }
+
+.zk-gallery-tab-highlight {
+	position: absolute;
+	top: 6px;
+	left: 6px;
+	height: calc(100% - 12px);
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.08));
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	box-shadow: 0 5px 16px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+	border-radius: 40px;
+	z-index: 1;
+	pointer-events: none;
+	transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
 /* ღილაკების სტილი იგივე რჩება */
 .zk-filter-btn {
+	position: relative;
+	z-index: 2;
 	padding: 8px 20px;
 	border-radius: 30px;
 	font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
 	color: var(--text-muted); background: transparent; border: 1px solid transparent;
-	transition: color 0.35s var(--ease), background-color 0.35s var(--ease), border-color 0.35s var(--ease), box-shadow 0.35s var(--ease), transform 0.2s var(--ease);
+	transition: color 0.3s var(--ease), transform 0.2s var(--ease);
     display: inline-flex;
     align-items: center;
     gap: 6px;
 }
-.zk-filter-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.04); }
+.zk-filter-btn:hover { color: var(--text); }
 .zk-filter-btn:active { transform: scale(0.96); }
 .zk-filter-btn.is-active {
 	color: var(--text);
-	background: rgba(255, 255, 255, 0.08);
-	border-color: var(--hairline-strong);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 .zk-tab-count {
     display: inline-flex;
@@ -2351,7 +2366,6 @@ body.zk-lb-open { overflow: hidden; }
 	.zk-gallery-filters.is-stuck {
 		/* 0.95-ის ნაცვლად უფრო მეტად ვაპატარავებთ (0.85) */
 		transform: translateY(-28px) scale(0.85) !important;
-		padding: 2px 4px;
 	}
 
 	/* თავად ღილაკების ზომასაც ოდნავ ვამცირებთ მობილურისთვის */

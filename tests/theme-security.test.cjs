@@ -157,7 +157,7 @@ test('photography filters follow the current language without sharing cached mar
     assert.match(source, /'all'\s*=>\s*'ყველა'/);
     assert.match(source, /'camera'\s*=>\s*'კამერა'/);
     assert.match(source, /'mobile'\s*=>\s*'მობილური'/);
-    assert.match(source, /zk_gallery_html_v6_.*sanitize_key\( \$language \)/);
+    assert.match(source, /zk_gallery_html_v7_.*sanitize_key\( \$language \)/);
     assert.match(source, /esc_html\( \$labels\['all'\] \)/);
     assert.match(source, /get_option\( 'zk_gallery_labels_v1'/);
     assert.match(center, /admin_post_zk_save_gallery_labels/);
@@ -244,6 +244,18 @@ test('about tabs use a mobile-spaced glass treatment', () => {
     assert.match(css, /\.zk-tab-highlight \{[\s\S]*?linear-gradient/);
     assert.match(css, /@media \(max-width: 768px\) \{[\s\S]*?\.zk-tabs-nav-container \{[\s\S]*?margin-top: 12px/);
     assert.match(css, /top: calc\(var\(--header-h-scrolled\) \+ 32px\)/);
+});
+
+test('photography filters share the moving glass tab structure', () => {
+    const functions = read('functions.php');
+    const app = read('app.js');
+    const css = read('style.css');
+
+    assert.match(functions, /class="zk-gallery-tab-highlight" aria-hidden="true"/);
+    assert.match(app, /function setFilterHighlight\(btn, immediate\)/);
+    assert.match(app, /setFilterHighlight\(btn, false\)/);
+    assert.match(css, /\.zk-gallery-filters \{[\s\S]*?blur\(24px\) saturate\(165%\)/);
+    assert.match(css, /\.zk-gallery-tab-highlight \{[\s\S]*?transition: transform 0\.4s cubic-bezier\(0\.25, 1, 0\.5, 1\), width 0\.4s/);
 });
 
 test('mobile archive filters scroll inside the viewport', () => {

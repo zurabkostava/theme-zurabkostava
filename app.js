@@ -1063,6 +1063,7 @@
         }
         var grid     = wrap.querySelector('.zk-gallery-grid');
         var buttons  = Array.prototype.slice.call(wrap.querySelectorAll('.zk-filter-btn'));
+        var filterHighlight = filters ? filters.querySelector('.zk-gallery-tab-highlight') : null;
         var allItems = Array.prototype.slice.call(wrap.querySelectorAll('.zk-gallery-item'));
 
         var lbImg    = lightbox.querySelector('.zk-lightbox-img');
@@ -1082,6 +1083,19 @@
         var warmObserver = null;
         var swipeStart  = null;
         var suppressLightboxClickUntil = 0;
+
+        function setFilterHighlight(btn, immediate) {
+            if (!filterHighlight || !filters || !btn) return;
+            var inset = parseFloat(window.getComputedStyle(filters).paddingLeft) || 0;
+            if (immediate) filterHighlight.style.transition = 'none';
+            filterHighlight.style.width = btn.offsetWidth + 'px';
+            filterHighlight.style.transform = 'translateX(' + (btn.offsetLeft - inset) + 'px)';
+            if (immediate) {
+                requestAnimationFrame(function () {
+                    filterHighlight.style.transition = '';
+                });
+            }
+        }
 
         function itemImage(position) {
             var n = activeItems.length;
@@ -1375,6 +1389,7 @@
                 });
                 btn.classList.add('is-active');
                 btn.setAttribute('aria-pressed', 'true');
+                setFilterHighlight(btn, false);
 
                 var newFilter = btn.getAttribute('data-filter');
                 // 1. ვუშვებთ ფილტრაციის ლოგიკას
@@ -1531,12 +1546,30 @@
                 });
                 targetBtn.classList.add('is-active');
                 targetBtn.setAttribute('aria-pressed', 'true');
+                setFilterHighlight(targetBtn, true);
                 applyFilter('filter-' + hash);
             } else {
                 buildThumbnails();
             }
         } else {
             buildThumbnails();
+        }
+
+        var activeFilterButton = filters ? filters.querySelector('.zk-filter-btn.is-active') : null;
+        if (activeFilterButton) {
+            requestAnimationFrame(function () { setFilterHighlight(activeFilterButton, true); });
+        }
+        function syncFilterHighlight() {
+            if (!filters || !filters.isConnected) {
+                window.removeEventListener('resize', syncFilterHighlight);
+                return;
+            }
+            var activeButton = filters ? filters.querySelector('.zk-filter-btn.is-active') : null;
+            if (activeButton) setFilterHighlight(activeButton, true);
+        }
+        window.addEventListener('resize', syncFilterHighlight, { passive: true });
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(syncFilterHighlight);
         }
 
         current = { isOpen: isOpen, next: next, prev: prev, close: close };
