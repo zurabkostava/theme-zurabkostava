@@ -104,6 +104,47 @@
     function keyOf(u) { return u.pathname + u.search; }
     function delay(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
+    function isHomeRoute(route) {
+        route = (route || '/').replace(/\/+$/, '') || '/';
+        return route === '/' || route === '/ka';
+    }
+
+    function revealGalaxyFromLogo(canvas, origin) {
+        if (!canvas || !origin || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        canvas.style.setProperty('--zk-galaxy-reveal-x', Math.round(origin.x) + 'px');
+        canvas.style.setProperty('--zk-galaxy-reveal-y', Math.round(origin.y) + 'px');
+        canvas.classList.add('zk-galaxy-logo-reveal-pending');
+
+        var started = false;
+        var fallbackTimer = null;
+        function cleanup() {
+            canvas.classList.remove('zk-galaxy-logo-reveal-pending', 'zk-galaxy-logo-revealing');
+            canvas.style.removeProperty('--zk-galaxy-reveal-x');
+            canvas.style.removeProperty('--zk-galaxy-reveal-y');
+            canvas.style.removeProperty('--zk-galaxy-reveal-radius');
+            if (fallbackTimer) clearTimeout(fallbackTimer);
+        }
+        function startReveal() {
+            if (started || !canvas.isConnected) return;
+            started = true;
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    canvas.classList.remove('zk-galaxy-logo-reveal-pending');
+                    canvas.classList.add('zk-galaxy-logo-revealing');
+                    canvas.addEventListener('animationend', cleanup, { once: true });
+                    fallbackTimer = setTimeout(cleanup, 2200);
+                });
+            });
+        }
+        function onGalaxyReady(e) {
+            if (!e.detail || e.detail.canvas === canvas) startReveal();
+        }
+
+        if (canvas.dataset.zkGalaxyReady === '1') startReveal();
+        else document.addEventListener('zk:galaxyReady', onGalaxyReady, { once: true });
+    }
+
     function updateChrome(route) {
         [].slice.call(nav.querySelectorAll('[data-route], .dropdown-trigger')).forEach(function (el) {
             el.classList.remove('is-current');
@@ -277,7 +318,8 @@
     }
 
     var token = 0;
-    function navigate(href, push) {
+    function navigate(href, push, options) {
+        options = options || {};
         var u;
         try { u = new URL(href, location.origin); } catch (e) { window.location.href = href; return; }
         var key = keyOf(u);
@@ -310,6 +352,10 @@
                     if (replacementGalaxyCanvas) {
                         replacementGalaxyCanvas.replaceWith(persistentGalaxyCanvas);
                     }
+                }
+                var activeGalaxyCanvas = viewEl.querySelector('#zk-galaxy-canvas');
+                if (activeGalaxyCanvas && options.galaxyRevealOrigin) {
+                    revealGalaxyFromLogo(activeGalaxyCanvas, options.galaxyRevealOrigin);
                 }
                 viewEl.setAttribute('data-route', data.route);
                 document.title = data.title;
@@ -424,7 +470,15 @@
             return;
         }
         e.preventDefault();
-        navigate(a.href, true);
+        var navigationOptions = {};
+        if (a.matches('.site-header .logo') && !isHomeRoute(toRoute(location.pathname)) && isHomeRoute(toRoute(url.pathname))) {
+            var logoRect = a.getBoundingClientRect();
+            navigationOptions.galaxyRevealOrigin = {
+                x: logoRect.left + logoRect.width / 2,
+                y: logoRect.top + logoRect.height / 2
+            };
+        }
+        navigate(a.href, true, navigationOptions);
     });
 
     window.addEventListener('popstate', function () { navigate(location.href, false); });

@@ -39,6 +39,7 @@
     async function initGalaxy() {
         container = document.getElementById('zk-galaxy-canvas');
         if (!container) return;
+        container.dataset.zkGalaxyReady = '0';
         
         // Wait for Three.js to be loaded
         if (typeof THREE === 'undefined') {
@@ -874,6 +875,10 @@
             isRunning = true;
             animate();
         }
+        container.dataset.zkGalaxyReady = '1';
+        document.dispatchEvent(new CustomEvent('zk:galaxyReady', {
+            detail: { canvas: container }
+        }));
     }
 
     function onWindowResize() {

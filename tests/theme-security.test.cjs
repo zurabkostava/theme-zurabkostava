@@ -211,6 +211,23 @@ test('SPA language changes preserve the running galaxy canvas', () => {
     assert.match(app, /replacementGalaxyCanvas\.replaceWith\(persistentGalaxyCanvas\)/);
 });
 
+test('logo navigation reveals a ready galaxy from the logo position', () => {
+    const app = read('app.js');
+    const galaxy = read('galaxy-bg.js');
+    const css = read('style.css');
+
+    assert.match(app, /function revealGalaxyFromLogo\(canvas, origin\)/);
+    assert.match(app, /a\.matches\('\.site-header \.logo'\)/);
+    assert.match(app, /navigationOptions\.galaxyRevealOrigin/);
+    assert.match(app, /activeGalaxyCanvas && options\.galaxyRevealOrigin/);
+    assert.match(app, /document\.addEventListener\('zk:galaxyReady'/);
+    assert.match(galaxy, /container\.dataset\.zkGalaxyReady = '1'/);
+    assert.match(galaxy, /document\.dispatchEvent\(new CustomEvent\('zk:galaxyReady'/);
+    assert.match(css, /@property --zk-galaxy-reveal-radius/);
+    assert.match(css, /radial-gradient\([\s\S]*?var\(--zk-galaxy-reveal-x\)/);
+    assert.match(css, /animation: zkGalaxyLogoReveal 1\.55s/);
+});
+
 test('mobile archive filters scroll inside the viewport', () => {
     const css = read('style.css');
     const app = read('app.js');

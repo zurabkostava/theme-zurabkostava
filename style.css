@@ -592,6 +592,38 @@ body.is-navigating #zk-global-loader {
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Returning home from the header logo: keep the unfinished WebGL frame hidden,
+   then reveal the ready galaxy from the logo with a soft circular edge. */
+@property --zk-galaxy-reveal-radius {
+	syntax: '<length>';
+	inherits: false;
+	initial-value: 0px;
+}
+#zk-galaxy-canvas.zk-galaxy-logo-reveal-pending,
+#zk-galaxy-canvas.zk-galaxy-logo-revealing {
+	--zk-galaxy-reveal-radius: 0px;
+	-webkit-mask-image: radial-gradient(
+		circle var(--zk-galaxy-reveal-radius) at var(--zk-galaxy-reveal-x) var(--zk-galaxy-reveal-y),
+		#000 0%, #000 68%, rgba(0, 0, 0, 0.65) 80%, transparent 100%
+	);
+	mask-image: radial-gradient(
+		circle var(--zk-galaxy-reveal-radius) at var(--zk-galaxy-reveal-x) var(--zk-galaxy-reveal-y),
+		#000 0%, #000 68%, rgba(0, 0, 0, 0.65) 80%, transparent 100%
+	);
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	will-change: -webkit-mask-image, mask-image, opacity;
+}
+#zk-galaxy-canvas.zk-galaxy-logo-reveal-pending { opacity: 0; }
+#zk-galaxy-canvas.zk-galaxy-logo-revealing {
+	animation: zkGalaxyLogoReveal 1.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes zkGalaxyLogoReveal {
+	0%   { --zk-galaxy-reveal-radius: 0px; opacity: 0; }
+	12%  { opacity: 1; }
+	100% { --zk-galaxy-reveal-radius: 165vmax; opacity: 1; }
+}
+
 
 .hero-orb {
     position: absolute;
