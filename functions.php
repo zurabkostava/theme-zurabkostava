@@ -4172,14 +4172,16 @@ function zk_render_seo_meta() {
         echo "<meta name=\"description\" content=\"{$desc}\" />\n";
     }
     
-    // Canonical URL
-    echo "<link rel=\"canonical\" href=\"" . esc_url( $canonical_url ) . "\" />\n";
+    if ( ! is_404() ) {
+        // Canonical URL
+        echo "<link rel=\"canonical\" href=\"" . esc_url( $canonical_url ) . "\" />\n";
 
-    // Multi-Language hreflang alternate links (Crucial for Google Bilingual SEO)
-    foreach ( $seo_urls['urls'] as $language_code => $language_url ) {
-        echo "<link rel=\"alternate\" hreflang=\"" . esc_attr( $language_code ) . "\" href=\"" . esc_url( $language_url ) . "\" />\n";
+        // Advertise only complete language equivalents to search engines.
+        foreach ( $seo_urls['urls'] as $language_code => $language_url ) {
+            echo "<link rel=\"alternate\" hreflang=\"" . esc_attr( $language_code ) . "\" href=\"" . esc_url( $language_url ) . "\" />\n";
+        }
+        echo "<link rel=\"alternate\" hreflang=\"x-default\" href=\"" . esc_url( $en_url ) . "\" />\n";
     }
-    echo "<link rel=\"alternate\" hreflang=\"x-default\" href=\"" . esc_url( $en_url ) . "\" />\n";
     
     // Open Graph
     echo "<meta property=\"og:title\" content=\"{$title}\" />\n";

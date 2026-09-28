@@ -84,6 +84,7 @@ test('multilingual sitemap only advertises complete translations', () => {
     assert.match(source, /hreflang=\\"x-default\\"/);
     assert.match(source, /X-Robots-Tag: noindex, follow/);
     assert.match(source, /\$thin_archive \|\| ! zk_is_language_version_indexable\( \$language \)/);
+    assert.match(source, /if \( ! is_404\(\) \) \{\s*\/\/ Canonical URL/);
 });
 
 test('SEO and GEO fields follow every registered language', () => {
