@@ -2518,7 +2518,7 @@ function zk_identity_page_html() {
                 <tr><th>Full Name (EN)</th><td><input type="text" name="zk_schema_name" value="<?php echo esc_attr(get_option('zk_schema_name', 'Zurab Kostava')); ?>" class="regular-text" /></td></tr>
                 <tr><th>Full Name (KA)</th><td><input type="text" name="zk_site_name_ka" value="<?php echo esc_attr(get_option('zk_site_name_ka', 'ზურაბ კოსტავა')); ?>" class="regular-text" /></td></tr>
                 <tr><th>Site Tagline / Desc (KA)</th><td><input type="text" name="zk_site_desc_ka" value="<?php echo esc_attr(get_option('zk_site_desc_ka', 'ქართველი მულტიდისციპლინური ხელოვანი, კომპოზიტორი და დიზაინერი')); ?>" class="large-text" /></td></tr>
-                <tr><th>Alternate Names</th><td><input type="text" name="zk_schema_alternate_names" value="<?php echo esc_attr(get_option('zk_schema_alternate_names', 'ზურაბ კოსტავა, Zurab Kostava, Zurab, Kostava, Zura Kostava')); ?>" class="large-text" /></td></tr>
+                <tr><th>Alternate Names</th><td><input type="text" name="zk_schema_alternate_names" value="<?php echo esc_attr(get_option('zk_schema_alternate_names', 'ზურაბ კოსტავა, Zurab Kostava, Zura Kostava')); ?>" class="large-text" /></td></tr>
                 <tr><th>Job Titles (EN)</th><td><input type="text" name="zk_schema_job_titles" value="<?php echo esc_attr(get_option('zk_schema_job_titles', 'Artist, Composer, Visual Artist, Designer')); ?>" class="large-text" /></td></tr>
                 <tr><th>Job Titles (KA)</th><td><input type="text" name="zk_schema_job_titles_ka" value="<?php echo esc_attr(get_option('zk_schema_job_titles_ka', 'ხელოვანი, კომპოზიტორი, ვიზუალური არტისტი, დიზაინერი')); ?>" class="large-text" /></td></tr>
                 <tr><th>Bio / Description (EN)</th><td><textarea name="zk_schema_description" class="large-text" rows="3"><?php echo esc_textarea(get_option('zk_schema_description', 'Georgian multidisciplinary artist, composer, and designer. Founder of Nuvio.')); ?></textarea></td></tr>
@@ -4256,6 +4256,10 @@ function zk_render_json_ld_schema() {
     $site_name_ka = get_option( 'zk_site_name_ka', 'ზურაბ კოსტავა' );
     $site_name    = $is_ka ? $site_name_ka : $site_name_en;
     $site_url     = home_url( '/' );
+    // A Person must keep one canonical entity ID in every language. `home_url()`
+    // is language-filtered on translated routes, while the saved home option is not.
+    $identity_url = trailingslashit( esc_url_raw( (string) get_option( 'home', home_url( '/' ) ) ) );
+    $person_id    = $identity_url . '#person';
     $logo_url     = get_option( 'zk_profile_img', '' );
     
     // Build Social Links array
@@ -4269,7 +4273,19 @@ function zk_render_json_ld_schema() {
     }
 
     $schema_name = $is_ka ? $site_name_ka : get_option('zk_schema_name', 'Zurab Kostava');
-    $schema_alternate = array_map('trim', explode(',', get_option('zk_schema_alternate_names', 'ზურაბ კოსტავა, Zurab Kostava, Zurab, Kostava, Zura Kostava')));
+    $schema_alternate_raw = array_map('trim', explode(',', get_option('zk_schema_alternate_names', 'ზურაბ კოსტავა, Zurab Kostava, Zura Kostava')));
+    $schema_alternate = [];
+    $seen_aliases = [];
+    $ambiguous_aliases = [ 'zurab', 'kostava', 'ზურაბ', 'კოსტავა' ];
+    $normalized_schema_name = function_exists( 'mb_strtolower' ) ? mb_strtolower( $schema_name, 'UTF-8' ) : strtolower( $schema_name );
+    foreach ( $schema_alternate_raw as $alias ) {
+        $normalized_alias = function_exists( 'mb_strtolower' ) ? mb_strtolower( $alias, 'UTF-8' ) : strtolower( $alias );
+        if ( '' === $normalized_alias || $normalized_alias === $normalized_schema_name || in_array( $normalized_alias, $ambiguous_aliases, true ) || isset( $seen_aliases[ $normalized_alias ] ) ) {
+            continue;
+        }
+        $seen_aliases[ $normalized_alias ] = true;
+        $schema_alternate[] = $alias;
+    }
     
     $default_jobs = $is_ka ? 'ხელოვანი, კომპოზიტორი, ვიზუალური არტისტი, დიზაინერი' : 'Artist, Composer, Visual Artist, Designer';
     $schema_job_titles_raw = $is_ka ? get_option('zk_schema_job_titles_ka', $default_jobs) : get_option('zk_schema_job_titles', $default_jobs);
@@ -4293,10 +4309,19 @@ function zk_render_json_ld_schema() {
         '@type' => 'Person',
         'name' => $schema_name,
         'alternateName' => $schema_alternate,
-        'url' => $site_url,
+        'url' => $identity_url,
         'jobTitle' => $schema_job_titles,
         'description' => $schema_desc,
+        'disambiguatingDescription' => $is_ka
+            ? '1995 წელს დაბადებული ქართველი მულტიდისციპლინური ხელოვანი, კომპოზიტორი, დიზაინერი და ციფრული შემოქმედი.'
+            : 'Georgian multidisciplinary artist, composer, designer, and digital creator born in 1995.',
+        'givenName' => $is_ka ? 'ზურაბ' : 'Zurab',
+        'familyName' => $is_ka ? 'კოსტავა' : 'Kostava',
         'birthDate' => $schema_birth,
+        'birthPlace' => [
+            '@type' => 'Place',
+            'name' => $is_ka ? 'ოზურგეთი, საქართველო' : 'Ozurgeti, Georgia'
+        ],
         'gender' => $schema_gender,
         'knowsAbout' => $schema_knows_about,
         'nationality' => [
@@ -4305,7 +4330,8 @@ function zk_render_json_ld_schema() {
         ],
         'image' => $logo_url,
         'sameAs' => array_values(array_unique($same_as)),
-        '@id' => $site_url . '#person'
+        'mainEntityOfPage' => $identity_url . 'about/',
+        '@id' => $person_id
     ];
 
     if ( is_page('about') ) {
@@ -4323,7 +4349,7 @@ function zk_render_json_ld_schema() {
                     "name" => $about_name,
                     "description" => $about_desc,
                     "mainEntity" => [
-                        "@id" => $site_url . "#person"
+                        "@id" => $person_id
                     ]
                 ],
                 $person_schema
@@ -4339,7 +4365,7 @@ function zk_render_json_ld_schema() {
     }
 
     $schema = [];
-    $person_schema['@id'] = $site_url . '#person';
+    $person_schema['@id'] = $person_id;
     $schema[] = $person_schema;
     $schema[] = [
         '@context' => 'https://schema.org',
@@ -4349,7 +4375,7 @@ function zk_render_json_ld_schema() {
         'url' => isset( $seo_urls['urls'][ $current_language ] ) ? $seo_urls['urls'][ $current_language ] : $site_url,
         'inLanguage' => $content_locale,
         'publisher' => [
-            '@id' => $site_url . '#person'
+            '@id' => $person_id
         ]
     ];
 
@@ -4374,10 +4400,10 @@ function zk_render_json_ld_schema() {
             'datePublished' => get_the_date( 'c', $post_id ),
             'dateModified' => get_the_modified_date( 'c', $post_id ),
             'author' => [
-                '@id' => $site_url . '#person'
+                '@id' => $person_id
             ],
             'publisher' => [
-                '@id' => $site_url . '#person'
+                '@id' => $person_id
             ],
             'mainEntityOfPage' => [
                 '@type' => 'WebPage',
@@ -4432,7 +4458,7 @@ function zk_render_json_ld_schema() {
             '@type' => 'Book',
             'inLanguage' => $content_locale,
             'name' => $book_title,
-            'author' => [ '@id' => $site_url . '#person' ],
+            'author' => [ '@id' => $person_id ],
             'datePublished' => $year,
             'bookFormat' => 'https://schema.org/EBook',
             'isAccessibleForFree' => true,
@@ -4889,11 +4915,11 @@ function zk_inject_faq_schema() {
         // Automatically fetch FAQ from the corresponding zk_book if on a book reader page
         $target_id = function_exists('zk_get_seo_target_id') && isset($post->ID) ? zk_get_seo_target_id( $post->ID ) : ( isset($post->ID) ? $post->ID : 0 );
         if ( $target_id ) {
-            $faq_text = zk_get_localized_post_meta( $target_id, 'geo_faq', $language, true );
+            $faq_text = zk_get_localized_post_meta( $target_id, 'geo_faq', $language );
         }
     } else {
         $term_id = get_queried_object_id();
-        $faq_text = zk_get_localized_term_meta( $term_id, 'geo_faq', $language, true );
+        $faq_text = zk_get_localized_term_meta( $term_id, 'geo_faq', $language );
     }
     
     $mainEntity = [];
@@ -4927,7 +4953,7 @@ function zk_inject_faq_schema() {
     if ( is_page() && $post_obj && has_shortcode( $post_obj->post_content, 'zk_books' ) ) {
         $books = get_posts( array( 'post_type' => 'zk_book', 'numberposts' => -1 ) );
         foreach ( $books as $book ) {
-            $b_faq = zk_get_localized_post_meta( $book->ID, 'geo_faq', $language, true );
+            $b_faq = zk_get_localized_post_meta( $book->ID, 'geo_faq', $language );
             if ( ! empty( trim( $b_faq ) ) ) {
                 $b_blocks = explode( "\n\n", str_replace( "\r", "", $b_faq ) );
                 foreach ( $b_blocks as $block ) {

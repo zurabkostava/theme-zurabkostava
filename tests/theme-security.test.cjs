@@ -98,9 +98,23 @@ test('SEO and GEO fields follow every registered language', () => {
     assert.match(source, /zk_localized_meta_key\( 'seo_title', \$code \)/);
     assert.match(source, /zk_localized_meta_key\( \$field, \$code \)/);
     assert.match(source, /zk_get_localized_post_meta\( \$target_id, 'geo_ai_summary', \$language, true \)/);
-    assert.match(source, /zk_get_localized_post_meta\( \$target_id, 'geo_faq', \$language, true \)/);
+    assert.match(source, /zk_get_localized_post_meta\( \$target_id, 'geo_faq', \$language \)/);
+    assert.match(source, /zk_get_localized_term_meta\( \$term_id, 'geo_faq', \$language \)/);
+    assert.doesNotMatch(source, /zk_get_localized_post_meta\( \$target_id, 'geo_faq', \$language, true \)/);
     assert.match(source, /str_replace\( '-', '_', \$language_info\['locale'\] \)/);
     assert.match(source, /og:locale:alternate/);
+});
+
+test('person identity stays canonical and unambiguous across languages', () => {
+    const source = read('functions.php');
+
+    assert.match(source, /\$identity_url = trailingslashit\( esc_url_raw\( \(string\) get_option\( 'home'/);
+    assert.match(source, /\$person_id\s*=\s*\$identity_url \. '#person'/);
+    assert.match(source, /'@id' => \$person_id/);
+    assert.match(source, /'disambiguatingDescription'/);
+    assert.match(source, /'givenName'/);
+    assert.match(source, /'familyName'/);
+    assert.match(source, /\$ambiguous_aliases = \[ 'zurab', 'kostava', 'ზურაბ', 'კოსტავა' \]/);
 });
 
 test('instant indexing can submit every strictly completed translation', () => {
