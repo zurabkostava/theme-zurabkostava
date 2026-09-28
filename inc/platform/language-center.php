@@ -131,6 +131,82 @@ function zk_language_center_has_translatable_content( $content ) {
     return '' !== trim( wp_strip_all_tags( $content ) );
 }
 
+/**
+ * Fields that must exist before a translated post can be advertised to search
+ * engines as a complete language alternate.
+ */
+function zk_language_translation_post_requirements( $post, $code ) {
+    $post = get_post( $post );
+    if ( ! $post || 'en' === $code ) {
+        return array();
+    }
+
+    $required = array( 'title' => zk_language_meta_key( 'title', $code ) );
+    if ( '' !== trim( wp_strip_all_tags( $post->post_excerpt ) ) ) {
+        $required['excerpt'] = zk_language_meta_key( 'excerpt', $code );
+    }
+    if ( zk_language_center_has_translatable_content( $post->post_content ) ) {
+        $required['content'] = zk_language_meta_key( 'content', $code );
+    }
+
+    foreach ( array(
+        'SEO title'       => 'seo_title',
+        'SEO description' => 'seo_description',
+        'GEO summary'     => 'geo_ai_summary',
+        'GEO FAQ'         => 'geo_faq',
+    ) as $label => $field ) {
+        $source = get_post_meta( $post->ID, '_zk_' . $field, true );
+        if ( '' !== trim( wp_strip_all_tags( (string) $source ) ) ) {
+            $required[ $label ] = zk_language_meta_key( $field, $code );
+        }
+    }
+    return $required;
+}
+
+function zk_is_post_translation_complete( $post, $code ) {
+    if ( 'en' === $code ) return true;
+    $post = get_post( $post );
+    if ( ! $post ) return false;
+    foreach ( zk_language_translation_post_requirements( $post, $code ) as $meta_key ) {
+        $value = get_post_meta( $post->ID, $meta_key, true );
+        if ( '' === trim( wp_strip_all_tags( (string) $value ) ) ) return false;
+    }
+    return true;
+}
+
+function zk_language_translation_term_requirements( $term, $code ) {
+    $term = get_term( $term );
+    if ( ! $term || is_wp_error( $term ) || 'en' === $code ) return array();
+
+    $required = array( 'name' => zk_language_meta_key( 'name', $code ) );
+    if ( '' !== trim( wp_strip_all_tags( $term->description ) ) ) {
+        $required['description'] = zk_language_meta_key( 'description', $code );
+    }
+    foreach ( array(
+        'SEO title'       => 'seo_title',
+        'SEO description' => 'seo_description',
+        'GEO summary'     => 'geo_ai_summary',
+        'GEO FAQ'         => 'geo_faq',
+    ) as $label => $field ) {
+        $source = get_term_meta( $term->term_id, '_zk_' . $field, true );
+        if ( '' !== trim( wp_strip_all_tags( (string) $source ) ) ) {
+            $required[ $label ] = zk_language_meta_key( $field, $code );
+        }
+    }
+    return $required;
+}
+
+function zk_is_term_translation_complete( $term, $code ) {
+    if ( 'en' === $code ) return true;
+    $term = get_term( $term );
+    if ( ! $term || is_wp_error( $term ) ) return false;
+    foreach ( zk_language_translation_term_requirements( $term, $code ) as $meta_key ) {
+        $value = get_term_meta( $term->term_id, $meta_key, true );
+        if ( '' === trim( wp_strip_all_tags( (string) $value ) ) ) return false;
+    }
+    return true;
+}
+
 function zk_language_center_audit_posts( $code ) {
     $post_types = array_keys( zk_language_center_post_types() );
     $posts = get_posts( array(
@@ -144,35 +220,7 @@ function zk_language_center_audit_posts( $code ) {
 
     $rows = array();
     foreach ( $posts as $post ) {
-        $has_translatable_content = zk_language_center_has_translatable_content( $post->post_content );
-        $required = array(
-            'title' => zk_language_meta_key( 'title', $code ),
-        );
-
-        if ( '' !== trim( wp_strip_all_tags( $post->post_excerpt ) ) ) {
-            $required['excerpt'] = zk_language_meta_key( 'excerpt', $code );
-        }
-
-        // Shortcode-only pages render their main copy from the owning module,
-        // so only their raw page content is excluded from translation coverage.
-        if ( $has_translatable_content ) {
-            $required['content'] = zk_language_meta_key( 'content', $code );
-        }
-
-        // Require a translated SEO/GEO value only when an English source value
-        // exists. This avoids marking optional, unused metadata as missing.
-        $metadata_fields = array(
-            'SEO title'       => 'seo_title',
-            'SEO description' => 'seo_description',
-            'GEO summary'     => 'geo_ai_summary',
-            'GEO FAQ'         => 'geo_faq',
-        );
-        foreach ( $metadata_fields as $label => $field ) {
-            $source = get_post_meta( $post->ID, '_zk_' . $field, true );
-            if ( '' !== trim( wp_strip_all_tags( (string) $source ) ) ) {
-                $required[ $label ] = zk_language_meta_key( $field, $code );
-            }
-        }
+        $required = zk_language_translation_post_requirements( $post, $code );
 
         $completed = 0;
         $missing   = array();
@@ -206,13 +254,15 @@ function zk_language_center_audit_terms( $code ) {
         return $rows;
     }
     foreach ( $terms as $term ) {
-        $has_name = '' !== trim( (string) get_term_meta( $term->term_id, zk_language_meta_key( 'name', $code ), true ) );
-        $needs_description = '' !== trim( wp_strip_all_tags( $term->description ) );
-        $has_description = ! $needs_description || '' !== trim( (string) get_term_meta( $term->term_id, zk_language_meta_key( 'description', $code ), true ) );
+        $required = zk_language_translation_term_requirements( $term, $code );
+        $completed = 0;
+        foreach ( $required as $meta_key ) {
+            if ( '' !== trim( wp_strip_all_tags( (string) get_term_meta( $term->term_id, $meta_key, true ) ) ) ) $completed++;
+        }
         $rows[] = array(
             'title'    => $term->name,
             'taxonomy' => $term->taxonomy,
-            'status'   => $has_name && $has_description ? 'complete' : ( $has_name ? 'partial' : 'missing' ),
+            'status'   => $completed === count( $required ) ? 'complete' : ( $completed ? 'partial' : 'missing' ),
             'edit_url' => get_edit_term_link( $term->term_id, $term->taxonomy ),
         );
     }

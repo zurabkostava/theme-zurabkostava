@@ -3979,6 +3979,19 @@ function zk_get_seo_target_id( $default_id ) {
     return $default_id;
 }
 
+function zk_is_language_version_indexable( $language, $object_id = 0 ) {
+    if ( 'en' === $language ) return true;
+    if ( is_singular() ) {
+        $object_id = $object_id ?: get_queried_object_id();
+        $object_id = zk_get_seo_target_id( $object_id );
+        return zk_is_post_translation_complete( $object_id, $language );
+    }
+    if ( is_category() || is_tag() ) {
+        return zk_is_term_translation_complete( get_queried_object(), $language );
+    }
+    return true;
+}
+
 function zk_get_clean_bilingual_urls() {
     $request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
     $parsed = parse_url($request_uri);
@@ -4013,6 +4026,7 @@ function zk_get_clean_bilingual_urls() {
     $current = function_exists('zk_get_current_language') ? zk_get_current_language() : 'en';
     $urls = array();
     foreach ( zk_get_languages() as $code => $language ) {
+        if ( ! zk_is_language_version_indexable( $code ) ) continue;
         $urls[ $code ] = $home_url . zk_get_language_path( $en_path, $code );
     }
 
@@ -4021,7 +4035,7 @@ function zk_get_clean_bilingual_urls() {
         'current'       => $current,
         'urls'          => $urls,
         'en_url'        => $urls['en'],
-        'ka_url'        => $urls['ka'],
+        'ka_url'        => isset( $urls['ka'] ) ? $urls['ka'] : '',
         'canonical_url' => isset( $urls[ $current ] ) ? $urls[ $current ] : $urls['en'],
     );
 }
@@ -4511,20 +4525,25 @@ add_action('init', 'zk_clean_head');
 add_filter('wp_sitemaps_enabled', '__return_false');
 
 // 2. Dynamic SEO File Generators (Bypasses File Permissions and NGINX rewrites)
-function zk_sitemap_language_entries( $path, $lastmod, $changefreq, $priority ) {
+function zk_sitemap_language_entries( $path, $lastmod = '', $language_codes = array() ) {
     $home = untrailingslashit( get_option( 'home', 'https://zurabkostava.com' ) );
     $urls = array();
     foreach ( zk_get_languages() as $code => $language ) {
-        $urls[ $code ] = esc_url( $home . zk_get_language_path( $path, $code ) );
+        if ( $language_codes && ! in_array( $code, $language_codes, true ) ) continue;
+        $urls[ $code ] = $home . zk_get_language_path( $path, $code );
     }
 
     $xml = '';
     foreach ( $urls as $url ) {
-        $xml .= "  <url>\n    <loc>{$url}</loc>\n";
+        $xml .= "  <url>\n    <loc>" . esc_xml( $url ) . "</loc>\n";
         foreach ( $urls as $code => $alternate ) {
-            $xml .= "    <xhtml:link rel=\"alternate\" hreflang=\"" . esc_attr( $code ) . "\" href=\"{$alternate}\" />\n";
+            $xml .= "    <xhtml:link rel=\"alternate\" hreflang=\"" . esc_attr( $code ) . "\" href=\"" . esc_xml( $alternate ) . "\" />\n";
         }
-        $xml .= "    <lastmod>{$lastmod}</lastmod>\n    <changefreq>{$changefreq}</changefreq>\n    <priority>{$priority}</priority>\n  </url>\n";
+        if ( isset( $urls['en'] ) ) {
+            $xml .= "    <xhtml:link rel=\"alternate\" hreflang=\"x-default\" href=\"" . esc_xml( $urls['en'] ) . "\" />\n";
+        }
+        if ( $lastmod ) $xml .= "    <lastmod>" . esc_xml( $lastmod ) . "</lastmod>\n";
+        $xml .= "  </url>\n";
     }
     return $xml;
 }
@@ -4533,30 +4552,67 @@ function zk_generate_sitemap_string() {
     $sitemap_content = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     $sitemap_content .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">' . "\n";
     
-    $date = date('c');
-    $custom_routes = ['/', '/music/', '/encrolib/', '/contact/'];
-    foreach ($custom_routes as $route) {
-        $priority = ($route === '/' ? '1.0' : '0.8');
-        $sitemap_content .= zk_sitemap_language_entries( $route, $date, 'weekly', $priority );
+    $post_types = get_post_types( array( 'public' => true ), 'names' );
+    unset( $post_types['attachment'] );
+    foreach ( array( 'zk_book', 'zk_tool' ) as $post_type ) {
+        if ( post_type_exists( $post_type ) ) $post_types[ $post_type ] = $post_type;
     }
 
     $query = new WP_Query([
-        'post_type' => ['post', 'page', 'zk_book'],
+        'post_type' => array_values( $post_types ),
         'post_status' => 'publish',
         'posts_per_page' => -1,
+        'orderby' => 'modified',
+        'order' => 'DESC',
+        'no_found_rows' => true,
     ]);
+
+    $seen_paths = array( '/' => true );
+    $front_page_id = (int) get_option( 'page_on_front' );
+    $home_languages = array( 'en' );
+    foreach ( zk_get_translatable_languages() as $code => $language ) {
+        if ( ! $front_page_id || zk_is_post_translation_complete( $front_page_id, $code ) ) $home_languages[] = $code;
+    }
+    $home_lastmod = $front_page_id ? get_post_modified_time( 'c', true, $front_page_id ) : '';
+    $sitemap_content .= zk_sitemap_language_entries( '/', $home_lastmod, $home_languages );
 
     if ($query->have_posts()) {
         while ($query->have_posts()) {
             $query->the_post();
-            $perm = get_permalink();
+            $post_id = get_the_ID();
+            $perm = get_permalink( $post_id );
             $parsed = parse_url($perm);
             $p = isset($parsed['path']) ? $parsed['path'] : '/';
             $en_p = zk_strip_language_prefix( $p );
+            if ( isset( $seen_paths[ $en_p ] ) ) continue;
+            $seen_paths[ $en_p ] = true;
+
+            $language_codes = array( 'en' );
+            foreach ( zk_get_translatable_languages() as $code => $language ) {
+                if ( zk_is_post_translation_complete( $post_id, $code ) ) $language_codes[] = $code;
+            }
             $lastmod = get_the_modified_date('c');
-            $sitemap_content .= zk_sitemap_language_entries( $en_p, $lastmod, 'monthly', '0.6' );
+            $sitemap_content .= zk_sitemap_language_entries( $en_p, $lastmod, $language_codes );
         }
         wp_reset_postdata();
+    }
+
+    $terms = get_terms( array( 'taxonomy' => array( 'category', 'post_tag' ), 'hide_empty' => true ) );
+    if ( ! is_wp_error( $terms ) ) {
+        foreach ( $terms as $term ) {
+            $term_link = get_term_link( $term );
+            if ( is_wp_error( $term_link ) ) continue;
+            $parsed = wp_parse_url( $term_link );
+            $path = zk_strip_language_prefix( isset( $parsed['path'] ) ? $parsed['path'] : '/' );
+            if ( isset( $seen_paths[ $path ] ) ) continue;
+            $seen_paths[ $path ] = true;
+
+            $language_codes = array( 'en' );
+            foreach ( zk_get_translatable_languages() as $code => $language ) {
+                if ( zk_is_term_translation_complete( $term, $code ) ) $language_codes[] = $code;
+            }
+            $sitemap_content .= zk_sitemap_language_entries( $path, '', $language_codes );
+        }
     }
     $sitemap_content .= '</urlset>';
     return $sitemap_content;
@@ -4602,10 +4658,12 @@ function zk_generate_aitxt_string() {
 }
 
 function zk_serve_dynamic_seo_files() {
-    $uri = $_SERVER['REQUEST_URI'] ?? '';
+    $uri = wp_parse_url( isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '', PHP_URL_PATH );
     
     // Serve our custom sitemap for wp-sitemap.xml, sitemap.xml, and sitemap_index.xml (RankMath/Yoast fallbacks)
     if ( preg_match( '/\/?(wp-sitemap|sitemap_index|sitemap)\.xml$/i', $uri ) ) {
+        status_header( 200 );
+        header( 'X-Robots-Tag: noindex, follow', true );
         header('Content-Type: text/xml; charset=utf-8');
         echo zk_generate_sitemap_string();
         exit;
@@ -4651,12 +4709,16 @@ function zk_render_geo_meta_tags() {
         return;
     }
     
-    // Explicitly add index, follow for better crawlability
-    echo "<meta name=\"robots\" content=\"index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1\" />\n";
+    $language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
+    $thin_archive = is_404() || is_author() || is_date() || is_search() || is_attachment() || is_paged();
+    if ( $thin_archive || ! zk_is_language_version_indexable( $language ) ) {
+        echo "<meta name=\"robots\" content=\"noindex, follow\" />\n";
+    } else {
+        echo "<meta name=\"robots\" content=\"index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1\" />\n";
+    }
 
     // AI Summary (abstract)
     $ai_summary = '';
-    $language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
 
     if ( is_singular() ) {
         global $post;
@@ -5441,14 +5503,7 @@ add_action('template_redirect', function() {
     }
 });
 
-// 2. Enforce strict NOINDEX on thin content (Authors, Dates, Search Results, Pagination)
-add_action('wp_head', function() {
-    if ( is_author() || is_date() || is_search() || is_attachment() || is_paged() ) {
-        echo '<meta name="robots" content="noindex, follow" />' . "\n";
-    }
-}, 1);
-
-// 3. Dynamic Robots.txt to prevent crawling of garbage URLs
+// 2. Dynamic Robots.txt to prevent crawling of garbage URLs
 add_filter('robots_txt', function($output, $public) {
     $custom_rules = "
 User-agent: *
@@ -5785,7 +5840,7 @@ add_filter('upload_mimes', 'custom_mime_types');
    ZK UNIFIED ROBOTS.TXT ENGINE (Strict Overwrite)
    ============================================================ */
 function zk_custom_robots_txt( $output, $public ) {
-    $site_url = home_url();
+    $site_url = untrailingslashit( home_url() );
     
     $custom_robots  = "User-agent: *\n";
     $custom_robots .= "Allow: /\n";

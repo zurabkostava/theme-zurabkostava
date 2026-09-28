@@ -62,12 +62,28 @@ test('translation coverage ignores shortcode-only content and audits SEO/GEO tra
     assert.match(center, /function zk_language_center_has_translatable_content/);
     assert.match(center, /strip_shortcodes\( \(string\) \$content \)/);
     assert.match(center, /\$required\['excerpt'\] = zk_language_meta_key\( 'excerpt', \$code \)/);
-    assert.match(center, /if \( \$has_translatable_content \)/);
+    assert.match(center, /zk_language_center_has_translatable_content\( \$post->post_content \)/);
     assert.match(center, /'SEO title'\s*=>\s*'seo_title'/);
     assert.match(center, /'SEO description'\s*=>\s*'seo_description'/);
     assert.match(center, /'GEO summary'\s*=>\s*'geo_ai_summary'/);
     assert.match(center, /'GEO FAQ'\s*=>\s*'geo_faq'/);
     assert.match(center, /zk_language_meta_key\( \$field, \$code \)/);
+});
+
+test('multilingual sitemap only advertises complete translations', () => {
+    const source = read('functions.php');
+    const center = read('inc/platform/language-center.php');
+
+    assert.match(center, /function zk_is_post_translation_complete/);
+    assert.match(center, /function zk_is_term_translation_complete/);
+    assert.match(source, /function zk_is_language_version_indexable/);
+    assert.match(source, /if \( ! zk_is_language_version_indexable\( \$code \) \) continue/);
+    assert.match(source, /zk_is_post_translation_complete\( \$post_id, \$code \)/);
+    assert.match(source, /zk_is_term_translation_complete\( \$term, \$code \)/);
+    assert.match(source, /'taxonomy' => array\( 'category', 'post_tag' \)/);
+    assert.match(source, /hreflang=\\"x-default\\"/);
+    assert.match(source, /X-Robots-Tag: noindex, follow/);
+    assert.match(source, /\$thin_archive \|\| ! zk_is_language_version_indexable\( \$language \)/);
 });
 
 test('SEO and GEO fields follow every registered language', () => {
