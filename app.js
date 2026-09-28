@@ -982,6 +982,8 @@
         var filterToken = 0;
         var lastFocus   = null;
         var warmObserver = null;
+        var swipeStart  = null;
+        var suppressLightboxClickUntil = 0;
 
         function itemImage(position) {
             var n = activeItems.length;
@@ -1381,7 +1383,45 @@
         if (nextBtn)  nextBtn.addEventListener('click', function (e) { e.stopPropagation(); next(); });
         if (prevBtn)  prevBtn.addEventListener('click', function (e) { e.stopPropagation(); prev(); });
         if (closeBtn) closeBtn.addEventListener('click', close);
-        lightbox.addEventListener('click', function (e) { if (e.target === lightbox) close(); });
+
+        /* One-finger horizontal swipe for the opened photo. Thumbnail scrolling,
+           controls and pinch gestures keep their native behaviour. */
+        lightbox.addEventListener('touchstart', function (e) {
+            if (!isOpen() || e.touches.length !== 1) {
+                swipeStart = null;
+                return;
+            }
+            if (e.target.closest('.zk-lightbox-thumbs, button, a')) {
+                swipeStart = null;
+                return;
+            }
+            var touch = e.touches[0];
+            swipeStart = { x: touch.clientX, y: touch.clientY, time: Date.now() };
+        }, { passive: true });
+
+        lightbox.addEventListener('touchend', function (e) {
+            if (!swipeStart || e.changedTouches.length !== 1) {
+                swipeStart = null;
+                return;
+            }
+            var touch = e.changedTouches[0];
+            var dx = touch.clientX - swipeStart.x;
+            var dy = touch.clientY - swipeStart.y;
+            var elapsed = Date.now() - swipeStart.time;
+            var threshold = Math.max(44, Math.min(72, window.innerWidth * 0.12));
+            swipeStart = null;
+
+            if (elapsed > 1000 || Math.abs(dx) < threshold || Math.abs(dx) <= Math.abs(dy) * 1.15) return;
+            suppressLightboxClickUntil = Date.now() + 450;
+            if (dx < 0) next();
+            else prev();
+        }, { passive: true });
+
+        lightbox.addEventListener('touchcancel', function () { swipeStart = null; }, { passive: true });
+        lightbox.addEventListener('click', function (e) {
+            if (Date.now() < suppressLightboxClickUntil) return;
+            if (e.target === lightbox) close();
+        });
 
         var hash = window.location.hash.replace('#', '');
         if (hash === 'camera' || hash === 'mobile') {

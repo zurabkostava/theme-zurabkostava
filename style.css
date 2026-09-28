@@ -1752,6 +1752,8 @@ html.zk-img-js .zk-book-img.is-loaded { opacity: 1; }
 	position: fixed; inset: 0; z-index: 2000;
 	display: flex; align-items: center; justify-content: center; flex-direction: column;
 	background: rgba(5, 5, 7, 0.6);
+	touch-action: pan-y pinch-zoom;
+	overscroll-behavior-x: contain;
 	-webkit-backdrop-filter: blur(35px) saturate(140%);
 	backdrop-filter: blur(35px) saturate(140%);
 	opacity: 0; visibility: hidden; pointer-events: none;
@@ -1790,6 +1792,9 @@ body.zk-lb-open { overflow: hidden; }
 .zk-lightbox-img {
 	max-width: 90vw; max-height: 82vh;
 	border-radius: 12px;
+	touch-action: pan-y pinch-zoom;
+	-webkit-user-drag: none;
+	user-select: none;
 	box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
 	/* idle / between-swaps: dimmed, softened, slightly pulled back and down */
 	opacity: 0;
@@ -1889,6 +1894,7 @@ body.zk-lb-open { overflow: hidden; }
 
 	padding: 10px 40px 10px;
 	overflow-x: auto; overscroll-behavior: contain; scroll-behavior: smooth;
+	touch-action: pan-x;
 	scrollbar-width: none; -ms-overflow-style: none;
 	z-index: 2002;
 	opacity: 0; transform: translateY(20px);

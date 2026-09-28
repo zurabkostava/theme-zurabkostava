@@ -237,3 +237,17 @@ test('shared cinematic gallery preloads responsive decoded neighbor images', () 
     assert.match(app, /rootMargin: '350px 0px'/);
     assert.match(app, /warmAround\(index, false\)/);
 });
+
+test('opened gallery photos support deliberate mobile swipe navigation', () => {
+    const app = read('app.js');
+    const css = read('style.css');
+
+    assert.match(app, /lightbox\.addEventListener\('touchstart'/);
+    assert.match(app, /lightbox\.addEventListener\('touchend'/);
+    assert.match(app, /Math\.abs\(dx\) <= Math\.abs\(dy\) \* 1\.15/);
+    assert.match(app, /if \(dx < 0\) next\(\)/);
+    assert.match(app, /else prev\(\)/);
+    assert.match(app, /\.zk-lightbox-thumbs, button, a/);
+    assert.match(css, /\.zk-lightbox \{[\s\S]*?touch-action: pan-y pinch-zoom;/);
+    assert.match(css, /\.zk-lightbox-thumbs \{[\s\S]*?touch-action: pan-x;/);
+});
