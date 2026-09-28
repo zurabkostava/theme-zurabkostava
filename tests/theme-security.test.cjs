@@ -113,6 +113,8 @@ test('instant indexing can submit every strictly completed translation', () => {
     assert.match(indexing, /zk_get_language_path\( \$path, \$code \)/);
     assert.match(indexing, /name="zk_submit_completed_translations"/);
     assert.match(indexing, /Submit all completed translations/);
+    assert.match(indexing, /Its private contents are hidden for security/);
+    assert.doesNotMatch(indexing, /esc_textarea\(\$key\)/);
 });
 
 test('renamed Georgian blog series flow from taxonomy translations into filters', () => {

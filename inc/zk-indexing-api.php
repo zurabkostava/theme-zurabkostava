@@ -232,7 +232,7 @@ function zk_indexing_options_page() {
         }
     }
     
-    $key = get_option('zk_indexing_json_key', '');
+    $key_configured = (bool) get_option( 'zk_indexing_json_key', '' );
     ?>
     <div class="wrap">
         <h1>ZK Instant Indexing Setup (Google Indexing API)</h1>
@@ -241,7 +241,10 @@ function zk_indexing_options_page() {
             <?php wp_nonce_field( 'zk_indexing_settings', 'zk_indexing_nonce' ); ?>
             <h2>1. Service Account JSON Key</h2>
             <p>Paste the contents of your Google Cloud Service Account JSON file below.</p>
-            <textarea name="zk_indexing_json_key" rows="12" style="width:100%; max-width:800px; font-family:monospace;"><?php echo esc_textarea($key); ?></textarea>
+            <textarea name="zk_indexing_json_key" rows="12" style="width:100%; max-width:800px; font-family:monospace;" placeholder="<?php echo esc_attr( $key_configured ? 'A service account key is already saved. Paste new JSON only to replace it.' : 'Paste the service account JSON here.' ); ?>"></textarea>
+            <?php if ( $key_configured ) : ?>
+                <p class="description"><strong>Service account key configured.</strong> Its private contents are hidden for security.</p>
+            <?php endif; ?>
             <p><input type="submit" class="button button-primary" value="Save JSON Key"></p>
         </form>
 
