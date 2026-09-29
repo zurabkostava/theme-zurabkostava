@@ -4840,29 +4840,46 @@ function zk_auto_toc_generator( $content ) {
         return $content;
     }
 
+    // Translated content passes through the_content twice. Never inject a
+    // second navigation when the inner pass has already generated one.
+    if ( false !== strpos( $content, 'class="zk-seo-toc"' ) ) {
+        return $content;
+    }
+
     // Find all <h2> tags
     preg_match_all( '/<h2(.*?)>(.*?)<\/h2>/i', $content, $matches );
     
     if ( ! empty( $matches[2] ) && count( $matches[2] ) > 1 ) { // Only add TOC if more than 1 heading
-        $toc = '<div class="zk-seo-toc" style="background:#111; padding:20px; border-radius:8px; margin-bottom:30px; border: 1px solid #333;">';
-        $toc .= '<strong style="display:block; margin-bottom:10px; font-size:18px;">Table of Contents</strong>';
-        $toc .= '<ul style="margin:0; padding-left:20px; list-style-type:decimal;">';
+        $language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
+        $toc_title = 'ka' === $language ? 'სარჩევი' : 'Table of Contents';
+        $toc_title = apply_filters( 'zk_toc_title', $toc_title, $language );
+        $toc = '<nav class="zk-seo-toc" aria-label="' . esc_attr( $toc_title ) . '">';
+        $toc .= '<button class="zk-seo-toc-toggle" type="button" aria-expanded="true"><span>' . esc_html( $toc_title ) . '</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>';
+        $toc .= '<ol class="zk-seo-toc-list">';
+        $used_slugs = array();
         
         foreach ( $matches[2] as $i => $heading ) {
             $clean_text = wp_strip_all_tags( $heading );
             $slug = sanitize_title( $clean_text );
-            if ( empty( $slug ) ) { $slug = 'section-' . $i; }
+            if ( empty( $slug ) ) { $slug = 'section-' . ( $i + 1 ); }
+            $base_slug = $slug;
+            $suffix = 2;
+            while ( isset( $used_slugs[ $slug ] ) ) {
+                $slug = $base_slug . '-' . $suffix++;
+            }
+            $used_slugs[ $slug ] = true;
             
             // Add ID to the original heading
             $original_h2 = $matches[0][$i];
-            $new_h2 = '<h2 id="' . $slug . '"' . $matches[1][$i] . '>' . $matches[2][$i] . '</h2>';
+            $heading_attributes = preg_replace( '/\s+id=("|\').*?\1/i', '', $matches[1][$i] );
+            $new_h2 = '<h2 id="' . esc_attr( $slug ) . '"' . $heading_attributes . '>' . $matches[2][$i] . '</h2>';
             $content = str_replace( $original_h2, $new_h2, $content );
             
             // Add to TOC list
-            $toc .= '<li style="margin-bottom:5px;"><a href="#' . $slug . '" style="color:#00e6ff; text-decoration:none;">' . esc_html( $clean_text ) . '</a></li>';
+            $toc .= '<li><a href="#' . esc_attr( $slug ) . '"><span class="zk-seo-toc-number">' . esc_html( $i + 1 ) . '</span><span>' . esc_html( $clean_text ) . '</span></a></li>';
         }
         
-        $toc .= '</ul></div>';
+        $toc .= '</ol></nav>';
         
         // Insert TOC before the first <h2>
         $content = preg_replace( '/<h2/', $toc . '<h2', $content, 1 );

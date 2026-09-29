@@ -520,6 +520,104 @@
 })();
 
 /* ============================================================
+   LONG-FORM ARTICLE TABLE OF CONTENTS
+   ============================================================ */
+(function () {
+    function initArticleToc() {
+        var content = document.querySelector('.page__content');
+        if (!content) return;
+
+        var tocs = Array.prototype.slice.call(content.querySelectorAll('.zk-seo-toc'));
+        if (!tocs.length) return;
+        var toc = tocs.shift();
+        tocs.forEach(function (duplicate) { duplicate.remove(); });
+        if (toc.dataset.zkReady === '1') return;
+        toc.dataset.zkReady = '1';
+
+        var pageInner = content.closest('.page__inner');
+        var layout = document.createElement('div');
+        layout.className = 'zk-article-layout';
+        content.parentNode.insertBefore(layout, content);
+        layout.appendChild(toc);
+        layout.appendChild(content);
+        if (pageInner) pageInner.classList.add('has-toc');
+
+        var toggle = toc.querySelector('.zk-seo-toc-toggle');
+        var links = Array.prototype.slice.call(toc.querySelectorAll('a[href^="#"]'));
+        var sections = links.map(function (link) {
+            try { return document.getElementById(decodeURIComponent(link.hash.slice(1))); }
+            catch (e) { return null; }
+        });
+        var compact = window.matchMedia('(max-width: 1099px)');
+
+        function syncCompactState() {
+            toc.classList.toggle('is-collapsed', compact.matches);
+            if (toggle) toggle.setAttribute('aria-expanded', compact.matches ? 'false' : 'true');
+        }
+        syncCompactState();
+        if (compact.addEventListener) compact.addEventListener('change', syncCompactState);
+
+        if (toggle) {
+            toggle.addEventListener('click', function () {
+                if (!compact.matches) return;
+                var collapsed = toc.classList.toggle('is-collapsed');
+                toggle.setAttribute('aria-expanded', String(!collapsed));
+            });
+        }
+
+        function setActive(index) {
+            links.forEach(function (link, linkIndex) {
+                var active = linkIndex === index;
+                link.classList.toggle('is-active', active);
+                if (active) link.setAttribute('aria-current', 'location');
+                else link.removeAttribute('aria-current');
+            });
+        }
+
+        links.forEach(function (link, index) {
+            link.addEventListener('click', function (event) {
+                var section = sections[index];
+                if (!section) return;
+                event.preventDefault();
+                var headerOffset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h-scrolled')) || 64;
+                window.scrollTo({ top: section.getBoundingClientRect().top + window.scrollY - headerOffset - 24, behavior: 'smooth' });
+                history.replaceState(null, '', link.hash);
+                setActive(index);
+                if (compact.matches) {
+                    toc.classList.add('is-collapsed');
+                    if (toggle) toggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+        });
+
+        var ticking = false;
+        function updateActive() {
+            ticking = false;
+            if (!layout.isConnected) {
+                window.removeEventListener('scroll', onScroll);
+                return;
+            }
+            var threshold = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h-scrolled')) || 64) + 48;
+            var activeIndex = 0;
+            sections.forEach(function (section, index) {
+                if (section && section.getBoundingClientRect().top <= threshold) activeIndex = index;
+            });
+            setActive(activeIndex);
+        }
+        function onScroll() {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(updateActive);
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+        updateActive();
+    }
+
+    initArticleToc();
+    document.addEventListener('zk:viewChange', initArticleToc);
+})();
+
+/* ============================================================
    CUSTOM FLOATING SCROLLBAR
    ============================================================ */
 (function () {
