@@ -548,7 +548,7 @@
             try { return document.getElementById(decodeURIComponent(link.hash.slice(1))); }
             catch (e) { return null; }
         });
-        var compact = window.matchMedia('(max-width: 1099px)');
+        var compact = window.matchMedia('(max-width: 1839px)');
 
         function syncCompactState() {
             toc.classList.toggle('is-collapsed', compact.matches);
