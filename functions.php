@@ -775,6 +775,25 @@ function zk_gallery_labels( $language = '', $gallery_id = 'photography' ) {
     return apply_filters( 'zk_gallery_labels', $labels, $language, $gallery_id );
 }
 
+function zk_gallery_empty_markup( $gallery_definition, $labels, $gallery_id ) {
+    $language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
+    $message  = 'ka' === $language ? 'გალერეა მზადაა — ნამუშევრები მალე დაემატება.' : 'The gallery is ready — artworks will be added soon.';
+    if ( current_user_can( 'manage_options' ) ) {
+        $message .= ' ' . ( 'ka' === $language ? 'ფოტოები დაამატეთ შესაბამის FileBird საქაღალდეში.' : 'Add images to its assigned FileBird folder.' );
+    }
+    $output  = '<div class="zk-gallery-wrapper zk-gallery-wrapper--empty" data-gallery="' . esc_attr( $gallery_id ) . '">';
+    $output .= '<div class="zk-gallery-filters" role="group" aria-label="' . esc_attr( $labels['filters_label'] ) . '">';
+    $output .= '<div class="zk-gallery-tab-highlight" aria-hidden="true"></div>';
+    $output .= '<button class="zk-filter-btn is-active" type="button" data-filter="all" aria-pressed="true">' . esc_html( $labels['all'] ) . ' <span class="zk-tab-count">0</span></button>';
+    foreach ( isset( $gallery_definition['tabs'] ) && is_array( $gallery_definition['tabs'] ) ? $gallery_definition['tabs'] : array() as $tab ) {
+        if ( empty( $tab['id'] ) ) continue;
+        $label = isset( $labels['tabs'][ $tab['id'] ] ) ? $labels['tabs'][ $tab['id'] ] : $tab['id'];
+        $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-' . esc_attr( sanitize_html_class( $tab['id'] ) ) . '" aria-pressed="false">' . esc_html( $label ) . ' <span class="zk-tab-count">0</span></button>';
+    }
+    $output .= '</div><div class="zk-gallery-empty"><span aria-hidden="true">◇</span><p>' . esc_html( $message ) . '</p></div></div>';
+    return $output;
+}
+
 function zk_cinematic_gallery( $atts = array() ) {
     $atts = shortcode_atts( array( 'gallery' => 'photography' ), is_array( $atts ) ? $atts : array(), 'zk_visual_gallery' );
     $gallery_id = sanitize_key( $atts['gallery'] );
@@ -805,7 +824,7 @@ function zk_cinematic_gallery( $atts = array() ) {
     }
 
     $folder_map = zk_gallery_folders( $gallery_id );
-    if ( empty( $folder_map ) ) return '<p class="page__content">This gallery has no configured tabs yet.</p>';
+    if ( empty( $folder_map ) ) return zk_gallery_empty_markup( $gallery_definition, $labels, $gallery_id );
 
     $folder_class = array(); // folder_id => filter-xxx
     $folder_names = array();
@@ -818,7 +837,7 @@ function zk_cinematic_gallery( $atts = array() ) {
         $folders = $wpdb->get_results( $wpdb->prepare( "SELECT id, name FROM {$fbv_table} WHERE name IN ($name_ph)", array_keys( $folder_names ) ) );
         foreach ( $folders as $folder ) if ( isset( $folder_names[ $folder->name ] ) ) $folder_class[ (int) $folder->id ] = $folder_names[ $folder->name ];
     }
-    if ( empty( $folder_class ) ) return '<p class="page__content">Configured FileBird folders were not found.</p>';
+    if ( empty( $folder_class ) ) return zk_gallery_empty_markup( $gallery_definition, $labels, $gallery_id );
 
     // (1.5) Fetch Subfolders (Carousels)
     $folder_ids = array_keys( $folder_class );
@@ -843,9 +862,7 @@ function zk_cinematic_gallery( $atts = array() ) {
             $wpdb->prepare( "SELECT attachment_id, folder_id FROM {$rel_table} WHERE folder_id IN ($all_id_ph) ORDER BY attachment_id DESC", $all_folder_ids )
     );
     
-    if ( empty( $rows ) ) {
-        return '<p class="page__content">Folders are empty!</p>';
-    }
+    if ( empty( $rows ) ) return zk_gallery_empty_markup( $gallery_definition, $labels, $gallery_id );
 
     $category_map = array(); // attachment_id => filter-xxx (first folder wins)
     $name_to_carousel = array(); // subfolder_name => array of attachment_ids

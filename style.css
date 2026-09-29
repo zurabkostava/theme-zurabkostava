@@ -1565,6 +1565,22 @@ html.zk-img-js .zk-book-img.is-loaded { opacity: 1; }
    CINEMATIC PHOTOGRAPHY GALLERY
    ============================================================ */
 .zk-gallery-wrapper { margin-top: 2rem; }
+.zk-gallery-empty {
+	min-height: 280px;
+	display: grid;
+	place-content: center;
+	justify-items: center;
+	gap: 12px;
+	margin-top: 28px;
+	padding: 44px 24px;
+	text-align: center;
+	color: var(--text-dim);
+	border: 1px dashed rgba(255, 255, 255, 0.12);
+	border-radius: 24px;
+	background: linear-gradient(145deg, rgba(255,255,255,0.035), rgba(255,255,255,0.012));
+}
+.zk-gallery-empty span { font-size: 2rem; color: rgba(255,255,255,0.38); }
+.zk-gallery-empty p { margin: 0; max-width: 540px; }
 
 /* ── 1. Apple-style Segmented Filters (Sticky Glass Capsule) ── */
 .zk-gallery-filters {
