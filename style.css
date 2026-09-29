@@ -1160,6 +1160,7 @@ body.is-navigating #zk-global-loader {
 	.zk-seo-toc {
 		position: sticky;
 		top: calc(var(--header-h-scrolled) + 28px);
+		z-index: 1001;
 		max-height: calc(100vh - var(--header-h-scrolled) - 56px);
 		overflow-y: auto;
 		margin: 0;
