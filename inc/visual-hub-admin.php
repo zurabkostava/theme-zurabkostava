@@ -133,6 +133,229 @@ function zk_visual_hub_get_settings() {
 }
 
 /**
+ * Galleries are driven by FileBird folders. Each configured tab owns one
+ * folder; that folder's direct images appear in the grid and its immediate
+ * subfolders become grouped carousels in the shared cinematic viewer.
+ */
+function zk_visual_gallery_default_settings() {
+    $defaults = array(
+        'photography' => array(
+            'title'       => 'Photography',
+            'all_labels'  => array( 'en' => 'All', 'ka' => 'ყველა' ),
+            'aria_labels' => array( 'en' => 'Filter photography', 'ka' => 'ფოტოგრაფიის გაფილტვრა' ),
+            'tabs'        => array(
+                array(
+                    'id'          => 'camera',
+                    'folder_id'   => 0,
+                    'folder_name' => 'Camera Photography',
+                    'source_tag'  => 'CAM',
+                    'labels'      => array( 'en' => 'Camera', 'ka' => 'კამერა' ),
+                ),
+                array(
+                    'id'          => 'mobile',
+                    'folder_id'   => 0,
+                    'folder_name' => 'Mobile Photography',
+                    'source_tag'  => 'PHONE',
+                    'labels'      => array( 'en' => 'Mobile', 'ka' => 'მობილური' ),
+                ),
+            ),
+        ),
+        'paint' => array(
+            'title'       => 'Paint',
+            'all_labels'  => array( 'en' => 'All', 'ka' => 'ყველა' ),
+            'aria_labels' => array( 'en' => 'Filter artworks', 'ka' => 'ნამუშევრების გაფილტვრა' ),
+            'tabs'        => array(
+                array(
+                    'id'          => 'artworks',
+                    'folder_id'   => 0,
+                    'folder_name' => 'Paint',
+                    'source_tag'  => 'ART',
+                    'labels'      => array( 'en' => 'Artworks', 'ka' => 'ნამუშევრები' ),
+                ),
+            ),
+        ),
+    );
+
+    // Preserve the labels previously entered in Language Center during the
+    // transition from the fixed three-field photography UI.
+    $legacy = get_option( 'zk_gallery_labels_v1', array() );
+    if ( is_array( $legacy ) ) {
+        foreach ( $legacy as $language => $labels ) {
+            if ( ! is_array( $labels ) ) continue;
+            if ( ! empty( $labels['all'] ) ) $defaults['photography']['all_labels'][ $language ] = $labels['all'];
+            foreach ( $defaults['photography']['tabs'] as &$tab ) {
+                if ( ! empty( $labels[ $tab['id'] ] ) ) $tab['labels'][ $language ] = $labels[ $tab['id'] ];
+            }
+            unset( $tab );
+        }
+    }
+
+    return $defaults;
+}
+
+function zk_visual_gallery_get_settings() {
+    $defaults = zk_visual_gallery_default_settings();
+    $saved    = get_option( 'zk_visual_gallery_settings_v1', array() );
+    if ( ! is_array( $saved ) ) return $defaults;
+
+    foreach ( $defaults as $gallery_id => $definition ) {
+        if ( empty( $saved[ $gallery_id ] ) || ! is_array( $saved[ $gallery_id ] ) ) continue;
+        $gallery = $saved[ $gallery_id ];
+        foreach ( array( 'all_labels', 'aria_labels' ) as $label_group ) {
+            if ( ! empty( $gallery[ $label_group ] ) && is_array( $gallery[ $label_group ] ) ) {
+                $definition[ $label_group ] = array_merge( $definition[ $label_group ], $gallery[ $label_group ] );
+            }
+        }
+        if ( isset( $gallery['tabs'] ) && is_array( $gallery['tabs'] ) ) {
+            $definition['tabs'] = array_values( $gallery['tabs'] );
+        }
+        $defaults[ $gallery_id ] = $definition;
+    }
+    return $defaults;
+}
+
+function zk_visual_gallery_filebird_folders() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'fbv';
+    $found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
+    if ( $found !== $table ) return array();
+    return $wpdb->get_results( "SELECT id, name, parent FROM {$table} ORDER BY parent ASC, name ASC" );
+}
+
+function zk_visual_gallery_admin_menu() {
+    add_submenu_page(
+        'zk-visual-hub',
+        'Visual Galleries',
+        'Galleries',
+        'manage_options',
+        'zk-visual-galleries',
+        'zk_visual_gallery_render_admin_page'
+    );
+}
+add_action( 'admin_menu', 'zk_visual_gallery_admin_menu', 20 );
+
+function zk_visual_gallery_save_settings() {
+    if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Access denied' );
+    check_admin_referer( 'zk_visual_galleries_action', 'zk_visual_galleries_nonce' );
+
+    $raw       = isset( $_POST['zk_galleries'] ) && is_array( $_POST['zk_galleries'] ) ? wp_unslash( $_POST['zk_galleries'] ) : array();
+    $defaults  = zk_visual_gallery_default_settings();
+    $languages = function_exists( 'zk_get_languages' ) ? zk_get_languages( false ) : array( 'en' => array(), 'ka' => array() );
+    $folders   = zk_visual_gallery_filebird_folders();
+    $folder_names = array();
+    foreach ( $folders as $folder ) $folder_names[ (int) $folder->id ] = $folder->name;
+    $clean = array();
+
+    foreach ( $defaults as $gallery_id => $definition ) {
+        $submitted = isset( $raw[ $gallery_id ] ) && is_array( $raw[ $gallery_id ] ) ? $raw[ $gallery_id ] : array();
+        $clean[ $gallery_id ] = array( 'all_labels' => array(), 'aria_labels' => array(), 'tabs' => array() );
+        foreach ( array_keys( $languages ) as $language ) {
+            $all = isset( $submitted['all_labels'][ $language ] ) ? sanitize_text_field( $submitted['all_labels'][ $language ] ) : '';
+            $aria = isset( $submitted['aria_labels'][ $language ] ) ? sanitize_text_field( $submitted['aria_labels'][ $language ] ) : '';
+            if ( '' !== $all ) $clean[ $gallery_id ]['all_labels'][ $language ] = $all;
+            if ( '' !== $aria ) $clean[ $gallery_id ]['aria_labels'][ $language ] = $aria;
+        }
+
+        $seen = array();
+        $tabs = isset( $submitted['tabs'] ) && is_array( $submitted['tabs'] ) ? $submitted['tabs'] : array();
+        foreach ( array_slice( $tabs, 0, 30 ) as $position => $tab ) {
+            if ( ! is_array( $tab ) ) continue;
+            $id = sanitize_key( isset( $tab['id'] ) ? $tab['id'] : '' );
+            if ( '' === $id ) $id = 'tab-' . ( $position + 1 );
+            $base_id = $id;
+            $suffix = 2;
+            while ( isset( $seen[ $id ] ) ) $id = $base_id . '-' . $suffix++;
+            $seen[ $id ] = true;
+            $folder_id = isset( $tab['folder_id'] ) ? absint( $tab['folder_id'] ) : 0;
+            $labels = array();
+            foreach ( array_keys( $languages ) as $language ) {
+                $value = isset( $tab['labels'][ $language ] ) ? sanitize_text_field( $tab['labels'][ $language ] ) : '';
+                if ( '' !== $value ) $labels[ $language ] = $value;
+            }
+            $clean[ $gallery_id ]['tabs'][] = array(
+                'id'          => $id,
+                'folder_id'   => $folder_id,
+                'folder_name' => isset( $folder_names[ $folder_id ] ) ? sanitize_text_field( $folder_names[ $folder_id ] ) : '',
+                'source_tag'  => strtoupper( substr( sanitize_key( isset( $tab['source_tag'] ) ? $tab['source_tag'] : '' ), 0, 10 ) ),
+                'labels'      => $labels,
+            );
+        }
+    }
+
+    update_option( 'zk_visual_gallery_settings_v1', $clean, false );
+    if ( function_exists( 'zk_flush_gallery_cache' ) ) zk_flush_gallery_cache();
+    wp_safe_redirect( add_query_arg( array( 'page' => 'zk-visual-galleries', 'updated' => '1' ), admin_url( 'admin.php' ) ) );
+    exit;
+}
+add_action( 'admin_post_zk_save_visual_galleries', 'zk_visual_gallery_save_settings' );
+
+function zk_visual_gallery_render_admin_page() {
+    if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Access denied' );
+    $galleries = zk_visual_gallery_get_settings();
+    $languages = function_exists( 'zk_get_languages' ) ? zk_get_languages( false ) : array( 'en' => array( 'native_name' => 'English' ), 'ka' => array( 'native_name' => 'ქართული' ) );
+    $folders   = zk_visual_gallery_filebird_folders();
+    $folder_options = array();
+    foreach ( $folders as $folder ) $folder_options[ (int) $folder->id ] = $folder->name;
+    ?>
+    <div class="wrap zk-gallery-admin">
+        <h1>Visual Galleries</h1>
+        <p>Manage gallery tabs, their FileBird source folders, order and translations in one place. A tab shows direct images from its folder; subfolders become grouped carousels.</p>
+        <?php if ( isset( $_GET['updated'] ) ) : ?><div class="notice notice-success is-dismissible"><p>Gallery settings saved.</p></div><?php endif; ?>
+        <?php if ( empty( $folders ) ) : ?><div class="notice notice-warning"><p>FileBird folders were not found. Create folders in Media Library first.</p></div><?php endif; ?>
+        <style>
+            .zk-gallery-admin{max-width:1280px}.zk-gallery-admin .zk-ga-card{background:#fff;border:1px solid #ccd0d4;border-radius:12px;padding:22px;margin:22px 0}.zk-ga-head{display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid #eee;padding-bottom:14px}.zk-ga-tabs{display:grid;gap:12px;margin-top:16px}.zk-ga-row{display:grid;grid-template-columns:34px minmax(120px,.7fr) minmax(220px,1.4fr) minmax(90px,.55fr) repeat(var(--zk-lang-count),minmax(150px,1fr)) 86px;gap:10px;align-items:center;background:#f6f7f7;border:1px solid #dcdcde;border-radius:8px;padding:12px}.zk-ga-row input,.zk-ga-row select{width:100%}.zk-ga-order{display:flex;flex-direction:column;gap:4px}.zk-ga-order button{min-height:24px;line-height:20px;padding:0}.zk-ga-actions{display:flex;gap:5px}.zk-ga-lang-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:16px}.zk-ga-field label,.zk-ga-label{display:block;font-size:11px;font-weight:700;color:#50575e;margin-bottom:4px;text-transform:uppercase}.zk-ga-empty{text-align:center;color:#646970;padding:18px;border:1px dashed #c3c4c7;border-radius:8px}@media(max-width:1100px){.zk-ga-row{grid-template-columns:34px 1fr 1.5fr}.zk-ga-row>*{min-width:0}.zk-ga-actions{grid-column:2/-1}.zk-ga-lang{grid-column:span 1}}
+        </style>
+        <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+            <input type="hidden" name="action" value="zk_save_visual_galleries">
+            <?php wp_nonce_field( 'zk_visual_galleries_action', 'zk_visual_galleries_nonce' ); ?>
+            <?php foreach ( $galleries as $gallery_id => $gallery ) : ?>
+                <section class="zk-ga-card" data-gallery="<?php echo esc_attr( $gallery_id ); ?>" style="--zk-lang-count:<?php echo esc_attr( count( $languages ) ); ?>">
+                    <div class="zk-ga-head">
+                        <div><h2 style="margin:0"><?php echo esc_html( $gallery['title'] ); ?></h2><code>[zk_visual_gallery gallery=&quot;<?php echo esc_attr( $gallery_id ); ?>&quot;]</code></div>
+                        <button type="button" class="button button-secondary zk-ga-add">+ Add tab</button>
+                    </div>
+                    <div class="zk-ga-lang-grid">
+                        <?php foreach ( $languages as $code => $language ) : ?>
+                            <div class="zk-ga-field"><label><?php echo esc_html( strtoupper( $code ) . ' — All tab' ); ?></label><input type="text" name="zk_galleries[<?php echo esc_attr( $gallery_id ); ?>][all_labels][<?php echo esc_attr( $code ); ?>]" value="<?php echo esc_attr( isset( $gallery['all_labels'][ $code ] ) ? $gallery['all_labels'][ $code ] : '' ); ?>"></div>
+                            <div class="zk-ga-field"><label><?php echo esc_html( strtoupper( $code ) . ' — accessibility label' ); ?></label><input type="text" name="zk_galleries[<?php echo esc_attr( $gallery_id ); ?>][aria_labels][<?php echo esc_attr( $code ); ?>]" value="<?php echo esc_attr( isset( $gallery['aria_labels'][ $code ] ) ? $gallery['aria_labels'][ $code ] : '' ); ?>"></div>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="zk-ga-tabs">
+                        <?php foreach ( $gallery['tabs'] as $index => $tab ) :
+                            $selected_folder = ! empty( $tab['folder_id'] ) ? (int) $tab['folder_id'] : 0;
+                            if ( ! $selected_folder && ! empty( $tab['folder_name'] ) ) {
+                                $match = array_search( $tab['folder_name'], $folder_options, true );
+                                if ( false !== $match ) $selected_folder = (int) $match;
+                            }
+                        ?>
+                            <div class="zk-ga-row">
+                                <div class="zk-ga-order"><button type="button" class="button zk-ga-up" aria-label="Move up">↑</button><button type="button" class="button zk-ga-down" aria-label="Move down">↓</button></div>
+                                <div><span class="zk-ga-label">Key</span><input type="text" data-field="id" name="zk_galleries[<?php echo esc_attr( $gallery_id ); ?>][tabs][<?php echo esc_attr( $index ); ?>][id]" value="<?php echo esc_attr( $tab['id'] ); ?>"></div>
+                                <div><span class="zk-ga-label">FileBird folder</span><select data-field="folder_id" name="zk_galleries[<?php echo esc_attr( $gallery_id ); ?>][tabs][<?php echo esc_attr( $index ); ?>][folder_id]"><option value="0">— Select folder —</option><?php foreach ( $folder_options as $folder_id => $folder_name ) : ?><option value="<?php echo esc_attr( $folder_id ); ?>" <?php selected( $selected_folder, $folder_id ); ?>><?php echo esc_html( $folder_name . ' (#' . $folder_id . ')' ); ?></option><?php endforeach; ?></select></div>
+                                <div><span class="zk-ga-label">Badge</span><input type="text" data-field="source_tag" maxlength="10" name="zk_galleries[<?php echo esc_attr( $gallery_id ); ?>][tabs][<?php echo esc_attr( $index ); ?>][source_tag]" value="<?php echo esc_attr( $tab['source_tag'] ); ?>"></div>
+                                <?php foreach ( $languages as $code => $language ) : ?><div class="zk-ga-lang"><span class="zk-ga-label"><?php echo esc_html( strtoupper( $code ) . ' label' ); ?></span><input type="text" data-label="<?php echo esc_attr( $code ); ?>" name="zk_galleries[<?php echo esc_attr( $gallery_id ); ?>][tabs][<?php echo esc_attr( $index ); ?>][labels][<?php echo esc_attr( $code ); ?>]" value="<?php echo esc_attr( isset( $tab['labels'][ $code ] ) ? $tab['labels'][ $code ] : '' ); ?>"></div><?php endforeach; ?>
+                                <div class="zk-ga-actions"><button type="button" class="button-link-delete zk-ga-remove">Remove</button></div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+            <?php endforeach; ?>
+            <?php submit_button( 'Save gallery settings' ); ?>
+        </form>
+        <script>
+        (function(){
+            var languages=<?php echo wp_json_encode( array_keys( $languages ) ); ?>;
+            var folders=<?php echo wp_json_encode( $folder_options ); ?>;
+            function renumber(card){card.querySelectorAll('.zk-ga-row').forEach(function(row,i){var gallery=card.dataset.gallery;row.querySelectorAll('[data-field]').forEach(function(el){el.name='zk_galleries['+gallery+'][tabs]['+i+']['+el.dataset.field+']';});row.querySelectorAll('[data-label]').forEach(function(el){el.name='zk_galleries['+gallery+'][tabs]['+i+'][labels]['+el.dataset.label+']';});});}
+            function addRow(card){var box=card.querySelector('.zk-ga-tabs'),row=document.createElement('div');row.className='zk-ga-row';var options='<option value="0">— Select folder —</option>';Object.keys(folders).forEach(function(id){options+='<option value="'+id+'">'+folders[id]+' (#'+id+')</option>';});var html='<div class="zk-ga-order"><button type="button" class="button zk-ga-up">↑</button><button type="button" class="button zk-ga-down">↓</button></div><div><span class="zk-ga-label">Key</span><input type="text" data-field="id" value="tab-'+(box.children.length+1)+'"></div><div><span class="zk-ga-label">FileBird folder</span><select data-field="folder_id">'+options+'</select></div><div><span class="zk-ga-label">Badge</span><input type="text" data-field="source_tag" maxlength="10"></div>';languages.forEach(function(code){html+='<div class="zk-ga-lang"><span class="zk-ga-label">'+code.toUpperCase()+' label</span><input type="text" data-label="'+code+'"></div>';});html+='<div class="zk-ga-actions"><button type="button" class="button-link-delete zk-ga-remove">Remove</button></div>';row.innerHTML=html;box.appendChild(row);renumber(card);}
+            document.addEventListener('click',function(e){var card=e.target.closest('.zk-ga-card');if(!card)return;if(e.target.closest('.zk-ga-add')){addRow(card);return;}var row=e.target.closest('.zk-ga-row');if(!row)return;if(e.target.closest('.zk-ga-remove'))row.remove();else if(e.target.closest('.zk-ga-up')&&row.previousElementSibling)row.parentNode.insertBefore(row,row.previousElementSibling);else if(e.target.closest('.zk-ga-down')&&row.nextElementSibling)row.parentNode.insertBefore(row.nextElementSibling,row);renumber(card);});
+        })();
+        </script>
+    </div>
+    <?php
+}
+
+/**
  * Register Admin Menu
  */
 function zk_visual_hub_admin_menu() {

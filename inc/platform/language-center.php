@@ -363,20 +363,9 @@ function zk_render_language_center() {
                 <div class="zk-language-card">Missing<strong class="zk-status-missing"><?php echo esc_html( $missing ); ?></strong></div>
             </div>
 
-            <?php $gallery_labels = function_exists( 'zk_gallery_labels' ) ? zk_gallery_labels( $selected ) : array( 'all' => 'All', 'camera' => 'Camera', 'mobile' => 'Mobile' ); ?>
-            <h3 style="margin-top:24px">Photography filter tabs</h3>
-            <p>Translate the three tabs shown above the photography gallery for <?php echo esc_html( $language['native_name'] ); ?>. Empty fields fall back to English.</p>
-            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-                <input type="hidden" name="action" value="zk_save_gallery_labels">
-                <input type="hidden" name="zk_gallery_language" value="<?php echo esc_attr( $selected ); ?>">
-                <?php wp_nonce_field( 'zk_save_gallery_labels', 'zk_gallery_labels_nonce' ); ?>
-                <table class="form-table"><tbody>
-                    <tr><th><label for="zk-gallery-all">All</label></th><td><input class="regular-text" id="zk-gallery-all" name="zk_gallery_labels[all]" type="text" value="<?php echo esc_attr( $gallery_labels['all'] ); ?>" placeholder="All"></td></tr>
-                    <tr><th><label for="zk-gallery-camera">Camera</label></th><td><input class="regular-text" id="zk-gallery-camera" name="zk_gallery_labels[camera]" type="text" value="<?php echo esc_attr( $gallery_labels['camera'] ); ?>" placeholder="Camera"></td></tr>
-                    <tr><th><label for="zk-gallery-mobile">Mobile</label></th><td><input class="regular-text" id="zk-gallery-mobile" name="zk_gallery_labels[mobile]" type="text" value="<?php echo esc_attr( $gallery_labels['mobile'] ); ?>" placeholder="Mobile"></td></tr>
-                </tbody></table>
-                <?php submit_button( 'Save photography translations', 'secondary' ); ?>
-            </form>
+            <h3 style="margin-top:24px">Visual gallery tabs</h3>
+            <p>Photography and Paint tabs, FileBird folders, order, badges and every language are managed together in Visual Hub.</p>
+            <p><a class="button button-secondary" href="<?php echo esc_url( admin_url( 'admin.php?page=zk-visual-galleries' ) ); ?>">Open Visual Galleries</a></p>
 
             <?php $mobile_nav_labels = function_exists( 'zk_mobile_nav_labels' ) ? zk_mobile_nav_labels( $selected ) : array(); ?>
             <h3 style="margin-top:24px">Mobile navigation</h3>

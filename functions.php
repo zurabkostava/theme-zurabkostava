@@ -726,11 +726,17 @@ function zk_attachment_exif( $attachment_id ) {
  * Photography folders we pull from. Keyed by the exact FileBird folder name,
  * mapped to the CSS filter class the front-end toggles on.
  */
-function zk_gallery_folders() {
-    return array(
-            'Camera Photography' => 'filter-camera',
-            'Mobile Photography' => 'filter-mobile',
-    );
+function zk_gallery_folders( $gallery_id = 'photography' ) {
+    $settings = function_exists( 'zk_visual_gallery_get_settings' ) ? zk_visual_gallery_get_settings() : array();
+    $gallery  = isset( $settings[ $gallery_id ] ) ? $settings[ $gallery_id ] : array();
+    $folders  = array();
+    foreach ( isset( $gallery['tabs'] ) && is_array( $gallery['tabs'] ) ? $gallery['tabs'] : array() as $tab ) {
+        if ( empty( $tab['id'] ) ) continue;
+        $class = 'filter-' . sanitize_html_class( $tab['id'] );
+        if ( ! empty( $tab['folder_id'] ) ) $folders[ (int) $tab['folder_id'] ] = $class;
+        elseif ( ! empty( $tab['folder_name'] ) ) $folders[ (string) $tab['folder_name'] ] = $class;
+    }
+    return $folders;
 }
 
 /**
@@ -753,45 +759,33 @@ function zk_gallery_lightbox_source_attributes( $attachment_id ) {
  * English is the safe fallback for newly added site languages until their
  * interface copy is supplied here (or through the filter below).
  */
-function zk_gallery_labels( $language = '' ) {
+function zk_gallery_labels( $language = '', $gallery_id = 'photography' ) {
     $language = $language ?: ( function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en' );
-    $labels   = array(
-        'filters_label' => 'Filter photography',
-        'all'           => 'All',
-        'camera'        => 'Camera',
-        'mobile'        => 'Mobile',
-    );
-
-    $translations = array(
-        'ka' => array(
-            'filters_label' => 'ფოტოგრაფიის გაფილტვრა',
-            'all'           => 'ყველა',
-            'camera'        => 'კამერა',
-            'mobile'        => 'მობილური',
-        ),
-    );
-
-    if ( isset( $translations[ $language ] ) ) {
-        $labels = array_merge( $labels, $translations[ $language ] );
+    $settings = function_exists( 'zk_visual_gallery_get_settings' ) ? zk_visual_gallery_get_settings() : array();
+    $gallery  = isset( $settings[ $gallery_id ] ) ? $settings[ $gallery_id ] : array();
+    $all      = isset( $gallery['all_labels'][ $language ] ) && '' !== trim( (string) $gallery['all_labels'][ $language ] ) ? $gallery['all_labels'][ $language ] : ( isset( $gallery['all_labels']['en'] ) ? $gallery['all_labels']['en'] : 'All' );
+    $aria     = isset( $gallery['aria_labels'][ $language ] ) && '' !== trim( (string) $gallery['aria_labels'][ $language ] ) ? $gallery['aria_labels'][ $language ] : ( isset( $gallery['aria_labels']['en'] ) ? $gallery['aria_labels']['en'] : 'Filter gallery' );
+    $labels   = array( 'filters_label' => $aria, 'all' => $all, 'tabs' => array() );
+    foreach ( isset( $gallery['tabs'] ) && is_array( $gallery['tabs'] ) ? $gallery['tabs'] : array() as $tab ) {
+        if ( empty( $tab['id'] ) ) continue;
+        $label = isset( $tab['labels'][ $language ] ) && '' !== trim( (string) $tab['labels'][ $language ] ) ? $tab['labels'][ $language ] : ( isset( $tab['labels']['en'] ) ? $tab['labels']['en'] : $tab['id'] );
+        $labels['tabs'][ $tab['id'] ] = $label;
+        $labels[ $tab['id'] ] = $label; // Backward-compatible access.
     }
-
-    $saved = get_option( 'zk_gallery_labels_v1', array() );
-    if ( isset( $saved[ $language ] ) && is_array( $saved[ $language ] ) ) {
-        foreach ( array( 'all', 'camera', 'mobile' ) as $key ) {
-            if ( isset( $saved[ $language ][ $key ] ) && '' !== trim( (string) $saved[ $language ][ $key ] ) ) {
-                $labels[ $key ] = (string) $saved[ $language ][ $key ];
-            }
-        }
-    }
-
-    return apply_filters( 'zk_gallery_labels', $labels, $language );
+    return apply_filters( 'zk_gallery_labels', $labels, $language, $gallery_id );
 }
 
-function zk_cinematic_gallery() {
+function zk_cinematic_gallery( $atts = array() ) {
+    $atts = shortcode_atts( array( 'gallery' => 'photography' ), is_array( $atts ) ? $atts : array(), 'zk_visual_gallery' );
+    $gallery_id = sanitize_key( $atts['gallery'] );
+    $gallery_settings = function_exists( 'zk_visual_gallery_get_settings' ) ? zk_visual_gallery_get_settings() : array();
+    if ( ! isset( $gallery_settings[ $gallery_id ] ) ) $gallery_id = 'photography';
+    $gallery_definition = isset( $gallery_settings[ $gallery_id ] ) ? $gallery_settings[ $gallery_id ] : array();
+
     // Optional render cache (off by default — see zk_flush_gallery_cache notes).
     $language  = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
-    $labels    = zk_gallery_labels( $language );
-    $cache_key = 'zk_gallery_html_v7_' . sanitize_key( $language );
+    $labels    = zk_gallery_labels( $language, $gallery_id );
+    $cache_key = 'zk_gallery_html_v8_' . sanitize_key( $gallery_id ) . '_' . sanitize_key( $language );
     $use_cache = (bool) apply_filters( 'zk_gallery_cache_enabled', false );
     if ( $use_cache ) {
         $cached = get_transient( $cache_key );
@@ -810,24 +804,21 @@ function zk_cinematic_gallery() {
         return '<p class="page__content" style="color:#ff5555;">FileBird tables not found.</p>';
     }
 
-    $folder_map   = zk_gallery_folders();
-    $folder_names = array_keys( $folder_map );
-
-    // (1) Folder names → ids — one prepared query.
-    $name_ph = implode( ', ', array_fill( 0, count( $folder_names ), '%s' ) );
-    $folders = $wpdb->get_results(
-            $wpdb->prepare( "SELECT id, name FROM {$fbv_table} WHERE name IN ($name_ph)", $folder_names )
-    );
-    if ( empty( $folders ) ) {
-        return '<p class="page__content">Folders not found!</p>';
-    }
+    $folder_map = zk_gallery_folders( $gallery_id );
+    if ( empty( $folder_map ) ) return '<p class="page__content">This gallery has no configured tabs yet.</p>';
 
     $folder_class = array(); // folder_id => filter-xxx
-    foreach ( $folders as $folder ) {
-        if ( isset( $folder_map[ $folder->name ] ) ) {
-            $folder_class[ (int) $folder->id ] = $folder_map[ $folder->name ];
-        }
+    $folder_names = array();
+    foreach ( $folder_map as $folder_key => $filter_class ) {
+        if ( is_int( $folder_key ) || ctype_digit( (string) $folder_key ) ) $folder_class[ (int) $folder_key ] = $filter_class;
+        else $folder_names[ (string) $folder_key ] = $filter_class;
     }
+    if ( $folder_names ) {
+        $name_ph = implode( ', ', array_fill( 0, count( $folder_names ), '%s' ) );
+        $folders = $wpdb->get_results( $wpdb->prepare( "SELECT id, name FROM {$fbv_table} WHERE name IN ($name_ph)", array_keys( $folder_names ) ) );
+        foreach ( $folders as $folder ) if ( isset( $folder_names[ $folder->name ] ) ) $folder_class[ (int) $folder->id ] = $folder_names[ $folder->name ];
+    }
+    if ( empty( $folder_class ) ) return '<p class="page__content">Configured FileBird folders were not found.</p>';
 
     // (1.5) Fetch Subfolders (Carousels)
     $folder_ids = array_keys( $folder_class );
@@ -896,14 +887,21 @@ function zk_cinematic_gallery() {
             'update_post_term_cache' => false,
     ) );
 
-    // Calculate counts
-    $total_photos = count($category_map);
-    $camera_photos = 0;
-    $mobile_photos = 0;
-    foreach($category_map as $c) {
-        if ($c == 'filter-camera') $camera_photos++;
-        elseif ($c == 'filter-mobile') $mobile_photos++;
+    // Dynamic filters, labels, badges and counts from Visual Galleries admin.
+    $filter_definitions = array();
+    foreach ( isset( $gallery_definition['tabs'] ) && is_array( $gallery_definition['tabs'] ) ? $gallery_definition['tabs'] : array() as $tab ) {
+        if ( empty( $tab['id'] ) ) continue;
+        $class = 'filter-' . sanitize_html_class( $tab['id'] );
+        $filter_definitions[ $class ] = array(
+            'label'      => isset( $labels['tabs'][ $tab['id'] ] ) ? $labels['tabs'][ $tab['id'] ] : $tab['id'],
+            'source_tag' => isset( $tab['source_tag'] ) ? $tab['source_tag'] : '',
+            'count'      => 0,
+        );
     }
+    foreach ( $category_map as $class ) {
+        if ( isset( $filter_definitions[ $class ] ) ) $filter_definitions[ $class ]['count']++;
+    }
+    $total_photos = count( $category_map );
 
     $output  = '<div class="zk-gallery-wrapper">';
     if ( current_user_can('administrator') ) {
@@ -916,8 +914,9 @@ function zk_cinematic_gallery() {
     $output .= '<div class="zk-gallery-filters" role="group" aria-label="' . esc_attr( $labels['filters_label'] ) . '">';
     $output .= '<div class="zk-gallery-tab-highlight" aria-hidden="true"></div>';
     $output .= '<button class="zk-filter-btn is-active" type="button" data-filter="all" aria-pressed="true">' . esc_html( $labels['all'] ) . ' <span class="zk-tab-count">' . $total_photos . '</span></button>';
-    $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-camera" aria-pressed="false">' . esc_html( $labels['camera'] ) . ' <span class="zk-tab-count">' . $camera_photos . '</span></button>';
-    $output .= '<button class="zk-filter-btn" type="button" data-filter="filter-mobile" aria-pressed="false">' . esc_html( $labels['mobile'] ) . ' <span class="zk-tab-count">' . $mobile_photos . '</span></button>';
+    foreach ( $filter_definitions as $filter_class => $definition ) {
+        $output .= '<button class="zk-filter-btn" type="button" data-filter="' . esc_attr( $filter_class ) . '" aria-pressed="false">' . esc_html( $definition['label'] ) . ' <span class="zk-tab-count">' . (int) $definition['count'] . '</span></button>';
+    }
     $output .= '</div>';
 
     $output .= '<div class="zk-gallery-grid" id="zkGalleryGrid">';
@@ -950,9 +949,7 @@ function zk_cinematic_gallery() {
             
             // Determine tag for cover photo
             $base_cat = isset( $category_map[ $image_id ] ) ? $category_map[ $image_id ] : '';
-            $source_tag = '';
-            if ($base_cat == 'filter-camera') $source_tag = 'CAM';
-            elseif ($base_cat == 'filter-mobile') $source_tag = 'PHONE';
+            $source_tag = isset( $filter_definitions[ $base_cat ]['source_tag'] ) ? $filter_definitions[ $base_cat ]['source_tag'] : '';
 
             // Output cover image
             $full_img  = wp_get_attachment_image_url( $image_id, 'full' );
@@ -1040,9 +1037,7 @@ function zk_cinematic_gallery() {
 
                     // Determine tag for hidden photo
                     $c_base_cat = isset( $category_map[ $c_att ] ) ? $category_map[ $c_att ] : '';
-                    $c_source_tag = '';
-                    if ($c_base_cat == 'filter-camera') $c_source_tag = 'CAM';
-                    elseif ($c_base_cat == 'filter-mobile') $c_source_tag = 'PHONE';
+                    $c_source_tag = isset( $filter_definitions[ $c_base_cat ]['source_tag'] ) ? $filter_definitions[ $c_base_cat ]['source_tag'] : '';
 
                     $c_img_attributes = array(
                             'data-full'        => esc_url( $c_full_img ),
@@ -1152,6 +1147,10 @@ function zk_cinematic_gallery() {
     return $output;
 }
 add_shortcode( 'zk_photography', 'zk_cinematic_gallery' );
+add_shortcode( 'zk_visual_gallery', 'zk_cinematic_gallery' );
+add_shortcode( 'zk_paint', function () {
+    return zk_cinematic_gallery( array( 'gallery' => 'paint' ) );
+} );
 
 /**
  * Optional gallery render cache — OFF by default.
@@ -1166,6 +1165,9 @@ function zk_flush_gallery_cache() {
     foreach ( array_keys( $languages ) as $language ) {
         delete_transient( 'zk_gallery_html_v6_' . sanitize_key( $language ) );
         delete_transient( 'zk_gallery_html_v7_' . sanitize_key( $language ) );
+        foreach ( array( 'photography', 'paint' ) as $gallery_id ) {
+            delete_transient( 'zk_gallery_html_v8_' . $gallery_id . '_' . sanitize_key( $language ) );
+        }
     }
 }
 add_action( 'add_attachment',    'zk_flush_gallery_cache' );

@@ -1690,20 +1690,19 @@
         });
 
         var hash = window.location.hash.replace('#', '');
-        if (hash === 'camera' || hash === 'mobile') {
-            var targetBtn = wrap.querySelector('.zk-filter-btn[data-filter="filter-' + hash + '"]');
-            if (targetBtn) {
-                buttons.forEach(function (b) {
-                    b.classList.remove('is-active');
-                    b.setAttribute('aria-pressed', 'false');
-                });
-                targetBtn.classList.add('is-active');
-                targetBtn.setAttribute('aria-pressed', 'true');
-                setFilterHighlight(targetBtn, true);
-                applyFilter('filter-' + hash);
-            } else {
-                buildThumbnails();
-            }
+        var targetFilter = hash ? 'filter-' + hash : '';
+        var targetBtn = buttons.find(function (button) {
+            return button.getAttribute('data-filter') === targetFilter;
+        });
+        if (targetBtn) {
+            buttons.forEach(function (b) {
+                b.classList.remove('is-active');
+                b.setAttribute('aria-pressed', 'false');
+            });
+            targetBtn.classList.add('is-active');
+            targetBtn.setAttribute('aria-pressed', 'true');
+            setFilterHighlight(targetBtn, true);
+            applyFilter(targetFilter);
         } else {
             buildThumbnails();
         }
