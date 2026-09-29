@@ -1087,8 +1087,6 @@
     var current = null;
     var imageCache = new Map();
 
-    function delay(ms) { return new Promise(function (r) { ms ? setTimeout(r, ms) : r(); }); }
-
     function imageSource(img) {
         return {
             url: img ? (img.getAttribute('data-full') || img.currentSrc || img.src || '') : '',
@@ -1292,7 +1290,7 @@
             if (!cell) return;
             e.stopPropagation();
             var i = thumbEls.indexOf(cell);
-            if (i > -1) show(i);
+            if (i > -1 && i !== index) show(i, { direction: i > index ? 1 : -1 });
         });
 
         // ── 1. სინქრონიზაციის გასწორება (50ms დაყოვნება) ──
@@ -1324,12 +1322,46 @@
             centerThumb(thumbEls[index], isInitial);
         }
 
-        /* ---- Image swap: preload → focus-pull. No flash; rapid swaps are safe. ---- */
+        function clearCarouselGhosts() {
+            lightbox.querySelectorAll('.zk-lightbox-img-ghost').forEach(function (ghost) {
+                ghost.remove();
+            });
+        }
+
+        function createCarouselGhost(direction) {
+            if (REDUCE || !lbImg.classList.contains('is-ready')) return null;
+            var rect = lbImg.getBoundingClientRect();
+            if (!rect.width || !rect.height) return null;
+
+            clearCarouselGhosts();
+            var ghost = lbImg.cloneNode(false);
+            ghost.className = 'zk-lightbox-img zk-lightbox-img-ghost is-ready';
+            ghost.removeAttribute('id');
+            ghost.setAttribute('aria-hidden', 'true');
+            ghost.style.left = rect.left + 'px';
+            ghost.style.top = rect.top + 'px';
+            ghost.style.width = rect.width + 'px';
+            ghost.style.height = rect.height + 'px';
+            lightbox.appendChild(ghost);
+
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    ghost.classList.add(direction > 0 ? 'is-exiting-left' : 'is-exiting-right');
+                });
+            });
+            setTimeout(function () { if (ghost.isConnected) ghost.remove(); }, 700);
+            return ghost;
+        }
+
+        /* ---- Image swap: preload → directional carousel. No flash; rapid swaps are safe. ---- */
         function show(i, opts) {
             opts = opts || {};
             var n = activeItems.length;
             if (!n) return;
-            index = ((i % n) + n) % n; // infinite wrap, NaN-proof
+            var previousIndex = index;
+            var nextIndex = ((i % n) + n) % n; // infinite wrap, NaN-proof
+            var direction = opts.direction || (nextIndex >= previousIndex ? 1 : -1);
+            index = nextIndex;
 
             // ── 2. აქტიური თამბნეილის მომენტალური მონიშვნა ──
             markActiveThumb(opts.initial);
@@ -1341,12 +1373,15 @@
             var token = ++swapToken;
             var hadImage = lbImg.classList.contains('is-ready');
 
-            var waitExit = (hadImage && !opts.initial && !REDUCE) ? 220 : 0;
-
             preloadImage(img, 'high').then(function (loaded) {
                 if (token !== swapToken) return; // a newer swap superseded this one
+                if (hadImage && !opts.initial) createCarouselGhost(direction);
                 lbImg.classList.remove('is-ready');
-                return delay(waitExit).then(function () { return loaded; });
+                lbImg.classList.remove('zk-carousel-enter', 'is-entering-from-left', 'is-entering-from-right');
+                if (hadImage && !opts.initial && !REDUCE) {
+                    lbImg.classList.add('zk-carousel-enter', direction > 0 ? 'is-entering-from-right' : 'is-entering-from-left');
+                }
+                return loaded;
             }).then(function (loaded) {
                 if (!loaded || token !== swapToken) return;
                 if (loaded.srcset) {
@@ -1404,15 +1439,21 @@
                 decoded.then(function () {
                     requestAnimationFrame(function () {
                         requestAnimationFrame(function () {
-                            if (token === swapToken) lbImg.classList.add('is-ready');
+                            if (token === swapToken) {
+                                lbImg.classList.add('is-ready');
+                                setTimeout(function () {
+                                    if (token !== swapToken) return;
+                                    lbImg.classList.remove('zk-carousel-enter', 'is-entering-from-left', 'is-entering-from-right');
+                                }, 650);
+                            }
                         });
                     });
                 });
                 warmAround(index, false);
             });
         }
-        function next() { show(index + 1); }
-        function prev() { show(index - 1); }
+        function next() { show(index + 1, { direction: 1 }); }
+        function prev() { show(index - 1, { direction: -1 }); }
         function open(i) {
             lastFocus = document.activeElement;
             lightbox.classList.add('is-open');
@@ -1426,6 +1467,8 @@
             lightbox.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('zk-lb-open');
             lbImg.classList.remove('is-ready');
+            lbImg.classList.remove('zk-carousel-enter', 'is-entering-from-left', 'is-entering-from-right');
+            clearCarouselGhosts();
             swapToken++;
             setTimeout(function () {
                 if (!lightbox.classList.contains('is-open')) lbImg.removeAttribute('src');

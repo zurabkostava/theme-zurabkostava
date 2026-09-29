@@ -1943,6 +1943,56 @@ body.zk-lb-open { overflow: hidden; }
 	transform: scale(1) translateY(0);
 	filter: blur(0);
 }
+
+/* Directional carousel swap — the decoded incoming frame and a temporary copy
+   of the outgoing frame cross the stage together, preserving the viewer layout. */
+.zk-lightbox-img.zk-carousel-enter {
+	transition: transform 0.56s cubic-bezier(0.22, 1, 0.36, 1),
+		filter 0.46s cubic-bezier(0.22, 1, 0.36, 1),
+		opacity 0.42s ease;
+}
+.zk-lightbox-img.zk-carousel-enter.is-entering-from-right {
+	opacity: 0;
+	transform: translate3d(clamp(120px, 22vw, 320px), 0, 0) scale(0.96);
+	filter: blur(7px);
+}
+.zk-lightbox-img.zk-carousel-enter.is-entering-from-left {
+	opacity: 0;
+	transform: translate3d(calc(-1 * clamp(120px, 22vw, 320px)), 0, 0) scale(0.96);
+	filter: blur(7px);
+}
+.zk-lightbox-img.zk-carousel-enter.is-ready {
+	opacity: 1;
+	transform: translate3d(0, 0, 0) scale(1);
+	filter: blur(0);
+}
+.zk-lightbox-img-ghost {
+	position: fixed;
+	max-width: none;
+	max-height: none;
+	margin: 0;
+	z-index: 2001;
+	pointer-events: none;
+	object-fit: fill;
+	transition: transform 0.56s cubic-bezier(0.22, 1, 0.36, 1),
+		filter 0.46s cubic-bezier(0.22, 1, 0.36, 1),
+		opacity 0.42s ease;
+}
+.zk-lightbox-img-ghost.is-exiting-left {
+	opacity: 0;
+	transform: translate3d(calc(-1 * clamp(120px, 22vw, 320px)), 0, 0) scale(0.96);
+	filter: blur(7px);
+}
+.zk-lightbox-img-ghost.is-exiting-right {
+	opacity: 0;
+	transform: translate3d(clamp(120px, 22vw, 320px), 0, 0) scale(0.96);
+	filter: blur(7px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.zk-lightbox-img,
+	.zk-lightbox-img-ghost { transition-duration: 0.01ms !important; }
+}
 /* ── EXIF მონაცემები ── */
 .zk-lightbox-exif {
 	margin-top: 20px;
