@@ -289,6 +289,34 @@ function zk_visual_gallery_save_settings() {
 }
 add_action( 'admin_post_zk_save_visual_galleries', 'zk_visual_gallery_save_settings' );
 
+/** One-time conversion of the old Paint placeholder page to the managed gallery. */
+function zk_visual_gallery_migrate_paint_page() {
+    if ( get_option( 'zk_visual_gallery_paint_page_v1' ) ) return;
+    $page = get_page_by_path( 'visual/paint', OBJECT, 'page' );
+    if ( ! $page ) return;
+
+    $shortcode = '[zk_visual_gallery gallery="paint"]';
+    $plain_content = trim( wp_strip_all_tags( strip_shortcodes( $page->post_content ) ) );
+    $plain_excerpt = trim( wp_strip_all_tags( $page->post_excerpt ) );
+    $update = array( 'ID' => $page->ID );
+    if ( '' === $plain_content || 'Posts' === $plain_content ) $update['post_content'] = $shortcode;
+    if ( 'Posts' === $plain_excerpt ) $update['post_excerpt'] = '';
+    if ( count( $update ) > 1 ) wp_update_post( $update );
+
+    if ( function_exists( 'zk_get_translatable_languages' ) && function_exists( 'zk_language_meta_key' ) ) {
+        foreach ( zk_get_translatable_languages( false ) as $code => $language ) {
+            $content_key = zk_language_meta_key( 'content', $code );
+            $translated  = get_post_meta( $page->ID, $content_key, true );
+            $plain       = trim( wp_strip_all_tags( strip_shortcodes( $translated ) ) );
+            if ( '' === $plain || 'Posts' === $plain ) update_post_meta( $page->ID, $content_key, $shortcode );
+            $excerpt_key = zk_language_meta_key( 'excerpt', $code );
+            if ( 'Posts' === trim( wp_strip_all_tags( get_post_meta( $page->ID, $excerpt_key, true ) ) ) ) update_post_meta( $page->ID, $excerpt_key, '' );
+        }
+    }
+    update_option( 'zk_visual_gallery_paint_page_v1', 1, false );
+}
+add_action( 'admin_init', 'zk_visual_gallery_migrate_paint_page', 30 );
+
 function zk_visual_gallery_render_admin_page() {
     if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Access denied' );
     $galleries = zk_visual_gallery_get_settings();
