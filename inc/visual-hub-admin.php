@@ -174,6 +174,34 @@ function zk_visual_gallery_default_settings() {
                 ),
             ),
         ),
+        'graphic' => array(
+            'title'       => 'Graphic Design',
+            'all_labels'  => array( 'en' => 'All', 'ka' => 'ყველა' ),
+            'aria_labels' => array( 'en' => 'Filter graphic works', 'ka' => 'გრაფიკული ნამუშევრების გაფილტვრა' ),
+            'tabs'        => array(
+                array(
+                    'id'          => 'music-artwork',
+                    'folder_id'   => 0,
+                    'folder_name' => 'Music Artwork',
+                    'source_tag'  => 'COVER',
+                    'labels'      => array( 'en' => 'Music Artwork', 'ka' => 'მუსიკის არტვორქი' ),
+                ),
+                array(
+                    'id'          => 'illustrations',
+                    'folder_id'   => 0,
+                    'folder_name' => 'Illustrations',
+                    'source_tag'  => 'ILL',
+                    'labels'      => array( 'en' => 'Illustrations', 'ka' => 'ილუსტრაციები' ),
+                ),
+                array(
+                    'id'          => 'posters',
+                    'folder_id'   => 0,
+                    'folder_name' => 'Graphic Posters',
+                    'source_tag'  => 'POSTER',
+                    'labels'      => array( 'en' => 'Posters', 'ka' => 'პოსტერები' ),
+                ),
+            ),
+        ),
     );
 
     // Preserve the labels previously entered in Language Center during the
@@ -320,6 +348,38 @@ function zk_visual_gallery_migrate_paint_page() {
     update_option( 'zk_visual_gallery_paint_page_v2', 1, false );
 }
 add_action( 'admin_init', 'zk_visual_gallery_migrate_paint_page', 30 );
+
+/** One-time conversion of the old Graphic placeholder page. */
+function zk_visual_gallery_migrate_graphic_page() {
+    if ( get_option( 'zk_visual_gallery_graphic_page_v1' ) ) return;
+    $page = get_page_by_path( 'visual/graphic', OBJECT, 'page' );
+    if ( ! $page ) return;
+
+    $shortcode = '[zk_visual_gallery gallery="graphic"]';
+    $plain_content = trim( wp_strip_all_tags( strip_shortcodes( $page->post_content ) ) );
+    $plain_excerpt = trim( wp_strip_all_tags( $page->post_excerpt ) );
+    $update = array( 'ID' => $page->ID );
+    if ( '' === $plain_content || 'Posts' === $plain_content ) $update['post_content'] = $shortcode;
+    if ( '' === $plain_excerpt || 'Posts' === $plain_excerpt ) $update['post_excerpt'] = 'Music artwork, illustration, poster design, editorial compositions, and experimental graphic works.';
+    if ( count( $update ) > 1 ) wp_update_post( $update );
+
+    if ( function_exists( 'zk_get_translatable_languages' ) && function_exists( 'zk_language_meta_key' ) ) {
+        foreach ( zk_get_translatable_languages( false ) as $code => $language ) {
+            $content_key = zk_language_meta_key( 'content', $code );
+            $translated  = get_post_meta( $page->ID, $content_key, true );
+            $plain       = trim( wp_strip_all_tags( strip_shortcodes( $translated ) ) );
+            if ( '' === $plain || 'Posts' === $plain ) update_post_meta( $page->ID, $content_key, $shortcode );
+            $excerpt_key = zk_language_meta_key( 'excerpt', $code );
+            $translated_excerpt = trim( wp_strip_all_tags( get_post_meta( $page->ID, $excerpt_key, true ) ) );
+            if ( '' === $translated_excerpt || 'Posts' === $translated_excerpt ) {
+                $excerpt = 'ka' === $code ? 'მუსიკის არტვორქი, ილუსტრაცია, პოსტერების დიზაინი, სარედაქციო კომპოზიციები და ექსპერიმენტული გრაფიკული ნამუშევრები.' : 'Music artwork, illustration, poster design, editorial compositions, and experimental graphic works.';
+                update_post_meta( $page->ID, $excerpt_key, $excerpt );
+            }
+        }
+    }
+    update_option( 'zk_visual_gallery_graphic_page_v1', 1, false );
+}
+add_action( 'admin_init', 'zk_visual_gallery_migrate_graphic_page', 31 );
 
 function zk_visual_gallery_render_admin_page() {
     if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Access denied' );

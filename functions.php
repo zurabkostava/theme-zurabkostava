@@ -1168,6 +1168,9 @@ add_shortcode( 'zk_visual_gallery', 'zk_cinematic_gallery' );
 add_shortcode( 'zk_paint', function () {
     return zk_cinematic_gallery( array( 'gallery' => 'paint' ) );
 } );
+add_shortcode( 'zk_graphic', function () {
+    return zk_cinematic_gallery( array( 'gallery' => 'graphic' ) );
+} );
 
 /**
  * Optional gallery render cache — OFF by default.
@@ -1182,7 +1185,7 @@ function zk_flush_gallery_cache() {
     foreach ( array_keys( $languages ) as $language ) {
         delete_transient( 'zk_gallery_html_v6_' . sanitize_key( $language ) );
         delete_transient( 'zk_gallery_html_v7_' . sanitize_key( $language ) );
-        foreach ( array( 'photography', 'paint' ) as $gallery_id ) {
+        foreach ( array( 'photography', 'paint', 'graphic' ) as $gallery_id ) {
             delete_transient( 'zk_gallery_html_v8_' . $gallery_id . '_' . sanitize_key( $language ) );
         }
     }
