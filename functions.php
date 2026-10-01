@@ -4831,7 +4831,10 @@ function zk_serve_dynamic_seo_files() {
     // Keep one canonical sitemap. Legacy Rank Math/Yoast-style locations may
     // still be saved in crawlers and Search Console, so redirect them instead
     // of publishing the same URL set three times.
-    if ( preg_match( '/\/?(?:sitemap_index|sitemap)\.xml$/i', $uri ) ) {
+    // Match only the two legacy root paths. Without the required leading
+    // slash this also matches the `sitemap.xml` tail of `/wp-sitemap.xml`
+    // and creates a redirect loop back to itself.
+    if ( preg_match( '#/(?:sitemap_index|sitemap)\.xml$#i', $uri ) ) {
         wp_safe_redirect( home_url( '/wp-sitemap.xml' ), 301, 'ZK Sitemap' );
         exit;
     }
