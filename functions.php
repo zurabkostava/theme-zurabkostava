@@ -4827,9 +4827,16 @@ function zk_generate_aitxt_string() {
 
 function zk_serve_dynamic_seo_files() {
     $uri = wp_parse_url( isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '', PHP_URL_PATH );
-    
-    // Serve our custom sitemap for wp-sitemap.xml, sitemap.xml, and sitemap_index.xml (RankMath/Yoast fallbacks)
-    if ( preg_match( '/\/?(wp-sitemap|sitemap_index|sitemap)\.xml$/i', $uri ) ) {
+
+    // Keep one canonical sitemap. Legacy Rank Math/Yoast-style locations may
+    // still be saved in crawlers and Search Console, so redirect them instead
+    // of publishing the same URL set three times.
+    if ( preg_match( '/\/?(?:sitemap_index|sitemap)\.xml$/i', $uri ) ) {
+        wp_safe_redirect( home_url( '/wp-sitemap.xml' ), 301, 'ZK Sitemap' );
+        exit;
+    }
+
+    if ( preg_match( '/\/?wp-sitemap\.xml$/i', $uri ) ) {
         status_header( 200 );
         header( 'X-Robots-Tag: noindex, follow', true );
         header('Content-Type: text/xml; charset=utf-8');
