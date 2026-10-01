@@ -2,10 +2,10 @@
 /*
 Template Name: Book Reader
 */
-$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/';
-$request_path = wp_parse_url( $request_uri, PHP_URL_PATH );
-$page_language = function_exists( 'zk_detect_language_from_path' )
-    ? zk_detect_language_from_path( $request_path ?: '/' )
+// The language manager removes the URL prefix before WordPress resolves the
+// page, but preserves the detected language in ZK_REQUEST_LANGUAGE.
+$page_language = function_exists( 'zk_get_current_language' )
+    ? zk_get_current_language()
     : ( 0 === strpos( (string) get_locale(), 'ka' ) ? 'ka' : 'en' );
 ?>
 <!DOCTYPE html>
