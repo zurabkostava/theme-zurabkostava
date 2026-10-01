@@ -161,7 +161,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         <div class="top">
         <div class="top-bar">
             <div class="top-left" style="display: flex; align-items: center; gap: 15px;">
-                <div class="app-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png" alt="" width="36" height="36">WordEvo</div>
+                <h1 class="app-logo"><img class="wordevo-brand-icon" src="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png" alt="" width="36" height="36">WordEvo</h1>
                 <div class="library-selector-wrapper">
                     <button id="libraryManagerBtn" class="library-manager-btn premium-library-btn" title="Manage Libraries">
                         <i class="fas fa-book library-icon"></i>
