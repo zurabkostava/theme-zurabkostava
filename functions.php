@@ -4231,7 +4231,13 @@ function zk_render_seo_meta() {
                 $desc = wp_strip_all_tags( get_the_excerpt( $obj_id ) );
             } else {
                 $post_obj = get_post( $obj_id );
-                $desc = $post_obj ? wp_trim_words( wp_strip_all_tags( $post_obj->post_content ), 30, '...' ) : $site_desc;
+                // Shortcode-only pages (for example the Visual Hub) do not
+                // have meaningful prose in post_content. Never expose the
+                // shortcode itself as the search-result description.
+                $plain_content = $post_obj
+                    ? trim( wp_strip_all_tags( strip_shortcodes( $post_obj->post_content ) ) )
+                    : '';
+                $desc = $plain_content ? wp_trim_words( $plain_content, 30, '...' ) : $site_desc;
             }
 
             // Image logic
