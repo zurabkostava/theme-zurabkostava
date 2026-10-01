@@ -47,51 +47,13 @@ $page_language = function_exists( 'zk_get_current_language' )
 
 <body>
 <?php
-// SEO Pre-render Logic
+// Compact SEO content is refreshed in the background. Never make the page
+// wait for Supabase before returning HTML to the visitor.
 $book_slug = $post->post_name;
 $is_georgian = 'ka' === $page_language;
-$transient_key = 'zk_book_seo_v4_' . md5( $book_slug . '_' . ( $is_georgian ? 'ka' : 'en' ) );
-$seo_content = get_transient( $transient_key );
-
-if ( false === $seo_content ) {
-    $supabase_url = 'https://cblxbanbssnflgyrzhah.supabase.co/rest/v1/book_projects?slug=eq.' . $book_slug . '&select=chapters';
-    $supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNibHhiYW5ic3NuZmxneXJ6aGFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2Mzk0NDYsImV4cCI6MjA3OTIxNTQ0Nn0.36w4C_Y8TsTJ2ifORlE5vQu-yMHYCCD-Ebetz8CpQ9A';
-    
-    $args = array(
-        'headers' => array(
-            'apikey'        => $supabase_key,
-            'Authorization' => 'Bearer ' . $supabase_key,
-            'Accept'        => 'application/json'
-        ),
-        'timeout' => 5
-    );
-    
-    $response = wp_remote_get( $supabase_url, $args );
-    
-    $seo_html = '';
-    if ( ! is_wp_error( $response ) && wp_remote_retrieve_response_code( $response ) === 200 ) {
-        $body = wp_remote_retrieve_body( $response );
-        $data = json_decode( $body, true );
-        
-        if ( ! empty( $data ) && isset( $data[0]['chapters'] ) ) {
-            $chapters = $data[0]['chapters'];
-            foreach ( $chapters as $chapter ) {
-                $title_to_use = $is_georgian ? ( isset( $chapter['title'] ) ? $chapter['title'] : '' ) : ( isset( $chapter['title_en'] ) ? $chapter['title_en'] : ( isset( $chapter['title'] ) ? $chapter['title'] : '' ) );
-                $content_to_use = $is_georgian ? ( isset( $chapter['content'] ) ? $chapter['content'] : '' ) : ( isset( $chapter['content_en'] ) ? $chapter['content_en'] : ( isset( $chapter['content'] ) ? $chapter['content'] : '' ) );
-                
-                if ( ! empty( $title_to_use ) ) {
-                    $seo_html .= '<h2>' . esc_html( $title_to_use ) . '</h2>';
-                }
-                if ( ! empty( $content_to_use ) ) {
-                    $seo_html .= wp_kses_post( $content_to_use );
-                }
-            }
-            // Cache for 12 hours
-            set_transient( $transient_key, $seo_html, 12 * HOUR_IN_SECONDS );
-            $seo_content = $seo_html;
-        }
-    }
-}
+$seo_content = function_exists( 'zk_get_book_seo_excerpt' )
+    ? zk_get_book_seo_excerpt( $book_slug, $is_georgian ? 'ka' : 'en' )
+    : '';
 ?>
 
 <?php if ( ! empty( $seo_content ) ) : ?>
