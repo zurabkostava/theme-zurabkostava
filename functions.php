@@ -96,6 +96,107 @@ function zk_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'zk_assets' );
 
+/**
+ * Return a direct, canonical internal destination for links stored in custom
+ * fields. This removes avoidable 301 hops when editors omit a trailing slash.
+ */
+function zk_normalize_internal_destination( $url ) {
+    $url = trim( (string) $url );
+    if ( '' === $url ) {
+        return '';
+    }
+
+    $parts     = wp_parse_url( $url );
+    $home_host = strtolower( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) );
+    $url_host  = strtolower( (string) ( $parts['host'] ?? '' ) );
+
+    if ( $url_host && $home_host && $url_host !== $home_host ) {
+        return $url;
+    }
+
+    $path = (string) ( $parts['path'] ?? '' );
+    if ( '/blog/zk_book/beta/' === trailingslashit( $path ) ) {
+        $path = '/books/beta/';
+    } elseif ( $path && '/' !== $path && ! pathinfo( $path, PATHINFO_EXTENSION ) ) {
+        $path = trailingslashit( $path );
+    }
+
+    if ( $url_host ) {
+        $normalized = ( $parts['scheme'] ?? 'https' ) . '://' . $parts['host'];
+        if ( isset( $parts['port'] ) ) {
+            $normalized .= ':' . (int) $parts['port'];
+        }
+        $normalized .= $path;
+    } else {
+        $normalized = $path;
+    }
+
+    if ( isset( $parts['query'] ) ) {
+        $normalized .= '?' . $parts['query'];
+    }
+    if ( isset( $parts['fragment'] ) ) {
+        $normalized .= '#' . $parts['fragment'];
+    }
+
+    return $normalized;
+}
+
+/**
+ * Repair a small set of legacy links still stored inside old post content.
+ */
+function zk_fix_legacy_internal_content_links( $content ) {
+    if ( is_admin() || ! is_string( $content ) || '' === $content ) {
+        return $content;
+    }
+
+    $is_ka = function_exists( 'zk_get_current_language' ) && 'ka' === zk_get_current_language();
+    $encrolib_url = home_url( $is_ka ? '/ka/projects/encrolib/' : '/projects/encrolib/' );
+    $book_url     = home_url( $is_ka ? '/ka/books/beta/' : '/books/beta/' );
+
+    $replacements = array(
+        'href="https://zurabkostava.com/projects/encrolib"' => 'href="' . esc_url( $encrolib_url ) . '"',
+        "href='https://zurabkostava.com/projects/encrolib'" => "href='" . esc_url( $encrolib_url ) . "'",
+        'href="https://zurabkostava.com/blog/zk_book/beta/"' => 'href="' . esc_url( $book_url ) . '"',
+        "href='https://zurabkostava.com/blog/zk_book/beta/'" => "href='" . esc_url( $book_url ) . "'",
+    );
+
+    return strtr( $content, $replacements );
+}
+add_filter( 'the_content', 'zk_fix_legacy_internal_content_links', 25 );
+
+/**
+ * Shortcodes can generate target=_blank links after WordPress' own link-rel
+ * filter has run. Add the protection once more to the completed page content.
+ */
+function zk_secure_rendered_target_blank_links( $content ) {
+    if ( is_admin() || ! is_string( $content ) || false === stripos( $content, 'target=' ) ) {
+        return $content;
+    }
+
+    return preg_replace_callback(
+        '/<a\b([^>]*)>/i',
+        static function ( $matches ) {
+            $attributes = $matches[1];
+            if ( ! preg_match( '/\btarget\s*=\s*(["\'])_blank\1/i', $attributes ) ) {
+                return $matches[0];
+            }
+
+            if ( preg_match( '/\brel\s*=\s*(["\'])(.*?)\1/i', $attributes, $rel_match ) ) {
+                $tokens = preg_split( '/\s+/', trim( $rel_match[2] ) );
+                $tokens = array_filter( array_unique( array_merge( $tokens, array( 'noopener', 'noreferrer' ) ) ) );
+                $secure_rel = 'rel=' . $rel_match[1] . implode( ' ', $tokens ) . $rel_match[1];
+                $attributes = preg_replace( '/\brel\s*=\s*(["\'])(.*?)\1/i', $secure_rel, $attributes, 1 );
+            } else {
+                $attributes .= ' rel="noopener noreferrer"';
+            }
+
+            return '<a' . $attributes . '>';
+        },
+        $content
+    );
+}
+add_filter( 'the_content', 'zk_secure_rendered_target_blank_links', 99 );
+
 // 🔴 Bypass WP Rocket Delay JS for app.js and analytics.js so tracking fires immediately
 add_filter( 'rocket_delay_js_exclusions', function( $exclusions ) {
     $exclusions[] = 'app.js';
@@ -551,7 +652,8 @@ function zk_breadcrumbs() {
 
     // 1. Home Link (მინიმალისტური იკონი)
     echo '<a href="' . esc_url( home_url( '/' ) ) . '" data-route="' . esc_attr( $home_route ) . '" aria-label="' . esc_attr( $home_label ) . '" class="zk-home-link">';
-    echo '<svg class="zk-home-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>';
+    echo '<svg class="zk-home-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>';
+    echo '<span class="screen-reader-text">' . esc_html( $home_label ) . '</span>';
     echo '</a>';
 
     if ( is_singular( 'zk_book' ) ) {
@@ -1665,7 +1767,7 @@ function zk_render_fav_list($option_key) {
             }
         }
         
-        echo '<li><a href="' . esc_url($url) . '" target="_blank"' . $hover_attr . '>' . $thumb_html . '<span>' . esc_html($name) . '</span></a></li>';
+        echo '<li><a href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer"' . $hover_attr . '>' . $thumb_html . '<span>' . esc_html($name) . '</span></a></li>';
     }
 }
 
@@ -2925,8 +3027,8 @@ function zk_books_shortcode() {
         $author    = $is_ka ? $author_ka : $author_en;
         $by_label  = $is_ka ? 'ავტორი:' : 'by';
 
-        $link_en   = get_post_meta( $id, '_zk_book_link', true );
-        $link_ka   = get_post_meta( $id, '_zk_book_link_ka', true );
+        $link_en   = zk_normalize_internal_destination( get_post_meta( $id, '_zk_book_link', true ) );
+        $link_ka   = zk_normalize_internal_destination( get_post_meta( $id, '_zk_book_link_ka', true ) );
         if ( $is_ka ) {
             if ( ! empty( $link_ka ) ) {
                 $link = $link_ka;
@@ -3226,8 +3328,8 @@ function zk_tools_shortcode() {
         }
         $excerpt   = ( $is_ka && ! empty( $excerpt_ka ) ) ? $excerpt_ka : $excerpt_en;
 
-        $link_en   = get_post_meta( $post_id, '_zk_tool_link', true );
-        $link_ka   = get_post_meta( $post_id, '_zk_tool_link_ka', true );
+        $link_en   = zk_normalize_internal_destination( get_post_meta( $post_id, '_zk_tool_link', true ) );
+        $link_ka   = zk_normalize_internal_destination( get_post_meta( $post_id, '_zk_tool_link_ka', true ) );
         if ( $is_ka ) {
             if ( ! empty( $link_ka ) ) {
                 $link = $link_ka;

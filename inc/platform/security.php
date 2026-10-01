@@ -59,3 +59,45 @@ function zk_is_allowed_og_source_url( $url ) {
 
     return false;
 }
+
+/**
+ * Send a conservative security baseline for every public theme response.
+ *
+ * The CSP deliberately permits HTTPS-hosted assets because this site uses
+ * Google Fonts, Supabase, media CDNs and embedded services. The restrictive
+ * directives still prevent framing by other sites, plug-in content and an
+ * unexpected document base URL without breaking those existing features.
+ */
+function zk_send_public_security_headers() {
+    if ( is_admin() || headers_sent() ) {
+        return;
+    }
+
+    header( 'X-Frame-Options: SAMEORIGIN' );
+    header( 'X-Content-Type-Options: nosniff' );
+    header( 'Referrer-Policy: strict-origin-when-cross-origin' );
+    header( 'Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()' );
+
+    $policy = array(
+        "default-src 'self' https: data: blob:",
+        "base-uri 'self'",
+        "object-src 'none'",
+        "frame-ancestors 'self'",
+        "form-action 'self' https:",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:",
+        "style-src 'self' 'unsafe-inline' https:",
+        "img-src 'self' data: blob: https:",
+        "font-src 'self' data: https:",
+        "media-src 'self' data: blob: https:",
+        "connect-src 'self' https: wss:",
+        "frame-src 'self' https:",
+        "worker-src 'self' blob:",
+    );
+
+    if ( is_ssl() ) {
+        $policy[] = 'upgrade-insecure-requests';
+    }
+
+    header( 'Content-Security-Policy: ' . implode( '; ', $policy ) );
+}
+add_action( 'send_headers', 'zk_send_public_security_headers', 20 );

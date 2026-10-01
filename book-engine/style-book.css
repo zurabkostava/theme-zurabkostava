@@ -1,4 +1,4 @@
-/* BPG Arial Caps is loaded via <link> in HTML - @import removed for faster rendering */
+/* Georgian reader typography is provided by the Google-hosted Noto families. */
 .sr-only {
     position: absolute !important;
     width: 1px !important;
@@ -2887,7 +2887,8 @@ body.light-mode #global-footnote-tooltip .footnote-content::-webkit-scrollbar-th
     text-overflow: ellipsis !important;
 }
 body.lang-ka #digital-library-root .chapter-list li.toc-h1 span:not(.toc-arrow) {
-    font-family: 'BPG Arial Caps'!important;
+    font-family: 'Noto Sans Georgian', sans-serif !important;
+    text-transform: uppercase !important;
 }
 /* --- SUBCHAPTER TREE STRUCTURE --- */
 /* ვერტიკალური ხაზი იერარქიისთვის (Tree Guide) */
@@ -3387,19 +3388,15 @@ i[class*="icon"], span[class*="icon"] {
 /* 3. AUTHOR SUBTITLE BALANCE */
 /* Latin Author */
 
-/* =========================================
-   GEORGIAN SITE TITLE (BPG Arial Caps)
-   ========================================= */
+/* Georgian title treatment. */
 
 
 /* ავტორის წარწერის დამატებითი კორექცია (თუ საჭიროა) */
 body.lang-ka #digital-library-root .site-title p {
-    font-family: "BPG Arial Caps", sans-serif !important;
-    font-weight: 300 !important;
-    /* რადგან ეს ფონტი ისედაც "caps"-ია (სულ დიდი ასოებია),
-       წინა small-caps ლოგიკა უნდა გავთიშოთ, რომ არ აირიოს */
+    font-family: "Noto Sans Georgian", sans-serif !important;
+    font-weight: 400 !important;
     font-variant: normal !important;
-    /* bpg ფონტები ხშირად უფრო განიერია, ამიტომ letter-spacing ოდნავ შევამციროთ */
+    text-transform: uppercase !important;
     letter-spacing: 2px !important;
     letter-spacing: 2.5px !important;
     opacity: 0.9 !important;
@@ -4162,35 +4159,35 @@ body.light-mode #digital-library-root .sidebar-toggle-all:hover {
     color: #7c3aed !important;
 }
 
-/* =========================================
-   GEORGIAN SPECIFIC FONTS (BPG Arial Caps)
-   ========================================= */
+/* Georgian interface typography. */
 
 /* Sidebar Header (სარჩევი) */
 body.lang-ka #digital-library-root #sidebar-main-title {
-    font-family: "BPG Arial Caps", sans-serif !important;
+    font-family: "Noto Sans Georgian", sans-serif !important;
     font-size: 20px!important;
-    /* bpg ფონტები ხანდახან ოდნავ პატარაა ან ზემოთ "გარბის",
-       ამიტომ მცირე კორექციები შეიძლება დაგჭირდეს: */
     letter-spacing: 1px !important;
-    /* დაშორება ოდნავ შევამცირეთ, რადგან caps-ია */
     transform: translateY(2px) !important;
-    /* ოდნავ ქვემოთ ჩამოვწიეთ ოპტიკურად */
     font-weight: 700 !important;
+    text-transform: uppercase !important;
 }
 
-/* =========================================
-   GEORGIAN H1 & TOC STYLING (BPG 400)
-   ========================================= */
+/* Georgian headings remain uppercase while body copy uses a book serif. */
 
 /* ყველა H1 და სარჩევის მთავარი თავები */
 body.lang-ka #digital-library-root h1,
 body.lang-ka #digital-library-root .site-title h1, /* კონკრეტული დაკონკრეტება */
 body.lang-ka #digital-library-root .toc-h1 {
-    font-family: "BPG Arial Caps", sans-serif !important;
-    font-weight: 400 !important;
-    /* რადგან caps-ია, ოდნავ დაშორება უხდება, რომ არ გადაიტვირთოს */
+    font-family: "Noto Sans Georgian", sans-serif !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
     letter-spacing: 1px !important;
+}
+
+body.lang-ka #digital-library-root .page-content,
+body.lang-ka #digital-library-root .page-content p,
+body.lang-ka #digital-library-root .page-content li,
+body.lang-ka #digital-library-root .page-content blockquote {
+    font-family: "Noto Serif Georgian", serif !important;
 }
 
 /* =========================================
