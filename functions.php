@@ -6247,3 +6247,18 @@ add_action( 'save_post', 'zk_welcome_music_save_meta' );
 
 require_once get_template_directory() . '/inc/zk-indexing-api.php';
 require_once get_template_directory() . '/inc/book-seo-cache.php';
+
+/**
+ * The theme supplies the page's single primary H1. Rich editor content and
+ * shortcodes occasionally contain additional H1 elements; keep their text and
+ * attributes while placing them at the correct section-heading level.
+ */
+function zk_normalize_embedded_content_headings( $content ) {
+    if ( is_admin() || ! is_singular() || is_feed() ) {
+        return $content;
+    }
+
+    $content = preg_replace( '/<h1(\s[^>]*)?>/i', '<h2$1>', (string) $content );
+    return preg_replace( '/<\/h1>/i', '</h2>', $content );
+}
+add_filter( 'the_content', 'zk_normalize_embedded_content_headings', 99 );
