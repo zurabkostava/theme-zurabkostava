@@ -101,10 +101,21 @@ function getEnglishVoices() {
     return speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
 }
 
+function isMultilingualVoice(voice) {
+    if (!voice || !voice.name || typeof voice.name !== 'string') return false;
+    const n = voice.name.toLowerCase();
+    return (
+        n.includes('multiling') ||
+        n.includes('multilíng') ||
+        n.includes('mehrsprachig') ||
+        /(?:multilingual|multilingue|multil[ií]ngue|multiling|mehrsprachig)/i.test(voice.name)
+    );
+}
+
 function getGeorgianVoices() {
     const voices = speechSynthesis.getVoices();
     const georgian = voices.filter(v => v.lang.startsWith('ka'));
-    const multilingual = voices.filter(v => v.name.toLowerCase().includes('multilingual') && !v.lang.startsWith('ka'));
+    const multilingual = voices.filter(v => isMultilingualVoice(v) && !v.lang.startsWith('ka'));
     return [...georgian, ...multilingual];
 }
 
@@ -137,10 +148,10 @@ async function populateDropdowns() {
         const nativeGroup = document.createElement('optgroup');
         nativeGroup.label = "Native Browser Voices";
         const safeLang1 = lang1 || '';
-        speechSynthesis.getVoices().filter(v => v && v.name && (v.lang.startsWith(safeLang1) || v.name.toLowerCase().includes('multilingual'))).forEach(voice => {
+        speechSynthesis.getVoices().filter(v => v && v.name && (v.lang.startsWith(safeLang1) || isMultilingualVoice(v))).forEach(voice => {
             const option = document.createElement('option');
             option.value = voice.name;
-            option.textContent = voice.name.toLowerCase().includes('multilingual') ? `🌐 ${voice.name}` : voice.name;
+            option.textContent = isMultilingualVoice(voice) ? `🌐 ${voice.name}` : voice.name;
             nativeGroup.appendChild(option);
         });
         voiceSelect.appendChild(nativeGroup);
@@ -175,10 +186,10 @@ async function populateDropdowns() {
         const nativeGroupKa = document.createElement('optgroup');
         nativeGroupKa.label = "Native Browser Voices";
         const safeLang2 = lang2 || '';
-        speechSynthesis.getVoices().filter(v => v && v.name && (v.lang.startsWith(safeLang2) || v.name.toLowerCase().includes('multilingual'))).forEach(voice => {
+        speechSynthesis.getVoices().filter(v => v && v.name && (v.lang.startsWith(safeLang2) || isMultilingualVoice(v))).forEach(voice => {
             const option = document.createElement('option');
             option.value = voice.name;
-            option.textContent = voice.name.toLowerCase().includes('multilingual') ? `🌐 ${voice.name}` : voice.name;
+            option.textContent = isMultilingualVoice(voice) ? `🌐 ${voice.name}` : voice.name;
             nativeGroupKa.appendChild(option);
         });
         geoSelect.appendChild(nativeGroupKa);

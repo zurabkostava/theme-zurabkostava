@@ -1624,6 +1624,17 @@ function langMatches(voiceLang, langCode) {
     return v === base || v.startsWith(base + '-');
 }
 
+function isMultilingualVoice(voice) {
+    if (!voice || !voice.name || typeof voice.name !== 'string') return false;
+    const n = voice.name.toLowerCase();
+    return (
+        n.includes('multiling') ||
+        n.includes('multilíng') ||
+        n.includes('mehrsprachig') ||
+        /(?:multilingual|multilingue|multil[ií]ngue|multiling|mehrsprachig)/i.test(voice.name)
+    );
+}
+
 function isNatiaVoice(name) {
     if (!name || typeof name !== 'string') return false;
     return name.includes('Natia') || name.includes('natia') || name.includes('ka_GE-natia') || name.includes('ქართული ფონეტიკური');
@@ -1826,9 +1837,11 @@ function rebuildDynamicSettings() {
         try { localStorage.setItem('unified-ui-lang', currentLang); } catch(e){}
 
         voiceSelect.innerHTML = '';
-        const nativeVoices = nativeList.filter(v => langMatches(v.lang, currentLang) || (v.name && v.name.toLowerCase().includes('multilingual')));
-        if (nativeVoices.length > 0) {
-            nativeVoices.sort((a, b) => {
+
+        // 1. Language-specific native browser voices (excluding multilingual voices to prevent duplication)
+        const langNativeVoices = nativeList.filter(v => langMatches(v.lang, currentLang) && !isMultilingualVoice(v));
+        if (langNativeVoices.length > 0) {
+            langNativeVoices.sort((a, b) => {
                 const isPremium = (v) => /natural|online|neural|premium|enhanced/i.test(v.name);
                 const aP = isPremium(a);
                 const bP = isPremium(b);
@@ -1836,22 +1849,36 @@ function rebuildDynamicSettings() {
                 if (!aP && bP) return 1;
                 return a.name.localeCompare(b.name);
             });
-            
+
             const optGroup = document.createElement('optgroup');
             optGroup.label = "Native Browser Voices";
-            nativeVoices.forEach(v => {
+            langNativeVoices.forEach(v => {
                 const opt = document.createElement('option');
                 opt.value = v.name;
                 let textName = v.name;
                 if (/natural|online|neural|premium|enhanced/i.test(v.name)) {
                     textName = `✨ ${textName}`;
-                } else if (v.name.toLowerCase().includes('multilingual')) {
-                    textName = `🌐 ${textName}`;
                 }
                 opt.textContent = textName;
                 optGroup.appendChild(opt);
             });
             voiceSelect.appendChild(optGroup);
+        }
+
+        // 2. Multilingual browser voices (Microsoft Edge & Universal) - always available for ALL languages
+        const multilingualVoices = nativeList.filter(v => isMultilingualVoice(v));
+        if (multilingualVoices.length > 0) {
+            multilingualVoices.sort((a, b) => a.name.localeCompare(b.name));
+
+            const multiGroup = document.createElement('optgroup');
+            multiGroup.label = "🌐 Multilingual Voices (Edge)";
+            multilingualVoices.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.name;
+                opt.textContent = `🌐 ${v.name}`;
+                multiGroup.appendChild(opt);
+            });
+            voiceSelect.appendChild(multiGroup);
         }
 
         const piperForLang = piperList.filter(v => langMatches(v.lang, currentLang)).map(v => ({ ...v }));
@@ -2135,21 +2162,35 @@ function loadVoices() {
     try { list = synth ? synth.getVoices() : []; } catch (e) { console.warn('getVoices failed', e); }
     const filtered = Array.from(list || []).filter(v => v && typeof v.name === 'string');
 
-    if (filtered.length > 0) {
+    const previousCount = voices ? voices.length : 0;
+    if (filtered.length > previousCount || (filtered.length > 0 && previousCount === 0)) {
         voices = filtered;
         rebuildDynamicSettings();
-    } else if (voiceLoadAttempts < 25) {
-        voiceLoadAttempts++;
-        // Proactively stimulate the TTS engine if voices haven't loaded yet
-        try {
-            if (synth && synth.paused) synth.resume();
-            const kick = new SpeechSynthesisUtterance(' ');
-            kick.volume = 0.001;
-            kick.rate = 10;
-            synth.speak(kick);
-        } catch(e) {}
-        setTimeout(loadVoices, 250);
     }
+
+    // In Microsoft Edge & Chromium, online cloud voices (including all Multilingual voices)
+    // load asynchronously in waves. Keep polling to ensure all 300+ Edge voices are populated.
+    if (voiceLoadAttempts < 30) {
+        voiceLoadAttempts++;
+        if (voiceLoadAttempts === 1 || voiceLoadAttempts % 6 === 0) {
+            try {
+                if (synth && synth.paused) synth.resume();
+                const kick = new SpeechSynthesisUtterance(' ');
+                kick.volume = 0.001;
+                kick.rate = 10;
+                synth.speak(kick);
+            } catch(e) {}
+        }
+        setTimeout(loadVoices, 300);
+    }
+}
+window.loadVoices = loadVoices;
+
+if (typeof speechSynthesis !== 'undefined') {
+    speechSynthesis.onvoiceschanged = loadVoices;
+    try {
+        speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    } catch(e) {}
 }
 
 const ROMAN_ORDINALS = {
@@ -3431,9 +3472,17 @@ async function playNativeChunk(chunk, nativeVoice, rate, token) {
                     nativeVoice = voices.find(v => v && v.name === selectedVoiceName) || voices.find(v => v && langMatches(v.lang, chunk.lang)) || voices[0];
                 }
             }
-            if (nativeVoice) utt.voice = nativeVoice;
+            if (nativeVoice) {
+                utt.voice = nativeVoice;
+                if (isMultilingualVoice(nativeVoice) && chunk.lang === 'ka') {
+                    utt.lang = nativeVoice.lang || 'en-US';
+                } else {
+                    utt.lang = chunk.lang || nativeVoice.lang;
+                }
+            } else {
+                utt.lang = chunk.lang;
+            }
             utt.rate = rate;
-            utt.lang = chunk.lang;
 
             let lastActiveWord = null;
             utt.onboundary = (event) => {

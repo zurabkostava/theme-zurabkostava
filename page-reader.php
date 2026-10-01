@@ -39,6 +39,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             try {
                 window.speechSynthesis.getVoices();
                 if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+                window.speechSynthesis.onvoiceschanged = function() {
+                    if (typeof window.loadVoices === 'function') window.loadVoices();
+                };
             } catch(e) {}
         }
     </script>
