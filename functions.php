@@ -3872,11 +3872,31 @@ function zk_localized_meta_key( $field, $language = 'en' ) {
     return 'en' === $language ? '_zk_' . sanitize_key( $field ) : zk_language_meta_key( $field, $language );
 }
 
+/**
+ * Reject values that clearly are not browser/search-result titles.
+ *
+ * This keeps an accidentally pasted FAQ or other long-form field from taking
+ * over the document title while preserving normal custom SEO titles.
+ */
+function zk_validate_seo_title_value( $value ) {
+    $value  = trim( wp_strip_all_tags( (string) $value ) );
+    $length = function_exists( 'mb_strlen' ) ? mb_strlen( $value ) : strlen( $value );
+
+    if ( $length > 180 || preg_match( '/(?:^|\s)Q:\s.+(?:^|\s)A:\s/is', $value ) ) {
+        return '';
+    }
+
+    return $value;
+}
+
 function zk_get_localized_post_meta( $post_id, $field, $language = '', $fallback_to_english = false ) {
     $language = $language ?: ( function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en' );
     $value = get_post_meta( $post_id, zk_localized_meta_key( $field, $language ), true );
     if ( $fallback_to_english && 'en' !== $language && '' === trim( (string) $value ) ) {
         $value = get_post_meta( $post_id, zk_localized_meta_key( $field, 'en' ), true );
+    }
+    if ( 'seo_title' === $field ) {
+        $value = zk_validate_seo_title_value( $value );
     }
     return $value;
 }
@@ -3886,6 +3906,9 @@ function zk_get_localized_term_meta( $term_id, $field, $language = '', $fallback
     $value = get_term_meta( $term_id, zk_localized_meta_key( $field, $language ), true );
     if ( $fallback_to_english && 'en' !== $language && '' === trim( (string) $value ) ) {
         $value = get_term_meta( $term_id, zk_localized_meta_key( $field, 'en' ), true );
+    }
+    if ( 'seo_title' === $field ) {
+        $value = zk_validate_seo_title_value( $value );
     }
     return $value;
 }
@@ -3944,7 +3967,8 @@ function zk_seo_save_meta( $post_id ) {
         $title_field = 'zk_seo_title' . $suffix;
         $desc_field  = 'zk_seo_description' . $suffix;
         if ( isset( $_POST[ $title_field ] ) ) {
-            update_post_meta( $post_id, zk_localized_meta_key( 'seo_title', $code ), sanitize_text_field( wp_unslash( $_POST[ $title_field ] ) ) );
+            $title_value = zk_validate_seo_title_value( sanitize_text_field( wp_unslash( $_POST[ $title_field ] ) ) );
+            update_post_meta( $post_id, zk_localized_meta_key( 'seo_title', $code ), $title_value );
         }
         if ( isset( $_POST[ $desc_field ] ) ) {
             update_post_meta( $post_id, zk_localized_meta_key( 'seo_description', $code ), sanitize_textarea_field( wp_unslash( $_POST[ $desc_field ] ) ) );
@@ -4668,10 +4692,10 @@ function zk_generate_sitemap_string() {
     $sitemap_content .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">' . "\n";
     
     $post_types = get_post_types( array( 'public' => true ), 'names' );
-    unset( $post_types['attachment'] );
-    foreach ( array( 'zk_book', 'zk_tool' ) as $post_type ) {
-        if ( post_type_exists( $post_type ) ) $post_types[ $post_type ] = $post_type;
-    }
+    // Attachments and the data-only book/tool records do not have canonical
+    // public pages of their own. Their real pages live under /books/ and
+    // /projects/, so including the records creates redirects or duplicates.
+    unset( $post_types['attachment'], $post_types['zk_book'], $post_types['zk_tool'] );
 
     $query = new WP_Query([
         'post_type' => array_values( $post_types ),
@@ -4695,6 +4719,14 @@ function zk_generate_sitemap_string() {
         while ($query->have_posts()) {
             $query->the_post();
             $post_id = get_the_ID();
+            $post_obj = get_post( $post_id );
+            if ( ! $post_obj || ! empty( $post_obj->post_password ) ) continue;
+
+            if ( 'page' === $post_obj->post_type ) {
+                $template = get_page_template_slug( $post_id );
+                if ( in_array( $template, array( 'template-analytics.php', 'book-engine/template-book-manager.php' ), true ) ) continue;
+            }
+
             $perm = get_permalink( $post_id );
             $parsed = parse_url($perm);
             $p = isset($parsed['path']) ? $parsed['path'] : '/';

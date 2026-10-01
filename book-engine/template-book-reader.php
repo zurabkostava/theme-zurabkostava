@@ -2,12 +2,14 @@
 /*
 Template Name: Book Reader
 */
-$request_uri    = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
-$current_locale = get_locale();
-$is_georgian    = ( strpos( $request_uri, '/ka/' ) !== false || strpos( $request_uri, 'lang=ka' ) !== false || strpos( $current_locale, 'ka' ) === 0 );
+$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/';
+$request_path = wp_parse_url( $request_uri, PHP_URL_PATH );
+$page_language = function_exists( 'zk_detect_language_from_path' )
+    ? zk_detect_language_from_path( $request_path ?: '/' )
+    : ( 0 === strpos( (string) get_locale(), 'ka' ) ? 'ka' : 'en' );
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo $is_georgian ? 'ka' : 'en'; ?>">
+<html lang="<?php echo esc_attr( $page_language ); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
