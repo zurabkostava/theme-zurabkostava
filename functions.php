@@ -4054,7 +4054,9 @@ function zk_seo_save_taxonomy_meta( $term_id ) {
             $input = 'zk_' . $field . $suffix;
             if ( isset( $_POST[ $input ] ) ) {
                 $value = wp_unslash( $_POST[ $input ] );
-                $value = 'seo_title' === $field ? sanitize_text_field( $value ) : sanitize_textarea_field( $value );
+                $value = 'seo_title' === $field
+                    ? zk_validate_seo_title_value( sanitize_text_field( $value ) )
+                    : sanitize_textarea_field( $value );
                 update_term_meta( $term_id, zk_localized_meta_key( $field, $code ), $value );
             }
         }
@@ -4088,13 +4090,29 @@ function zk_get_seo_target_id( $default_id ) {
     return $default_id;
 }
 
+function zk_is_internal_or_test_page( $post_id ) {
+    if ( 'page' !== get_post_type( $post_id ) ) return false;
+
+    return in_array(
+        get_page_template_slug( $post_id ),
+        array(
+            'template-analytics.php',
+            'book-engine/template-book-manager.php',
+            'page-instavery.php',
+        ),
+        true
+    );
+}
+
 function zk_is_language_version_indexable( $language, $object_id = 0 ) {
-    if ( 'en' === $language ) return true;
     if ( is_singular() ) {
         $object_id = $object_id ?: get_queried_object_id();
+        if ( zk_is_internal_or_test_page( $object_id ) ) return false;
+        if ( 'en' === $language ) return true;
         $object_id = zk_get_seo_target_id( $object_id );
         return zk_is_post_translation_complete( $object_id, $language );
     }
+    if ( 'en' === $language ) return true;
     if ( is_category() || is_tag() ) {
         return zk_is_term_translation_complete( get_queried_object(), $language );
     }
@@ -4724,10 +4742,7 @@ function zk_generate_sitemap_string() {
             $post_obj = get_post( $post_id );
             if ( ! $post_obj || ! empty( $post_obj->post_password ) ) continue;
 
-            if ( 'page' === $post_obj->post_type ) {
-                $template = get_page_template_slug( $post_id );
-                if ( in_array( $template, array( 'template-analytics.php', 'book-engine/template-book-manager.php' ), true ) ) continue;
-            }
+            if ( zk_is_internal_or_test_page( $post_id ) ) continue;
 
             $perm = get_permalink( $post_id );
             $parsed = parse_url($perm);
@@ -4863,8 +4878,9 @@ function zk_render_geo_meta_tags() {
     }
     
     $language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';
+    $internal_page = is_singular() && zk_is_internal_or_test_page( get_queried_object_id() );
     $thin_archive = is_404() || is_author() || is_date() || is_search() || is_attachment() || is_paged();
-    if ( $thin_archive || ! zk_is_language_version_indexable( $language ) ) {
+    if ( $internal_page || $thin_archive || ! zk_is_language_version_indexable( $language ) ) {
         echo "<meta name=\"robots\" content=\"noindex, follow\" />\n";
     } else {
         echo "<meta name=\"robots\" content=\"index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1\" />\n";
