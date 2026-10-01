@@ -2693,6 +2693,33 @@ function processText(rawHtml) {
 
         // Protect Georgian personal initials: e.g. ი. ჭავჭავაძე, შ. რუსთაველი
         protectedText = protectedText.replace(/(^|[\s(„"\'«])([ა-ჰ]{1,2})\.\s*(?=[ა-ჰ])/g, '$1$2___DOT___ ');
+
+        // Protect sentence-ending punctuation inside matching parentheses/brackets
+        // so multi-sentence notes, abbreviations, or citations within ( ... ) do not break sentences prematurely.
+        if (/[([{⟨〈]/.test(protectedText) && /[)\]}⟩〉]/.test(protectedText)) {
+            let depth = 0;
+            let chars = Array.from(protectedText);
+            const openBrackets = new Set(['(', '[', '{', '⟨', '〈']);
+            const closeBrackets = new Set([')', ']', '}', '⟩', '〉']);
+            let remainingClosing = 0;
+            for (let k = 0; k < chars.length; k++) {
+                if (closeBrackets.has(chars[k])) remainingClosing++;
+            }
+            for (let k = 0; k < chars.length; k++) {
+                const ch = chars[k];
+                if (openBrackets.has(ch)) {
+                    if (remainingClosing > depth) depth++;
+                } else if (closeBrackets.has(ch)) {
+                    remainingClosing--;
+                    if (depth > 0) depth--;
+                } else if (depth > 0) {
+                    if (ch === '.') chars[k] = '___DOT___';
+                    else if (ch === '!') chars[k] = '___EXCL___';
+                    else if (ch === '?') chars[k] = '___QUEST___';
+                }
+            }
+            protectedText = chars.join('');
+        }
         const emojiRange = "\\u{1F000}-\\u{1FFFF}\\u{2600}-\\u{27BF}\\u{1F300}-\\u{1F5FF}\\u{1F680}-\\u{1F6FF}\\u{1F1E0}-\\u{1F1FF}";
         const sentenceRegex = new RegExp(`[^.!?${emojiRange}]+(?:[.!?]+|[${emojiRange}]+)+|[^.!?${emojiRange}]+$`, 'gu');
         // Hard split at forced header markers FIRST: the greedy [^.!?]+ class
@@ -2861,10 +2888,10 @@ function buildSpokenSentence(sent, lang) {
         }
         let outChars = [];
         for (let ch of orig) {
-            if (ch === '(' || ch === '[' || ch === '{' || ch === '⟨') {
+            if (ch === '(' || ch === '[' || ch === '{' || ch === '⟨' || ch === '〈') {
                 parenDepth++;
                 continue;
-            } else if (ch === ')' || ch === ']' || ch === '}' || ch === '⟩') {
+            } else if (ch === ')' || ch === ']' || ch === '}' || ch === '⟩' || ch === '〉') {
                 if (parenDepth > 0) parenDepth--;
                 continue;
             }
@@ -3115,6 +3142,10 @@ function buildSpokenSentence(sent, lang) {
         if (resultText.endsWith(':') || resultText.endsWith(';')) {
             resultText = resultText.slice(0, -1) + '.';
         } else if (resultText.length > 0 && !/[.!?]/.test(resultText.slice(-1))) {
+            resultText += '.';
+        }
+    } else if (skipParenthesesSetting && resultText.length > 0 && !/[.!?…:,;]/.test(resultText.slice(-1))) {
+        if (/[.!?…][)\]}⟩〉"„'»\s]*$/.test(sent.textForUI.trim())) {
             resultText += '.';
         }
     }
