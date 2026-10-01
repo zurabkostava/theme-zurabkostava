@@ -2379,15 +2379,43 @@ function preprocessGeorgianText(text) {
     const decimalMap = new Map();
     let decimalCounter = 0;
     
-    // Decimal fractions: 3.14
-    t = t.replace(/(\d+)\.(\d+)/g, (match, whole, frac) => {
+    // Normalize multi-comma numbers like 1,000,000 -> 1000000
+    t = t.replace(/\b\d{1,3}(?:,\d{3}){2,}\b/g, m => m.replace(/,/g, ''));
+    // Normalize integer thousands with zeros like 40,000 or 1,000 -> 40000, 1000
+    t = t.replace(/\b(\d+),000\b/g, (m, p1) => p1 + '000');
+
+    // Decimal fractions: 3.14 or 4,3 with optional Georgian case suffix (e.g. 4,3-მდე, 4.3-ით)
+    t = t.replace(/(\d+)[.,](\d+)(?:-?(მდე|ამდე|დან|იდან|ში|ზე|ით|ად|ს|თან|კენ|მა|მ))?/g, (match, whole, frac, sfx) => {
         const wholeNum = parseInt(whole, 10);
         const fracNum = parseInt(frac, 10);
         const wholeStr = numToGeorgian(wholeNum);
         const fracStr = numToGeorgian(fracNum);
         const precision = frac.length;
-        const precisionMap = { 1: "მეათედი", 2: "მეასედი", 3: "მეათასედი", 4: "მეათიათასედი", 5: "ასათასედი", 6: "მილიონედი" };
-        const unit = precisionMap[precision] || "ნაწილი";
+        const precisionMap = { 
+            1: "მეათედი", 
+            2: "მეასედი", 
+            3: "მეათასედი", 
+            4: "მეათიათასედი", 
+            5: "ასათასედი", 
+            6: "მილიონედი",
+            7: "ათმილიონედი",
+            8: "ასმილიონედი",
+            9: "მილიარდედი"
+        };
+        let unit = precisionMap[precision] || "ნაწილი";
+        if (sfx) {
+            let stem = unit.endsWith('ი') ? unit.slice(0, -1) : unit;
+            if (sfx === 'მდე' || sfx === 'ამდე') unit = stem + 'ამდე';
+            else if (sfx === 'დან' || sfx === 'იდან') unit = stem + 'იდან';
+            else if (sfx === 'ში') unit = stem + 'ში';
+            else if (sfx === 'ზე') unit = stem + 'ზე';
+            else if (sfx === 'ით') unit = stem + 'ით';
+            else if (sfx === 'ად' || sfx === 'დ') unit = stem + 'ად';
+            else if (sfx === 'ს') unit = stem + 'ს';
+            else if (sfx === 'თან') unit = stem + 'თან';
+            else if (sfx === 'კენ') unit = unit + 'კენ';
+            else if (sfx === 'მა' || sfx === 'მ') unit = stem + 'მა';
+        }
         const result = `${wholeStr} მთელი ${fracStr} ${unit}`;
         const placeholder = `___PROCESSED_DECIMAL_${decimalCounter}___`;
         decimalMap.set(placeholder, result);
