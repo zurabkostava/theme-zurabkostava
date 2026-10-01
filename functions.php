@@ -4362,6 +4362,7 @@ function zk_render_json_ld_schema() {
     // A Person must keep one canonical entity ID in every language. `home_url()`
     // is language-filtered on translated routes, while the saved home option is not.
     $identity_url = trailingslashit( esc_url_raw( (string) get_option( 'home', home_url( '/' ) ) ) );
+    $website_url  = untrailingslashit( $identity_url ) . zk_get_language_path( '/', $current_language );
     $person_id    = $identity_url . '#person';
     $logo_url     = get_option( 'zk_profile_img', '' );
     
@@ -4479,7 +4480,7 @@ function zk_render_json_ld_schema() {
         '@type' => 'WebSite',
         'name' => $is_ka ? $site_name_ka : 'Zurab Kostava',
         'alternateName' => $is_ka ? 'Zurab Kostava' : $site_name_ka,
-        'url' => isset( $seo_urls['urls'][ $current_language ] ) ? $seo_urls['urls'][ $current_language ] : $site_url,
+        'url' => $website_url,
         'inLanguage' => $content_locale,
         'publisher' => [
             '@id' => $person_id
@@ -4577,7 +4578,10 @@ function zk_render_json_ld_schema() {
             $book_schema['numberOfPages'] = (int) $pages;
         }
         if ( ! empty( $audience ) ) {
-            $book_schema['audience'] = esc_attr( $audience );
+            $book_schema['audience'] = [
+                '@type'        => 'Audience',
+                'audienceType' => wp_strip_all_tags( $audience ),
+            ];
         }
         if ( ! empty( $isbn ) ) {
             $book_schema['isbn'] = esc_attr( $isbn );
