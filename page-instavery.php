@@ -31,11 +31,10 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 
 ?>
 <!DOCTYPE html>
-<html>
+<html <?php language_attributes(); ?>>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>InstaDiscovery</title>
     <?php wp_head(); ?>
 </head>
 <body>

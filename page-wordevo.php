@@ -41,8 +41,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 <head>
     <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>WordEvo</title>
-    
+
     <?php wp_head(); ?>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">

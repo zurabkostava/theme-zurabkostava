@@ -19,7 +19,6 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 <head>
     <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>ReadRoad — Zurab Kostava</title>
     <meta name="description" content="EPUB and voice reading by Zurab Kostava">
 
     <!-- PWA & Mobile Web App Manifest -->
