@@ -228,10 +228,24 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
     // ვამოწმებთ, აქვს თუ არა პოსტს სურათი (Featured Image)
     $has_image = has_post_thumbnail();
     if ( $has_image ) :
-        $hero_img = esc_url( get_the_post_thumbnail_url( get_the_ID(), 'full' ) );
+        $hero_attachment_id = get_post_thumbnail_id( get_the_ID() );
         ?>
         <div class="zk-post-hero">
-            <img src="<?php echo $hero_img; ?>" fetchpriority="high" loading="eager" decoding="sync" alt="<?php echo esc_attr( get_the_title() ); ?>" class="zk-hero-img">
+            <?php
+            echo wp_get_attachment_image(
+                $hero_attachment_id,
+                'large',
+                false,
+                array(
+                    'fetchpriority' => 'high',
+                    'loading'       => 'eager',
+                    'decoding'      => 'sync',
+                    'alt'           => get_the_title(),
+                    'class'         => 'zk-hero-img',
+                    'sizes'         => '100vw',
+                )
+            );
+            ?>
             <div class="zk-post-hero-gradient"></div>
         </div>
     <?php endif; ?>
