@@ -37,6 +37,23 @@ try {
     console.error("Error loading skip parentheses setting:", e);
 }
 
+let commaSkipSetting = 0;
+try {
+    const savedComma = localStorage.getItem('tts-comma-skip');
+    if (savedComma !== null) {
+        commaSkipSetting = Math.max(0, Math.min(10, parseInt(savedComma, 10) || 0));
+    }
+} catch (e) {
+    console.error("Error loading comma skip setting:", e);
+}
+
+function formatCommaSkipBadge(val) {
+    const v = parseInt(val, 10) || 0;
+    if (v === 0) return '0/10 (Default)';
+    if (v === 10) return '10/10 (All Skipped)';
+    return `${v}/10 (${v * 10}%)`;
+}
+
 let cloudSaveTimeout = null;
 function syncProgressToCloud(force = false) {
     if (!window.currentRawEpubFile) return;
@@ -1799,6 +1816,16 @@ function rebuildDynamicSettings() {
                 </div>
             </label>
         </div>
+        <div class="setting-group slider-group" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07);">
+            <div class="slider-header-row">
+                <label>Comma Pause Smoothing (მძიმეების გამოტოვება)</label>
+                <span class="slider-val-badge" id="comma-skip-val">${formatCommaSkipBadge(commaSkipSetting)}</span>
+            </div>
+            <input type="range" class="settings-slider" id="comma-skip-slider" min="0" max="10" step="1" value="${commaSkipSetting}">
+            <span style="font-size: 11px; color: var(--text-muted, #94a3b8); margin-top: 4px; display: block;">
+                0 = ყველა მძიმე (Default), 10 = ყველა მძიმის გამოტოვება (შეუსვენებლად გადაბმა)
+            </span>
+        </div>
     `;
     container.appendChild(wrapper);
 
@@ -2058,6 +2085,20 @@ function rebuildDynamicSettings() {
             if (isPlaying) {
                 playMergedQueue();
             }
+        });
+    }
+
+    const commaSlider = wrapper.querySelector('#comma-skip-slider');
+    const commaVal = wrapper.querySelector('#comma-skip-val');
+    if (commaSlider && commaVal) {
+        commaSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value, 10) || 0;
+            commaSkipSetting = val;
+            commaVal.textContent = formatCommaSkipBadge(val);
+            try { localStorage.setItem('tts-comma-skip', String(val)); } catch(err) {}
+        });
+        commaSlider.addEventListener('change', () => {
+            if (isPlaying) playMergedQueue();
         });
     }
 
@@ -2794,6 +2835,15 @@ function processText(rawHtml) {
 
 const EMOJI_TEST_RE = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/u;
 
+function processCommaSkip(str) {
+    if (commaSkipSetting <= 0 || !str || typeof str !== 'string') return str;
+    if (!str.includes(',')) return str;
+    return str.replace(/(?<!\d),(?!\d)/g, (match) => {
+        if (commaSkipSetting >= 10) return '';
+        return (Math.random() < (commaSkipSetting / 10)) ? '' : match;
+    });
+}
+
 // Builds the spoken text for ONE sentence + char offsets of each visual word within it.
 // `raw` keeps the trailing space so offsets concatenate cleanly for native utterances.
 function buildSpokenSentence(sent, lang) {
@@ -2849,8 +2899,12 @@ function buildSpokenSentence(sent, lang) {
             continue;
         }
         if (info.isOnlyPunct) {
-            if (text.length > 0) {
-                text = text.trimEnd() + info.raw + " ";
+            let punct = info.raw;
+            if (punct.includes(',')) {
+                punct = processCommaSkip(punct);
+            }
+            if (punct && punct.length > 0 && text.length > 0) {
+                text = text.trimEnd() + punct + " ";
             }
             i++;
             continue;
@@ -3038,6 +3092,7 @@ function buildSpokenSentence(sent, lang) {
             // Fallback single word for Georgian
             let spoken = preprocessGeorgianText(raw);
             if (/[a-zA-Z]/.test(spoken)) spoken = transliterateToGeorgian(spoken);
+            spoken = processCommaSkip(spoken);
             const start = text.length;
             text += spoken + " ";
             wordRanges.push({ el: wordEl, start: start, end: text.length });
@@ -3047,7 +3102,8 @@ function buildSpokenSentence(sent, lang) {
 
         // Non-Georgian language fallback
         const start = text.length;
-        text += raw + " ";
+        const spoken = processCommaSkip(raw);
+        text += spoken + " ";
         wordRanges.push({ el: wordEl, start: start, end: text.length });
         i++;
     }
