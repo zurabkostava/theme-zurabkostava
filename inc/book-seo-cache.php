@@ -1,9 +1,9 @@
 <?php
 /**
- * Non-blocking SEO excerpts for the interactive book reader.
+ * Non-blocking SEO content for the interactive book reader.
  *
  * The reader gets the complete book from Supabase in the browser. WordPress
- * keeps a compact, persistent excerpt for crawlers and refreshes it via cron,
+ * keeps a complete, persistent HTML copy for crawlers and refreshes it via cron,
  * so a slow Supabase response can never delay the page itself.
  */
 
@@ -12,24 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 function zk_book_seo_option_key( $book_slug, $language ) {
-    return 'zk_book_seo_v5_' . md5( $book_slug . '_' . $language );
+    return 'zk_book_seo_v6_' . md5( $book_slug . '_' . $language );
 }
 
-function zk_book_seo_trim_words( $text, $limit ) {
-    $text  = trim( preg_replace( '/\s+/u', ' ', wp_strip_all_tags( $text, true ) ) );
-    $words = preg_split( '/\s+/u', $text, -1, PREG_SPLIT_NO_EMPTY );
-
-    if ( count( $words ) <= $limit ) {
-        return $text;
-    }
-
-    return implode( ' ', array_slice( $words, 0, $limit ) ) . '…';
-}
-
-function zk_book_build_seo_excerpt( $chapters, $language ) {
-    $html             = '';
-    $remaining_words  = 1800;
-    $is_georgian      = 'ka' === $language;
+function zk_book_build_seo_content( $chapters, $language ) {
+    $html        = '';
+    $is_georgian = 'ka' === $language;
 
     foreach ( (array) $chapters as $chapter ) {
         $title = $is_georgian
@@ -43,13 +31,8 @@ function zk_book_build_seo_excerpt( $chapters, $language ) {
             $html .= '<h2>' . esc_html( $title ) . '</h2>';
         }
 
-        if ( '' !== trim( $content ) && $remaining_words > 0 ) {
-            $chapter_limit = min( 140, $remaining_words );
-            $excerpt       = zk_book_seo_trim_words( $content, $chapter_limit );
-            if ( '' !== $excerpt ) {
-                $html .= '<p>' . esc_html( $excerpt ) . '</p>';
-                $remaining_words -= count( preg_split( '/\s+/u', $excerpt, -1, PREG_SPLIT_NO_EMPTY ) );
-            }
+        if ( '' !== trim( $content ) ) {
+            $html .= wp_kses_post( $content );
         }
     }
 
@@ -86,7 +69,7 @@ function zk_refresh_book_seo_cache( $book_slug, $language ) {
     update_option(
         zk_book_seo_option_key( $book_slug, $language ),
         array(
-            'html'       => zk_book_build_seo_excerpt( $data[0]['chapters'], $language ),
+            'html'       => zk_book_build_seo_content( $data[0]['chapters'], $language ),
             'updated_at' => time(),
         ),
         false
@@ -94,7 +77,7 @@ function zk_refresh_book_seo_cache( $book_slug, $language ) {
 }
 add_action( 'zk_refresh_book_seo_cache', 'zk_refresh_book_seo_cache', 10, 2 );
 
-function zk_get_book_seo_excerpt( $book_slug, $language ) {
+function zk_get_book_seo_content( $book_slug, $language ) {
     $language   = 'ka' === $language ? 'ka' : 'en';
     $option_key = zk_book_seo_option_key( $book_slug, $language );
     $cached     = get_option( $option_key, array() );
@@ -106,23 +89,21 @@ function zk_get_book_seo_excerpt( $book_slug, $language ) {
         return $cached['html'];
     }
 
-    // Preserve useful content from the previous cache without making a
-    // network request during this page view. The cron refresh will replace it
-    // with chapter-aware excerpts shortly afterwards.
+    // Preserve the complete previous cache without making a network request
+    // during this page view. The cron refresh will update it shortly afterwards.
     $legacy_key = 'zk_book_seo_v4_' . md5( $book_slug . '_' . $language );
     $legacy     = get_transient( $legacy_key );
     if ( is_string( $legacy ) && '' !== trim( $legacy ) ) {
-        $fallback = '<p>' . esc_html( zk_book_seo_trim_words( $legacy, 1800 ) ) . '</p>';
         update_option(
             $option_key,
             array(
-                'html'       => $fallback,
+                'html'       => $legacy,
                 'updated_at' => 0,
             ),
             false
         );
         zk_schedule_book_seo_refresh( $book_slug, $language );
-        return $fallback;
+        return $legacy;
     }
 
     zk_schedule_book_seo_refresh( $book_slug, $language );

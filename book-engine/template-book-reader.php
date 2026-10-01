@@ -47,12 +47,12 @@ $page_language = function_exists( 'zk_get_current_language' )
 
 <body>
 <?php
-// Compact SEO content is refreshed in the background. Never make the page
+// Complete SEO content is refreshed in the background. Never make the page
 // wait for Supabase before returning HTML to the visitor.
 $book_slug = $post->post_name;
 $is_georgian = 'ka' === $page_language;
-$seo_content = function_exists( 'zk_get_book_seo_excerpt' )
-    ? zk_get_book_seo_excerpt( $book_slug, $is_georgian ? 'ka' : 'en' )
+$seo_content = function_exists( 'zk_get_book_seo_content' )
+    ? zk_get_book_seo_content( $book_slug, $is_georgian ? 'ka' : 'en' )
     : '';
 ?>
 
