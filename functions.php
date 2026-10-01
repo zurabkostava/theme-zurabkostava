@@ -4237,7 +4237,14 @@ function zk_render_seo_meta() {
                 $plain_content = $post_obj
                     ? trim( wp_strip_all_tags( strip_shortcodes( $post_obj->post_content ) ) )
                     : '';
-                $desc = $plain_content ? wp_trim_words( $plain_content, 30, '...' ) : $site_desc;
+                if ( $plain_content ) {
+                    $desc = wp_trim_words( $plain_content, 30, '...' );
+                } else {
+                    $page_name = $translated_title ?: get_the_title( $obj_id );
+                    $desc = $is_ka
+                        ? $page_name . ' — ზურაბ კოსტავას ხელოვნების, მუსიკის, ტექნოლოგიისა და დამოუკიდებელი შემოქმედებითი პროექტების ოფიციალური სივრცე.'
+                        : $page_name . ' by Zurab Kostava — explore multidisciplinary art, music, technology, writing, and independent creative projects.';
+                }
             }
 
             // Image logic
