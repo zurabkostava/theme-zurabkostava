@@ -28,13 +28,12 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // 🚫 Remove Mobile Bottom
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
+      "@type": "CreativeWork",
       "name": "Encrolib Visual Language Translator",
-      "operatingSystem": "Any",
-      "applicationCategory": "UtilitiesApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "0"
+      "creator": {
+        "@type": "Person",
+        "@id": "<?php echo esc_url( home_url( '/#person' ) ); ?>",
+        "name": "Zurab Kostava"
       },
       "description": "Translate any text into a beautiful visual language using unique color codes and shapes. Convert words to colors and colors back to words instantly."
     }
@@ -264,7 +263,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // 🚫 Remove Mobile Bottom
 
 <!-- 🤖 SEO Semantic Content Area (Hidden from UI, visible to bots/screen-readers) -->
 <article class="sr-only">
-    <h1><?php the_title(); ?></h1>
+    <p class="sr-only-title"><?php the_title(); ?></p>
     <?php
     if ( have_posts() ) :
         while ( have_posts() ) : the_post();

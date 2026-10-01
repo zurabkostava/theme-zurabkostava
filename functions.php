@@ -3281,22 +3281,24 @@ function zk_tools_shortcode() {
         $href         = $link ? ' href="' . esc_url( $link ) . '" target="_blank" rel="noopener"' : '';
         $status_class = strtolower( str_replace( ' ', '-', $status_en ) );
 
-        // Schema item aggregation
+        // Describe portfolio entries as creative projects. Some are software,
+        // but not every project is an installable app with public reviews;
+        // marking all of them as SoftwareApplication creates invalid Google
+        // rich-result requirements for ratings/reviews.
         $schema_items[] = array(
             '@type' => 'ListItem',
             'position' => $pos,
             'item' => array(
-                '@type' => 'SoftwareApplication',
+                '@type' => 'CreativeWork',
                 'inLanguage' => $is_ka ? 'ka-GE' : 'en-US',
                 'name' => wp_strip_all_tags( $title ),
                 'description' => wp_strip_all_tags( $excerpt ),
                 'url' => $link ? $link : get_permalink( $post_id ),
-                'applicationCategory' => 'UtilitiesApplication',
-                'operatingSystem' => 'Any',
-                'offers' => array(
-                    '@type' => 'Offer',
-                    'price' => '0'
-                )
+                'creator' => array(
+                    '@type' => 'Person',
+                    '@id'   => home_url( '/#person' ),
+                    'name'  => 'Zurab Kostava',
+                ),
             )
         );
         $pos++;

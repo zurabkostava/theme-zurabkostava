@@ -64,7 +64,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <div class="main-container">
         <header>
             <div class="logo-box">
-                <img src="<?php echo get_template_directory_uri(); ?>/instavery/icon48.png" alt="logo" style="width: 40px; height: 40px;">
+                <i class="fa-brands fa-instagram" aria-hidden="true" style="font-size: 40px; line-height: 1;"></i>
                 <h1>Insta<span class="gradient-text">Very</span></h1>
             </div>
 
