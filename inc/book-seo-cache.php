@@ -12,7 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 function zk_book_seo_option_key( $book_slug, $language ) {
-    return 'zk_book_seo_v6_' . md5( $book_slug . '_' . $language );
+    return 'zk_book_seo_v7_' . md5( $book_slug . '_' . $language );
+}
+
+function zk_book_normalize_seo_headings( $html ) {
+    $html = preg_replace( '/<h1(\s[^>]*)?>/i', '<h2$1>', (string) $html );
+    return preg_replace( '/<\/h1>/i', '</h2>', $html );
 }
 
 function zk_book_build_seo_content( $chapters, $language ) {
@@ -32,7 +37,7 @@ function zk_book_build_seo_content( $chapters, $language ) {
         }
 
         if ( '' !== trim( $content ) ) {
-            $html .= wp_kses_post( $content );
+            $html .= wp_kses_post( zk_book_normalize_seo_headings( $content ) );
         }
     }
 
@@ -94,6 +99,7 @@ function zk_get_book_seo_content( $book_slug, $language ) {
     $legacy_key = 'zk_book_seo_v4_' . md5( $book_slug . '_' . $language );
     $legacy     = get_transient( $legacy_key );
     if ( is_string( $legacy ) && '' !== trim( $legacy ) ) {
+        $legacy = zk_book_normalize_seo_headings( $legacy );
         update_option(
             $option_key,
             array(

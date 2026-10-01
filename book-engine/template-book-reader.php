@@ -115,7 +115,7 @@ $seo_content = function_exists( 'zk_get_book_seo_content' )
 
     <main id="main-content">
         <div class="site-title" translate="no">
-            <h1 id="site-main-title"></h1>
+            <h1 id="site-main-title"><?php echo esc_html( get_the_title( $post ) ); ?></h1>
             <p id="site-sub-title"></p>
         </div>
 

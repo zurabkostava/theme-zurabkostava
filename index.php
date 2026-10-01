@@ -816,8 +816,6 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
     </article>
 </main>
 
-<template id="view-home"><?php echo $zk_hero; // phpcs:ignore WordPress.Security.EscapeOutput ?></template>
-
 <?php wp_footer(); ?>
 </body>
 </html>
