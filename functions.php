@@ -107,6 +107,9 @@ function zk_normalize_internal_destination( $url ) {
     }
 
     $parts     = wp_parse_url( $url );
+    if ( ! is_array( $parts ) || ( isset( $parts['scheme'] ) && ! in_array( strtolower( $parts['scheme'] ), array( 'http', 'https' ), true ) ) ) {
+        return $url;
+    }
     $home_host = strtolower( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) );
     $url_host  = strtolower( (string) ( $parts['host'] ?? '' ) );
 
@@ -117,7 +120,7 @@ function zk_normalize_internal_destination( $url ) {
     $path = (string) ( $parts['path'] ?? '' );
     if ( '/blog/zk_book/beta/' === trailingslashit( $path ) ) {
         $path = '/books/beta/';
-    } elseif ( $path && '/' !== $path && ! pathinfo( $path, PATHINFO_EXTENSION ) ) {
+    } elseif ( 0 === strpos( $path, '/' ) && '/' !== $path && ! pathinfo( $path, PATHINFO_EXTENSION ) ) {
         $path = trailingslashit( $path );
     }
 
@@ -169,7 +172,7 @@ add_filter( 'the_content', 'zk_fix_legacy_internal_content_links', 25 );
  * filter has run. Add the protection once more to the completed page content.
  */
 function zk_secure_rendered_target_blank_links( $content ) {
-    if ( is_admin() || ! is_string( $content ) || false === stripos( $content, 'target=' ) ) {
+    if ( is_admin() || ! is_string( $content ) || ! preg_match( '/\btarget\s*=/i', $content ) ) {
         return $content;
     }
 

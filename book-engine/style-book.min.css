@@ -4198,10 +4198,9 @@ body.lang-ka #digital-library-root .toc-h1 {
 }
 
 body.lang-ka #digital-library-root .page-content,
-body.lang-ka #digital-library-root .page-content p,
-body.lang-ka #digital-library-root .page-content li,
-body.lang-ka #digital-library-root .page-content blockquote {
-    font-family: "Noto Serif Georgian", serif !important;
+body.lang-ka #digital-library-root #measure-container {
+    --main-font: "Noto Serif Georgian", serif;
+    font-family: var(--main-font) !important;
 }
 
 /* =========================================
