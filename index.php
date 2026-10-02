@@ -433,7 +433,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                                     <span class="zk-card-meta-separator"></span>
                                     <span class="zk-card-date"><?php echo esc_html( $date ); ?></span>
                                 </div>
-                                <h3 class="zk-card-title"><?php echo esc_html( $title ); ?></h3>
+                                <h2 class="zk-card-title"><?php echo esc_html( $title ); ?></h2>
                             </div>
                         </a>
                     <?php endwhile; ?>
@@ -487,7 +487,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                 });
             };
 
-            var UPPER_SEL = '.nav-link, .dropdown-link, .dock-meta, .page__eyebrow, .zk-breadcrumbs, .zk-breadcrumbs a, .zk-breadcrumbs span, .zk-nav-label, .zk-tags-label, .zk-card-category, .zk-sort-trigger, .zk-sort-label, .zk-sort-current, .zk-sort-option, .zk-gallery-filter, .zk-filter-btn, .zk-filter-pill, .zk-visual-hub-badge, .zk-visual-badge, .zk-visual-action-label, .zk-tool-status, .zk-tool-link-text, .zk-tool-badge, .zk-tab-btn, .zk-read-btn, .zk-more-btn, .zk-spotify-btn, .zk-timeline-tag, .zk-lightbox-col-title, .zk-lightbox-thumb-group-title, .zk-bento-header h3, .zk-header-title h3, .zk-email-label, .hero-eyebrow, .hero-eyebrow-wrap, .enc-tab-btn, .step-title, .switcher-label, [data-uppercase], [style*="uppercase"]';
+            var UPPER_SEL = '.nav-link, .dropdown-link, .dock-meta, .page__eyebrow, .zk-breadcrumbs, .zk-breadcrumbs a, .zk-breadcrumbs span, .zk-nav-label, .zk-tags-label, .zk-card-category, .zk-sort-trigger, .zk-sort-label, .zk-sort-current, .zk-sort-option, .zk-gallery-filter, .zk-filter-btn, .zk-filter-pill, .zk-visual-hub-badge, .zk-visual-badge, .zk-visual-action-label, .zk-tool-status, .zk-tool-link-text, .zk-tool-badge, .zk-tab-btn, .zk-read-btn, .zk-more-btn, .zk-spotify-btn, .zk-timeline-tag, .zk-lightbox-col-title, .zk-lightbox-thumb-group-title, .zk-bento-header h2, .zk-bento-header h3, .zk-header-title h2, .zk-header-title h3, .zk-email-label, .hero-eyebrow, .hero-eyebrow-wrap, .enc-tab-btn, .step-title, .switcher-label, [data-uppercase], [style*="uppercase"]';
 
             var EN_MONTHS = {
                 'january': 'იანვარი', 'jan': 'იანვარი',

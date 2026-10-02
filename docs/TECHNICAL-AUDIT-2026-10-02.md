@@ -34,3 +34,11 @@ The four no-outgoing-link errors are the English/Georgian Book Reader and ReadRo
 PHP syntax and standalone rendered-link checks passed for English, Georgian and a registered German fixture, including external-link preservation and idempotent normalization. Fresh deployment verification is needed before claiming these remaining Ahrefs errors have disappeared. The host-level HTTP/www redirect chain and editorial metadata warnings remain separate follow-ups; an audit score does not guarantee search rankings.
 
 Live verification after push `2082de4`: both plain English/Georgian book URLs return 200 with the correct LIB anchor in initial HTML. Uncached responses retain `seo-book-content` in both languages. Plain and uncached Georgian About HTML no longer contain the exact old `href="https://zurabkostava.com/ka"`. No additional cache purge was necessary. These response checks verify deployment; Ahrefs issue counts remain those of the preceding crawl until it crawls again.
+
+## New Screaming Frog overview, exported at 15:29
+
+The new `issues_overview_report.csv` contains aggregate counts and guidance only, not affected URLs. A fresh public HTML check of 66 core sitemap pages found no fetch failures, no missing security headers and no pages without internal outlinks. Deferred project apps are excluded from that check.
+
+Raw HTML identifies six unique images without sizes: the About profile photo, four images inside the complete hidden book HTML, and the book's Google sign-in icon. The profile now uses WordPress attachment metadata for dimensions, with its existing fixed display frame as the external-image fallback; the icon declares its existing 24px size. Stored book illustrations remain untouched and do not affect visible layout while the SEO article is hidden.
+
+Theme-generated top-level card headings (blog/archive, books and projects) and About section headings now use H2 under the page H1. Existing class styles and Georgian uppercase selectors include the new H2 elements, preserving appearance. Editor-authored article/monologue text and separate app headings are outside this change. PHP syntax passed; CSS diff checking passes with `core.whitespace=cr-at-eol` because the stylesheet is tracked with CRLF. Deployment remains to be verified for this batch.

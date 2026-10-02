@@ -89,8 +89,8 @@ html:not([lang^="ka"]) .zk-spotify-btn,
 html:not([lang^="ka"]) .zk-timeline-tag,
 html:not([lang^="ka"]) .zk-lightbox-col-title,
 html:not([lang^="ka"]) .zk-lightbox-thumb-group-title,
-html:not([lang^="ka"]) .zk-bento-header h3,
-html:not([lang^="ka"]) .zk-header-title h3,
+html:not([lang^="ka"]) .zk-bento-header :is(h2, h3),
+html:not([lang^="ka"]) .zk-header-title :is(h2, h3),
 html:not([lang^="ka"]) .zk-email-label,
 html:not([lang^="ka"]) .hero-eyebrow,
 html:not([lang^="ka"]) .hero-eyebrow-wrap,
@@ -148,8 +148,8 @@ html[lang^="ka"] .zk-spotify-btn,
 html[lang^="ka"] .zk-timeline-tag,
 html[lang^="ka"] .zk-lightbox-col-title,
 html[lang^="ka"] .zk-lightbox-thumb-group-title,
-html[lang^="ka"] .zk-bento-header h3,
-html[lang^="ka"] .zk-header-title h3,
+html[lang^="ka"] .zk-bento-header :is(h2, h3),
+html[lang^="ka"] .zk-header-title :is(h2, h3),
 html[lang^="ka"] .zk-email-label,
 html[lang^="ka"] .hero-eyebrow,
 html[lang^="ka"] .hero-eyebrow-wrap,
@@ -2666,7 +2666,7 @@ body.zk-lb-open { overflow: hidden; }
 }
 
 
-.zk-header-title h3 {
+.zk-header-title :is(h2, h3) {
 	font-size: 1.1rem;
 	font-weight: 600;
 	margin: 0;
@@ -2688,7 +2688,7 @@ body.zk-lb-open { overflow: hidden; }
 	color: var(--text-dim);
 }
 
-.zk-bento-header h3 {
+.zk-bento-header :is(h2, h3) {
 	font-size: 1.1rem;
 	font-weight: 600;
 	margin: 0;

@@ -182,7 +182,7 @@ $seo_content = function_exists( 'zk_get_book_seo_content' )
 
             <div class="auth-divider"><span><?php echo $is_georgian ? 'ან შედიხართ' : 'or continue with'; ?></span></div>
             <button id="auth-google-btn" class="oauth-btn">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" width="24" height="24" alt="Google Logo">
                 <span id="auth-google-text"><?php echo $is_georgian ? 'Google - ით გაგრძელება' : 'Continue with Google'; ?></span>
             </button>
 

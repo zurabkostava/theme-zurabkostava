@@ -513,7 +513,7 @@ function zk_custom_post_grid( $atts ) {
         $output .= '<span class="zk-card-date">' . esc_html( $date ) . '</span>';
         $output .= '</div>';
 
-        $output .= '<h3 class="zk-card-title">' . $title . '</h3>';
+        $output .= '<h2 class="zk-card-title">' . $title . '</h2>';
         $output .= '</div>';
         $output .= '</a>';
     }
@@ -2037,7 +2037,7 @@ function zk_about_page_shortcode() {
                         <div class="zk-bento-header">
                             <div class="zk-header-title">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                <h3><?php echo $is_ka ? 'მონაცემები & კონტაქტი' : 'Vitals & Connect'; ?></h3>
+                                <h2><?php echo $is_ka ? 'მონაცემები & კონტაქტი' : 'Vitals & Connect'; ?></h2>
                             </div>
                             <p class="zk-bento-desc"><?php 
                                 if ($is_ka) {
@@ -2099,7 +2099,15 @@ function zk_about_page_shortcode() {
                             </div> <!-- /.zk-profile-content -->
 
                             <div class="zk-profile-photo">
-                                <img src="<?php echo esc_url(get_option('zk_profile_img', 'https://via.placeholder.com/150x200')); ?>" alt="<?php echo $is_ka ? 'ზურაბ კოსტავა' : 'Zurab Kostava'; ?>" />
+                                <?php
+                                $profile_url = get_option( 'zk_profile_img', 'https://via.placeholder.com/150x200' );
+                                $profile_id = attachment_url_to_postid( $profile_url );
+                                $profile_meta = $profile_id ? wp_get_attachment_metadata( $profile_id ) : array();
+                                // The fixed photo frame remains the fallback for external images.
+                                $profile_width = ! empty( $profile_meta['width'] ) ? (int) $profile_meta['width'] : 170;
+                                $profile_height = ! empty( $profile_meta['height'] ) ? (int) $profile_meta['height'] : 220;
+                                ?>
+                                <img src="<?php echo esc_url( $profile_url ); ?>" width="<?php echo $profile_width; ?>" height="<?php echo $profile_height; ?>" decoding="async" alt="<?php echo $is_ka ? 'ზურაბ კოსტავა' : 'Zurab Kostava'; ?>" />
                             </div>
                         </div> <!-- /.zk-profile-inner -->
 
@@ -2133,7 +2141,7 @@ function zk_about_page_shortcode() {
                         <div class="zk-bento-header">
                             <div class="zk-header-title">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                                <h3><?php echo $is_ka ? 'უნარები' : 'Skills'; ?></h3>
+                                <h2><?php echo $is_ka ? 'უნარები' : 'Skills'; ?></h2>
                             </div>
                             <p class="zk-bento-desc"><?php 
                                 if ($is_ka) {
@@ -2166,7 +2174,7 @@ function zk_about_page_shortcode() {
                         <div class="zk-bento-header">
                             <div class="zk-header-title">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                                <h3><?php echo $is_ka ? 'შერჩეული გონება' : 'The Curated Mind'; ?></h3>
+                                <h2><?php echo $is_ka ? 'შერჩეული გონება' : 'The Curated Mind'; ?></h2>
                             </div>
                             <p class="zk-bento-desc"><?php 
                                 if ($is_ka) {
@@ -2272,7 +2280,7 @@ function zk_about_page_shortcode() {
                 <div class="zk-bento-header" style="margin-bottom: 30px;">
                     <div class="zk-header-title">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                        <h3><?php echo $is_ka ? 'გალერეა' : 'Gallery'; ?></h3>
+                        <h2><?php echo $is_ka ? 'გალერეა' : 'Gallery'; ?></h2>
                     </div>
                     <p class="zk-bento-desc"><?php 
                         if ($is_ka) {
@@ -3140,7 +3148,7 @@ function zk_books_shortcode() {
         }
         $output .= '</div>'; // end meta bar
 
-        $output .= '<h3 class="zk-book-title">' . esc_html( $title ) . '</h3>';
+        $output .= '<h2 class="zk-book-title">' . esc_html( $title ) . '</h2>';
         if ( $author ) {
             $output .= '<div class="zk-book-author">' . esc_html( $by_label ) . ' <span>' . esc_html( $author ) . '</span></div>';
         }
@@ -3445,7 +3453,7 @@ function zk_tools_shortcode() {
 
         $output .= '<div class="zk-tool-content">';
         $output .= '<div class="zk-tool-header">';
-        $output .= '<h3 class="zk-tool-title">' . esc_html( $title ) . '</h3>';
+        $output .= '<h2 class="zk-tool-title">' . esc_html( $title ) . '</h2>';
         $output .= '<span class="zk-tool-status status-' . esc_attr( $status_class ) . '">' . esc_html( $status_display ) . '</span>';
         $output .= '</div>';
         
