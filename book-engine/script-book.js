@@ -649,6 +649,10 @@ async function setupUserAuth() {
     // სესიის ინიციალიზაცია
     const session = await getCachedSession();
     updateAuthUI(session);
+    document.addEventListener('book-language-change', () => {
+        updateAuthUI(session);
+        updateModalTexts();
+    });
 
     // 🚀 მთავარი ღილაკის კლიკი
     authBtn.onclick = (e) => {
@@ -1108,7 +1112,7 @@ function applyBookGeorgianUppercase(root) {
     for (const node of nodes) {
         if (!/[\u10D0-\u10FA]/.test(node.nodeValue)) continue;
         const parent = node.parentElement;
-        if (!parent || parent.closest('script, style, textarea, input, [contenteditable="true"], .ql-editor, .material-icons, .material-icons-outlined')) continue;
+        if (!parent || parent.closest('script, style, textarea, input, [contenteditable="true"], .ql-editor, .seo-book-content, .material-icons, .material-icons-outlined')) continue;
         if (getComputedStyle(parent).textTransform !== 'uppercase') continue;
         const heading = parent.closest('h1, h2, h3');
         if (heading && !heading.hasAttribute('data-full-text')) {
@@ -1119,8 +1123,8 @@ function applyBookGeorgianUppercase(root) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const root = document.getElementById('digital-library-root');
-    if (!root) return;
+    const root = document.body;
+    if (!document.getElementById('digital-library-root')) return;
     applyBookGeorgianUppercase(root);
     const observer = new MutationObserver(records => {
         const changed = new Set();
@@ -1135,6 +1139,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     observer.observe(root, { childList: true, subtree: true, characterData: true });
 });
+
+function syncBookInterfaceLanguage() {
+    const isKa = currentLanguage === 'ka';
+    document.documentElement.lang = isKa ? 'ka' : 'en';
+    const setText = (selector, en, ka) => {
+        document.querySelectorAll(selector).forEach(el => { el.textContent = isKa ? ka : en; });
+    };
+    setText('.font-display-label', 'FONT SIZE', 'შრიფტის ზომა');
+    setText('.share-text-label', 'Share', 'გაზიარება');
+    setText('#glossary-modal .glossary-header h3', 'Glossary', 'წიგნის განმარტებები');
+    setText('#description-modal .glossary-header h3', 'SYNOPSIS', 'სინოპსისი');
+    const audio = document.getElementById('audio-proto-toggle');
+    if (audio) audio.innerHTML = '<span class="material-icons-outlined">headphones</span><span>' + (isKa ? 'აუდიო ვერსია' : 'Audiobook') + '</span>';
+    const labels = {
+        'theme-toggle-btn': ['Theme', 'თემა'],
+        'open-sidebar-btn': ['Menu', 'მენიუ'],
+        'open-glossary-btn': ['Glossary', 'განმარტებები'],
+        'open-desc-btn': ['About Book', 'წიგნის შესახებ'],
+        'main-share-btn': ['Share', 'გაზიარება']
+    };
+    Object.entries(labels).forEach(([id, text]) => {
+        const el = document.getElementById(id);
+        if (el) el.title = text[isKa ? 1 : 0];
+    });
+    const home = document.getElementById('lib-home-btn');
+    if (home) {
+        home.href = (isKa ? '/ka' : '') + '/books/';
+        home.title = isKa ? 'მთავარ საიტზე' : 'Go to main site';
+        home.setAttribute('aria-label', isKa ? 'წიგნების ბიბლიოთეკაში დაბრუნება' : 'Return to the book library');
+    }
+    const description = document.getElementById('description-body');
+    if (description) description.textContent = isKa ? (bookMeta.description || '') : (bookMeta.description_en || bookMeta.description || '');
+    if (typeof window.renderGlossary === 'function') window.renderGlossary();
+    document.dispatchEvent(new Event('book-language-change'));
+    applyBookGeorgianUppercase(document.body);
+}
 
 function updateStaticUI() {
     // 1. ენის კლასის შეცვლა
@@ -1169,6 +1209,7 @@ function updateStaticUI() {
         sidebarHeader.innerText = isEn ? sidebarText : bookGeorgianUppercase(sidebarText);
         sidebarHeader.parentElement.classList.add('skiptranslate');
     }
+    syncBookInterfaceLanguage();
 
 }
 
@@ -4358,8 +4399,15 @@ function initAudioPrototype() {
     if (!bookData) return;
 
     const pageLang = document.documentElement.lang.toLowerCase();
-    const currentLang = pageLang.includes('en') ? 'en' : 'ka';
-    const currentLangChapters = bookData[currentLang];
+    let currentLang = currentLanguage;
+    let currentLangChapters = bookData[currentLang];
+    document.addEventListener('book-language-change', () => {
+        currentLang = currentLanguage;
+        currentLangChapters = bookData[currentLang] || [];
+        currentLangChapters.forEach(ch => { ch.parsedTimings = ch.timings.map(t => ({ id: t.id, start: parseTimeToSeconds(t.start), end: parseTimeToSeconds(t.end) })); });
+        const stop = document.querySelector('#audio-mini-player .btn-stop, .btn-stop');
+        if (stop) stop.click();
+    });
 
     if (!currentLangChapters || currentLangChapters.length === 0) return;
 
@@ -4499,7 +4547,7 @@ function initAudioPrototype() {
             document.body.appendChild(toast);
         }
 
-        const wipText = currentLang === 'en' ? 'Audio version in progress...' : 'აუდიო ვერსია მზადდება...';
+        const wipText = currentLanguage === 'en' ? 'Audio version in progress...' : 'აუდიო ვერსია მზადდება...';
         toast.innerHTML = `<span class="material-icons-outlined" style="font-size: 18px;">construction</span> ${wipText}`;
 
         // ანიმაციით გამოჩენა
