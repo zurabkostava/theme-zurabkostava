@@ -140,6 +140,10 @@ function zk_early_uri_rewrite() {
     if (is_admin()) return;
     
     $request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+    // Keep the browser URL before WordPress receives the unprefixed route.
+    if ( ! defined( 'ZK_ORIGINAL_REQUEST_URI' ) ) {
+        define( 'ZK_ORIGINAL_REQUEST_URI', $request_uri );
+    }
     $path = parse_url($request_uri, PHP_URL_PATH);
     
     $language = zk_detect_language_from_path( $path );
@@ -181,6 +185,30 @@ function zk_disable_canonical_for_ka($redirect_url, $requested_url) {
     return $redirect_url;
 }
 add_filter('redirect_canonical', 'zk_disable_canonical_for_ka', 10, 2);
+
+/** WordPress' canonical redirect is disabled on translations to retain language.
+ * Normalize only the missing slash on an existing translated HTML page.
+ */
+function zk_redirect_localized_trailing_slash() {
+    if ( is_admin() || is_404() || is_feed() || is_preview() || is_search() ||
+        ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ||
+        ! in_array( $_SERVER['REQUEST_METHOD'] ?? 'GET', array( 'GET', 'HEAD' ), true ) ||
+        'en' === zk_get_current_language() ) {
+        return;
+    }
+    $uri = defined( 'ZK_ORIGINAL_REQUEST_URI' ) ? ZK_ORIGINAL_REQUEST_URI : '';
+    $path = wp_parse_url( $uri, PHP_URL_PATH );
+    if ( ! $path || '/' === substr( $path, -1 ) || pathinfo( $path, PATHINFO_EXTENSION ) ||
+        'en' === zk_detect_language_from_path( $path ) ||
+        ! ( is_front_page() || is_singular() || is_category() || is_tag() || is_tax() || is_post_type_archive() ) ) {
+        return;
+    }
+    $query = wp_parse_url( $uri, PHP_URL_QUERY );
+    $destination = home_url( trailingslashit( $path ) ) . ( null !== $query ? '?' . $query : '' );
+    wp_safe_redirect( $destination, 301, 'ZK Language Canonical' );
+    exit;
+}
+add_action( 'template_redirect', 'zk_redirect_localized_trailing_slash', 2 );
 
 // --- 3. FRONTEND CONTENT REPLACEMENT ---
 

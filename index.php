@@ -420,7 +420,11 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                         <a href="<?php echo esc_url( $link ); ?>" class="zk-grid-card" data-route="<?php echo esc_attr( $path ); ?>" data-time="<?php echo esc_attr( $timestamp ); ?>">
                             <div class="zk-card-image">
                                 <?php if ( $img_url ) : ?>
-                                    <img src="<?php echo esc_url( $img_url ); ?>" loading="lazy" decoding="async" alt="<?php echo esc_attr( $title ); ?>" class="zk-card-img">
+                                    <?php echo wp_get_attachment_image( get_post_thumbnail_id(), 'large', false, array(
+                                        'loading' => 'lazy', 'decoding' => 'async',
+                                        'alt' => $title, 'class' => 'zk-card-img',
+                                        'sizes' => '(max-width: 767px) calc(100vw - 40px), (max-width: 1024px) 50vw, 420px',
+                                    ) ); ?>
                                 <?php endif; ?>
                             </div>
                             <div class="zk-card-content">

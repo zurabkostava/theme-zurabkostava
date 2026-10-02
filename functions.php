@@ -484,7 +484,11 @@ function zk_custom_post_grid( $atts ) {
         $output .= '<a href="' . esc_url( $link ) . '" class="zk-grid-card" data-route="' . esc_attr( $path ) . '" data-time="' . esc_attr( $timestamp ) . '">';
         $output .= '<div class="zk-card-image">';
         if ( $img_url ) {
-            $output .= '<img src="' . esc_url( $img_url ) . '" loading="lazy" decoding="async" alt="' . esc_attr( $title ) . '" class="zk-card-img">';
+            $output .= wp_get_attachment_image( get_post_thumbnail_id(), 'large', false, array(
+                'loading' => 'lazy', 'decoding' => 'async',
+                'alt' => $title, 'class' => 'zk-card-img',
+                'sizes' => '(max-width: 767px) calc(100vw - 40px), (max-width: 1024px) 50vw, 420px',
+            ) );
         }
         $output .= '</div>';
         $output .= '<div class="zk-card-content">';
@@ -648,13 +652,13 @@ function zk_breadcrumbs() {
     }
 
     $is_ka      = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
-    $home_route = $is_ka ? '/ka/' : '/';
+    $home_route = zk_get_language_path( '/', zk_get_current_language() );
     $home_label = $is_ka ? 'მთავარი' : 'Home';
 
     echo '<nav class="zk-breadcrumbs" aria-label="Breadcrumb">';
 
     // 1. Home Link (მინიმალისტური იკონი)
-    echo '<a href="' . esc_url( home_url( '/' ) ) . '" data-route="' . esc_attr( $home_route ) . '" aria-label="' . esc_attr( $home_label ) . '" class="zk-home-link">';
+    echo '<a href="' . esc_url( home_url( $home_route ) ) . '" data-route="' . esc_attr( $home_route ) . '" aria-label="' . esc_attr( $home_label ) . '" class="zk-home-link">';
     echo '<svg class="zk-home-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>';
     echo '<span class="screen-reader-text">' . esc_html( $home_label ) . '</span>';
     echo '</a>';
@@ -1754,6 +1758,7 @@ function zk_render_fav_list($option_key) {
         
         $hover_attr = ' class="zk-fav-link"';
         $thumb_html = '';
+        $thumb_dimensions = 'portrait' === $shape ? ' width="20" height="30"' : ' width="26" height="26"';
         if ( $url !== '#' ) {
             $og_image = zk_get_og_image( $url, false );
             
@@ -1770,6 +1775,9 @@ function zk_render_fav_list($option_key) {
             }
         }
         
+        if ( $thumb_html ) {
+            $thumb_html = str_replace( '<img ', '<img' . $thumb_dimensions . ' decoding="async" ', $thumb_html );
+        }
         echo '<li><a href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer"' . $hover_attr . '>' . $thumb_html . '<span>' . esc_html($name) . '</span></a></li>';
     }
 }
@@ -3096,7 +3104,12 @@ function zk_books_shortcode() {
         $output .= '<div class="zk-book-visual">';
         $output .= '<div class="zk-book-aura" style="background-image: url(' . esc_url( $img_url ) . ');"></div>';
         $output .= '<div class="zk-book-cover">';
-        $output .= '<img src="' . esc_url( $img_url ) . '" loading="lazy" decoding="async" alt="' . esc_attr( $title ) . '" class="zk-book-img">';
+        $output .= has_post_thumbnail( $id )
+            ? wp_get_attachment_image( get_post_thumbnail_id( $id ), 'large', false, array(
+                'loading' => 'lazy', 'decoding' => 'async', 'alt' => $title,
+                'class' => 'zk-book-img', 'sizes' => '(max-width: 767px) 70vw, 320px',
+            ) )
+            : '<img src="' . esc_url( $img_url ) . '" width="400" height="600" loading="lazy" decoding="async" alt="' . esc_attr( $title ) . '" class="zk-book-img">';
         $output .= '<div class="zk-book-spine"></div>';
         $output .= '</div></div>';
 
