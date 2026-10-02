@@ -1,6 +1,20 @@
 <?php
 /* Template Name: Web Reader */
 
+$readroad_url = get_permalink();
+if ( isset( $_GET['readroad_manifest'] ) && '1' === $_GET['readroad_manifest'] ) {
+    $manifest = json_decode( file_get_contents( get_template_directory() . '/web-reader/manifest.json' ), true );
+    // Keep the installed application's identity even when its public path changes.
+    $manifest['id'] = home_url( '/projects/reader/' );
+    $manifest['start_url'] = $readroad_url;
+    $manifest['scope'] = wp_parse_url( home_url( zk_get_language_path( '/projects/', zk_get_current_language() ) ), PHP_URL_PATH );
+    foreach ( $manifest['icons'] as &$icon ) $icon['src'] = get_template_directory_uri() . '/web-reader/' . $icon['src'];
+    unset( $icon );
+    header( 'Content-Type: application/manifest+json; charset=utf-8' );
+    echo wp_json_encode( $manifest, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+    exit;
+}
+
 // Protect this custom app from global WordPress theme styles/scripts
 add_action('wp_enqueue_scripts', function() {
     wp_dequeue_style('zk-style');
@@ -20,7 +34,7 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <!-- PWA & Mobile Web App Manifest -->
-    <link rel="manifest" href="<?php echo esc_url( get_template_directory_uri() . '/web-reader/manifest.json?v=' . zk_asset_version( 'web-reader/manifest.json' ) ); ?>">
+    <link rel="manifest" href="<?php echo esc_url( add_query_arg( 'readroad_manifest', '1', $readroad_url ) ); ?>">
     <meta name="theme-color" content="#090d16">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">

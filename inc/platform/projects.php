@@ -44,7 +44,7 @@ function zk_project_publishing_fields( $post ) {
     echo '<input id="zk_project_path" name="zk_project_path" value="' . esc_attr( get_post_meta( $post->ID, '_zk_project_path', true ) ) . '" placeholder="/projects/my-project/" class="regular-text"></p>';
     echo '<p><label><input type="checkbox" name="zk_project_in_menu" value="1" ' . checked( get_post_meta( $post->ID, '_zk_project_in_menu', true ), '1', false ) . '> Show in Projects dropdown</label></p>';
     echo '<p><label for="zk_project_menu_order">Dropdown order</label><br><input type="number" id="zk_project_menu_order" name="zk_project_menu_order" value="' . esc_attr( $post->menu_order ) . '"></p>';
-    echo '<p class="description">Manage the title, description, featured image, translations and SEO/GEO here. Internal projects keep their app URL. External projects use Project Link below. New projects appear in the dropdown only when selected.</p>';
+    echo '<p class="description">Manage the title, description, featured image, translations and SEO/GEO here. Changing Public path automatically redirects previous addresses in every language. External projects use Project Link below. New projects appear in the dropdown only when selected.</p>';
 }
 
 add_action( 'save_post_zk_tool', function( $id ) {
@@ -57,13 +57,18 @@ add_action( 'save_post_zk_tool', function( $id ) {
         if ( ! preg_match( '#^/projects/[a-z0-9-]+/?$#', $path ) ) { zk_project_save_error( 'Project settings were not saved: use a path such as /projects/my-project/.' ); return; }
         $path = trailingslashit( $path );
         foreach ( zk_project_records() as $other ) {
-            if ( (int) $other->ID !== (int) $id && $path === get_post_meta( $other->ID, '_zk_project_path', true ) ) { zk_project_save_error( 'Project settings were not saved: this path belongs to another project.' ); return; }
+            $reserved = array_merge( array( get_post_meta( $other->ID, '_zk_project_path', true ) ), (array) get_post_meta( $other->ID, '_zk_project_previous_paths', true ) );
+            if ( (int) $other->ID !== (int) $id && in_array( $path, $reserved, true ) ) { zk_project_save_error( 'Project settings were not saved: this path belongs to another project.' ); return; }
         }
         $page = get_page_by_path( trim( $path, '/' ) );
         if ( $page && 'publish' === $page->post_status ) { zk_project_save_error( 'Project settings were not saved: an existing published Page uses this path. Choose another path.' ); return; }
-        // Existing routes are stable: changing the project name does not break app/PWA URLs.
+        // Retain every former address, redirecting directly to the latest path.
         $old_path = get_post_meta( $id, '_zk_project_path', true );
-        if ( $old_path && $old_path !== $path ) { zk_project_save_error( 'Project settings were not saved: existing app paths are kept stable to protect shared links and installed apps.' ); return; }
+        if ( $old_path && $old_path !== $path ) {
+            $previous = (array) get_post_meta( $id, '_zk_project_previous_paths', true );
+            $previous[] = $old_path;
+            update_post_meta( $id, '_zk_project_previous_paths', array_values( array_diff( array_unique( array_filter( $previous ) ), array( $path ) ) ) );
+        }
     } else {
         if ( get_post_meta( $id, '_zk_project_path', true ) ) { zk_project_save_error( 'Project settings were not saved: an existing internal project must keep its public route.' ); return; }
         $path = '';
@@ -135,7 +140,7 @@ add_filter( 'request', function( $query ) {
     $path = trailingslashit( zk_strip_language_prefix( (string) wp_parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH ) ) );
     foreach ( zk_project_records() as $project ) {
         $route = get_post_meta( $project->ID, '_zk_project_path', true );
-        if ( $route && $path === $route ) {
+        if ( $route && ( $path === $route || in_array( $path, (array) get_post_meta( $project->ID, '_zk_project_previous_paths', true ), true ) ) ) {
             return array( 'post_type' => 'zk_tool', 'p' => $project->ID );
         }
     }
@@ -164,6 +169,10 @@ add_action( 'template_redirect', function() {
     $request = wp_parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH );
     $request = zk_get_language_path( zk_strip_language_prefix( $request ), zk_get_current_language() );
     if ( $path !== $request || wp_parse_url( $url, PHP_URL_HOST ) !== wp_parse_url( home_url(), PHP_URL_HOST ) ) {
+        if ( in_array( zk_strip_language_prefix( $request ), (array) get_post_meta( $project->ID, '_zk_project_previous_paths', true ), true ) && ! empty( $_SERVER['QUERY_STRING'] ) ) {
+            wp_parse_str( $_SERVER['QUERY_STRING'], $parameters );
+            $url = add_query_arg( $parameters, $url );
+        }
         wp_redirect( $url, 301 );
         exit;
     }
