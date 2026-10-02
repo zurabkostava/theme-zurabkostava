@@ -13,6 +13,7 @@ require_once get_template_directory() . '/inc/platform/language-center.php';
 require_once get_template_directory() . '/inc/visual-hub-admin.php';
 require_once get_template_directory() . '/inc/platform/assets.php';
 require_once get_template_directory() . '/inc/platform/security.php';
+require_once get_template_directory() . '/inc/platform/blog-categories.php';
 // 🔴 Load Nuvio Addons
 require_once get_template_directory() . '/nuvio-ge-sub.php';
 require_once get_template_directory() . '/nuvio-movies-addon.php';
@@ -359,14 +360,14 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
         if ( $is_current ) $link_class .= ' is-current';
 
         $item_title = $item->title;
-        if ( function_exists('zk_get_current_language') && zk_get_current_language() === 'ka' && ! empty( $item->object_id ) ) {
+        if ( function_exists('zk_get_current_language') && zk_get_current_language() !== 'en' && ! empty( $item->object_id ) ) {
             if ( in_array( $item->type, array( 'post_type', 'post_type_archive' ) ) ) {
-                $ka_title = get_post_meta( $item->object_id, '_zk_title_ka', true );
+                $ka_title = get_post_meta( $item->object_id, zk_language_meta_key( 'title', zk_get_current_language() ), true );
                 if ( ! empty( $ka_title ) ) {
                     $item_title = $ka_title;
                 }
             } elseif ( $item->type === 'taxonomy' ) {
-                $ka_title = get_term_meta( $item->object_id, '_zk_title_ka', true );
+                $ka_title = get_term_meta( $item->object_id, zk_language_meta_key( 'name', zk_get_current_language() ), true );
                 if ( ! empty( $ka_title ) ) {
                     $item_title = $ka_title;
                 }
@@ -725,22 +726,20 @@ function zk_breadcrumbs() {
             // თუ კატეგორიას აქვს მშობელი (მაგ: Raw / გაუფილტრავი)
             if ( $cat->parent != 0 ) {
                 $parent_cat   = get_category( $cat->parent );
-                $parent_slug  = $parent_cat->slug;
-                $parent_path  = '/blog/' . $parent_slug;
+                $parent_path  = wp_parse_url( get_term_link( $parent_cat ), PHP_URL_PATH );
                 $parent_name  = zk_get_breadcrumb_term_label( $parent_cat, $is_ka );
-                $parent_route = $is_ka ? '/ka' . $parent_path : $parent_path;
-                $parent_url   = $is_ka ? home_url( '/ka' . $parent_path . '/' ) : home_url( $parent_path . '/' );
+                $parent_route = rtrim( $parent_path, '/' );
+                $parent_url   = get_term_link( $parent_cat );
 
                 echo '<span class="zk-breadcrumb-separator">/</span>';
                 echo '<a href="' . esc_url( $parent_url ) . '" data-route="' . esc_attr( $parent_route ) . '">' . esc_html( $parent_name ) . '</a>';
             }
 
             // უშუალოდ მიმდინარე კატეგორია (მაგ: Nocturnes / ძილისპირულები)
-            $parent_prefix = ( $cat->parent != 0 ) ? '/blog/' . get_category( $cat->parent )->slug . '/' : '/blog/';
-            $cat_path      = '/' . trim( $parent_prefix . $cat->slug, '/' );
+            $cat_path      = wp_parse_url( get_term_link( $cat ), PHP_URL_PATH );
             $cat_name      = zk_get_breadcrumb_term_label( $cat, $is_ka );
-            $cat_route     = $is_ka ? '/ka' . $cat_path : $cat_path;
-            $cat_url       = $is_ka ? home_url( '/ka' . $cat_path . '/' ) : home_url( $cat_path . '/' );
+            $cat_route     = rtrim( $cat_path, '/' );
+            $cat_url       = get_term_link( $cat );
 
             echo '<span class="zk-breadcrumb-separator">/</span>';
             echo '<a href="' . esc_url( $cat_url ) . '" data-route="' . esc_attr( $cat_route ) . '">' . esc_html( $cat_name ) . '</a>';
@@ -799,10 +798,9 @@ function zk_breadcrumbs() {
             $tag_title   = zk_get_breadcrumb_term_label( $tag_obj, $is_ka );
             echo '<span class="zk-breadcrumb-current">' . esc_html( $topic_label . $tag_title ) . '</span>';
         } elseif ( is_category() ) {
-            $cat_label = $is_ka ? ( function_exists( 'zk_uppercase_ka' ) ? zk_uppercase_ka( 'კატეგორია: ' ) : 'კატეგორია: ' ) : 'Category: ';
             $cat_obj   = get_queried_object();
             $cat_title = zk_get_breadcrumb_term_label( $cat_obj, $is_ka );
-            echo '<span class="zk-breadcrumb-current">' . esc_html( $cat_label . $cat_title ) . '</span>';
+            echo '<span class="zk-breadcrumb-current">' . esc_html( $cat_title ) . '</span>';
         } else {
             $arch_label = $is_ka ? ( function_exists( 'zk_uppercase_ka' ) ? zk_uppercase_ka( 'არქივი' ) : 'არქივი' ) : 'Archive';
             echo '<span class="zk-breadcrumb-current">' . esc_html( $arch_label ) . '</span>';
@@ -4765,9 +4763,20 @@ function zk_render_json_ld_schema() {
                 'name' => $blog_label,
                 'item' => $blog_link
             ];
+            $post_categories = get_the_category();
+            if ( $post_categories ) {
+                $category = $post_categories[0];
+                $category_url = get_term_link( $category );
+                if ( ! is_wp_error( $category_url ) ) {
+                    $breadcrumbs['itemListElement'][] = array(
+                        '@type' => 'ListItem', 'position' => count( $breadcrumbs['itemListElement'] ) + 1,
+                        'name' => zk_get_translated_term_name( $category ), 'item' => $category_url,
+                    );
+                }
+            }
             $breadcrumbs['itemListElement'][] = [
                 '@type' => 'ListItem',
-                'position' => 3,
+                'position' => count( $breadcrumbs['itemListElement'] ) + 1,
                 'name' => $post_title,
                 'item' => $canonical_url
             ];
@@ -4789,6 +4798,16 @@ function zk_render_json_ld_schema() {
                 'name' => $book_title,
                 'item' => $canonical_url
             ];
+        } elseif ( is_category() ) {
+            $breadcrumbs['itemListElement'][] = array(
+                '@type' => 'ListItem', 'position' => 2,
+                'name' => $is_ka ? 'ბლოგი' : 'Blog',
+                'item' => home_url( zk_get_language_path( '/blog/', $language ) ),
+            );
+            $breadcrumbs['itemListElement'][] = array(
+                '@type' => 'ListItem', 'position' => 3,
+                'name' => zk_get_translated_term_name( get_queried_object() ), 'item' => $canonical_url,
+            );
         } elseif ( is_page() ) {
             $page_title = $is_ka ? ( get_post_meta( get_the_ID(), '_zk_title_ka', true ) ?: get_the_title() ) : get_the_title();
             $breadcrumbs['itemListElement'][] = [
@@ -4900,6 +4919,7 @@ function zk_generate_sitemap_string() {
             if ( ! $post_obj || ! empty( $post_obj->post_password ) ) continue;
 
             if ( zk_is_internal_or_test_page( $post_id ) ) continue;
+            if ( 'page' === $post_obj->post_type && zk_blog_listing_term( '/' . get_page_uri( $post_obj ) . '/' ) ) continue;
 
             $perm = get_permalink( $post_id );
             $parsed = parse_url($perm);
