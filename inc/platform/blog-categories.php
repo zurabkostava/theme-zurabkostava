@@ -125,7 +125,7 @@ function zk_category_featured_image_control( $term_id = 0 ) {
             <?php if ( $id ) echo wp_get_attachment_image( $id, 'medium', false, array( 'style' => 'max-width:100%;height:auto;' ) ); ?>
         </div>
         <button type="button" class="button zk-category-image-select">Choose featured image</button>
-        <button type="button" class="button zk-category-image-remove" <?php if ( ! $id ) echo 'hidden'; ?>>Remove image</button>
+        <button type="button" class="button zk-category-image-remove" <?php if ( ! $id ) echo 'style="display:none"'; ?>>Remove image</button>
         <p class="description">Background photo for this category in all languages. The separate SEO Image URL overrides it for social sharing.</p>
     </div>
     <?php
