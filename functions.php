@@ -2874,7 +2874,15 @@ function zk_register_books_cpt() {
             'singular_name' => 'Book',
             'menu_name'     => 'Books',
             'add_new'       => 'Add New Book',
+            'add_new_item'  => 'Add New Book',
+            'new_item'      => 'New Book',
             'edit_item'     => 'Edit Book',
+            'view_item'     => 'View Book',
+            'view_items'    => 'View Books',
+            'all_items'     => 'All Books',
+            'search_items'  => 'Search Books',
+            'not_found'     => 'No books found.',
+            'not_found_in_trash' => 'No books found in Trash.',
     );
     $args = array(
             'labels'        => $labels,
