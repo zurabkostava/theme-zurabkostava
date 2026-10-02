@@ -4390,6 +4390,7 @@ function zk_render_seo_meta() {
                     'visual/graphic' => array( 'Graphic Design & Illustrations | Zurab Kostava', 'გრაფიკული დიზაინი და ილუსტრაციები | ზურაბ კოსტავა' ),
                     'visual/photography' => array( 'Photography & Visual Stories | Zurab Kostava', 'ფოტოგრაფია და ვიზუალური ისტორიები | ზურაბ კოსტავა' ),
                     'projects' => array( 'Digital Projects & Creative Tools | Zurab Kostava', 'ციფრული პროექტები და ინსტრუმენტები | ზურაბ კოსტავა' ),
+                    'books/beta' => array( 'Beta — A Book by Zurab Kostava', 'ბეტა — წიგნი ზურაბ კოსტავასგან' ),
                 );
                 if ( isset( $defaults[ $route ] ) ) $title = $defaults[ $route ][ 'ka' === $language ? 1 : 0 ];
             }
@@ -4435,6 +4436,10 @@ function zk_render_seo_meta() {
         $term_name = function_exists( 'zk_get_translated_term_name' ) ? zk_get_translated_term_name( $term_obj ) : '';
         if ( ! $term_name && $term_obj && isset( $term_obj->name ) ) $term_name = $term_obj->name;
         $title = $term_name . ' — ' . $site_name;
+        if ( ! $custom_title && ( is_category() || is_tag() ) ) {
+            if ( 'en' === $language ) $title = 'Articles on ' . $term_name . ' | ' . $site_name;
+            elseif ( 'ka' === $language ) $title = $term_name . ' — სტატიები | ' . $site_name;
+        }
         $term_desc = 'en' === $language ? '' : get_term_meta( $term_id, zk_language_meta_key( 'description', $language ), true );
         if ( $term_desc ) {
             $desc = wp_strip_all_tags( $term_desc );
