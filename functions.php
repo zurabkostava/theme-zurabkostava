@@ -5175,9 +5175,6 @@ add_action( 'save_post', 'zk_save_geo_meta_box_data' );
 
 // 4. Inject FAQ JSON-LD Schema
 function zk_inject_faq_schema() {
-    // The galaxy homepage doesn't display these questions. Keep editor metadata,
-    // but don't advertise an FAQPage without corresponding visible content.
-    if ( is_front_page() ) return;
     if ( ! is_singular() && ! ( is_archive() && ( is_category() || is_tag() ) ) ) return;
     
     $language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';

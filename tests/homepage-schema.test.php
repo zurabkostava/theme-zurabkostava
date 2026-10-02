@@ -2,6 +2,10 @@
 // Render the actual schema generator for both language requests without WordPress.
 $language = 'en';
 $custom_meta = true;
+$post = (object) ['ID' => 10];
+function zk_get_current_language() { global $language; return $language; }
+function get_post() { return null; }
+function esc_attr($text) { return htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); }
 function zk_get_clean_bilingual_urls() { global $language; return ['current' => $language, 'canonical_url' => home_url('/')]; }
 function zk_get_language($code) { return ['locale' => $code === 'ka' ? 'ka-GE' : 'en-US']; }
 function zk_get_languages() { return ['en' => zk_get_language('en'), 'ka' => zk_get_language('ka')]; }
@@ -20,6 +24,7 @@ function get_page_template_slug($id) { return ''; }
 function get_queried_object_id() { return 10; }
 function zk_get_localized_post_meta($id, $field, $code) {
     global $custom_meta;
+    if ($field === 'geo_faq') return $code === 'ka' ? "Q: ვინ არის ზურაბ კოსტავა?\nA: ქართველი ხელოვანი." : "Q: Who is Zurab Kostava?\nA: A Georgian artist.";
     if (!$custom_meta) return '';
     return $field === 'seo_title' ? ($code === 'ka' ? 'ზურაბ კოსტავა | ხელოვნება' : 'Zurab Kostava | Sound & Visual') : "Artist's digital space";
 }
@@ -46,7 +51,12 @@ foreach (['en', 'ka'] as $language) {
         verify($page['name'] === ($custom_meta ? zk_get_localized_post_meta(10, 'seo_title', $language) : ($language === 'ka' ? 'ზურაბ კოსტავა — ქართველი მულტიდისციპლინური ხელოვანი, კომპოზიტორი და დიზაინერი' : 'Zurab Kostava — Artist & composer')), 'Use editor title or localized SEO fallback');
         verify($page['description'] === ($custom_meta ? "Artist's digital space" : ($language === 'ka' ? 'ქართველი მულტიდისციპლინური ხელოვანი, კომპოზიტორი და დიზაინერი' : 'Artist & composer')), 'Preserve description and punctuation without HTML entity encoding');
         ob_start(); zk_inject_faq_schema(); $faq = ob_get_clean();
-        verify($faq === '', 'Homepage must not emit invisible FAQ content');
+        preg_match('#<script type="application/ld\+json">(.*?)</script>#s', $faq, $faq_match);
+        $faq_schema = json_decode($faq_match[1] ?? '', true, 512, JSON_THROW_ON_ERROR);
+        verify($faq_schema['@type'] === 'FAQPage' && $faq_schema['inLanguage'] === zk_get_language($language)['locale'], 'Publish homepage FAQ markup in the current language');
+        verify($faq_schema['mainEntity'][0]['name'] === ($language === 'ka' ? 'ვინ არის ზურაბ კოსტავა?' : 'Who is Zurab Kostava?'), 'Keep the saved localized FAQ question');
+        verify($faq_schema['mainEntity'][0]['acceptedAnswer']['text'] === ($language === 'ka' ? 'ქართველი ხელოვანი.' : 'A Georgian artist.'), 'Keep the saved localized FAQ answer');
+        verify(stripos($faq, '<section') === false && stripos($faq, '<details') === false, 'FAQ output stays in JSON-LD without adding a visible block');
     }
 }
-echo "PASS homepage schemas: EN/KA, shared entities, localized metadata and fallbacks, no invisible FAQ\n";
+echo "PASS homepage schemas: EN/KA, shared entities, localized metadata and fallbacks, restored FAQ JSON-LD\n";
