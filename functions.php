@@ -1117,7 +1117,7 @@ function zk_cinematic_gallery( $atts = array() ) {
                     'data-id'          => esc_attr( $image_id ),
                     'class'            => 'zk-grid-photo',
                     'alt'              => esc_attr( $alt_text ),
-                    'sizes'            => '(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw'
+                    'sizes'            => '(max-width: 600px) 100vw, (max-width: 900px) 50vw, (max-width: 1320px) 33vw, 440px'
             );
             $img_attributes = array_merge( $img_attributes, zk_gallery_lightbox_source_attributes( $image_id ) );
             
@@ -1238,7 +1238,7 @@ function zk_cinematic_gallery( $atts = array() ) {
                     'data-id'          => esc_attr( $image_id ),
                     'class'            => 'zk-grid-photo',
                     'alt'              => esc_attr( $alt_text ),
-                    'sizes'            => '(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw'
+                    'sizes'            => '(max-width: 600px) 100vw, (max-width: 900px) 50vw, (max-width: 1320px) 33vw, 440px'
             );
             $img_attributes = array_merge( $img_attributes, zk_gallery_lightbox_source_attributes( $image_id ) );
             
@@ -2424,7 +2424,7 @@ function zk_get_filebird_gallery( $folder_id ) {
                     'data-id'          => esc_attr( $id ),
                     'class'            => 'zk-grid-photo',
                     'alt'              => esc_attr( $alt_text ),
-                    'sizes'            => '(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw'
+                    'sizes'            => '(max-width: 600px) 100vw, (max-width: 900px) 50vw, (max-width: 1320px) 33vw, 440px'
             );
             $img_attributes = array_merge( $img_attributes, zk_gallery_lightbox_source_attributes( $id ) );
             
@@ -2541,7 +2541,7 @@ function zk_get_filebird_gallery( $folder_id ) {
                     'data-id'          => esc_attr( $id ),
                     'class'            => 'zk-grid-photo',
                     'alt'              => esc_attr( $alt_text ),
-                    'sizes'            => '(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw'
+                    'sizes'            => '(max-width: 600px) 100vw, (max-width: 900px) 50vw, (max-width: 1320px) 33vw, 440px'
             );
             $img_attributes = array_merge( $img_attributes, zk_gallery_lightbox_source_attributes( $id ) );
             
@@ -3460,7 +3460,11 @@ function zk_tools_shortcode() {
         $output .= '<' . $card_tag . $href . ' class="zk-tool-card">';
         
         if ( $thumb_url ) {
-            $output .= '<div class="zk-tool-image" style="background-image: url(\'' . esc_url( $thumb_url ) . '\');"></div>';
+            $output .= '<div class="zk-tool-image">' . wp_get_attachment_image( get_post_thumbnail_id( $post_id ), 'large', false, array(
+                'loading' => 'lazy',
+                'decoding' => 'async',
+                'sizes' => '(max-width: 700px) 100vw, (max-width: 1050px) 50vw, 440px',
+            ) ) . '</div>';
         } else {
             $output .= '<div class="zk-tool-image zk-tool-image-empty"></div>';
         }
@@ -4382,7 +4386,7 @@ function zk_render_seo_meta() {
             $title = ( $translated_title ?: get_the_title( $obj_id ) ) . ' — ' . $site_name;
             // Descriptive defaults only: never replace an editor's SEO title.
             if ( ! $custom_title && in_array( $language, array( 'en', 'ka' ), true ) ) {
-                $route = 'zk_tool' === get_post_type( $obj_id ) ? get_post_meta( $obj_id, '_zk_project_app', true ) : get_page_uri( $obj_id );
+                $route = 'zk_tool' === get_post_type( $obj_id ) ? get_post_meta( $obj_id, '_zk_project_app', true ) : get_page_uri( is_page() ? get_queried_object_id() : $obj_id );
                 $defaults = array(
                     'reader' => array( 'ReadRoad: EPUB & Voice Reader | Zurab Kostava', 'რიდროუდი: EPUB და ხმოვანი კითხვა | ზურაბ კოსტავა' ),
                     'visual' => array( 'Visual Art, Photography & Design | Zurab Kostava', 'ვიზუალური ხელოვნება და დიზაინი | ზურაბ კოსტავა' ),
