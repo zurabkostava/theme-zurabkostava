@@ -14,6 +14,41 @@ function zk_blog_listing_term( $path ) {
     return $term && ! is_wp_error( $term ) ? $term : false;
 }
 
+/** Category destinations use /blog/{slug}/; article permalinks are untouched. */
+add_filter( 'term_link', function( $url, $term ) {
+    if ( 'category' !== $term->taxonomy ) return $url;
+    return home_url( zk_get_language_path( '/blog/' . $term->slug . '/', zk_get_current_language() ) );
+}, 20, 2 );
+
+add_filter( 'request', function( $query ) {
+    if ( is_admin() || isset( $query['preview'] ) || defined( 'REST_REQUEST' ) && REST_REQUEST ) return $query;
+    $path = zk_strip_language_prefix( (string) wp_parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH ) );
+    if ( ! preg_match( '#^/blog/([^/]+)(?:/page/([0-9]+)|/(feed)(?:/(rss2|rss|atom|rdf))?)?/?$#', $path, $match ) ) return $query;
+    $term = get_term_by( 'slug', sanitize_title( rawurldecode( $match[1] ) ), 'category' );
+    if ( ! $term ) return $query;
+    $result = array( 'cat' => $term->term_id );
+    if ( ! empty( $match[2] ) ) $result['paged'] = (int) $match[2];
+    if ( ! empty( $match[3] ) ) $result['feed'] = $match[4] ?? 'rss2';
+    return $result;
+}, 15 );
+
+add_action( 'template_redirect', function() {
+    if ( ! is_category() || is_preview() || ! in_array( $_SERVER['REQUEST_METHOD'] ?? 'GET', array( 'GET', 'HEAD' ), true ) ) return;
+    $url = get_term_link( get_queried_object() );
+    if ( is_wp_error( $url ) ) return;
+    if ( get_query_var( 'paged' ) > 1 ) $url .= 'page/' . (int) get_query_var( 'paged' ) . '/';
+    if ( is_feed() ) $url .= 'feed/' . ( get_query_var( 'feed' ) ?: 'rss2' ) . '/';
+    $request_path = wp_parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH );
+    if ( trailingslashit( $request_path ) === wp_parse_url( $url, PHP_URL_PATH ) ) return;
+    if ( ! empty( $_SERVER['QUERY_STRING'] ) ) {
+        wp_parse_str( $_SERVER['QUERY_STRING'], $parameters );
+        unset( $parameters['cat'], $parameters['category_name'], $parameters['paged'], $parameters['feed'] );
+        $url = add_query_arg( $parameters, $url );
+    }
+    wp_safe_redirect( $url, 301 );
+    exit;
+}, 2 );
+
 /** One-time migration of the two existing listings, preserving filled category fields. */
 function zk_migrate_blog_category_listings() {
     if ( ! current_user_can( 'manage_options' ) || get_option( 'zk_blog_categories_migrated' ) ) return;
@@ -73,6 +108,7 @@ function zk_redirect_blog_listing_pages() {
     if ( ! $term ) return;
     $url = get_term_link( $term );
     if ( is_wp_error( $url ) ) return;
+    if ( trailingslashit( $path ) === wp_parse_url( $url, PHP_URL_PATH ) ) return;
     $query = wp_parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_QUERY );
     if ( $query ) $url .= '?' . $query;
     wp_safe_redirect( $url, 301 );
@@ -87,7 +123,7 @@ function zk_blog_category_previous_url_field( $term ) {
     <tr class="form-field"><th><label for="zk_previous_listing_paths">Previous listing paths</label></th><td>
         <?php wp_nonce_field( 'zk_category_listing_paths', 'zk_category_listing_nonce' ); ?>
         <textarea id="zk_previous_listing_paths" name="zk_previous_listing_paths" rows="3"><?php echo esc_textarea( implode( "\n", $paths ) ); ?></textarea>
-        <p class="description">Optional: old Page paths, one per line (e.g. /blog/news/). Redirects continue after the Page is deleted. Do not enter article paths.</p>
+        <p class="description">Optional: old Page paths, one per line (e.g. /reviews/). Category URLs are automatically /blog/category-slug/. Do not enter article paths.</p>
     </td></tr>
     <?php
 }
