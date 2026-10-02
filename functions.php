@@ -5082,7 +5082,8 @@ function zk_auto_toc_generator( $content ) {
         
         foreach ( $matches[2] as $i => $heading ) {
             $clean_text = wp_strip_all_tags( $heading );
-            $slug = sanitize_title( $clean_text );
+            // HTML IDs hold text; URL fragments encode it when navigating.
+            $slug = rawurldecode( sanitize_title( $clean_text ) );
             if ( empty( $slug ) ) { $slug = 'section-' . ( $i + 1 ); }
             $base_slug = $slug;
             $suffix = 2;

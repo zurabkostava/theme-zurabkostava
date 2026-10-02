@@ -545,7 +545,11 @@
         var toggle = toc.querySelector('.zk-seo-toc-toggle');
         var links = Array.prototype.slice.call(toc.querySelectorAll('a[href^="#"]'));
         var sections = links.map(function (link) {
-            try { return document.getElementById(decodeURIComponent(link.hash.slice(1))); }
+            // Match literal IDs first, including markup cached before UTF-8 IDs.
+            var fragment = link.getAttribute('href').slice(1);
+            var section = document.getElementById(fragment);
+            if (section) return section;
+            try { return document.getElementById(decodeURIComponent(fragment)); }
             catch (e) { return null; }
         });
         var compact = window.matchMedia('(max-width: 1839px)');
