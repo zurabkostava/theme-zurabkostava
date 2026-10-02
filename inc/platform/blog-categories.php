@@ -109,3 +109,64 @@ function zk_save_blog_category_previous_urls( $term_id ) {
     update_option( 'zk_blog_listing_routes', $routes, false );
 }
 add_action( 'edited_category', 'zk_save_blog_category_previous_urls' );
+
+function zk_category_featured_image_id( $term_id ) {
+    $id = absint( get_term_meta( $term_id, '_zk_featured_image_id', true ) );
+    return $id && wp_attachment_is_image( $id ) ? $id : 0;
+}
+
+function zk_category_featured_image_control( $term_id = 0 ) {
+    $id = zk_category_featured_image_id( $term_id );
+    wp_nonce_field( 'zk_category_featured_image', 'zk_category_image_nonce' );
+    ?>
+    <div class="zk-category-image-control">
+        <input type="hidden" name="zk_category_featured_image" value="<?php echo esc_attr( $id ); ?>">
+        <div class="zk-category-image-preview" style="max-width:300px;margin-bottom:12px;">
+            <?php if ( $id ) echo wp_get_attachment_image( $id, 'medium', false, array( 'style' => 'max-width:100%;height:auto;' ) ); ?>
+        </div>
+        <button type="button" class="button zk-category-image-select">Choose featured image</button>
+        <button type="button" class="button zk-category-image-remove" <?php if ( ! $id ) echo 'hidden'; ?>>Remove image</button>
+        <p class="description">Background photo for this category in all languages. The separate SEO Image URL overrides it for social sharing.</p>
+    </div>
+    <?php
+}
+
+add_action( 'category_add_form_fields', function() {
+    echo '<div class="form-field"><label>Featured image</label>';
+    zk_category_featured_image_control();
+    echo '</div>';
+} );
+add_action( 'category_edit_form_fields', function( $term ) {
+    echo '<tr class="form-field"><th scope="row">Featured image</th><td>';
+    zk_category_featured_image_control( $term->term_id );
+    echo '</td></tr>';
+} );
+
+add_action( 'admin_enqueue_scripts', function() {
+    $screen = get_current_screen();
+    if ( ! $screen || 'category' !== $screen->taxonomy || ! in_array( $screen->base, array( 'edit-tags', 'term' ), true ) ) return;
+    wp_enqueue_media();
+    wp_enqueue_script( 'zk-category-image', get_template_directory_uri() . '/inc/platform/category-image.js', array( 'jquery', 'media-editor' ), zk_asset_version( 'inc/platform/category-image.js' ), true );
+} );
+
+function zk_save_category_featured_image( $term_id ) {
+    if ( ! current_user_can( 'manage_categories' ) || ! isset( $_POST['zk_category_featured_image'], $_POST['zk_category_image_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['zk_category_image_nonce'] ) ), 'zk_category_featured_image' ) ) return;
+    $id = absint( $_POST['zk_category_featured_image'] );
+    if ( ! $id ) delete_term_meta( $term_id, '_zk_featured_image_id' );
+    elseif ( wp_attachment_is_image( $id ) ) update_term_meta( $term_id, '_zk_featured_image_id', $id );
+}
+add_action( 'created_category', 'zk_save_category_featured_image' );
+add_action( 'edited_category', 'zk_save_category_featured_image' );
+
+/** Carry over the former listing backgrounds without replacing an editor's choice. */
+add_action( 'admin_init', function() {
+    if ( ! current_user_can( 'manage_options' ) || get_option( 'zk_category_images_migrated' ) ) return;
+    foreach ( zk_blog_listing_routes() as $path => $term_id ) {
+        $page = get_page_by_path( trim( $path, '/' ) );
+        if ( $page && ! get_term_meta( $term_id, '_zk_featured_image_id', true ) ) {
+            $id = get_post_thumbnail_id( $page->ID );
+            if ( $id && wp_attachment_is_image( $id ) ) update_term_meta( $term_id, '_zk_featured_image_id', $id );
+        }
+    }
+    update_option( 'zk_category_images_migrated', 1, false );
+} );

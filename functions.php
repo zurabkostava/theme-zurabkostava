@@ -4394,6 +4394,10 @@ function zk_render_seo_meta() {
         $term_id  = get_queried_object_id();
         $term_obj = get_queried_object();
         $custom_img = get_term_meta( $term_id, '_zk_seo_image', true );
+        if ( is_category() && ! $custom_img ) {
+            $category_image_id = zk_category_featured_image_id( $term_id );
+            if ( $category_image_id ) $img = wp_get_attachment_image_url( $category_image_id, 'large' );
+        }
 
         $custom_title = zk_get_localized_term_meta( $term_id, 'seo_title', $language );
         $custom_desc  = zk_get_localized_term_meta( $term_id, 'seo_description', $language );

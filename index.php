@@ -361,8 +361,15 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
         $archive_title = get_search_query();
     }
 
+    $category_image_id = is_category() ? zk_category_featured_image_id( get_queried_object_id() ) : 0;
     ob_start(); ?>
-    <div class="page__inner">
+    <?php if ( $category_image_id ) : ?>
+        <div class="zk-post-hero">
+            <?php echo wp_get_attachment_image( $category_image_id, 'large', false, array( 'class' => 'zk-hero-img', 'alt' => '', 'sizes' => '100vw', 'fetchpriority' => 'high', 'loading' => 'eager', 'decoding' => 'sync' ) ); ?>
+            <div class="zk-post-hero-gradient"></div>
+        </div>
+    <?php endif; ?>
+    <div class="page__inner <?php echo $category_image_id ? 'has-hero' : ''; ?>">
         <?php zk_breadcrumbs(); ?>
         <p class="page__eyebrow"><?php echo esc_html( $eyebrow ); ?></p>
         <h1 class="page__title"><?php echo esc_html( $archive_title ); ?></h1>
