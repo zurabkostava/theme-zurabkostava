@@ -5175,7 +5175,7 @@ add_filter( 'the_content', 'zk_auto_toc_generator' );
 
 // 3. GEO Meta Box (AI Summary & FAQ)
 function zk_add_geo_meta_box() {
-    $screens = [ 'post', 'page', 'zk_book' ];
+    $screens = [ 'post', 'page', 'zk_book', 'zk_tool' ];
     foreach ( $screens as $screen ) {
         add_meta_box(
             'zk_geo_meta_box',
