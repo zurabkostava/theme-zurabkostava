@@ -252,7 +252,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
 
     <div class="page__inner <?php echo $has_image ? 'has-hero' : ''; ?>">
         <?php zk_breadcrumbs(); ?>
-        <?php if ( is_single() ) : ?>
+        <?php if ( is_singular( 'post' ) ) : ?>
             <div style="display: block; width: 100%;">
                 <div class="page__meta">
                     <svg class="page__meta-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -276,7 +276,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
         <?php
         // პოსტის თეგების (Tags) გამოტანა
         $post_tags = get_the_tags();
-        if ( is_single() && $post_tags ) :
+        if ( is_singular( 'post' ) && $post_tags ) :
             ?>
             <div class="zk-post-tags">
                 <span class="zk-tags-label"><?php echo ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' ) ? ( function_exists( 'zk_uppercase_ka' ) ? zk_uppercase_ka( 'თემები:' ) : 'თემები:' ) : 'Topics:'; ?></span>
@@ -298,7 +298,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
         $prev_post = get_previous_post();
         $next_post = get_next_post();
 
-        if ( is_single() && ( $prev_post || $next_post ) ) :
+        if ( is_singular( 'post' ) && ( $prev_post || $next_post ) ) :
             $is_ka_nav = ( function_exists( 'zk_get_current_language' ) && zk_get_current_language() === 'ka' );
             $prev_label = $is_ka_nav ? ( function_exists('zk_uppercase_ka') ? zk_uppercase_ka('წინა') : 'წინა' ) : 'Previous';
             $next_label = $is_ka_nav ? ( function_exists('zk_uppercase_ka') ? zk_uppercase_ka('შემდეგი') : 'შემდეგი' ) : 'Next';

@@ -14,6 +14,7 @@ require_once get_template_directory() . '/inc/visual-hub-admin.php';
 require_once get_template_directory() . '/inc/platform/assets.php';
 require_once get_template_directory() . '/inc/platform/security.php';
 require_once get_template_directory() . '/inc/platform/blog-categories.php';
+require_once get_template_directory() . '/inc/platform/projects.php';
 // 🔴 Load Nuvio Addons
 require_once get_template_directory() . '/nuvio-ge-sub.php';
 require_once get_template_directory() . '/nuvio-movies-addon.php';
@@ -355,6 +356,7 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
         if ( $is_external ) {
             $link_class .= ' no-spa';
         }
+        if ( 'zk_tool' === $item->object && get_post_meta( $item->object_id, '_zk_project_path', true ) && 'detail' !== get_post_meta( $item->object_id, '_zk_project_app', true ) ) $link_class .= ' no-spa';
 
         $is_current = in_array( 'current-menu-item', $classes ) || in_array( 'current-page-item', $classes );
         if ( $is_current ) $link_class .= ' is-current';
@@ -710,6 +712,10 @@ function zk_breadcrumbs() {
         echo '<span class="zk-breadcrumb-separator">/</span>';
         echo '<span class="zk-breadcrumb-current">' . esc_html( $music_title ) . '</span>';
 
+    } elseif ( is_singular( 'zk_tool' ) ) {
+        $projects_url = home_url( zk_get_language_path( '/projects/', zk_get_current_language() ) );
+        echo '<span class="zk-breadcrumb-separator">/</span><a href="' . esc_url( $projects_url ) . '" data-route="' . esc_attr( untrailingslashit( wp_parse_url( $projects_url, PHP_URL_PATH ) ) ) . '">' . esc_html( zk_get_breadcrumb_crumb_label( 'Projects', 'projects', 0, $is_ka ) ) . '</a>';
+        echo '<span class="zk-breadcrumb-separator">/</span><span class="zk-breadcrumb-current">' . esc_html( get_the_title() ) . '</span>';
     } elseif ( is_single() ) {
         // --- ლოგიკა ცალკეული ბლოგ-პოსტებისთვის (მაგ: Nocturne #50) ---
         $blog_label = zk_get_breadcrumb_crumb_label( 'Blog', 'blog', 0, $is_ka );
@@ -3267,6 +3273,7 @@ function zk_tool_meta_callback( $post ) {
     $btn_label_ka = get_post_meta( $post->ID, '_zk_tool_btn_label_ka', true ) ?: 'პროექტის ნახვა';
     ?>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
+        <?php if ( ! get_post_meta( $post->ID, '_zk_project_path', true ) ) : ?>
         <div>
             <label for="zk_tool_link"><strong>Project Link (EN):</strong></label><br>
             <input type="text" id="zk_tool_link" name="zk_tool_link" value="<?php echo esc_attr( $link ); ?>" style="width:100%; margin-top:5px;" placeholder="e.g. https://zurabkostava.com/projects/wordevo" />
@@ -3275,6 +3282,9 @@ function zk_tool_meta_callback( $post ) {
             <label for="zk_tool_link_ka"><strong>პროექტის ბმული (KA):</strong></label><br>
             <input type="text" id="zk_tool_link_ka" name="zk_tool_link_ka" value="<?php echo esc_attr( $link_ka ); ?>" style="width:100%; margin-top:5px;" placeholder="დატოვეთ ცარიელი ავტო /ka/projects/... ბმულისთვის" />
         </div>
+        <?php else : ?>
+        <p>Project URL: <a href="<?php echo esc_url( zk_project_url( $post, 'en' ) ); ?>" target="_blank" rel="noopener"><?php echo esc_html( zk_project_url( $post, 'en' ) ); ?></a><br>Translated URLs are generated automatically.</p>
+        <?php endif; ?>
 
         <div>
             <label for="zk_tool_status"><strong>Status (EN):</strong></label><br>
@@ -3389,6 +3399,12 @@ function zk_tools_shortcode() {
             $link = $link_en;
         }
 
+        $project_language = zk_get_current_language();
+        if ( 'en' !== $project_language ) {
+            $title = get_post_meta( $post_id, '_zk_title_' . $project_language, true ) ?: $title;
+            $excerpt = get_post_meta( $post_id, '_zk_excerpt_' . $project_language, true ) ?: get_post_meta( $post_id, '_zk_content_' . $project_language, true ) ?: $excerpt;
+        }
+        $link = zk_project_url( $post_id, $project_language ) ?: $link;
         $status_en    = get_post_meta( $post_id, '_zk_tool_status', true ) ?: 'Live';
         $status_ka    = get_post_meta( $post_id, '_zk_tool_status_ka', true );
         if ( $is_ka ) {
@@ -4231,6 +4247,7 @@ function zk_get_seo_target_id( $default_id ) {
 }
 
 function zk_is_internal_or_test_page( $post_id ) {
+    if ( 'zk_tool' === get_post_type( $post_id ) ) return 'instavery' === get_post_meta( $post_id, '_zk_project_app', true );
     if ( 'page' !== get_post_type( $post_id ) ) return false;
 
     return in_array(
@@ -4352,6 +4369,8 @@ function zk_render_seo_meta() {
             $custom_desc  = zk_get_localized_post_meta( $obj_id, 'seo_description', $language );
         } elseif ( get_post_type( $obj_id ) === 'zk_book' ) {
             $type = 'book';
+        } elseif ( get_post_type( $obj_id ) === 'zk_tool' ) {
+            $type = 'website';
         } else {
             $type = 'article';
         }
@@ -4755,7 +4774,10 @@ function zk_render_json_ld_schema() {
             ]
         ];
 
-        if ( is_singular( 'post' ) ) {
+        if ( is_singular( 'zk_tool' ) ) {
+            $breadcrumbs['itemListElement'][] = array( '@type' => 'ListItem', 'position' => 2, 'name' => $is_ka ? 'პროექტები' : 'Projects', 'item' => home_url( zk_get_language_path( '/projects/', $language ) ) );
+            $breadcrumbs['itemListElement'][] = array( '@type' => 'ListItem', 'position' => 3, 'name' => get_the_title(), 'item' => $canonical_url );
+        } elseif ( is_singular( 'post' ) ) {
             $blog_label = $is_ka ? 'ბლოგი' : 'Blog';
             $blog_link  = $is_ka ? home_url( '/ka/blog/' ) : home_url( '/blog/' );
             $post_title = $is_ka ? ( get_post_meta( get_the_ID(), '_zk_title_ka', true ) ?: get_the_title() ) : get_the_title();
@@ -4891,10 +4913,9 @@ function zk_generate_sitemap_string() {
     $sitemap_content .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">' . "\n";
     
     $post_types = get_post_types( array( 'public' => true ), 'names' );
-    // Attachments and the data-only book/tool records do not have canonical
-    // public pages of their own. Their real pages live under /books/ and
-    // /projects/, so including the records creates redirects or duplicates.
-    unset( $post_types['attachment'], $post_types['zk_book'], $post_types['zk_tool'] );
+    // Books use their /books/ Pages. Projects with an internal route are
+    // canonical records; external project links are excluded below.
+    unset( $post_types['attachment'], $post_types['zk_book'] );
 
     $query = new WP_Query([
         'post_type' => array_values( $post_types ),
@@ -4922,6 +4943,7 @@ function zk_generate_sitemap_string() {
             if ( ! $post_obj || ! empty( $post_obj->post_password ) ) continue;
 
             if ( zk_is_internal_or_test_page( $post_id ) ) continue;
+            if ( 'zk_tool' === $post_obj->post_type && ! get_post_meta( $post_id, '_zk_project_path', true ) ) continue;
             if ( 'page' === $post_obj->post_type && zk_blog_listing_term( '/' . get_page_uri( $post_obj ) . '/' ) ) continue;
 
             $perm = get_permalink( $post_id );
