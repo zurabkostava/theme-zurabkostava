@@ -5488,4 +5488,4 @@ body.light-mode #ambient-bg {
     }
 }
 
-body.lang-ka #digital-library-root h1, body.lang-ka #digital-library-root h2, body.lang-ka .glossary-header h3, body.lang-ka .glossary-chapter-title, body.lang-ka .auth-btn-text, body.lang-ka .font-display-label, body.lang-ka .share-text-label, body.lang-ka #audio-proto-toggle { text-transform: uppercase !important; font-family: "Noto Sans Georgian", sans-serif !important; }
+body.lang-ka #digital-library-root h1, body.lang-ka #digital-library-root h2, body.lang-ka .glossary-header h3, body.lang-ka .glossary-chapter-title, body.lang-ka .glossary-chapter-title .chapter-label, body.lang-ka .auth-btn-text, body.lang-ka .font-display-label, body.lang-ka .share-text-label, body.lang-ka #audio-proto-toggle { text-transform: uppercase !important; font-family: "Noto Sans Georgian", sans-serif !important; }
