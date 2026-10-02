@@ -192,7 +192,7 @@ ob_start(); ?>
                 $cat_name = zk_uppercase_ka( $cat_name );
             }
             
-            $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'large' ) : '';
+            $img_url = has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'medium' ) : '';
             $bg_style = $img_url ? 'style="--dock-bg: url(\'' . esc_url( $img_url ) . '\');"' : '';
         ?>
             <a href="<?php echo esc_url( get_permalink() ); ?>" class="hero-dock-item" data-route="<?php echo esc_attr( wp_parse_url( get_permalink(), PHP_URL_PATH ) ); ?>" <?php echo $bg_style; ?>>

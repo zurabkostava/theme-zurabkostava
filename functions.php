@@ -4380,6 +4380,19 @@ function zk_render_seo_meta() {
             $custom_desc  = zk_get_localized_post_meta( $obj_id, 'seo_description', $language );
             $translated_title = 'en' === $language ? '' : get_post_meta( $obj_id, zk_language_meta_key( 'title', $language ), true );
             $title = ( $translated_title ?: get_the_title( $obj_id ) ) . ' — ' . $site_name;
+            // Descriptive defaults only: never replace an editor's SEO title.
+            if ( ! $custom_title && in_array( $language, array( 'en', 'ka' ), true ) ) {
+                $route = 'zk_tool' === get_post_type( $obj_id ) ? get_post_meta( $obj_id, '_zk_project_app', true ) : get_page_uri( $obj_id );
+                $defaults = array(
+                    'reader' => array( 'ReadRoad: EPUB & Voice Reader | Zurab Kostava', 'რიდროუდი: EPUB და ხმოვანი კითხვა | ზურაბ კოსტავა' ),
+                    'visual' => array( 'Visual Art, Photography & Design | Zurab Kostava', 'ვიზუალური ხელოვნება და დიზაინი | ზურაბ კოსტავა' ),
+                    'visual/paint' => array( 'Paintings & Original Art | Zurab Kostava', 'ნახატები და ორიგინალური ხელოვნება | ზურაბ კოსტავა' ),
+                    'visual/graphic' => array( 'Graphic Design & Illustrations | Zurab Kostava', 'გრაფიკული დიზაინი და ილუსტრაციები | ზურაბ კოსტავა' ),
+                    'visual/photography' => array( 'Photography & Visual Stories | Zurab Kostava', 'ფოტოგრაფია და ვიზუალური ისტორიები | ზურაბ კოსტავა' ),
+                    'projects' => array( 'Digital Projects & Creative Tools | Zurab Kostava', 'ციფრული პროექტები და ინსტრუმენტები | ზურაბ კოსტავა' ),
+                );
+                if ( isset( $defaults[ $route ] ) ) $title = $defaults[ $route ][ 'ka' === $language ? 1 : 0 ];
+            }
             $translated_excerpt = 'en' === $language ? '' : get_post_meta( $obj_id, zk_language_meta_key( 'excerpt', $language ), true );
             $translated_content = 'en' === $language ? '' : get_post_meta( $obj_id, zk_language_meta_key( 'content', $language ), true );
             if ( $translated_excerpt ) {

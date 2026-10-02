@@ -38,7 +38,7 @@ add_action( 'template_redirect', function() {
     if ( is_wp_error( $url ) ) return;
     if ( get_query_var( 'paged' ) > 1 ) $url .= 'page/' . (int) get_query_var( 'paged' ) . '/';
     if ( is_feed() ) $url .= 'feed/' . ( get_query_var( 'feed' ) ?: 'rss2' ) . '/';
-    $request_path = wp_parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH );
+    $request_path = wp_parse_url( defined( 'ZK_ORIGINAL_REQUEST_URI' ) ? ZK_ORIGINAL_REQUEST_URI : ( $_SERVER['REQUEST_URI'] ?? '/' ), PHP_URL_PATH );
     if ( trailingslashit( $request_path ) === wp_parse_url( $url, PHP_URL_PATH ) ) return;
     if ( ! empty( $_SERVER['QUERY_STRING'] ) ) {
         wp_parse_str( $_SERVER['QUERY_STRING'], $parameters );

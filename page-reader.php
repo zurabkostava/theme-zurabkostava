@@ -89,6 +89,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <div class="main-pane">
         <div class="header">
             <div class="header-left">
+                <a class="icon-btn" href="<?php echo esc_url( home_url( zk_get_language_path( '/projects/', zk_get_current_language() ) ) ); ?>" aria-label="<?php echo esc_attr( 'ka' === zk_get_current_language() ? 'პროექტებზე დაბრუნება' : 'Back to projects' ); ?>" title="<?php echo esc_attr( 'ka' === zk_get_current_language() ? 'პროექტებზე დაბრუნება' : 'Back to projects' ); ?>">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
+                </a>
                 <button id="sidebar-toggle-btn" class="icon-btn hidden" title="Table of Contents">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
