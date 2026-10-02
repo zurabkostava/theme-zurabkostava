@@ -1092,6 +1092,12 @@ async function uploadCoverToStorage(file) {
     return publicData.publicUrl;
 }
 
+function bookGeorgianUppercase(text) {
+    return String(text ?? '').replace(/[\u10D0-\u10FA]/g, character =>
+        String.fromCharCode(character.charCodeAt(0) + 0x0BC0)
+    );
+}
+
 function updateStaticUI() {
     // 1. ენის კლასის შეცვლა
     document.body.classList.remove('lang-ka', 'lang-en');
@@ -1115,14 +1121,14 @@ function updateStaticUI() {
     if (langBtn) langBtn.innerText = langText;
 
     if (siteTitleEl) {
-        siteTitleEl.innerText = title;
+        siteTitleEl.innerText = isEn ? title : bookGeorgianUppercase(title);
         siteTitleEl.parentElement.classList.add('skiptranslate');
     }
 
-    if (siteSubEl) siteSubEl.innerText = subtitle;
+    if (siteSubEl) siteSubEl.innerText = isEn ? subtitle : bookGeorgianUppercase(subtitle);
 
     if (sidebarHeader) {
-        sidebarHeader.innerText = sidebarText;
+        sidebarHeader.innerText = isEn ? sidebarText : bookGeorgianUppercase(sidebarText);
         sidebarHeader.parentElement.classList.add('skiptranslate');
     }
 
@@ -1451,7 +1457,7 @@ function buildDynamicSidebar(totalPapers) {
 
         allH1s.forEach(h1 => {
             const arrow = h1.querySelector('.toc-arrow');
-            const titleText = h1.querySelector('span:not(.toc-arrow)')?.innerText;
+            const titleText = h1.dataset.sourceTitle || h1.querySelector('span:not(.toc-arrow)')?.innerText;
 
             if (areAllExpanded) {
                 // --- EXPAND MODE: ყველაფერს ვხსნით ---
@@ -1504,7 +1510,7 @@ function buildDynamicSidebar(totalPapers) {
     coverLi.className = "toc-h1 toc-cover";
     coverLi.setAttribute('data-virtual-id', -1);
     const coverText = document.createElement('span');
-    coverText.innerText = (currentLanguage === 'en') ? "Cover" : "გარეკანი";
+    coverText.innerText = (currentLanguage === 'en') ? "Cover" : bookGeorgianUppercase("გარეკანი");
     coverText.style.flex = "1";
     coverLi.appendChild(coverText);
 
@@ -1528,6 +1534,7 @@ function buildDynamicSidebar(totalPapers) {
             const li = document.createElement('li');
             const fullText = heading.getAttribute('data-full-text');
             const labelText = fullText ? fullText : heading.innerText;
+            li.dataset.sourceTitle = labelText;
             const tagName = heading.tagName.toLowerCase();
             li.classList.add(`toc-${tagName}`);
             const isBack = isMobile ? false : (heading.closest('.back') !== null);
@@ -1539,7 +1546,7 @@ function buildDynamicSidebar(totalPapers) {
             const itemSlug = createChapterSlug(labelText) || `page-${virtualId}`;
             li.setAttribute('data-slug', itemSlug);
             const textSpan = document.createElement('span');
-            textSpan.innerText = labelText;
+            textSpan.innerText = currentLanguage === 'ka' ? bookGeorgianUppercase(labelText) : labelText;
             textSpan.title = labelText;
             li.appendChild(textSpan);
 
@@ -4869,7 +4876,7 @@ function updateAmbientBackground() {
         if (activeItem.classList.contains('toc-cover')) {
             imgSrc = bookMeta.coverImage || null;
         } else {
-            const activeTitleText = activeItem.querySelector('span:not(.toc-arrow)').innerText.trim();
+            const activeTitleText = (activeItem.dataset.sourceTitle || activeItem.querySelector('span:not(.toc-arrow)').innerText).trim();
             const targetChapter = chaptersData.find(ch => getChapterTitle(ch, currentLanguage) === activeTitleText);
 
             if (targetChapter) {
