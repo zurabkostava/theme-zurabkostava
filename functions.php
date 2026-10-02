@@ -163,6 +163,20 @@ function zk_fix_legacy_internal_content_links( $content ) {
         "href='https://zurabkostava.com/blog/zk_book/beta/'" => "href='" . esc_url( $book_url ) . "'",
     );
 
+    // Old custom-field HTML can contain a language home URL without its slash.
+    // Match complete href values only; leave external links and deeper paths alone.
+    $site_home = untrailingslashit( get_option( 'home' ) );
+    foreach ( zk_get_translatable_languages() as $language ) {
+        $prefix = trim( $language['prefix'], '/' );
+        if ( '' === $prefix ) {
+            continue;
+        }
+        $legacy_home = $site_home . '/' . $prefix;
+        foreach ( array( '"', "'" ) as $quote ) {
+            $replacements[ 'href=' . $quote . $legacy_home . $quote ] = 'href=' . $quote . esc_url( $legacy_home . '/' ) . $quote;
+        }
+    }
+
     return strtr( $content, $replacements );
 }
 add_filter( 'the_content', 'zk_fix_legacy_internal_content_links', 25 );

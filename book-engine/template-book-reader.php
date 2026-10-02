@@ -107,6 +107,16 @@ $seo_content = function_exists( 'zk_get_book_seo_content' )
             <span class="material-icons-outlined">info</span>
         </button>
 
+        <a id="lib-home-btn" class="lib-home-btn notranslate skiptranslate"
+           href="<?php echo esc_url( home_url( zk_get_language_path( '/books/', $page_language ) ) ); ?>"
+           title="<?php echo $is_georgian ? 'მთავარ საიტზე' : 'Go to main site'; ?>"
+           aria-label="<?php echo $is_georgian ? 'წიგნების ბიბლიოთეკაში დაბრუნება' : 'Return to the book library'; ?>"
+           translate="no" data-no-translation data-no-dynamic-translation rel="noopener"
+           style="gap: 8px;">
+            <span class="material-icons-outlined" aria-hidden="true" style="font-size: 18px; color: inherit; display: block;">open_in_new</span>
+            <span style="line-height: 1; color: inherit; font-weight: inherit;">LIB</span>
+        </a>
+
     </div>
 
     <main id="main-content">
