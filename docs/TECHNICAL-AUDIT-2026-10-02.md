@@ -19,6 +19,8 @@ Sources: Screaming Frog exports in `C:\Users\zurab\Desktop\issues_reports` from 
 
 ## Validation and follow-up
 
-PHP syntax checks passed for all three modified production files. Eight request-level regression cases passed, including Georgian/French-style registered prefixes (German in the fixture), query preservation, HEAD, and excluded requests. Live HTTP checks above describe the version before deployment; repeat the affected checks after WP Pusher and edge-cache refresh.
+PHP syntax checks passed for all three modified production files. Eight request-level regression cases passed, including Georgian and a registered German prefix in the fixture, query preservation, HEAD, and excluded requests. Live HTTP checks above describe the version before deployment; repeat the affected checks after WP Pusher and edge-cache refresh.
 
 After deployment, run fresh Ahrefs/Screaming Frog crawls before comparing issue counts. Do not add artificial headings, shorten the full book HTML, delete useful external links or rewrite descriptions merely to erase advisory warnings. Editorial titles, descriptions, alt text and image compression remain with the site owner. App-specific audits remain deferred.
+
+Deployment was verified on 2 October: missing-slash Georgian requests now reach their slash URL and preserve query strings; Georgian blog cards and About favorite thumbnails expose dimensions. The English blog/book responses initially remained in Batcache after the edge purge, while uncached query requests already exposed the new width/height and srcset markup. The cache reported a remaining lifetime below 90 seconds. Edge Cache confirmed its purge; a fresh Ahrefs crawl was started.
