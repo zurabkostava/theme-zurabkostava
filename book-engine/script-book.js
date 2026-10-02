@@ -1216,11 +1216,31 @@ function getChapterTitle(chapter, lang) {
     }
     return chapter.title;
 }
+async function waitForBookTypography() {
+    // Changing language can request a new Unicode font subset after the old
+    // fonts.ready promise has resolved. Load it explicitly before measuring.
+    if (document.fonts && typeof document.fonts.load === 'function') {
+        const sample = currentLanguage === 'ka' ? 'ქართული ᲡᲐᲠᲩᲔᲕᲘ' : 'Reading Contents';
+        const families = currentLanguage === 'ka'
+            ? ['Noto Serif Georgian', 'Noto Sans Georgian']
+            : ['Noto Sans Georgian'];
+        await Promise.all(families.flatMap(family =>
+            [300, 400, 600, 700].map(weight =>
+                document.fonts.load(`${weight} 16px "${family}"`, sample).catch(() => [])
+            )
+        ));
+        await document.fonts.ready;
+    }
+    await new Promise(resolve => requestAnimationFrame(resolve));
+}
+
 async function generateBookStructure() {
     const container = document.getElementById('measure-container');
     const bookScene = document.querySelector('.book-scene');
 
     if (!container || !bookScene) return { pages: [], chapterStartMap: [] };
+
+    await waitForBookTypography();
 
     const rect = bookScene.getBoundingClientRect();
 
