@@ -4437,7 +4437,7 @@ function zk_render_json_ld_schema() {
     // A Person must keep one canonical entity ID in every language. `home_url()`
     // is language-filtered on translated routes, while the saved home option is not.
     $identity_url = trailingslashit( esc_url_raw( (string) get_option( 'home', home_url( '/' ) ) ) );
-    $website_url  = untrailingslashit( $identity_url ) . zk_get_language_path( '/', $current_language );
+    $website_id   = $identity_url . '#website';
     $person_id    = $identity_url . '#person';
     $logo_url     = get_option( 'zk_profile_img', '' );
     
@@ -4553,14 +4553,35 @@ function zk_render_json_ld_schema() {
     $schema[] = [
         '@context' => 'https://schema.org',
         '@type' => 'WebSite',
-        'name' => $is_ka ? $site_name_ka : 'Zurab Kostava',
-        'alternateName' => $is_ka ? 'Zurab Kostava' : $site_name_ka,
-        'url' => $website_url,
-        'inLanguage' => $content_locale,
+        '@id' => $website_id,
+        'name' => $site_name_en,
+        'alternateName' => $site_name_ka,
+        'url' => $identity_url,
+        'inLanguage' => array_values( array_column( zk_get_languages(), 'locale' ) ),
         'publisher' => [
             '@id' => $person_id
         ]
     ];
+
+    if ( is_front_page() ) {
+        // Translations are separate pages within one website and share one Person.
+        $home_id = get_queried_object_id();
+        $home_title = zk_get_localized_post_meta( $home_id, 'seo_title', $current_language );
+        $home_desc = zk_get_localized_post_meta( $home_id, 'seo_description', $current_language );
+        $site_desc_en = get_bloginfo( 'description' ) ?: 'Georgian multidisciplinary artist, composer, and designer';
+        $site_desc = $is_ka ? get_option( 'zk_site_desc_ka', 'ქართველი მულტიდისციპლინური ხელოვანი, კომპოზიტორი და დიზაინერი' ) : $site_desc_en;
+        $schema[] = [
+            '@context' => 'https://schema.org',
+            '@type' => 'WebPage',
+            '@id' => $canonical_url . '#webpage',
+            'url' => $canonical_url,
+            'name' => wp_strip_all_tags( $home_title ?: $site_name . ( $site_desc ? ' — ' . $site_desc : '' ) ),
+            'description' => wp_strip_all_tags( $home_desc ?: $site_desc ),
+            'inLanguage' => $content_locale,
+            'isPartOf' => [ '@id' => $website_id ],
+            'mainEntity' => [ '@id' => $person_id ],
+        ];
+    }
 
     $is_book_page = is_page() && get_page_template_slug( get_queried_object_id() ) === 'book-engine/template-book-reader.php';
 
@@ -5154,6 +5175,9 @@ add_action( 'save_post', 'zk_save_geo_meta_box_data' );
 
 // 4. Inject FAQ JSON-LD Schema
 function zk_inject_faq_schema() {
+    // The galaxy homepage doesn't display these questions. Keep editor metadata,
+    // but don't advertise an FAQPage without corresponding visible content.
+    if ( is_front_page() ) return;
     if ( ! is_singular() && ! ( is_archive() && ( is_category() || is_tag() ) ) ) return;
     
     $language = function_exists( 'zk_get_current_language' ) ? zk_get_current_language() : 'en';

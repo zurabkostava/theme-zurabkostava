@@ -142,7 +142,7 @@ ob_start(); ?>
         $hero_sub   = $is_ka ? 'მულტიდისციპლინური ხელოვანი მზის სისტემიდან' : 'Multidisciplinary Artist From The Solar System';
         ?>
         <div class="hero-title-wrap">
-            <h1 class="hero-title" data-text="<?php echo esc_attr( $hero_title ); ?>"><?php echo esc_html( $hero_title ); ?></h1>
+            <h1 class="hero-title" aria-label="<?php echo esc_attr( $hero_title ); ?>" data-text="<?php echo esc_attr( $hero_title ); ?>"><?php echo esc_html( $hero_title ); ?></h1>
         </div>
         <div class="hero-sub-wrap">
             <p class="hero-sub"><?php echo esc_html( $hero_sub ); ?></p>
@@ -578,6 +578,7 @@ if ( ( is_page() || is_single() ) && ! is_front_page() && have_posts() ) {
                 var heroTitle = base.querySelector ? base.querySelector('.hero-title') : null;
                 if (heroTitle) {
                     var wantedTitle = isKa ? 'ზურაბ კოსტავა' : 'Zurab Kostava';
+                    heroTitle.setAttribute('aria-label', wantedTitle);
                     if ((heroTitle.textContent || '').trim() !== wantedTitle) {
                         heroTitle.textContent = wantedTitle;
                         heroTitle.setAttribute('data-text', wantedTitle);
