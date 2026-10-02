@@ -45,7 +45,7 @@ $page_language = function_exists( 'zk_get_current_language' )
 <?php
 // Complete SEO content is refreshed in the background. Never make the page
 // wait for Supabase before returning HTML to the visitor.
-$book_slug = $post->post_name;
+$book_slug = 'zk_book' === $post->post_type ? zk_book_reader_slug( $post ) : $post->post_name;
 $is_georgian = 'ka' === $page_language;
 $seo_content = function_exists( 'zk_get_book_seo_content' )
     ? zk_get_book_seo_content( $book_slug, $is_georgian ? 'ka' : 'en' )
@@ -79,7 +79,7 @@ $seo_content = function_exists( 'zk_get_book_seo_content' )
         </div>
     </div>
 
-    <div id="book-engine-wrapper" data-force-slug="<?php echo esc_attr( $post->post_name ); ?>"></div>
+    <div id="book-engine-wrapper" data-force-slug="<?php echo esc_attr( $book_slug ); ?>"></div>
 
     <nav id="sidebar" class="sidebar">
         <div class="sidebar-header">

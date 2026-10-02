@@ -15,6 +15,7 @@ require_once get_template_directory() . '/inc/platform/assets.php';
 require_once get_template_directory() . '/inc/platform/security.php';
 require_once get_template_directory() . '/inc/platform/blog-categories.php';
 require_once get_template_directory() . '/inc/platform/projects.php';
+require_once get_template_directory() . '/inc/platform/books.php';
 // 🔴 Load Nuvio Addons
 require_once get_template_directory() . '/nuvio-ge-sub.php';
 require_once get_template_directory() . '/nuvio-movies-addon.php';
@@ -357,6 +358,7 @@ class ZK_SPA_Walker extends Walker_Nav_Menu {
             $link_class .= ' no-spa';
         }
         if ( 'zk_tool' === $item->object && get_post_meta( $item->object_id, '_zk_project_path', true ) && 'detail' !== get_post_meta( $item->object_id, '_zk_project_app', true ) ) $link_class .= ' no-spa';
+        if ( 'zk_book' === $item->object && get_post_meta( $item->object_id, '_zk_book_path', true ) ) $link_class .= ' no-spa';
 
         $is_current = in_array( 'current-menu-item', $classes ) || in_array( 'current-page-item', $classes );
         if ( $is_current ) $link_class .= ' is-current';
@@ -2876,10 +2878,14 @@ function zk_register_books_cpt() {
     );
     $args = array(
             'labels'        => $labels,
-            'public'        => false,
+            'public'        => true,
+            'publicly_queryable' => true,
+            'has_archive'   => false,
+            'rewrite'       => false,
+            'query_var'     => false,
             'show_ui'       => true,
             'menu_icon'     => 'dashicons-book-alt',
-            'supports'      => array( 'title', 'editor', 'thumbnail' ),
+            'supports'      => array( 'title', 'editor', 'excerpt', 'thumbnail', 'revisions' ),
     );
     register_post_type( 'zk_book', $args );
 }
@@ -2893,113 +2899,39 @@ add_action( 'add_meta_boxes', 'zk_book_add_meta_box' );
 
 function zk_book_meta_callback( $post ) {
     wp_nonce_field( 'zk_book_save_meta', 'zk_book_meta_nonce' );
-    $year         = get_post_meta( $post->ID, '_zk_book_year', true );
-    $genre        = get_post_meta( $post->ID, '_zk_book_genre', true );
-    $genre_ka     = get_post_meta( $post->ID, '_zk_book_genre_ka', true );
-    $author       = get_post_meta( $post->ID, '_zk_book_author', true );
-    $author_ka    = get_post_meta( $post->ID, '_zk_book_author_ka', true );
-    $link         = get_post_meta( $post->ID, '_zk_book_link', true );
-    $link_ka      = get_post_meta( $post->ID, '_zk_book_link_ka', true );
-    $btn_label    = get_post_meta( $post->ID, '_zk_book_btn_label', true );
-    $btn_label_ka = get_post_meta( $post->ID, '_zk_book_btn_label_ka', true );
-    $characters   = get_post_meta( $post->ID, '_zk_book_characters', true );
-    $themes       = get_post_meta( $post->ID, '_zk_book_themes', true );
-    $language     = get_post_meta( $post->ID, '_zk_book_language', true ) ?: 'ka, en';
-    $pages        = get_post_meta( $post->ID, '_zk_book_pages', true );
-    $audience     = get_post_meta( $post->ID, '_zk_book_audience', true );
-    $isbn         = get_post_meta( $post->ID, '_zk_book_isbn', true );
-    ?>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
-        <div>
-            <label><strong>Release Year</strong> (e.g. 2026)</label><br>
-            <input type="text" name="zk_book_year" value="<?php echo esc_attr( $year ); ?>" style="width:100%; margin-top:5px;" />
-        </div>
-        <div>
-            <label><strong>Book Language(s)</strong> (Comma separated. e.g. <em>ka, en</em>)</label><br>
-            <input type="text" name="zk_book_language" value="<?php echo esc_attr( $language ); ?>" placeholder="ka, en" style="width:100%; margin-top:5px;" />
-        </div>
-
-        <div>
-            <label><strong>Genre / Format (EN)</strong> (e.g. Serialized Sci-Fi)</label><br>
-            <input type="text" name="zk_book_genre" value="<?php echo esc_attr( $genre ); ?>" style="width:100%; margin-top:5px;" />
-        </div>
-        <div>
-            <label><strong>ჟანრი / ფორმატი (KA)</strong> (მაგ. სამეცნიერო ფანტასტიკა, ექსპერიმენტული)</label><br>
-            <input type="text" name="zk_book_genre_ka" value="<?php echo esc_attr( $genre_ka ); ?>" style="width:100%; margin-top:5px;" />
-        </div>
-
-        <div>
-            <label><strong>Author Name (EN)</strong></label><br>
-            <input type="text" name="zk_book_author" value="<?php echo esc_attr( $author ); ?>" placeholder="Zurab Kostava" style="width:100%; margin-top:5px;" />
-        </div>
-        <div>
-            <label><strong>ავტორის სახელი (KA)</strong></label><br>
-            <input type="text" name="zk_book_author_ka" value="<?php echo esc_attr( $author_ka ); ?>" placeholder="ზურაბ კოსტავა" style="width:100%; margin-top:5px;" />
-        </div>
-
-        <div>
-            <label><strong>Read Link (EN)</strong> (e.g. https://zurabkostava.com/books/beta)</label><br>
-            <input type="text" name="zk_book_link" value="<?php echo esc_attr( $link ); ?>" style="width:100%; margin-top:5px;" />
-        </div>
-        <div>
-            <label><strong>წაკითხვის ბმული (KA)</strong> (დატოვეთ ცარიელი ავტო /ka/books/... ბმულისთვის)</label><br>
-            <input type="text" name="zk_book_link_ka" value="<?php echo esc_attr( $link_ka ); ?>" placeholder="ავტომატური (/ka/books/...)" style="width:100%; margin-top:5px;" />
-        </div>
-
-        <div>
-            <label><strong>Read Button Label (EN)</strong></label><br>
-            <input type="text" name="zk_book_btn_label" value="<?php echo esc_attr( $btn_label ); ?>" placeholder="Read Experiment" style="width:100%; margin-top:5px;" />
-        </div>
-        <div>
-            <label><strong>წაკითხვის ღილაკის ტექსტი (KA)</strong></label><br>
-            <input type="text" name="zk_book_btn_label_ka" value="<?php echo esc_attr( $btn_label_ka ); ?>" placeholder="წაიკითხეთ ექსპერიმენტი" style="width:100%; margin-top:5px;" />
-        </div>
-
-        <div>
-            <label><strong>Target Audience</strong> (e.g. Young Adult, Sci-Fi Readers)</label><br>
-            <input type="text" name="zk_book_audience" value="<?php echo esc_attr( $audience ); ?>" style="width:100%; margin-top:5px;" />
-        </div>
-        <div>
-            <label><strong>Estimated Pages / Word Count</strong></label><br>
-            <input type="number" name="zk_book_pages" value="<?php echo esc_attr( $pages ); ?>" style="width:100%; margin-top:5px;" />
-        </div>
-
-        <div style="grid-column: 1 / -1;">
-            <label><strong>ISBN</strong> (If applicable)</label><br>
-            <input type="text" name="zk_book_isbn" value="<?php echo esc_attr( $isbn ); ?>" style="width:100%; margin-top:5px;" />
-        </div>
-        <div style="grid-column: 1 / -1;">
-            <label><strong>Characters (for AI Schema)</strong> (Comma separated. e.g. <em>Noe Vance, SLiATLAS</em>)</label><br>
-            <input type="text" name="zk_book_characters" value="<?php echo esc_attr( $characters ); ?>" style="width:100%; margin-top:5px;" />
-        </div>
-        <div style="grid-column: 1 / -1;">
-            <label><strong>Themes / About (for AI Schema)</strong> (Comma separated. e.g. <em>Simulation, Meta-fiction</em>)</label><br>
-            <input type="text" name="zk_book_themes" value="<?php echo esc_attr( $themes ); ?>" style="width:100%; margin-top:5px;" />
-        </div>
-    </div>
-    <p style="color: #666; margin-top: 15px;"><em>* Set the Book Cover using the "Featured Image" panel on the right. Georgian Title, Synopsis, and Excerpt are managed in the "Georgian Translation" box below.</em></p>
-    <?php
+    echo '<p>The editor above contains the library synopsis, not the book chapters. Set the cover in Featured Image; manage translated titles and synopses in the translation panels.</p>';
+    echo '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">';
+    foreach ( array( 'year' => 'Release year', 'language' => 'Book languages (e.g. ka, en)', 'pages' => 'Number of pages', 'isbn' => 'ISBN' ) as $field => $label ) {
+        $name = 'zk_book_' . $field;
+        echo '<p><label for="' . esc_attr( $name ) . '"><strong>' . esc_html( $label ) . '</strong></label><br><input class="widefat" id="' . esc_attr( $name ) . '" name="' . esc_attr( $name ) . '" value="' . esc_attr( get_post_meta( $post->ID, '_' . $name, true ) ) . '"></p>';
+    }
+    echo '</div>';
+    $fields = array( 'genre' => 'Genre / format', 'author' => 'Author name', 'btn_label' => 'Read button label', 'audience' => 'Target audience', 'characters' => 'Characters', 'themes' => 'Themes / topics' );
+    if ( ! get_post_meta( $post->ID, '_zk_book_path', true ) ) $fields['link'] = 'External read link';
+    foreach ( zk_get_languages() as $code => $language ) {
+        echo '<h3>' . esc_html( $language['name'] . ' (' . strtoupper( $code ) . ')' ) . '</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">';
+        foreach ( $fields as $field => $label ) {
+            $name = 'zk_book_' . $field . ( 'en' === $code ? '' : '_' . $code );
+            echo '<p><label for="' . esc_attr( $name ) . '"><strong>' . esc_html( $label ) . '</strong></label><br><input class="widefat" id="' . esc_attr( $name ) . '" name="' . esc_attr( $name ) . '" value="' . esc_attr( get_post_meta( $post->ID, '_' . $name, true ) ) . '"></p>';
+        }
+        echo '</div>';
+    }
+    if ( get_post_meta( $post->ID, '_zk_book_path', true ) ) echo '<p class="description">Read links are generated from Public path for every language. No separate Read Link is needed.</p>';
 }
 
 function zk_book_save_meta( $post_id ) {
-    if ( ! isset( $_POST['zk_book_meta_nonce'] ) || ! wp_verify_nonce( $_POST['zk_book_meta_nonce'], 'zk_book_save_meta' ) ) return;
-    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
-
-    if ( isset( $_POST['zk_book_year'] ) ) update_post_meta( $post_id, '_zk_book_year', sanitize_text_field( $_POST['zk_book_year'] ) );
-    if ( isset( $_POST['zk_book_genre'] ) ) update_post_meta( $post_id, '_zk_book_genre', sanitize_text_field( $_POST['zk_book_genre'] ) );
-    if ( isset( $_POST['zk_book_genre_ka'] ) ) update_post_meta( $post_id, '_zk_book_genre_ka', sanitize_text_field( $_POST['zk_book_genre_ka'] ) );
-    if ( isset( $_POST['zk_book_author'] ) ) update_post_meta( $post_id, '_zk_book_author', sanitize_text_field( $_POST['zk_book_author'] ) );
-    if ( isset( $_POST['zk_book_author_ka'] ) ) update_post_meta( $post_id, '_zk_book_author_ka', sanitize_text_field( $_POST['zk_book_author_ka'] ) );
-    if ( isset( $_POST['zk_book_link'] ) ) update_post_meta( $post_id, '_zk_book_link', sanitize_text_field( $_POST['zk_book_link'] ) );
-    if ( isset( $_POST['zk_book_link_ka'] ) ) update_post_meta( $post_id, '_zk_book_link_ka', sanitize_text_field( $_POST['zk_book_link_ka'] ) );
-    if ( isset( $_POST['zk_book_btn_label'] ) ) update_post_meta( $post_id, '_zk_book_btn_label', sanitize_text_field( $_POST['zk_book_btn_label'] ) );
-    if ( isset( $_POST['zk_book_btn_label_ka'] ) ) update_post_meta( $post_id, '_zk_book_btn_label_ka', sanitize_text_field( $_POST['zk_book_btn_label_ka'] ) );
-    if ( isset( $_POST['zk_book_characters'] ) ) update_post_meta( $post_id, '_zk_book_characters', sanitize_text_field( $_POST['zk_book_characters'] ) );
-    if ( isset( $_POST['zk_book_themes'] ) ) update_post_meta( $post_id, '_zk_book_themes', sanitize_text_field( $_POST['zk_book_themes'] ) );
-    if ( isset( $_POST['zk_book_language'] ) ) update_post_meta( $post_id, '_zk_book_language', sanitize_text_field( $_POST['zk_book_language'] ) );
-    if ( isset( $_POST['zk_book_pages'] ) ) update_post_meta( $post_id, '_zk_book_pages', sanitize_text_field( $_POST['zk_book_pages'] ) );
-    if ( isset( $_POST['zk_book_audience'] ) ) update_post_meta( $post_id, '_zk_book_audience', sanitize_text_field( $_POST['zk_book_audience'] ) );
-    if ( isset( $_POST['zk_book_isbn'] ) ) update_post_meta( $post_id, '_zk_book_isbn', sanitize_text_field( $_POST['zk_book_isbn'] ) );
+    if ( 'zk_book' !== get_post_type( $post_id ) || wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || ! current_user_can( 'edit_post', $post_id ) || ! isset( $_POST['zk_book_meta_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['zk_book_meta_nonce'] ) ), 'zk_book_save_meta' ) ) return;
+    $fields = array( 'year', 'language', 'pages', 'isbn' );
+    foreach ( zk_get_languages() as $code => $language ) {
+        foreach ( array( 'genre', 'author', 'btn_label', 'audience', 'characters', 'themes', 'link' ) as $field ) $fields[] = $field . ( 'en' === $code ? '' : '_' . $code );
+    }
+    foreach ( $fields as $field ) {
+        $name = 'zk_book_' . $field;
+        if ( ! isset( $_POST[ $name ] ) ) continue;
+        $value = wp_unslash( $_POST[ $name ] );
+        $value = 0 === strpos( $field, 'link' ) ? esc_url_raw( $value ) : sanitize_text_field( $value );
+        update_post_meta( $post_id, '_' . $name, $value );
+    }
 }
 add_action( 'save_post', 'zk_book_save_meta' );
 
@@ -3034,65 +2966,17 @@ function zk_books_shortcode() {
     while ( $query->have_posts() ) {
         $query->the_post();
         $id        = get_the_ID();
-        $title_en  = get_the_title();
-        $title_ka  = get_post_meta( $id, '_zk_title_ka', true );
-        if ( empty( $title_ka ) && ( strtolower( trim( $title_en ) ) === 'beta' || strpos( strtolower( $title_en ), 'beta' ) !== false ) ) {
-            $title_ka = 'ბეტა';
-        }
-        $title = ( $is_ka && ! empty( $title_ka ) ) ? $title_ka : $title_en;
+        $title_en = get_the_title();
+        $title = 'en' === $current_language ? $title_en : ( get_post_meta( $id, zk_language_meta_key( 'title', $current_language ), true ) ?: $title_en );
+        $desc_en = get_the_content();
+        $desc = 'en' === $current_language ? $desc_en : ( get_post_meta( $id, zk_language_meta_key( 'content', $current_language ), true ) ?: get_post_meta( $id, zk_language_meta_key( 'excerpt', $current_language ), true ) ?: $desc_en );
+        $year = get_post_meta( $id, '_zk_book_year', true );
+        $genre = zk_book_localized_detail( $id, 'genre', $current_language );
+        $author = zk_book_localized_detail( $id, 'author', $current_language ) ?: ( $is_ka ? 'ზურაბ კოსტავა' : 'Zurab Kostava' );
+        $by_label = $is_ka ? 'ავტორი:' : 'by';
+        $link = zk_book_url( $id, $current_language );
+        $btn_label = zk_book_localized_detail( $id, 'btn_label', $current_language ) ?: ( $is_ka ? 'წაიკითხეთ ექსპერიმენტი' : 'Read Experiment' );
 
-        $desc_en   = get_the_content();
-        $desc_ka   = get_post_meta( $id, '_zk_content_ka', true ) ?: get_post_meta( $id, '_zk_excerpt_ka', true );
-        if ( empty( $desc_ka ) && $is_ka && ( strtolower( trim( $title_en ) ) === 'beta' || strpos( strtolower( $title_en ), 'beta' ) !== false ) ) {
-            $desc_ka = '<p>ეს არ არის უბრალოდ წიგნი — ეს არის ცოცხალი ექსპერიმენტი. წაიკითხეთ ზურაბ კოსტავას სერიული სამეცნიერო-ფანტასტიკური რომანი, რომელიც რეალურ დროში იწერება. გამოიკვლიეთ კოსმიური პარადოქსები და ბავშვობის ფანტაზიები ისტორიაში, სადაც მკითხველი აყალიბებს რეალობას. შემოგვიერთდით უცნობში მოგზაურობაში.</p>';
-        }
-        $desc      = ( $is_ka && ! empty( $desc_ka ) ) ? $desc_ka : $desc_en;
-
-        $year      = get_post_meta( $id, '_zk_book_year', true );
-        
-        $genre_en  = get_post_meta( $id, '_zk_book_genre', true );
-        $genre_ka  = get_post_meta( $id, '_zk_book_genre_ka', true );
-        if ( empty( $genre_ka ) && $is_ka ) {
-            if ( empty( $genre_en ) || stripos( $genre_en, 'Sci-Fi' ) !== false ) {
-                $genre_ka = 'სამეცნიერო ფანტასტიკა, ექსპერიმენტული';
-            }
-        }
-        $genre     = ( $is_ka && ! empty( $genre_ka ) ) ? $genre_ka : $genre_en;
-
-        $author_en = get_post_meta( $id, '_zk_book_author', true ) ?: 'Zurab Kostava';
-        $author_ka = get_post_meta( $id, '_zk_book_author_ka', true ) ?: 'ზურაბ კოსტავა';
-        $author    = $is_ka ? $author_ka : $author_en;
-        $by_label  = $is_ka ? 'ავტორი:' : 'by';
-
-        $link_en   = zk_normalize_internal_destination( get_post_meta( $id, '_zk_book_link', true ) );
-        $link_ka   = zk_normalize_internal_destination( get_post_meta( $id, '_zk_book_link_ka', true ) );
-        if ( $is_ka ) {
-            if ( ! empty( $link_ka ) ) {
-                $link = $link_ka;
-            } elseif ( ! empty( $link_en ) ) {
-                $parsed = parse_url( $link_en );
-                $path = isset($parsed['path']) ? $parsed['path'] : '';
-                if ( strpos( $path, '/books/' ) !== false && strpos( $path, '/ka/books/' ) === false ) {
-                    $ka_path = str_replace( '/books/', '/ka/books/', $path );
-                    if ( isset($parsed['scheme']) && isset($parsed['host']) ) {
-                        $link = $parsed['scheme'] . '://' . $parsed['host'] . $ka_path;
-                    } else {
-                        $link = $ka_path;
-                    }
-                } else {
-                    $link = $link_en;
-                }
-            } else {
-                $link = '';
-            }
-        } else {
-            $link = $link_en;
-        }
-
-        $btn_label_en = get_post_meta( $id, '_zk_book_btn_label', true ) ?: 'Read Experiment';
-        $btn_label_ka = get_post_meta( $id, '_zk_book_btn_label_ka', true ) ?: 'წაიკითხეთ ექსპერიმენტი';
-        $btn_label    = $is_ka ? $btn_label_ka : $btn_label_en;
-        
         $ai_summary   = zk_get_localized_post_meta( $id, 'geo_ai_summary', $current_language, true );
         $seo_desc     = zk_get_localized_post_meta( $id, 'seo_description', $current_language );
         if ( ! $seo_desc && 'en' !== $current_language ) {
@@ -3161,7 +3045,7 @@ function zk_books_shortcode() {
         // Actions
         $output .= '<div class="zk-book-actions">';
         if ( $link ) {
-            $output .= '<a href="' . esc_url( $link ) . '" target="_blank" rel="noopener" class="zk-read-btn">';
+            $output .= '<a href="' . esc_url( $link ) . '" target="_blank" rel="noopener" class="zk-read-btn no-spa">';
             $output .= '<span>' . esc_html( $btn_label ) . '</span>';
             $output .= '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>';
             $output .= '</a>';
@@ -4387,6 +4271,7 @@ function zk_render_seo_meta() {
             // Descriptive defaults only: never replace an editor's SEO title.
             if ( ! $custom_title && in_array( $language, array( 'en', 'ka' ), true ) ) {
                 $route = 'zk_tool' === get_post_type( $obj_id ) ? get_post_meta( $obj_id, '_zk_project_app', true ) : get_page_uri( is_page() ? get_queried_object_id() : $obj_id );
+                if ( 'zk_book' === get_post_type( $obj_id ) ) $route = trim( get_post_meta( $obj_id, '_zk_book_path', true ), '/' );
                 $defaults = array(
                     'reader' => array( 'ReadRoad: EPUB & Voice Reader | Zurab Kostava', 'რიდროუდი: EPUB და ხმოვანი კითხვა | ზურაბ კოსტავა' ),
                     'visual' => array( 'Visual Art, Photography & Design | Zurab Kostava', 'ვიზუალური ხელოვნება და დიზაინი | ზურაბ კოსტავა' ),
@@ -4731,17 +4616,18 @@ function zk_render_json_ld_schema() {
     } elseif ( is_singular( 'zk_book' ) || $is_book_page ) {
         $target_id  = function_exists('zk_get_seo_target_id') ? zk_get_seo_target_id( get_queried_object_id() ) : get_queried_object_id();
         $year       = get_post_meta( $target_id, '_zk_book_year', true );
-        $genre      = get_post_meta( $target_id, '_zk_book_genre', true );
+        $genre      = zk_book_localized_detail( $target_id, 'genre', $current_language );
         $seo_desc   = zk_get_localized_post_meta( $target_id, 'seo_description', $current_language );
         $characters = get_post_meta( $target_id, '_zk_book_characters', true );
         $themes     = get_post_meta( $target_id, '_zk_book_themes', true );
         $language   = get_post_meta( $target_id, '_zk_book_language', true ) ?: $current_language;
         $pages      = get_post_meta( $target_id, '_zk_book_pages', true );
-        $audience   = get_post_meta( $target_id, '_zk_book_audience', true );
+        $audience   = zk_book_localized_detail( $target_id, 'audience', $current_language );
         $isbn       = get_post_meta( $target_id, '_zk_book_isbn', true );
         
         $book_title = 'en' === $current_language ? get_the_title( $target_id ) : ( get_post_meta( $target_id, zk_language_meta_key( 'title', $current_language ), true ) ?: get_the_title( $target_id ) );
-        $desc = !empty($seo_desc) ? $seo_desc : wp_strip_all_tags( get_post($target_id)->post_content );
+        $synopsis = 'en' === $current_language ? get_post( $target_id )->post_content : ( get_post_meta( $target_id, zk_language_meta_key( 'content', $current_language ), true ) ?: get_post( $target_id )->post_content );
+        $desc = !empty($seo_desc) ? $seo_desc : wp_strip_all_tags( $synopsis );
         
         $book_schema = [
             '@context' => 'https://schema.org',
@@ -4935,9 +4821,9 @@ function zk_generate_sitemap_string() {
     $sitemap_content .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">' . "\n";
     
     $post_types = get_post_types( array( 'public' => true ), 'names' );
-    // Books use their /books/ Pages. Projects with an internal route are
-    // canonical records; external project links are excluded below.
-    unset( $post_types['attachment'], $post_types['zk_book'] );
+    // Books and Projects with internal routes are canonical records.
+    // External-only records are excluded below.
+    unset( $post_types['attachment'] );
 
     $query = new WP_Query([
         'post_type' => array_values( $post_types ),
@@ -4966,6 +4852,7 @@ function zk_generate_sitemap_string() {
 
             if ( zk_is_internal_or_test_page( $post_id ) ) continue;
             if ( 'zk_tool' === $post_obj->post_type && ! get_post_meta( $post_id, '_zk_project_path', true ) ) continue;
+            if ( 'zk_book' === $post_obj->post_type && ! get_post_meta( $post_id, '_zk_book_path', true ) ) continue;
             if ( 'page' === $post_obj->post_type && zk_blog_listing_term( '/' . get_page_uri( $post_obj ) . '/' ) ) continue;
 
             $perm = get_permalink( $post_id );
