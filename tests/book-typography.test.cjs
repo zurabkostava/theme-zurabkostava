@@ -5,6 +5,41 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 for (const file of ['script-book.js', 'script-book.min.js']) {
+    test(`${file}: uppercase follows styles and preserves body, editors and original headings`, () => {
+        const source = fs.readFileSync(path.join(__dirname, '../book-engine', file), 'utf8').replace(/\r\n/g, '\n');
+        const context = vm.createContext({
+            currentLanguage: 'ka', NodeFilter: { SHOW_TEXT: 4 },
+            document: { createTreeWalker: root => {
+                let index = 0;
+                return { nextNode() { this.currentNode = root.nodes[index++]; return !!this.currentNode; } };
+            } },
+            getComputedStyle: parent => ({ textTransform: parent.transform })
+        });
+        for (const name of ['bookGeorgianUppercase', 'applyBookGeorgianUppercase']) {
+            const start = source.indexOf(`function ${name}(`);
+            vm.runInContext(source.slice(start, source.indexOf('\n}\n', start) + 3), context);
+        }
+        const heading = { textContent: 'LOG_001: საწყისი', attrs: {},
+            hasAttribute(name) { return name in this.attrs; },
+            setAttribute(name, value) { this.attrs[name] = value; } };
+        const text = (value, transform, excluded = false, h = null) => ({
+            nodeValue: value,
+            parentElement: { transform, closest: selector => selector === 'h1, h2, h3' ? h : excluded }
+        });
+        const title = text(heading.textContent, 'uppercase', false, heading);
+        const body = text('ჩვეულებრივი ტექსტი', 'none');
+        const editor = text('რედაქტორის ტექსტი', 'uppercase', true);
+        context.root = { nodes: [title, body, editor] };
+        vm.runInContext('applyBookGeorgianUppercase(root); applyBookGeorgianUppercase(root);', context);
+        assert.equal(title.nodeValue, 'LOG_001: ᲡᲐᲬᲧᲘᲡᲘ');
+        assert.equal(heading.attrs['data-full-text'], 'LOG_001: საწყისი');
+        assert.equal(body.nodeValue, 'ჩვეულებრივი ტექსტი');
+        assert.equal(editor.nodeValue, 'რედაქტორის ტექსტი');
+        context.currentLanguage = 'en';
+        title.nodeValue = heading.textContent;
+        vm.runInContext('applyBookGeorgianUppercase(root)', context);
+        assert.equal(title.nodeValue, heading.textContent);
+    });
     test(`${file}: Georgian uppercase preserves Latin labels and numbers`, () => {
         const source = fs.readFileSync(path.join(__dirname, '../book-engine', file), 'utf8').replace(/\r\n/g, '\n');
         const start = source.indexOf('function bookGeorgianUppercase(');

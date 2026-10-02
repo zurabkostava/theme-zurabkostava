@@ -1098,6 +1098,44 @@ function bookGeorgianUppercase(text) {
     );
 }
 
+// Follow the reader's existing uppercase styles, including inherited styles.
+// Convert text nodes only: never rewrite markup, editor contents or icon names.
+function applyBookGeorgianUppercase(root) {
+    if (currentLanguage !== 'ka' || !root) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const nodes = root.nodeType === 3 ? [root] : [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    for (const node of nodes) {
+        if (!/[\u10D0-\u10FA]/.test(node.nodeValue)) continue;
+        const parent = node.parentElement;
+        if (!parent || parent.closest('script, style, textarea, input, [contenteditable="true"], .ql-editor, .material-icons, .material-icons-outlined')) continue;
+        if (getComputedStyle(parent).textTransform !== 'uppercase') continue;
+        const heading = parent.closest('h1, h2, h3');
+        if (heading && !heading.hasAttribute('data-full-text')) {
+            heading.setAttribute('data-full-text', heading.textContent);
+        }
+        node.nodeValue = bookGeorgianUppercase(node.nodeValue);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const root = document.getElementById('digital-library-root');
+    if (!root) return;
+    applyBookGeorgianUppercase(root);
+    const observer = new MutationObserver(records => {
+        const changed = new Set();
+        for (const record of records) {
+            if (record.type === 'characterData') changed.add(record.target);
+            else record.addedNodes.forEach(node => changed.add(node));
+        }
+        // Idempotent conversion: our own mutations contain no lowercase Georgian.
+        changed.forEach(node => {
+            if (root.contains(node)) applyBookGeorgianUppercase(node);
+        });
+    });
+    observer.observe(root, { childList: true, subtree: true, characterData: true });
+});
+
 function updateStaticUI() {
     // 1. ენის კლასის შეცვლა
     document.body.classList.remove('lang-ka', 'lang-en');
@@ -1546,7 +1584,7 @@ function buildDynamicSidebar(totalPapers) {
             const itemSlug = createChapterSlug(labelText) || `page-${virtualId}`;
             li.setAttribute('data-slug', itemSlug);
             const textSpan = document.createElement('span');
-            textSpan.innerText = currentLanguage === 'ka' ? bookGeorgianUppercase(labelText) : labelText;
+            textSpan.innerText = currentLanguage === 'ka' && tagName === 'h1' ? bookGeorgianUppercase(labelText) : labelText;
             textSpan.title = labelText;
             li.appendChild(textSpan);
 
@@ -1675,6 +1713,10 @@ async function paginateContent(htmlContent, maxContentHeight, startPageIndex = 0
     measureContainer.appendChild(innerMeasurer);
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlContent;
+    // Measure the actual uppercase glyphs so the first layout has correct breaks.
+    innerMeasurer.appendChild(tempDiv);
+    applyBookGeorgianUppercase(tempDiv);
+    tempDiv.remove();
     let nodesQueue = Array.from(tempDiv.children);
     let pages = [];
     let currentPageContent = document.createElement('div');
@@ -1736,7 +1778,7 @@ function splitNodeByWords(originalNode, containerState, limit) {
         };
     }
     const type = originalNode.tagName;
-    const fullText = originalNode.innerText;
+    const fullText = originalNode.getAttribute('data-full-text') || originalNode.innerText;
 
     // 🛡️ FIX: ვიცავთ HTML ტეგებს გაჭრისგან
     // ტეგების შიგნით არსებულ სფეისებს დროებით ვცვლით '%%SPACE%%'-ით
