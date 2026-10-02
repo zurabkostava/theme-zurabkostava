@@ -4118,7 +4118,7 @@ function zk_seo_save_meta( $post_id ) {
 add_action( 'save_post', 'zk_seo_save_meta' );
 
 // 2.1 Add Meta Fields to Taxonomies (Tags & Categories)
-function zk_seo_taxonomy_add_meta_fields() {
+function zk_seo_taxonomy_add_meta_fields( $taxonomy = '' ) {
     foreach ( zk_get_languages( false ) as $code => $language ) {
         $suffix = 'en' === $code ? '' : '_' . $code;
         ?>
@@ -4141,6 +4141,7 @@ function zk_seo_taxonomy_add_meta_fields() {
         </div>
         <?php
     }
+    if ( 'category' === $taxonomy ) return;
     ?>
     <div class="form-field">
         <label for="zk_seo_image">SEO Image URL</label>
@@ -4171,6 +4172,7 @@ function zk_seo_taxonomy_edit_meta_fields( $term ) {
             <?php
         }
     }
+    if ( 'category' === $term->taxonomy ) return;
     $seo_img = get_term_meta( $term->term_id, '_zk_seo_image', true );
     ?>
     <tr class="form-field">
@@ -4394,10 +4396,7 @@ function zk_render_seo_meta() {
         $term_id  = get_queried_object_id();
         $term_obj = get_queried_object();
         $custom_img = get_term_meta( $term_id, '_zk_seo_image', true );
-        if ( is_category() && ! $custom_img ) {
-            $category_image_id = zk_category_featured_image_id( $term_id );
-            if ( $category_image_id ) $img = wp_get_attachment_image_url( $category_image_id, 'large' );
-        }
+        if ( is_category() ) $custom_img = zk_category_featured_image_url( $term_id );
 
         $custom_title = zk_get_localized_term_meta( $term_id, 'seo_title', $language );
         $custom_desc  = zk_get_localized_term_meta( $term_id, 'seo_description', $language );

@@ -6,14 +6,16 @@
         frame.on('select', function () {
             var attachment = frame.state().get('selection').first().toJSON();
             var preview = attachment.sizes && (attachment.sizes.medium || attachment.sizes.thumbnail);
-            control.find('input').val(attachment.id);
+            control.find('[name="zk_category_featured_image"]').val(attachment.id);
+            control.find('[name="zk_category_image_removed"]').val('0');
             control.find('.zk-category-image-preview').empty().append($('<img>', { src: preview ? preview.url : attachment.url, alt: attachment.alt || '', css: { maxWidth: '100%', height: 'auto' } }));
             control.find('.zk-category-image-remove').show();
         });
         frame.open();
     }).on('click', '.zk-category-image-remove', function () {
         var control = $(this).closest('.zk-category-image-control');
-        control.find('input').val('0');
+        control.find('[name="zk_category_featured_image"]').val('0');
+        control.find('[name="zk_category_image_removed"]').val('1');
         control.find('.zk-category-image-preview').empty();
         $(this).hide();
     });

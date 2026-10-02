@@ -112,21 +112,33 @@ add_action( 'edited_category', 'zk_save_blog_category_previous_urls' );
 
 function zk_category_featured_image_id( $term_id ) {
     $id = absint( get_term_meta( $term_id, '_zk_featured_image_id', true ) );
+    if ( ! $id ) {
+        $legacy_url = (string) get_term_meta( $term_id, '_zk_seo_image', true );
+        if ( $legacy_url ) $id = attachment_url_to_postid( $legacy_url );
+    }
     return $id && wp_attachment_is_image( $id ) ? $id : 0;
+}
+
+function zk_category_featured_image_url( $term_id ) {
+    $id = zk_category_featured_image_id( $term_id );
+    return $id ? wp_get_attachment_image_url( $id, 'large' ) : get_term_meta( $term_id, '_zk_seo_image', true );
 }
 
 function zk_category_featured_image_control( $term_id = 0 ) {
     $id = zk_category_featured_image_id( $term_id );
+    $legacy_url = $id ? '' : zk_category_featured_image_url( $term_id );
     wp_nonce_field( 'zk_category_featured_image', 'zk_category_image_nonce' );
     ?>
     <div class="zk-category-image-control">
         <input type="hidden" name="zk_category_featured_image" value="<?php echo esc_attr( $id ); ?>">
+        <input type="hidden" name="zk_category_image_removed" value="0">
         <div class="zk-category-image-preview" style="max-width:300px;margin-bottom:12px;">
             <?php if ( $id ) echo wp_get_attachment_image( $id, 'medium', false, array( 'style' => 'max-width:100%;height:auto;' ) ); ?>
+            <?php if ( $legacy_url ) : ?><img src="<?php echo esc_url( $legacy_url ); ?>" alt="" style="max-width:100%;height:auto;"><?php endif; ?>
         </div>
         <button type="button" class="button zk-category-image-select">Choose featured image</button>
-        <button type="button" class="button zk-category-image-remove" <?php if ( ! $id ) echo 'style="display:none"'; ?>>Remove image</button>
-        <p class="description">Background photo for this category in all languages. The separate SEO Image URL overrides it for social sharing.</p>
+        <button type="button" class="button zk-category-image-remove" <?php if ( ! $id && ! $legacy_url ) echo 'style="display:none"'; ?>>Remove image</button>
+        <p class="description">One image for the category background and social sharing, in all languages.</p>
     </div>
     <?php
 }
@@ -152,8 +164,13 @@ add_action( 'admin_enqueue_scripts', function() {
 function zk_save_category_featured_image( $term_id ) {
     if ( ! current_user_can( 'manage_categories' ) || ! isset( $_POST['zk_category_featured_image'], $_POST['zk_category_image_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['zk_category_image_nonce'] ) ), 'zk_category_featured_image' ) ) return;
     $id = absint( $_POST['zk_category_featured_image'] );
-    if ( ! $id ) delete_term_meta( $term_id, '_zk_featured_image_id' );
-    elseif ( wp_attachment_is_image( $id ) ) update_term_meta( $term_id, '_zk_featured_image_id', $id );
+    if ( ! $id && ! empty( $_POST['zk_category_image_removed'] ) ) {
+        delete_term_meta( $term_id, '_zk_featured_image_id' );
+        delete_term_meta( $term_id, '_zk_seo_image' );
+    } elseif ( $id && wp_attachment_is_image( $id ) ) {
+        update_term_meta( $term_id, '_zk_featured_image_id', $id );
+        delete_term_meta( $term_id, '_zk_seo_image' );
+    }
 }
 add_action( 'created_category', 'zk_save_category_featured_image' );
 add_action( 'edited_category', 'zk_save_category_featured_image' );
