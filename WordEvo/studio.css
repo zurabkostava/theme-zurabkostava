@@ -263,13 +263,14 @@ body.dark.wordevo-studio .studio-account-menu a { display: flex !important; alig
 .studio-account-menu i { width: 18px; text-align: center; }
 body.dark.wordevo-studio .studio-account-menu #userEmailDisplay { display: block; max-width: 100%; padding: 8px 12px; }
 body.dark.wordevo-studio .studio-command .card-toolbar {
-    padding: 12px 28px !important;
-    gap: 16px !important;
-    min-height: 64px !important;
+    margin: 0 !important;
+    padding: 16px 28px !important;
+    min-height: 72px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
     border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-sizing: border-box !important;
 }
 
 /* Zone 1: Left (Tags) */
@@ -531,7 +532,7 @@ body.dark.wordevo-studio .library-modal { width: min(580px,calc(100vw - 24px)) !
     body.dark.wordevo-studio .studio-command #trainingBtn { grid-column: 1; grid-row: 3; width: 100% !important; min-width: 0 !important; }
     body.dark.wordevo-studio .studio-command #addCardBtn { grid-column: 2 / 4; grid-row: 3; width: 100% !important; }
     body.dark.wordevo-studio .studio-command .add-btn-text { display: inline !important; }
-    body.dark.wordevo-studio .studio-command .card-toolbar { padding: 8px 12px !important; gap: 8px; }
+    body.dark.wordevo-studio .studio-command .card-toolbar { margin: 0 !important; padding: 10px 12px !important; gap: 8px; }
     body.dark.wordevo-studio .studio-command .toolbar-right { flex-wrap: nowrap; gap: 6px !important; }
     body.dark.wordevo-studio #toggleSidebarBtn { font-size: 11px; padding: 8px !important; min-width: 0; }
     body.dark.wordevo-studio .studio-command .toolbar-select { max-width: 100px; width: auto; font-size: 10px !important; padding: 7px 4px !important; }
