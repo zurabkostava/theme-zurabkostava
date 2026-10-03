@@ -420,9 +420,11 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         </ul>
     </div>
     <div class="modal-overlay" id="cardPreviewModal" style="display: none;">
-        <button class="nav-btn inside-nav left-nav fas fa-angle-left" id="prevCardBtn">
+        <button class="nav-btn inside-nav left-nav" id="prevCardBtn" aria-label="Previous card" title="Previous card">
+            <i class="fas fa-angle-left" aria-hidden="true"></i>
         </button>
-        <button class="nav-btn inside-nav right-nav fas fa-angle-right" id="nextCardBtn">
+        <button class="nav-btn inside-nav right-nav" id="nextCardBtn" aria-label="Next card" title="Next card">
+            <i class="fas fa-angle-right" aria-hidden="true"></i>
         </button>
         <div class="modal preview-modal">
             <div class="preview-sticky">

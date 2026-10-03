@@ -16,7 +16,10 @@ body.wordevo-studio {
     background-attachment: fixed; line-height: 1.5;
 }
 .wordevo-studio *, .wordevo-studio *::before, .wordevo-studio *::after { box-sizing: border-box; }
-.wordevo-studio button, .wordevo-studio input, .wordevo-studio select, .wordevo-studio textarea { font-family: inherit; }
+.wordevo-studio button:not([class*="fa-"]), .wordevo-studio input, .wordevo-studio select, .wordevo-studio textarea { font-family: inherit; }
+.wordevo-studio .fas, .wordevo-studio .fa-solid { font-family: "Font Awesome 6 Free" !important; font-weight: 900 !important; }
+.wordevo-studio .far, .wordevo-studio .fa-regular { font-family: "Font Awesome 6 Free" !important; font-weight: 400 !important; }
+.wordevo-studio .fab, .wordevo-studio .fa-brands { font-family: "Font Awesome 6 Brands" !important; font-weight: 400 !important; }
 .wordevo-studio button { cursor: pointer; transition: background .2s, border-color .2s, box-shadow .2s, transform .2s; }
 .wordevo-studio button:active:not(:disabled) { transform: scale(.96); }
 .wordevo-studio button:disabled { opacity: .45; cursor: not-allowed; }
@@ -99,7 +102,42 @@ body.wordevo-studio .progress-bar-container { background: #ffffff08; border-radi
 body.wordevo-studio .modal-overlay { background: #030611b8; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 body.wordevo-studio .modal, body.wordevo-studio .auth-box, body.wordevo-studio .training-modal-content {
     background: #121827 !important; color: #eaf0ff; border: 1px solid #ffffff18 !important;
-    border-radius: 24px; box-shadow: 0 28px 100px #0008; animation: studio-reveal .25s ease-out; backdrop-filter: none;
+    border-radius: 24px; box-shadow: 0 28px 100px #0008; animation: studio-reveal .25s ease-out both; backdrop-filter: none;
+    opacity: 1 !important;
+}
+body.wordevo-studio .preview-modal {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: studio-reveal .25s ease-out both !important;
+}
+body.wordevo-studio .nav-btn {
+    background: #151d30f0 !important;
+    color: #eaf0ff !important;
+    border: 1px solid #ffffff1c !important;
+    box-shadow: 0 8px 32px #0008 !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    font-size: 1.15rem;
+    padding: 0 !important;
+    transition: background .2s, border-color .2s, transform .2s, color .2s !important;
+}
+body.wordevo-studio .nav-btn:hover {
+    background: #1e2942 !important;
+    border-color: #9c9bff77 !important;
+    color: #9c9bff !important;
+    transform: translateY(-50%) scale(1.08) !important;
+}
+body.wordevo-studio .nav-btn:disabled {
+    background: #12182766 !important;
+    color: #4a5670 !important;
+    border-color: #ffffff08 !important;
+    cursor: not-allowed;
+    transform: translateY(-50%) !important;
 }
 body.wordevo-studio .modal-header { border-bottom: 1px solid #ffffff0d; padding-bottom: 18px; }
 .wordevo-studio .modal-header h2 { font-size: 21px; letter-spacing: -.4px; }
