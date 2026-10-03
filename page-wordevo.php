@@ -208,61 +208,61 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
         </div>
     </div>
     <div class="card-toolbar" id="cardToolbar">
-            <div class="toolbar-left">
-                <button class="toolbar-btn" id="toggleSidebarBtn" title="Tags">
-                    <i class="fas fa-tags"></i>
-                </button>
+        <div class="toolbar-left">
+            <button class="toolbar-btn" id="toggleSidebarBtn" title="Tags" aria-label="Tags">
+                <i class="fas fa-tags"></i>
+                <span>Tags</span>
+            </button>
+        </div>
+        <div class="toolbar-center">
+            <div class="sorting">
+                <i class="fas fa-sort-down" id="sortDirectionIcon" title="Toggle sort direction" aria-label="Toggle sort direction"></i>
+                <label class="sort-label" for="sortSelect"></label>
+                <select class="toolbar-select" id="sortSelect" aria-label="Sort vocabulary">
+                    <option value="alphabetical">Alphabetical</option>
+                    <option value="updated">Recent</option>
+                    <option selected="" value="progress">By Progress</option>
+                </select>
             </div>
-            <div class="toolbar-right" style="display: flex; align-items: center; margin-left: auto; gap: 12px; flex-wrap: wrap;">
-                <div class="sorting">
-                    <i class="fas fa-sort-down" id="sortDirectionIcon"></i>
-                    <label class="sort-label" for="sortSelect"></label>
-                    <select class="toolbar-select" id="sortSelect">
-                        <option value="alphabetical">Alphabetical</option>
-                        <option value="updated">Recent</option>
-                        <option selected="" value="progress">By Progress</option>
-                    </select>
-                </div>
-                <div class="hide-mastered-wrapper">
-                    <select id="mainProgressSelect" class="toolbar-select">
-                        <option value="">Any</option>
-                        <option value="0-99" selected>- Learned</option>
-                        <option value="0-30">0% - 30%</option>
-                        <option value="31-50">31% - 50%</option>
-                        <option value="51-70">51% - 70%</option>
-                        <option value="71-80">71% - 80%</option>
-                        <option value="81-99">81% - 99%</option>
-                        <option value="100-100">100%</option>
-                    </select>
-                </div>
-                <div class="view-toggle-wrapper">
-                    <button id="viewToggleBtn" class="toolbar-btn" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(30, 30, 46, 0.7); color: #cdd6f4; border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; transition: all 0.2s ease;" title="Toggle View">
-                        <i class="fas fa-th-large" id="viewToggleIcon"></i>
-                    </button>
-                </div>
-                
-                <div class="toolbar-divider" style="width: 1px; height: 24px; background: rgba(0,0,0,0.1); margin: 0 4px;"></div>
-                
-                <div class="toolbar-dropdown" style="position: relative; display: inline-block;">
-                    <button class="toolbar-btn" id="toolbarMoreBtn" title="More Options">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <div class="toolbar-dropdown-content" id="toolbarDropdownContent" style="display: none;">
-                        <button class="toolbar-btn" id="statsBtn" title="Statistics">
-                            <i class="fas fa-chart-pie"></i>
-                        </button>
-                        <button class="toolbar-btn" id="notificationsBtn" title="Reminders">
-                            <i class="fas fa-bell"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <button id="addCardBtn" class="primary-add-btn">
-                    <i class="fas fa-plus"></i>
-                    <span class="add-btn-text">Add Word</span>
-                </button>
+            <div class="hide-mastered-wrapper">
+                <select id="mainProgressSelect" class="toolbar-select" aria-label="Filter by progress">
+                    <option value="">Any</option>
+                    <option value="0-99" selected>Still learning</option>
+                    <option value="0-30">0% - 30%</option>
+                    <option value="31-50">31% - 50%</option>
+                    <option value="51-70">51% - 70%</option>
+                    <option value="71-80">71% - 80%</option>
+                    <option value="81-99">81% - 99%</option>
+                    <option value="100-100">100%</option>
+                </select>
             </div>
         </div>
+        <div class="toolbar-right">
+            <div class="view-toggle-wrapper">
+                <button id="viewToggleBtn" class="toolbar-btn" title="Toggle View" aria-label="Toggle View">
+                    <i class="fas fa-th-large" id="viewToggleIcon"></i>
+                </button>
+            </div>
+            <div class="toolbar-divider" style="display: none;"></div>
+            <div class="toolbar-dropdown" style="display: none;">
+                <button class="toolbar-btn" id="toolbarMoreBtn" title="More Options">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div class="toolbar-dropdown-content" id="toolbarDropdownContent" style="display: none;">
+                    <button class="toolbar-btn" id="statsBtn" title="Statistics">
+                        <i class="fas fa-chart-pie"></i>
+                    </button>
+                    <button class="toolbar-btn" id="notificationsBtn" title="Reminders">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                </div>
+            </div>
+            <button id="addCardBtn" class="primary-add-btn" style="display: none;">
+                <i class="fas fa-plus"></i>
+                <span class="add-btn-text">Add Word</span>
+            </button>
+        </div>
+    </div>
     </div>
     <section class="studio-welcome" aria-label="Your vocabulary">
         <div><p class="studio-eyebrow"><span></span> YOUR LANGUAGE STUDIO</p>
