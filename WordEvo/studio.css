@@ -445,9 +445,102 @@ body.dark.wordevo-studio .studio-command #viewToggleBtn:hover {
     color: #ffffff !important;
 }
 .studio-command .toolbar-divider { display: none !important; }
+.studio-mobile-toggle { display: none !important; }
 
 /* Responsive: mobile layout for card-toolbar and command bar */
 @media (max-width: 820px) {
+    /* Hide collapsible controls by default on mobile */
+    body.dark.wordevo-studio .studio-command:not(.mobile-expanded) .search-input-wrapper,
+    body.dark.wordevo-studio .studio-command:not(.mobile-expanded) #trainingBtn,
+    body.dark.wordevo-studio .studio-command:not(.mobile-expanded) #addCardBtn,
+    body.dark.wordevo-studio .studio-command:not(.mobile-expanded) .studio-account,
+    body.dark.wordevo-studio .studio-command:not(.mobile-expanded) .card-toolbar {
+        display: none !important;
+    }
+
+    body.dark.wordevo-studio .studio-mobile-toggle {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        grid-column: 3 !important;
+        grid-row: 1 !important;
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 10px !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        color: #9c9bff !important;
+        font-size: 13px !important;
+        cursor: pointer !important;
+        transition: all 0.25s ease !important;
+    }
+    body.dark.wordevo-studio .studio-mobile-toggle:hover {
+        background: rgba(156, 155, 255, 0.15) !important;
+        color: #ffffff !important;
+    }
+    body.dark.wordevo-studio .studio-command.mobile-expanded .studio-mobile-toggle i {
+        transform: rotate(180deg);
+    }
+
+    body.dark.wordevo-studio .studio-command.mobile-expanded .search-input-wrapper {
+        display: block !important;
+        grid-column: 1 / -1 !important;
+        grid-row: 2 !important;
+        margin-top: 4px !important;
+    }
+    body.dark.wordevo-studio .studio-command.mobile-expanded #trainingBtn {
+        display: inline-flex !important;
+        grid-column: 1 !important;
+        grid-row: 3 !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        height: 40px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 7px !important;
+    }
+    body.dark.wordevo-studio .studio-command.mobile-expanded #addCardBtn {
+        display: inline-flex !important;
+        grid-column: 2 / 4 !important;
+        grid-row: 3 !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        height: 40px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 7px !important;
+    }
+    body.dark.wordevo-studio .studio-command.mobile-expanded .studio-account {
+        display: block !important;
+        grid-column: 1 / -1 !important;
+        grid-row: 4 !important;
+        width: 100% !important;
+        margin-top: 2px !important;
+    }
+    body.dark.wordevo-studio .studio-command.mobile-expanded .studio-account > summary {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        padding: 9px 12px !important;
+        font-size: 12.5px !important;
+        font-weight: 550 !important;
+        border-radius: 10px !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        color: #b9c7e0 !important;
+        cursor: pointer !important;
+        text-align: center !important;
+    }
+    body.dark.wordevo-studio .studio-command.mobile-expanded .studio-account-menu {
+        position: static !important;
+        width: 100% !important;
+        margin-top: 8px !important;
+        box-shadow: none !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+    }
+
     body.dark.wordevo-studio .studio-command .card-toolbar {
         padding: 12px 14px !important;
         margin: 0 !important;
@@ -664,12 +757,6 @@ body.dark.wordevo-studio .library-modal { width: min(580px,calc(100vw - 24px)) !
     body.dark.wordevo-studio .studio-command #libraryManagerBtn { gap: 6px !important; padding: 7px 8px !important; }
     body.dark.wordevo-studio .studio-command .library-icon { display: none !important; }
     body.dark.wordevo-studio .studio-command .chevron-wrapper { margin: 0; width: 18px; flex-basis: 18px; }
-    .studio-account { grid-column: 3; grid-row: 1; }
-    .studio-account > summary { padding: 9px; font-size: 11px; }
-    .studio-account > summary::after { display: none; }
-    body.dark.wordevo-studio .studio-command .search-input-wrapper { grid-column: 1 / -1; grid-row: 2; }
-    body.dark.wordevo-studio .studio-command #trainingBtn { grid-column: 1; grid-row: 3; width: 100% !important; min-width: 0 !important; }
-    body.dark.wordevo-studio .studio-command #addCardBtn { grid-column: 2 / 4; grid-row: 3; width: 100% !important; }
     body.dark.wordevo-studio .studio-command .add-btn-text { display: inline !important; }
     .studio-welcome { padding: 20px 0; }
     .studio-welcome > div:first-child { display: none; }

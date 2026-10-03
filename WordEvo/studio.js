@@ -88,7 +88,19 @@
             }
             menu.append(node);
         });
-        top.replaceChildren(brand, library, search, byId('trainingBtn'), byId('addCardBtn'), account);
+        const mobileToggle = element('button', 'studio-mobile-toggle');
+        mobileToggle.id = 'studioMobileToggle';
+        mobileToggle.type = 'button';
+        mobileToggle.setAttribute('aria-expanded', 'false');
+        mobileToggle.setAttribute('aria-label', 'Toggle mobile controls');
+        mobileToggle.innerHTML = '<i class="fas fa-chevron-down"></i>';
+        mobileToggle.addEventListener('click', event => {
+            event.stopPropagation();
+            const isExpanded = header.classList.toggle('mobile-expanded');
+            mobileToggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+        });
+
+        top.replaceChildren(brand, library, search, byId('trainingBtn'), byId('addCardBtn'), account, mobileToggle);
         byId('searchInput').setAttribute('aria-label', 'Search your vocabulary');
         byId('addCardBtn').setAttribute('aria-label', 'Add word');
         const filters = document.querySelector('.toolbar-right');
@@ -101,8 +113,20 @@
         filters.querySelector('.toolbar-dropdown')?.remove();
         document.addEventListener('click', event => {
             if (!account.contains(event.target) || event.target.closest('.studio-account-menu button')) account.open = false;
+            if (window.innerWidth <= 820 && header.classList.contains('mobile-expanded') && !header.contains(event.target)) {
+                header.classList.remove('mobile-expanded');
+                mobileToggle.setAttribute('aria-expanded', 'false');
+            }
         });
-        document.addEventListener('keydown', event => { if (event.key === 'Escape') account.open = false; });
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                account.open = false;
+                if (window.innerWidth <= 820 && header.classList.contains('mobile-expanded')) {
+                    header.classList.remove('mobile-expanded');
+                    mobileToggle.setAttribute('aria-expanded', 'false');
+                }
+            }
+        });
     }
 
     function tabbedModal(overlayId, definitions) {
