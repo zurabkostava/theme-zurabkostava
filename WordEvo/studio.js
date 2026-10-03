@@ -92,7 +92,9 @@
         byId('searchInput').setAttribute('aria-label', 'Search your vocabulary');
         byId('addCardBtn').setAttribute('aria-label', 'Add word');
         const filters = document.querySelector('.toolbar-right');
-        byId('toggleSidebarBtn').append(element('span', '', 'Tags'));
+        if (!byId('toggleSidebarBtn').querySelector('span')) byId('toggleSidebarBtn').append(element('span', '', 'Tags'));
+        byId('sortDirectionIcon')?.setAttribute('title', 'Toggle sort direction');
+        byId('sortDirectionIcon')?.setAttribute('aria-label', 'Toggle sort direction');
         byId('sortSelect').setAttribute('aria-label', 'Sort vocabulary');
         byId('mainProgressSelect').setAttribute('aria-label', 'Filter by progress');
         byId('mainProgressSelect').options[1].textContent = 'Still learning';
