@@ -4066,6 +4066,7 @@ body.dark .player-minimized-display {
     background-color: #2a2a2a;
     border-color: #4fc3f7; /* ღია ლურჯი ჩარჩო */
     box-shadow: 0 4px 15px rgba(79,195,247, 0.3); /* ღია ლურჯი "გლოუ" */
+    animation: pulse-glow-dark 2s infinite alternate;
 }
 
 body.dark .player-minimized-display:hover {
@@ -4086,14 +4087,14 @@ body.dark .player-minimized-display strong {
     }
 }
 
-body.dark @keyframes pulse-glow {
-              from {
-                  box-shadow: 0 4px 15px rgba(79,195,247, 0.2);
-              }
-              to {
-                  box-shadow: 0 4px 25px rgba(79,195,247, 0.4);
-              }
-          }
+@keyframes pulse-glow-dark {
+    from {
+        box-shadow: 0 4px 15px rgba(79,195,247, 0.2);
+    }
+    to {
+        box-shadow: 0 4px 25px rgba(79,195,247, 0.4);
+    }
+}
 /* === END NEW ANIMATION === */
 
 /* === NOTIFICATION STYLES === */
@@ -4924,26 +4925,6 @@ body.dark @keyframes pulse-glow {
     box-sizing: border-box !important;
 }
 
-ze: 15px !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2) !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    height: 38px !important;
-}
-
-.global-start-btn:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4) !important;
-}
-
-.global-start-btn:active {
-    transform: translateY(1px) !important;
-}
-
 #mixContainer > div {
     flex: none !important;
     width: calc(50% - 20px) !important; /* Exactly 50% minus half of the 40px gap */
@@ -5016,19 +4997,6 @@ ze: 15px !important;
     display: flex !important;
     align-items: center !important;
     /* justify-content: flex-start !important; */
-}
-
-ze: 16px !important;
-    font-weight: bold !important;
-    cursor: pointer !important;
-    transition: all 0.2s !important;
-    box-shadow: 0 4px 10px rgba(137, 180, 250, 0.2) !important;
-    margin-left: auto !important; /* Pushes it to the right */
-}
-
-.global-start-btn:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 15px rgba(137, 180, 250, 0.4) !important;
 }
 
 /* =========================================
