@@ -6083,7 +6083,7 @@ function neural_get_books() {
         @wp_mkdir_p($covers_dir);
     }
 
-    $cache_key = 'neural_books_catalog_cache_v3';
+    $cache_key = 'neural_books_catalog_cache_v4';
     $cached_catalog = get_transient($cache_key);
 
     $epub_files = array();
@@ -6091,8 +6091,33 @@ function neural_get_books() {
         $epub_files = glob($books_dir . '/*.epub') ?: array();
     }
 
-    $file_mtimes = !empty($epub_files) ? array_map('filemtime', $epub_files) : array(0);
-    $fingerprint = count($epub_files) . '_' . max($file_mtimes);
+    // Media uploads must invalidate the catalog too, not just uploads/books.
+    $query = new WP_Query(array(
+        'post_type'      => 'attachment',
+        'post_mime_type' => 'application/epub+zip',
+        'post_status'    => 'inherit',
+        'posts_per_page' => -1,
+        'orderby'       => 'ID',
+        'order'         => 'ASC',
+        'no_found_rows' => true,
+    ));
+    $attachment_state = array();
+    foreach ($query->posts as $post) {
+        $path = get_attached_file($post->ID);
+        $exists = $path && is_file($path);
+        $attachment_state[] = array(
+            $post->ID, $post->post_modified_gmt, $path,
+            $exists ? filemtime($path) : null,
+            $exists ? filesize($path) : null,
+        );
+    }
+    sort($epub_files, SORT_STRING);
+    $folder_state = array();
+    foreach ($epub_files as $path) {
+        $folder_state[] = array($path, filemtime($path), filesize($path));
+    }
+    $fingerprint = hash('sha256', wp_json_encode(array($attachment_state, $folder_state)));
+    $response_headers = array('Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0');
 
     if (is_array($cached_catalog) && isset($cached_catalog['fingerprint']) && $cached_catalog['fingerprint'] === $fingerprint) {
         $books = $cached_catalog['books'];
@@ -6102,20 +6127,12 @@ function neural_get_books() {
             $b['perc'] = is_array($progress) && isset($progress['perc']) ? $progress['perc'] : null;
         }
         unset($b);
-        return rest_ensure_response($books);
+        return new WP_REST_Response($books, 200, $response_headers);
     }
 
     $books = array();
 
     // A. Check WordPress Media Library attachments
-    $args = array(
-        'post_type'      => 'attachment',
-        'post_mime_type' => 'application/epub+zip',
-        'post_status'    => 'inherit',
-        'posts_per_page' => -1,
-    );
-    $query = new WP_Query($args);
-
     if ($query->have_posts()) {
         foreach ($query->posts as $post) {
             $file_url = wp_get_attachment_url($post->ID);
@@ -6161,13 +6178,13 @@ function neural_get_books() {
         }
     }
 
-    // Save transient cache for 12 hours (auto-invalidated if file count or filemtime changes)
+    // Cache parsed metadata for 12 hours; either source changing rebuilds it.
     set_transient($cache_key, array(
         'fingerprint' => $fingerprint,
         'books'       => $books
     ), 12 * HOUR_IN_SECONDS);
 
-    return rest_ensure_response($books);
+    return new WP_REST_Response($books, 200, $response_headers);
 }
 add_action("rest_api_init", function () {
     register_rest_route("neural/v1", "/progress", array(

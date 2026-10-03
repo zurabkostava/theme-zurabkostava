@@ -4279,15 +4279,15 @@ async function renderLibrary() {
     libraryGrid.innerHTML = '<div style="color:white; text-align:center; padding:20px;">Scanning bookshelf... 📚</div>';
     try {
         bindLibrarySortButtons();
-        const response = await fetch('/wp-json/neural/v1/books');
+        const response = await fetch('/wp-json/neural/v1/books', { cache: 'no-store' });
         if (!response.ok) throw new Error("Scanner failed");
         allBooksCache = await response.json();
         updateCountBadge(allBooksCache.length);
+        const searchInput = document.getElementById('library-search-input');
+        if (searchInput) searchInput.value = "";
         drawBooksToGrid(getFilteredAndSortedBooks());
 
-        const searchInput = document.getElementById('library-search-input');
         if (searchInput) {
-            searchInput.value = "";
             searchInput.oninput = (e) => {
                 clearTimeout(searchDebounceTimer);
                 searchDebounceTimer = setTimeout(() => {
