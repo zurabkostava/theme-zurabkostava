@@ -1018,9 +1018,9 @@ function editCard(card) {
     document.getElementById('modalOverlay').style.display = 'flex';
 }
 function getColorForTag(tag) {
-    const hash = Array.from(tag).reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const hue = hash % 360;
-    return `hsl(${hue}, 80%, 95%)`;
+    const palette = ['#a7a0ff', '#70dcca', '#ffba7a', '#87c8ff', '#f49cc8', '#c5dd7a'];
+    const hash = Array.from(tag).reduce((acc, char) => ((acc * 31) + char.charCodeAt(0)) >>> 0, 0);
+    return palette[hash % palette.length];
 }
 function renderCardFromData(data, appendAndSort = true) {
 // 1. მონაცემების გარდაქმნა
@@ -1155,7 +1155,7 @@ function showCardPreview(word, mainTranslations, extraTranslations, tags, englis
     const main = mainTranslations.join('; ');
     const extra = extraTranslations.length
         ? `<span class="extra">${extraTranslations.join('; ')}</span>`
-        : `<span class="extra" style="visibility: hidden;">placeholder</span>`;
+        : '';
     const geoSpeakBtn = `
 <button class="speak-btn" title="წაიკითხე ქართულად"
 data-text="${mainTranslations.join(', ')}"
@@ -1163,7 +1163,7 @@ data-extra="${extraTranslations.join(', ')}"
 data-lang="ka" style="margin-right: 8px; margin-left: 0; vertical-align: middle;">
 <i class="fas fa-volume-up"></i>
 </button>`;
-    document.getElementById('previewTranslation').innerHTML = geoSpeakBtn + main + ' ' + extra;
+    document.getElementById('previewTranslation').innerHTML = `<span class="studio-translation-copy">${main} ${extra}</span>` + geoSpeakBtn;
     const previewMnemonic = document.getElementById('previewMnemonic');
     const mnemonic = card.dataset.mnemonic || '';
     if (previewMnemonic) {

@@ -583,7 +583,6 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                     </button>
 
                     <label class="settings-btn settings-btn-force cyan" for="importExcelInput">
-                    <label class="settings-btn settings-btn-force cyan" for="importExcelInput">
                         📥 Import from Excel
                     </label>
                     <input accept=".xlsx" id="importExcelInput" style="display: none;" type="file">
