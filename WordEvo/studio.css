@@ -1,0 +1,198 @@
+/* WordEvo Studio. Presentation only; existing state and game classes stay intact. */
+:root, body.dark {
+    color-scheme: dark;
+    --primary-color: #9c9bff; --accent: #9c9bff; --accent-rgb: 156,155,255;
+    --bg-premium: #090d18; --card-bg-premium: #121827; --card-bg: #121827;
+    --glass-bg: #151d30; --glass-border: #ffffff12; --border-color: #ffffff1c;
+    --text-color: #eaf0ff; --text-primary: #eaf0ff; --text-secondary: #9ba9c2;
+    --studio-blue: #81bdff; --studio-mint: #8ee4c5;
+}
+html.dark { background: #090d18; }
+body.wordevo-studio {
+    margin: 0; padding: 0 0 112px; color: var(--text-primary);
+    font-family: 'Segoe UI', 'Noto Sans Georgian', system-ui, sans-serif;
+    background: radial-gradient(ellipse at 82% 0%, #35337724, transparent 45%),
+                radial-gradient(ellipse at 0% 35%, #13526415, transparent 40%), #090d18;
+    background-attachment: fixed; line-height: 1.5;
+}
+.wordevo-studio *, .wordevo-studio *::before, .wordevo-studio *::after { box-sizing: border-box; }
+.wordevo-studio button, .wordevo-studio input, .wordevo-studio select, .wordevo-studio textarea { font-family: inherit; }
+.wordevo-studio button { cursor: pointer; transition: background .2s, border-color .2s, box-shadow .2s, transform .2s; }
+.wordevo-studio button:active:not(:disabled) { transform: scale(.96); }
+.wordevo-studio button:disabled { opacity: .45; cursor: not-allowed; }
+.wordevo-studio :focus-visible { outline: 2px solid #a9b9ff !important; outline-offset: 4px; }
+.wordevo-studio [hidden] { display: none !important; }
+.wordevo-studio ::selection { background: #9c9bff44; color: white; }
+.wordevo-studio ::-webkit-scrollbar { width: 6px; height: 6px; }
+.wordevo-studio ::-webkit-scrollbar-thumb { background: #35415a; border-radius: 8px; }
+
+/* A calm, persistent command bar. */
+body.wordevo-studio .header-wrapper {
+    top: 12px; width: calc(100% - 40px) !important; max-width: 1600px;
+    margin: 12px auto 0 !important; padding: 0 !important; gap: 0; border: 1px solid #ffffff14 !important;
+    border-radius: 20px; background: #101623ed !important;
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 12px 48px #0003 !important;
+}
+body.wordevo-studio .top, body.wordevo-studio .top-bar, body.wordevo-studio .card-toolbar {
+    background: transparent !important; box-shadow: none !important; backdrop-filter: none;
+}
+body.wordevo-studio .top-bar { padding: 14px 22px !important; gap: 16px; }
+.wordevo-studio .app-logo { font-family: 'Outfit', system-ui, sans-serif; font-size: 24px; letter-spacing: -.8px; color: #f1f5ff !important; background: none !important; -webkit-text-fill-color: currentColor !important; white-space: nowrap; flex-shrink: 0; }
+.wordevo-studio .wordevo-brand-icon { border-radius: 11px; box-shadow: 0 4px 20px #0077cc30; }
+body.wordevo-studio .card-toolbar { padding: 12px 22px !important; border-top: 1px solid #ffffff0b !important; }
+body.wordevo-studio .top-bar button, body.wordevo-studio .toolbar-btn,
+body.wordevo-studio .toolbar-select, body.wordevo-studio .premium-library-btn {
+    background: #ffffff05 !important; border: 1px solid #ffffff13 !important;
+    border-radius: 11px !important; color: #b9c6de !important; box-shadow: none !important; min-height: 40px;
+}
+body.wordevo-studio .top-bar button:hover, body.wordevo-studio .toolbar-btn:hover { background: #ffffff0d !important; color: #fff !important; border-color: #9c9bff55 !important; }
+.wordevo-studio #userEmailDisplay { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px !important; }
+body.wordevo-studio .modern-search-input { height: 44px !important; background: #090e19 !important; border: 1px solid #ffffff14 !important; border-radius: 12px !important; color: #eaf0ff !important; box-shadow: none !important; }
+.wordevo-studio input::placeholder, .wordevo-studio textarea::placeholder { color: #7f8ba3; opacity: 1; }
+body.wordevo-studio #trainingBtn, body.wordevo-studio .primary-add-btn,
+.wordevo-studio .studio-empty button, body.wordevo-studio .global-start-btn {
+    background: linear-gradient(120deg, #b1a5ff, #86bfff) !important; color: #11152c !important;
+    border: 1px solid #c1c5ff80 !important; font-weight: 750; box-shadow: 0 4px 20px #8982ff20 !important; border-radius: 12px !important;
+}
+body.wordevo-studio #trainingBtn:hover, body.wordevo-studio .primary-add-btn:hover { box-shadow: 0 4px 26px #8982ff45 !important; }
+.wordevo-studio .studio-welcome, .wordevo-studio .studio-collection-heading, body.wordevo-studio .card-container, .wordevo-studio .studio-empty { width: calc(100% - 64px); max-width: 1480px; margin-left: auto; margin-right: auto; }
+.studio-welcome { display: flex; justify-content: space-between; align-items: center; gap: 32px; padding: 48px 0 36px; }
+.studio-eyebrow { display: flex; align-items: center; gap: 9px; color: #a4b3d0; font-size: 10px; font-weight: 700; letter-spacing: 2.4px; margin: 0 0 12px; }
+.studio-eyebrow span { width: 6px; height: 6px; border-radius: 50%; background: #8ee4c5; box-shadow: 0 0 12px #8ee4c566; }
+.studio-welcome h2 { margin: 0; font: 700 clamp(27px, 3vw, 42px)/1.2 'Outfit', system-ui, sans-serif; letter-spacing: -1px; }
+.studio-welcome h2 span { color: #a9a9f8; }
+.studio-welcome > div > p:last-child { color: #9ba9c2; margin: 12px 0 0; font-size: 14px; }
+.studio-summary { display: flex; gap: 32px; flex-shrink: 0; }
+.studio-summary > div { display: flex; flex-direction: column; padding-left: 24px; border-left: 1px solid #ffffff13; }
+.studio-summary strong { font: 500 32px/1.2 'Outfit', sans-serif; color: #dae3ff; }
+.studio-summary span { font-size: 11px; color: #9ba9c2; margin-top: 7px; }
+.studio-collection-heading { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid #ffffff0c; }
+.studio-collection-heading h2 { font-size: 14px; font-weight: 600; margin: 0; }
+.studio-collection-heading > span { color: #9ba9c2; font-size: 12px; }
+body.wordevo-studio .card-container:not(.list-view) { display: grid; grid-template-columns: repeat(auto-fill, minmax(285px, 1fr)); gap: 18px; padding: 24px 0; }
+body.wordevo-studio .card {
+    width: auto; margin: 0; padding: 24px; border: 1px solid #ffffff12;
+    border-radius: 18px; background: linear-gradient(145deg, #161e30, #101622);
+    backdrop-filter: none; box-shadow: 0 5px 16px #00000014;
+    transition: transform .25s, border-color .25s, box-shadow .25s;
+    animation: studio-reveal .35s both;
+}
+body.wordevo-studio .card:hover { transform: translateY(-3px); border-color: #969bff55; box-shadow: 0 12px 28px #0003; }
+body.wordevo-studio .card.selected { background: #242641 !important; box-shadow: 0 0 0 2px #9c9bff !important; }
+.wordevo-studio .card h2.word { color: #edf2ff; font-size: 23px; letter-spacing: -.5px; font-weight: 650; }
+body.wordevo-studio .card .translation { font-size: 15px; color: #b9c7e0; line-height: 1.7; margin: 20px 0; }
+body.wordevo-studio .translation .extra { color: #8594ae; }
+.wordevo-studio .card-actions { opacity: .65; transition: opacity .2s; }
+.wordevo-studio .card:hover .card-actions, .wordevo-studio .card:focus-within .card-actions { opacity: 1; }
+body.wordevo-studio .tags span { background: #9c9bff10; color: #abb5dc; border: 1px solid #9c9bff18; border-radius: 6px; font-size: 11px; }
+body.wordevo-studio .speak-btn { color: #9fb9f7 !important; background: #9aafff12 !important; border: 1px solid #9aafff18 !important; border-radius: 10px !important; }
+body.wordevo-studio .progress-bar-container { background: #ffffff08; border-radius: 8px; overflow: hidden; }
+.wordevo-studio .progress-label { color: #b4c1d9; font-size: 10px; }
+.wordevo-studio .studio-empty { text-align: center; padding: 64px 20px; color: #9ba9c2; }
+.studio-empty > i { font-size: 32px; color: #8ee4c5; padding: 20px; background: #8ee4c50b; border-radius: 24px; }
+.studio-empty h3 { color: #eaf0ff; font-size: 22px; }
+.studio-empty p { font-size: 14px; }
+.studio-empty button { padding: 13px 20px; margin-top: 12px; }
+
+/* Every secondary surface shares the same hierarchy and material. */
+body.wordevo-studio .modal-overlay { background: #030611b8; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+body.wordevo-studio .modal, body.wordevo-studio .auth-box, body.wordevo-studio .training-modal-content {
+    background: #121827 !important; color: #eaf0ff; border: 1px solid #ffffff18 !important;
+    border-radius: 24px; box-shadow: 0 28px 100px #0008; animation: studio-reveal .25s ease-out; backdrop-filter: none;
+}
+body.wordevo-studio .modal-header { border-bottom: 1px solid #ffffff0d; padding-bottom: 18px; }
+.wordevo-studio .modal-header h2 { font-size: 21px; letter-spacing: -.4px; }
+body.wordevo-studio .modal-footer { border-top: 1px solid #ffffff0d; padding-top: 18px; }
+body.wordevo-studio .close-button { background: #ffffff07; color: #aebbd2; border-radius: 10px; min-width: 34px; min-height: 34px; }
+body.wordevo-studio .form-control, body.wordevo-studio .material-input > input,
+body.wordevo-studio .material-input > textarea, body.wordevo-studio select,
+body.wordevo-studio .tagify, body.wordevo-studio .training-modal input {
+    background: #0c1220 !important; color: #dce5fa !important; border: 1px solid #ffffff1c !important; border-radius: 10px;
+}
+body.wordevo-studio .material-input > span { color: #9eacc7; }
+body.wordevo-studio .material-input > input:focus, body.wordevo-studio .material-input > textarea:focus { border-color: #9c9bff !important; }
+body.wordevo-studio .sidebar, body.wordevo-studio .toolbar-dropdown-content { background: #121a2b !important; border: 1px solid #ffffff18 !important; box-shadow: 0 18px 60px #0005; }
+body.wordevo-studio .sidebar-tag-item { border-radius: 10px; color: #b8c6de; }
+body.wordevo-studio .sidebar-tag-item.active, body.wordevo-studio .library-item.active { background: #9c9bff14 !important; border-color: #9c9bff60 !important; color: #d0cfff; }
+body.wordevo-studio .library-item, body.wordevo-studio .stat-card, body.wordevo-studio .notification-entry { background: #ffffff04; border: 1px solid #ffffff0f; border-radius: 14px; }
+body.wordevo-studio .stat-value { color: #b2b1ff; }
+body.wordevo-studio .auth-container { background: radial-gradient(ellipse at 25% 20%, #45409330, transparent 60%), #090d18; padding: 24px; }
+body.wordevo-studio .auth-box { width: 440px; max-width: 100%; padding: 36px; }
+.wordevo-studio .auth-box > h2 { font-family: 'Outfit', sans-serif; font-size: 32px; color: #b7b7ff; letter-spacing: -1px; }
+.wordevo-studio .auth-box h3 { font-size: 27px; line-height: 1.25; letter-spacing: -.7px; margin: 22px 0 14px; color: #eef2ff; }
+.wordevo-studio .auth-box .auth-eyebrow { font-size: 9px; letter-spacing: 2px; color: #9ba9c2; }
+body.wordevo-studio #loginBtn, body.wordevo-studio #registerBtn { background: linear-gradient(120deg, #b1a5ff, #86bfff); color: #101525; font-weight: 700; border-radius: 12px; }
+
+/* Practice and listening, without changing game state or answer colors. */
+body.wordevo-studio .training-tabs { background: #0c1220; border-bottom: 1px solid #ffffff12; padding: 12px; gap: 6px; }
+body.wordevo-studio .training-tab { background: transparent; color: #9ba9c2; border-radius: 9px; padding: 12px 16px; border: 1px solid transparent; font-size: 11px; letter-spacing: 1px; }
+body.wordevo-studio .training-tab.active { background: #9c9bff1c; color: #ceceff; border-color: #9c9bff35; box-shadow: none; }
+body.wordevo-studio #globalTrainingSettings { background: #ffffff03; border-bottom: 1px solid #ffffff0c; padding: 16px 20px; gap: 16px; }
+body.wordevo-studio .quiz-option:not(.correct):not(.wrong), body.wordevo-studio .mix-item:not(.matched):not(.correct):not(.wrong) { background: #192237; border: 1px solid #ffffff18; color: #dce5fa; border-radius: 14px; }
+body.wordevo-studio .quiz-option:hover:not(:disabled) { border-color: #9c9bff; }
+body.wordevo-studio .beautiful-results { background: transparent; color: #eaf0ff; }
+body.dark.wordevo-studio .training-tabs { background: #0c1220 !important; padding: 12px !important; }
+body.dark.wordevo-studio .training-tabs .training-tab { border-radius: 10px !important; padding: 12px 16px !important; background: transparent !important; color: #a5b4ce !important; box-shadow: none !important; }
+body.dark.wordevo-studio .training-tabs .training-tab.active { background: #9c9bff20 !important; color: #d1d0ff !important; border-color: #9c9bff50 !important; }
+body.dark.wordevo-studio #globalQuestionCount { width: 80px !important; min-width: 72px; padding: 10px !important; }
+body.dark.wordevo-studio .training-tab-content .game-empty-state .placeholder-start-btn,
+body.dark.wordevo-studio .training-tab-content .beautiful-results .play-again-btn { background: linear-gradient(120deg, #b1a5ff, #86bfff) !important; color: #11152c !important; box-shadow: 0 4px 18px #8982ff18 !important; }
+body.wordevo-studio .game-empty-state { border: 1px solid #ffffff0e !important; background: radial-gradient(ellipse at 50% 0, #9c9bff0d, transparent 70%) !important; box-shadow: none !important; padding: 44px 24px !important; }
+body.wordevo-studio .game-empty-state > i { font-size: 38px !important; padding: 22px; border-radius: 22px; background: #ffffff05; }
+body.wordevo-studio .placeholder-start-btn, body.wordevo-studio .play-again-btn,
+body.wordevo-studio #saveCardBtn, body.wordevo-studio #saveVoiceBtn, body.wordevo-studio #saveProgressSettingsBtn,
+body.wordevo-studio #tiCheck, body.wordevo-studio .primary-btn {
+    background: linear-gradient(120deg, #b1a5ff, #86bfff) !important; color: #11152c !important;
+    border: 0; border-radius: 12px; font-weight: 700; box-shadow: 0 4px 18px #8982ff18;
+}
+body.wordevo-studio #cancelBtn, body.wordevo-studio .action-btn-secondary { background: #ffffff08 !important; border: 1px solid #ffffff18; color: #b9c7e0 !important; border-radius: 10px; }
+body.wordevo-studio .card-container.list-view { padding: 24px 0; }
+body.wordevo-studio .card-container.list-view .card { padding: 15px 20px; }
+body.wordevo-studio .player { background: #151d30ed !important; border: 1px solid #ffffff1c !important; border-radius: 22px !important; box-shadow: 0 12px 48px #0008 !important; margin-bottom: 14px !important; }
+body.wordevo-studio #playToggleBtn { background: linear-gradient(120deg, #b1a5ff, #86bfff) !important; color: #13192b !important; box-shadow: 0 0 22px #9c9bff20; }
+body.wordevo-studio .player-minimized-display { background: #151d30; color: #cbd8ef; border: 1px solid #ffffff1c; border-radius: 18px; }
+.wordevo-studio #soundEffectsBtn[aria-pressed="true"] { color: #8ee4c5 !important; border-color: #8ee4c555 !important; }
+.wordevo-studio #globalLoadingScreen { background: #090d18; }
+.wordevo-studio .wordevo-spinner { border-color: #9c9bff20; border-top-color: #aaa6ff; }
+@keyframes studio-reveal { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 1150px) {
+    .wordevo-studio .top-center { flex: 1; }
+    .wordevo-studio .top-center .search-input-wrapper { width: auto !important; min-width: 160px; flex: 1 !important; }
+    .wordevo-studio #userEmailDisplay { display: none; }
+    .studio-welcome { gap: 20px; }
+    .studio-summary { gap: 16px; }
+}
+@media (max-width: 768px) {
+    body.wordevo-studio .header-wrapper { width: calc(100% - 20px) !important; top: 8px; margin-top: 8px !important; border-radius: 16px; }
+    body.wordevo-studio .mobile-header { background: transparent !important; padding: 12px 16px; }
+    body.wordevo-studio .top-bar { padding: 12px !important; }
+    .wordevo-studio .top-left, .wordevo-studio .top-center { width: 100%; flex-wrap: wrap; gap: 10px !important; }
+    body.wordevo-studio .card-toolbar { padding: 10px !important; }
+    .wordevo-studio .toolbar-right { gap: 7px !important; }
+    .wordevo-studio .toolbar-divider { display: none; }
+    body.wordevo-studio .toolbar-select { font-size: 11px !important; padding: 8px !important; max-width: 100px; }
+    body.wordevo-studio .card-toolbar .toolbar-btn, body.wordevo-studio .card-toolbar .primary-add-btn { min-width: 32px; min-height: 36px; padding: 8px !important; }
+    .wordevo-studio .studio-welcome, .wordevo-studio .studio-collection-heading, body.wordevo-studio .card-container, .wordevo-studio .studio-empty { width: calc(100% - 32px); }
+    .studio-welcome { flex-direction: column; align-items: flex-start; padding: 28px 0; gap: 24px; }
+    .studio-welcome h2 span { display: block; }
+    .studio-summary { width: 100%; gap: 28px; }
+    .studio-summary > div { padding-left: 12px; }
+    .studio-summary strong { font-size: 24px; }
+    body.wordevo-studio .card-container:not(.list-view) { grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 12px; padding-top: 18px; }
+    body.wordevo-studio .card { padding: 20px; }
+    body.wordevo-studio .modal { border-radius: 18px; max-width: calc(100vw - 24px); }
+    body.wordevo-studio .training-tabs { overflow-x: auto; flex-wrap: nowrap; padding: 8px; }
+    body.wordevo-studio .training-tab { flex-shrink: 0; padding: 10px 12px; }
+    body.wordevo-studio .training-close { position: sticky; right: 0; background: #121827; }
+    body.wordevo-studio .player { margin-bottom: max(8px, env(safe-area-inset-bottom)) !important; }
+}
+@media (max-width: 420px) {
+    .wordevo-studio .toolbar-right { gap: 5px !important; }
+    body.wordevo-studio .card-toolbar { padding: 10px 8px !important; }
+    body.wordevo-studio #sortSelect { max-width: 90px; }
+    body.wordevo-studio #mainProgressSelect { max-width: 80px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .wordevo-studio *, .wordevo-studio *::before, .wordevo-studio *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}

@@ -1711,17 +1711,8 @@ async function deleteCard(card) {
 }
 // defer script — DOM is already parsed, no need for DOMContentLoaded
 (async () => {
-// ==== EARLY: Dark mode applied immediately before auth ====
-    {
-        const savedTheme = localStorage.getItem("theme");
-        const logoEl = document.getElementById("appLogo");
-        const toggleBtn = document.getElementById("toggleDarkModeBtn");
-        if (savedTheme === "dark") {
-            document.body.classList.add("dark");
-            if (toggleBtn) toggleBtn.innerHTML = `<i class="fas fa-sun"></i>`;
-            if (logoEl) logoEl.data = "/icons/logo-dark.svg";
-        }
-    }
+document.documentElement.classList.add('dark');
+    document.body.classList.add('dark');
 // ==== 3a. DOM ელემენტების შენახვა ცვლადებში ====
     const authContainer = document.getElementById('authContainer');
     const mainAppContainer = document.getElementById('mainAppContainer');
@@ -1955,39 +1946,7 @@ async function deleteCard(card) {
         });
 // --- ⬇️ DARK MODE-ის გასწორებული ლოგიკა ⬇️ ---
 // 1. თემის წაკითხვა და დაყენება ჩატვირთვისას
-        const savedTheme = localStorage.getItem("theme");
-        const logoEl = document.getElementById("appLogo");
-        const toggleBtn = document.getElementById("toggleDarkModeBtn"); // ეს ცვლადი უკვე არსებობს, მაგრამ აქ გვჭირდება
-        if (savedTheme === "dark") {
-            document.documentElement.classList.add("dark");
-            document.body.classList.add("dark");
-            toggleBtn.innerHTML = `<i class="fas fa-sun"></i>`;
-            if (logoEl) {
-                logoEl.data = "/icons/logo-dark.svg";
-            }
-        } else {
-// ეს ბლოკი აკლდა:
-            document.documentElement.classList.remove("dark");
-            document.body.classList.remove("dark");
-            toggleBtn.innerHTML = `<i class="fas fa-moon"></i>`;
-            if (logoEl) {
-                logoEl.data = "/icons/logo.svg";
-            }
-        }
-// 2. კლიკზე თემის შენახვა (ეს კოდი ისედაც სწორი იყო)
-        toggleBtn.addEventListener("click", () => {
-            document.documentElement.classList.toggle("dark");
-            document.body.classList.toggle("dark");
-            const isDark = document.body.classList.contains("dark");
-            localStorage.setItem("theme", isDark ? "dark" : "light");
-            toggleBtn.innerHTML = `<i class="fas fa-${isDark ? 'sun' : 'moon'}"></i>`;
-// განვაახლოთ ლოგოს ცვლადი, რადგან DOM შეიძლება შეიცვალოს
-            const currentLogoEl = document.getElementById("appLogo");
-            if (currentLogoEl) {
-                currentLogoEl.data = isDark ? "/icons/logo-dark.svg" : "/icons/logo.svg";
-            }
-        });
-// --- ⬆️ DARK MODE-ის ლოგიკის დასასრული ⬆️ ---
+        // WordEvo uses a single dark theme; preferences in other apps are untouched.
         document.addEventListener('mousedown', function (e) {
 // ვიყენებთ არსებულ ცვლადებს (sidebar, toggleSidebarBtn)
             const clickedInsideSidebar = sidebar.contains(e.target);

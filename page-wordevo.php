@@ -31,6 +31,7 @@ add_action('wp_enqueue_scripts', function() {
     
     // Enqueue WordEvo App Styles
     wp_enqueue_style('wordevo-app-style', get_template_directory_uri() . '/WordEvo/style.css', array(), zk_asset_version( 'WordEvo/style.css' ));
+    wp_enqueue_style('wordevo-studio', get_template_directory_uri() . '/WordEvo/studio.css', array('wordevo-app-style'), zk_asset_version('WordEvo/studio.css'));
 }, 999);
 remove_action('wp_head', 'print_emoji_detection_script', 7);
 remove_action('wp_print_styles', 'print_emoji_styles');
@@ -51,16 +52,14 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <link rel="icon" type="image/png" sizes="32x32" href="<?php echo esc_url($wordevo_assets); ?>/icons/favicon-32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="<?php echo esc_url($wordevo_assets); ?>/icons/favicon-48.png">
     <link rel="apple-touch-icon" href="<?php echo esc_url($wordevo_assets); ?>/icons/wordevo-192.png">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#090d18">
 
     <script>
         window.WORDEVO_ASSET_PATH = <?php echo wp_json_encode($wordevo_assets); ?>;
         window.WORDEVO_APP_URL = <?php echo wp_json_encode($wordevo_url); ?>;
         window.WORDEVO_PIPER_WORKER_VERSION = <?php echo wp_json_encode(filemtime(get_template_directory() . '/WordEvo/piper-worker.js')); ?>;
         // Apply dark mode immediately to prevent flash
-        if (localStorage.getItem('theme') === 'dark') {
-            document.documentElement.classList.add('dark');
-        }
+        document.documentElement.classList.add('dark');
     </script>
     <script defer src="<?php echo esc_url($wordevo_assets); ?>/pwa.js?v=19"></script>
     <script defer src="<?php echo esc_url($wordevo_assets); ?>/voice-probe.js?v=1"></script>
@@ -86,7 +85,8 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
     <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
+<body class="dark wordevo-studio">
+<script defer src="<?php echo esc_url($wordevo_assets . '/studio.js?v=' . zk_asset_version('WordEvo/studio.js')); ?>"></script>
 <button type="button" id="wordevoInstall" hidden>Install WordEvo</button>
 <div id="globalLoadingScreen">
     <div class="wordevo-spinner"></div>
@@ -94,7 +94,9 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
 <div class="auth-container" id="authContainer" style="display: none;">
     <div class="auth-box" id="loginBox">
         <h2>WordEvo</h2>
-        <p>Welcome Back</p>
+        <p class="auth-eyebrow">YOUR PERSONAL LANGUAGE STUDIO</p>
+        <h3>A little practice.<br>A world of possibilities.</h3>
+        <p>Collect words. Build connections. Make them yours.</p>
         <div class="input-container">
             <label class="material-input">
                 <input class="form-control" id="authEmail" placeholder=" " type="email"/>
@@ -194,11 +196,11 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
                 <button id="logoutBtn" title="Logout">
                     <i class="fas fa-sign-out-alt"></i>
                 </button>
-                <button id="toggleDarkModeBtn" title="Dark Mode Toggle">
-                    <i class="fas fa-moon">
+                <button id="soundEffectsBtn" title="Enable interface sounds" aria-label="Enable interface sounds" aria-pressed="false">
+                    <i class="fas fa-volume-mute">
                     </i>
                 </button>
-                <button id="settingsBtn">
+                <button id="settingsBtn" title="Settings" aria-label="Settings">
                     <i class="fas fa-cog">
                     </i>
                 </button>
@@ -262,6 +264,14 @@ remove_action('wp_footer', 'zk_mobile_bottom_nav'); // Remove Mobile Bottom Nav 
             </div>
         </div>
     </div>
+    <section class="studio-welcome" aria-label="Your vocabulary">
+        <div><p class="studio-eyebrow"><span></span> YOUR LANGUAGE STUDIO</p>
+        <h2>Small words. <span>Big possibilities.</span></h2>
+        <p>Your collection, your pace. Keep discovering.</p></div>
+        <div class="studio-summary"><div><strong id="studioWordCount">0</strong><span>Words collected</span></div><div><strong id="studioMasteredCount">0</strong><span>Words mastered</span></div></div>
+    </section>
+    <div class="studio-collection-heading"><h2>Your vocabulary</h2><span id="studioVisibleCount" aria-live="polite"></span></div>
+    <div class="studio-empty" id="studioEmpty" hidden><i class="fas fa-seedling" aria-hidden="true"></i><h3>Your next chapter starts with a word.</h3><p>Add your first word, or import a collection from Settings.</p><button type="button" data-studio-action="addCardBtn">Add your first word <span aria-hidden="true">↗</span></button></div>
     <div class="card-container" id="cardContainer">
     </div>
 

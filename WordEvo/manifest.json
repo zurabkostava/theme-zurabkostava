@@ -3,8 +3,8 @@
   "short_name": "WordEvo",
   "description": "Your personal vocabulary, practice and reminders.",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0077cc",
+  "background_color": "#090d18",
+  "theme_color": "#090d18",
   "icons": [
     {
       "src": "icons/wordevo-192.png",
